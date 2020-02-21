@@ -38,9 +38,9 @@ TITLE		:= $(PROJ)
 LIBS		:= -ltonc -lgba-sprite-engine
 
 BUILD		:= build
-SRCDIRS		:= source
+SRCDIRS		:= src
 DATADIRS	:= data
-INCDIRS		:= include
+INCDIRS		:= src
 LIBDIRS		:= $(TONCLIB) $(BASE_DIR)/libs/libgba-sprite-engine
 
 # --- switches ---
