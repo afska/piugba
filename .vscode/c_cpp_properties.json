@@ -1,0 +1,36 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/include",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "ARM7",
+                "WIN32"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/include",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

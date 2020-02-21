@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"tonc.h": "c",
+		"tonc_video.h": "c",
+		"tonc_tte.h": "c",
+		"stdio.h": "c"
+	}
+}
