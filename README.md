@@ -17,6 +17,18 @@
 	* `./configure.sh`
 - Use `msys2` as shell when using `make`, and never move any folder ¯\_(ツ)_/¯
 
+### IDE: VSCode
+
+- Recommended plugins: `C/C++ Extensions`, `EditorConfig`
+- Configuration:
+
+```json
+  "extensions.ignoreRecommendations": false,
+  "terminal.integrated.shell.windows": "{PATH_TO_MSYS2_BASH.exe}",
+  "terminal.integrated.shellArgs.windows": ["--login", "-i"],
+  "C_Cpp.clang_format_style": "{ BasedOnStyle: Chromium }"
+```
+
 ## Actions
 
 - `make clean`
