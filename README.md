@@ -1,4 +1,4 @@
-# gba-template
+# pumpitup-advance
 
 ## Install
 
@@ -9,7 +9,7 @@
 		* `tools`
 			* `devKitPro`
 		* `projects`
-			* `gba-template`
+			* `pumpitup-advance`
 - Configure environment variables:
 	* `PATH` (add `{DEVKITARM}/bin` and `{DEVKITPRO}/tools/bin`)
 	* (it's better to `export PATH=$PATH:{NEW_PATHS}` in `~/.bash_profile`)
@@ -17,7 +17,7 @@
 	* `./configure.sh`
 - Use `msys2` as shell when using `make`, and never move any folder ¯\_(ツ)_/¯
 
-### IDE: VSCode
+### VSCode
 
 - Recommended plugins: `C/C++ Extensions`, `EditorConfig`
 - Configuration:
