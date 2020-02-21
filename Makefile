@@ -35,13 +35,13 @@ export PATH	:=	$(DEVKITARM)/bin:$(PATH)
 export PROJ	?= $(notdir $(CURDIR))
 TITLE		:= $(PROJ)
 
-LIBS		:= -ltonc
+LIBS		:= -ltonc -lgba-sprite-engine
 
 BUILD		:= build
 SRCDIRS		:= source
 DATADIRS	:= data
 INCDIRS		:= include
-LIBDIRS		:= $(TONCLIB)
+LIBDIRS		:= $(TONCLIB) $(BASE_DIR)/libs/libgba-sprite-engine
 
 # --- switches ---
 

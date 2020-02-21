@@ -2,7 +2,9 @@
 
 ## Install
 
-- Install `devKitPro` and clone the project. Use this file structure:
+### Windows
+
+- Install `devKitPro` (v2.10.0) and clone the project. Use this file structure:
 	* `gba`
 		* `tools`
 			* `devKitPro`
