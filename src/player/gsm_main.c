@@ -425,28 +425,28 @@ void streaming_run(void) {
   }
 }
 
-// int main(void) {
-//   // Enable vblank IRQ for VBlankIntrWait()
-//   irqInit();
-//   irqEnable(IRQ_VBLANK);
+int main(void) {
+  // Enable vblank IRQ for VBlankIntrWait()
+  irqInit();
+  irqEnable(IRQ_VBLANK);
 
-//   hud_init();
-//   fs = find_first_gbfs_file(find_first_gbfs_file);
-//   if(!fs) {
-//     hud_wline(7, "Please append gsmsongs.gbfs");
-//     BG_COLORS[0] = RGB5(31, 23, 23);
-//     BG_COLORS[1] = RGB5(16, 0, 0);
-//     while (1) {
-//       VBlankIntrWait();
-//     }
-//   }
+  hud_init();
+  fs = find_first_gbfs_file(find_first_gbfs_file);
+  if(!fs) {
+    hud_wline(7, "Please append gsmsongs.gbfs");
+    BG_COLORS[0] = RGB5(31, 23, 23);
+    BG_COLORS[1] = RGB5(16, 0, 0);
+    while (1) {
+      VBlankIntrWait();
+    }
+  }
 
-//   //for (unsigned int i = 180; i > 0; --i) {
-//   //  VBlankIntrWait();
-//   //}
-//   init_sound();
-//   //for (unsigned int i = 30; i > 0; --i) {
-//   //  VBlankIntrWait();
-//   //}
-//   streaming_run();
-// }
+  //for (unsigned int i = 180; i > 0; --i) {
+  //  VBlankIntrWait();
+  //}
+  init_sound();
+  //for (unsigned int i = 30; i > 0; --i) {
+  //  VBlankIntrWait();
+  //}
+  streaming_run();
+}
