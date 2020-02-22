@@ -2,7 +2,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include <libgba-sprite-engine/background/text_stream.h>
 #include "SongScene.h"
-#include "lama.h"
+#include "data/lama.h"
 
 std::vector<Background*> SongScene::backgrounds() {
   return {};

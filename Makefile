@@ -33,7 +33,7 @@ LIBS		:= -ltonc -lgba -lgba-sprite-engine
 BUILD		:= build
 SRCDIRS		:= src src/player src/scenes
 DATADIRS	:= data
-INCDIRS		:= src src/data
+INCDIRS		:= src
 LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine
 
 # --- switches ---
