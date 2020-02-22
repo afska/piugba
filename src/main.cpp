@@ -1,16 +1,22 @@
-// #include <libgba-sprite-engine/gba_engine.h>
-// #include <iostream>
-// #include "scenes/SongScene.h"
+#include <libgba-sprite-engine/gba_engine.h>
+#include <iostream>
+#include "scenes/SongScene.h"
 
-// int main() {
-//   std::shared_ptr<GBAEngine> engine { new GBAEngine() };
+extern "C" {
+  #include "player/gsm_main.h"
+}
 
-//   SongScene* songScene = new SongScene(engine);
-//   engine->setScene(songScene);
+std::shared_ptr<GBAEngine> engine { new GBAEngine() };
 
-//   while (true) {
-//     engine->update();
-//   }
+int main() {
+  SongScene* songScene = new SongScene(engine);
+  engine->setScene(songScene);
 
-//   return 0;
-// }
+  maino(/*[](){}*/);
+
+  // maino([]() {
+  //   engine->update();
+  // });
+
+  return 0;
+}

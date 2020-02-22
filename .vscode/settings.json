@@ -51,6 +51,7 @@
 		"chrono": "cpp",
 		"ctime": "cpp",
 		"ratio": "cpp",
-		"thread": "cpp"
+		"thread": "cpp",
+		"gsm_main.h": "c"
 	}
 }

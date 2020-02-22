@@ -14,6 +14,8 @@
 #include "gsm.h"
 #include "private.h" /* for sizeof(struct gsm_state) */
 
+#include "gsm_main.h"
+
 #if 0
 #define PROFILE_WAIT_Y(y) \
   do {                    \
@@ -284,7 +286,7 @@ void hud_init(void);
 void hud_new_song(const char* name, unsigned int trackno);
 void hud_frame(int locked, unsigned int t);
 
-void streaming_run(void) {
+void streaming_run(/*void (*update)()*/) {
   const unsigned char* src_pos = NULL;
   const unsigned char* src_end = NULL;
   unsigned int decode_pos = 160, cur_buffer = 0;
@@ -296,6 +298,8 @@ void streaming_run(void) {
   unsigned int nframes = 0;
 
   while (1) {
+    // update();
+
     REG_BG0HOFS = ++nframes;
     unsigned short j = (REG_KEYINPUT & 0x3ff) ^ 0x3ff;
     unsigned short cmd = j & (~last_joy | KEY_R | KEY_L);
@@ -425,7 +429,7 @@ void streaming_run(void) {
   }
 }
 
-int main(void) {
+void maino(/*void (*update)()*/) {
   // Enable vblank IRQ for VBlankIntrWait()
   irqInit();
   irqEnable(IRQ_VBLANK);
@@ -441,12 +445,6 @@ int main(void) {
     }
   }
 
-  //for (unsigned int i = 180; i > 0; --i) {
-  //  VBlankIntrWait();
-  //}
   init_sound();
-  //for (unsigned int i = 30; i > 0; --i) {
-  //  VBlankIntrWait();
-  //}
-  streaming_run();
+  streaming_run(/*update*/);
 }
