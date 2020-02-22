@@ -13,7 +13,7 @@ int main() {
   engine->setScene(songScene);
 
   maino([]() {
-    engine->update();
+    //engine->update();
   });
 
   return 0;

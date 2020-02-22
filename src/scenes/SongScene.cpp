@@ -27,13 +27,9 @@ void SongScene::load() {
                   .buildPtr();
 
   TextStream::instance().setText("AHI TA VITEH!", 3, 8);
-
-  engine->getTimer()->start();
 }
 
 void SongScene::tick(u16 keys) {
-  TextStream::instance().setText(engine->getTimer()->to_string(), 18, 1);
-
   if (keys & KEY_LEFT) {
     animation->flipHorizontally(true);
   } else if (keys & KEY_RIGHT) {
