@@ -286,7 +286,7 @@ void hud_init(void);
 void hud_new_song(const char* name, unsigned int trackno);
 void hud_frame(int locked, unsigned int t);
 
-void streaming_run(/*void (*update)()*/) {
+void streaming_run(void (*update)()) {
   const unsigned char* src_pos = NULL;
   const unsigned char* src_end = NULL;
   unsigned int decode_pos = 160, cur_buffer = 0;
@@ -298,9 +298,9 @@ void streaming_run(/*void (*update)()*/) {
   unsigned int nframes = 0;
 
   while (1) {
-    // update();
+    update();
 
-    REG_BG0HOFS = ++nframes;
+    // REG_BG0HOFS = ++nframes;
     unsigned short j = (REG_KEYINPUT & 0x3ff) ^ 0x3ff;
     unsigned short cmd = j & (~last_joy | KEY_R | KEY_L);
     signed char* dst_pos = double_buffers[cur_buffer];
@@ -313,29 +313,29 @@ void streaming_run(/*void (*update)()*/) {
             reset_gba();
     */
 
-    if (cmd & KEY_SELECT) {
-      locked ^= KEY_SELECT;
-    }
+    // if (cmd & KEY_SELECT) {
+    //   locked ^= KEY_SELECT;
+    // }
 
-    if (locked & KEY_SELECT) {
-      cmd = 0;
-    }
+    // if (locked & KEY_SELECT) {
+    //   cmd = 0;
+    // }
 
-    if (cmd & KEY_START) {
-      locked ^= KEY_START;
-    }
+    // if (cmd & KEY_START) {
+    //   locked ^= KEY_START;
+    // }
 
-    if (cmd & KEY_L) {
-      src_pos -= 33 * 50;
-      if (src_pos < src) {
-        cmd |= KEY_LEFT;
-      }
-    }
+    // if (cmd & KEY_L) {
+    //   src_pos -= 33 * 50;
+    //   if (src_pos < src) {
+    //     cmd |= KEY_LEFT;
+    //   }
+    // }
 
     // R button: Skip forward
-    if (cmd & KEY_R) {
-      src_pos += 33 * 50;
-    }
+    // if (cmd & KEY_R) {
+    //   src_pos += 33 * 50;
+    // }
 
     // At end of track, proceed to the next
     if (src_pos >= src_end) {
@@ -363,7 +363,7 @@ void streaming_run(/*void (*update)()*/) {
       char name[25];
       gsm_init(&decoder);
       src = gbfs_get_nth_obj(fs, cur_song, name, &src_len);
-      hud_new_song(name, cur_song + 1);
+      // hud_new_song(name, cur_song + 1);
       // If reached by seek, go near end of the track.
       // Otherwise, go to the start.
       if (cmd & KEY_L) {
@@ -374,7 +374,7 @@ void streaming_run(/*void (*update)()*/) {
       src_end = src + src_len;
     }
 
-    PROFILE_WAIT_Y(0);
+    // PROFILE_WAIT_Y(0);
 
     // BG_COLORS[0] = RGB(22, 0, 0);
 
@@ -419,24 +419,24 @@ void streaming_run(/*void (*update)()*/) {
       }
     }
 
-    PROFILE_COLOR(27, 27, 27);
+    // PROFILE_COLOR(27, 27, 27);
     VBlankIntrWait();
     dsound_switch_buffers(double_buffers[cur_buffer]);
-    PROFILE_COLOR(27, 31, 27);
+    // PROFILE_COLOR(27, 31, 27);
 
-    hud_frame(locked, src_pos - src);
+    // hud_frame(locked, src_pos - src);
     cur_buffer = !cur_buffer;
   }
 }
 
-void maino(/*void (*update)()*/) {
+void maino(void (*update)()) {
   // Enable vblank IRQ for VBlankIntrWait()
   irqInit();
   irqEnable(IRQ_VBLANK);
 
-  hud_init();
   fs = find_first_gbfs_file(find_first_gbfs_file);
   if(!fs) {
+    hud_init();
     hud_wline(7, "Please append gsmsongs.gbfs");
     BG_COLORS[0] = RGB5(31, 23, 23);
     BG_COLORS[1] = RGB5(16, 0, 0);
@@ -446,5 +446,5 @@ void maino(/*void (*update)()*/) {
   }
 
   init_sound();
-  streaming_run(/*update*/);
+  streaming_run(update);
 }

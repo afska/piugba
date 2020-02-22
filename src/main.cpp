@@ -12,11 +12,9 @@ int main() {
   SongScene* songScene = new SongScene(engine);
   engine->setScene(songScene);
 
-  maino(/*[](){}*/);
-
-  // maino([]() {
-  //   engine->update();
-  // });
+  maino([]() {
+    engine->update();
+  });
 
   return 0;
 }
