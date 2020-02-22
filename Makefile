@@ -1,9 +1,3 @@
-#
-# Template tonc makefile
-#
-# Yoinked mostly from DKP's template
-#
-
 # === SETUP ===========================================================
 
 # --- No implicit rules ---
@@ -19,7 +13,6 @@ include  $(BASE_DIR)/tonc_rules
 # --- Main path ---
 
 export PATH	:=	$(DEVKITARM)/bin:$(PATH)
-
 
 # === PROJECT DETAILS =================================================
 # PROJ		: Base project name
@@ -38,9 +31,9 @@ TITLE		:= $(PROJ)
 LIBS		:= -ltonc -lgba-sprite-engine
 
 BUILD		:= build
-SRCDIRS		:= src
+SRCDIRS		:= src src/scenes
 DATADIRS	:= data
-INCDIRS		:= src
+INCDIRS		:= src src/data
 LIBDIRS		:= $(TONCLIB) $(BASE_DIR)/libs/libgba-sprite-engine
 
 # --- switches ---
@@ -49,11 +42,10 @@ bMB		:= 0	# Multiboot build
 bTEMPS	:= 0	# Save gcc temporaries (.i and .s files)
 bDEBUG2	:= 0	# Generate debug info (bDEBUG2? Not a full DEBUG flag. Yet)
 
-
 # === BUILD FLAGS =====================================================
 # This is probably where you can stop editing
-# NOTE: I've noticed that -fgcse and -ftree-loop-optimize sometimes muck 
-#	up things (gcse seems fond of building masks inside a loop instead of 
+# NOTE: I've noticed that -fgcse and -ftree-loop-optimize sometimes muck
+#	up things (gcse seems fond of building masks inside a loop instead of
 #	outside them for example). Removing them sometimes helps
 
 # --- Architecture ---
@@ -102,12 +94,11 @@ else
 	ASFLAGS		+= -DNDEBUG
 endif
 
-
 # === BUILD PROC ======================================================
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 
-# Still in main dir: 
+# Still in main dir:
 # * Define/export some extra variables
 # * Invoke this file again from the build dir
 # PONDER: what happens if BUILD == "" ?
@@ -142,7 +133,7 @@ export OFILES	:=	$(addsuffix .o, $(BINFILES))					\
 export INCLUDE	:=	$(foreach dir,$(INCDIRS),-I$(CURDIR)/$(dir))	\
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include)		\
 					-I$(CURDIR)/$(BUILD)
- 
+
 export LIBPATHS	:=	-L$(CURDIR) $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 # --- Create BUILD if necessary, and run this makefile from there ---
@@ -158,7 +149,6 @@ clean:
 	@echo clean ...
 	@rm -rf $(BUILD) $(TARGET).elf $(TARGET).gba $(TARGET).sav
 
-
 else		# If we're here, we should be in the BUILD dir
 
 DEPENDS	:=	$(OFILES:.o=.d)
@@ -170,7 +160,6 @@ $(OUTPUT).gba	:	$(OUTPUT).elf
 $(OUTPUT).elf	:	$(OFILES)
 
 -include $(DEPENDS)
-
 
 endif		# End BUILD switch
 

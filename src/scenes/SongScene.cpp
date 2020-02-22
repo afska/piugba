@@ -26,7 +26,7 @@ void SongScene::load() {
                   .withLocation(50, 50)
                   .buildPtr();
 
-  TextStream::instance().setText("Rotate the lama with the arrows!", 3, 8);
+  TextStream::instance().setText("AHI TA VITEH!", 3, 8);
 
   engine->getTimer()->start();
 }
