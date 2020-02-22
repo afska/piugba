@@ -34,3 +34,8 @@
 - `make clean`
 - `make build`
 - `make start`
+
+## Versions
+
+- `wgroeneveld/gba-sprite-engine`: Dec 18, 2019
+- `pinobatch/gsmplayer-gba`: Feb 9, 2020
