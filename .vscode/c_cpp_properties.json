@@ -3,11 +3,12 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}",
-                "${workspaceFolder}/include",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include"
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/data/**",
+                "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**"
             ],
             "defines": [
                 "_DEBUG",
@@ -16,20 +17,22 @@
                 "ARM7",
                 "WIN32"
             ],
-            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\bin\\arm-none-eabi-g++.exe",
+            "intelliSenseMode": "gcc-x64",
             "browse": {
                 "path": [
-                    "${workspaceFolder}",
-                    "${workspaceFolder}/include",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include"
+                    "${workspaceFolder}/src/**",
+                    "${workspaceFolder}/data/**",
+                    "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++11"
         }
     ],
     "version": 4
