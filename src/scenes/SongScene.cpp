@@ -12,6 +12,7 @@ std::vector<Sprite*> SongScene::sprites() {
   return {animation.get()};
 }
 
+unsigned int msecs;
 bool started = false;
 int initial_offset = 150;
 int last_beat = 0;
@@ -36,15 +37,19 @@ void SongScene::load() {
   TextStream::instance().setText("AHI TA VITEH!", 3, 8);
 }
 
-void SongScene::tick(u16 keys) {
-  if (!started && engine->getTimer()->getTotalMsecs() > initial_offset) {
-    engine->getTimer()->reset();
-    started = true;
-  }
+void SongScene::setMsecs(unsigned int _msecs) {
+  msecs = _msecs;
+}
 
-  // 60000-----156beats
-  // totalmsecs-----x = totalmsecs*156/60000
-  int beat = (engine->getTimer()->getTotalMsecs() * 156) / 60000;  // 156 bpm
+void SongScene::tick(u16 keys) {
+  if (!started && msecs > initial_offset)
+    started = true;
+
+  unsigned int millis = started ? msecs - initial_offset : 0;
+
+  // 60000-----BPMbeats
+  // millis-----x = millis*BPM/60000
+  int beat = (millis * 156) / 60000;  // BPM bpm
   if (beat != last_beat) {
     int delta = sgn(velocity);
     count += delta;
@@ -60,9 +65,8 @@ void SongScene::tick(u16 keys) {
   last_beat = beat;
 
   int is_odd = beat & 1;
-  TextStream::instance().setText("             ", !is_odd ? 18 : 17, 1);
-  TextStream::instance().setText(engine->getTimer()->to_string(),
-                                 is_odd ? 18 : 17, 1);
+  TextStream::instance().setText("----------", !is_odd ? 18 : 17, 1);
+  TextStream::instance().setText("oooooooooo", is_odd ? 18 : 17, 1);
 
   // if (keys & KEY_LEFT) {
   //   animation->flipHorizontally(true);

@@ -12,6 +12,7 @@ class SongScene : public Scene {
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
+  void setMsecs(unsigned int msecs);
 
   void load() override;
   void tick(u16 keys) override;
