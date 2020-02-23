@@ -7,7 +7,8 @@
                 "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
                 "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
                 "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**"
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
+                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
             ],
             "defines": [
                 "_DEBUG",
@@ -24,7 +25,8 @@
                     "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
                     "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
                     "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**"
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
+                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

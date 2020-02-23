@@ -52,6 +52,7 @@
 		"ctime": "cpp",
 		"ratio": "cpp",
 		"thread": "cpp",
-		"gsm_main.h": "c"
+		"gsm_main.h": "c",
+		"gba_interrupt.h": "c"
 	}
 }
