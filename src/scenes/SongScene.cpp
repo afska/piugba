@@ -12,6 +12,8 @@ std::vector<Sprite*> SongScene::sprites() {
   return {animation.get()};
 }
 
+bool started = false;
+int initial_offset = 150;
 int last_beat = 0;
 int count = -3;
 int velocity = 10;
@@ -33,15 +35,20 @@ void SongScene::load() {
 
   TextStream::instance().setText("AHI TA VITEH!", 3, 8);
 
-  engine->getTimer()->start();
+  // engine->getTimer()->start();
 }
 
 void SongScene::tick(u16 keys) {
   engine->getTimer()->onvblank();  // TODO: MOVE
 
+  if (!started && engine->getTimer()->getTotalMsecs() > initial_offset) {
+    engine->getTimer()->reset();
+    started = true;
+  }
+
   // 60000-----157beats
   // totalmsecs-----x = totalmsecs*157/60000
-  int beat = (engine->getTimer()->getTotalMsecs() * 157) / 60000;  // 157 bpm
+  int beat = (engine->getTimer()->getTotalMsecs() * 156) / 60000;  // 156 bpm
   if (beat != last_beat) {
     int delta = sgn(velocity);
     count += delta;

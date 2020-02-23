@@ -8,7 +8,7 @@ extern "C" {
 #include "utils/gbfs.h"
 }
 
-std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
 int main() {
   SongScene* songScene = new SongScene(engine);
@@ -19,7 +19,7 @@ int main() {
   TextStream::instance().setText(betho ? "Hay data" : "No hay data", 1, 1);
 
   player_init();
-
+  engine->getTimer()->start();
   maino([]() { engine->update(); });
 
   return 0;
