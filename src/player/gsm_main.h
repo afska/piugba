@@ -4,4 +4,4 @@
 void player_init();
 void maino(void (*update)());
 
-#endif // GSM_MAIN_H
+#endif  // GSM_MAIN_H

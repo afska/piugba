@@ -32,7 +32,7 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  engine->getTimer()->onvblank(); // TODO: MOVE
+  engine->getTimer()->onvblank();  // TODO: MOVE
   TextStream::instance().setText(engine->getTimer()->to_string(), 18, 1);
 
   if (keys & KEY_LEFT) {

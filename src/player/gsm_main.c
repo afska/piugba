@@ -12,6 +12,8 @@
 #include "private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs.h"
 
+#define CMD_START_SONG 0x0400
+
 struct gsm_state decoder;
 const GBFS_FILE* fs;
 const unsigned char* src;
@@ -58,61 +60,6 @@ void gsm_init(gsm r) {
 void wait4vbl(void) {
   asm volatile("mov r2, #0; swi 0x05" ::: "r0", "r1", "r2", "r3");
 }
-
-#if 0
-
-static void dsound_silence(void)
-{
-  DMA[1].control = 0;
-}
-
-void pre_decode_run(void)
-{
-  const char *src_pos;
-  const char *src_end;
-  char *dst_pos = EWRAM;
-
-  src = gbfs_get_obj(fs, "butterfly.pcm.gsm", &src_len);
-  if(!src)
-    {
-      LCDMODE = 0;
-      PALRAM[0] = RGB(31, 23, 0);
-      while(1) {}
-    }
-
-  src_pos = src;
-  src_end = src_pos + src_len;
-
-  gsm_init(&decoder);
-
-  while(src_pos < src_end)
-    {
-      unsigned int i;
-
-      while(LCD_Y != 0 && LCD_Y != 76 && LCD_Y != 152) {}
-
-      PALRAM[0] = RGB(0, 0, 31);
-      if(gsm_decode(&decoder, src_pos, out_samples))
-        {
-          LCDMODE = 0;
-          PALRAM[0] = RGB(31, 31, 0);
-          while(1) {}
-        }
-      src_pos += sizeof(gsm_frame);
-      PALRAM[0] = RGB(0, 0, 15);
-      for(i = 0; i < 160; i++)
-        dst_pos[i] = out_samples[i] >> 8;
-      dst_pos += 160;
-      PALRAM[0] = RGB(0, 0, 0);
-    }
-  PALRAM[0] = RGB(0, 31, 0);
-
-  dsound_switch_buffers(EWRAM);
-
-}
-#endif
-
-#define CMD_START_SONG 0x0400
 
 void streaming_run(void (*update)()) {
   const unsigned char* src_pos = NULL;
