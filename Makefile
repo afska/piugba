@@ -168,7 +168,7 @@ endif		# End BUILD switch
 .PHONY: clean
 .PHONY: start
 
-start:
+start: $(BUILD)
 	start $(TARGET).gba
 
 # EOF
