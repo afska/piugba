@@ -1,14 +1,14 @@
+#include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <iostream>
 #include "scenes/SongScene.h"
-#include <libgba-sprite-engine/background/text_stream.h>
 
 extern "C" {
-  #include "player/gsm_main.h"
-  #include "utils/gbfs.h"
+#include "player/gsm_main.h"
+#include "utils/gbfs.h"
 }
 
-std::shared_ptr<GBAEngine> engine { new GBAEngine() };
+std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
 int main() {
   SongScene* songScene = new SongScene(engine);
@@ -20,9 +20,7 @@ int main() {
 
   player_init();
 
-  maino([]() {
-    engine->update();
-  });
+  maino([]() { engine->update(); });
 
   return 0;
 }

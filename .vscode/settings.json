@@ -53,6 +53,15 @@
 		"ratio": "cpp",
 		"thread": "cpp",
 		"gsm_main.h": "c",
-		"gba_interrupt.h": "c"
+		"gba_interrupt.h": "c",
+		"gba_dma.h": "c",
+		"gba_compression.h": "c",
+		"stdint.h": "c",
+		"gba_systemcalls.h": "c",
+		"gba_sound.h": "c",
+		"gba_timers.h": "c",
+		"gba_video.h": "c",
+		"stdlib.h": "c",
+		"string.h": "c"
 	}
 }
