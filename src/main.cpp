@@ -4,7 +4,7 @@
 #include "scenes/SongScene.h"
 
 extern "C" {
-#include "player/gsm_main.h"
+#include "player/player.h"
 #include "utils/gbfs.h"
 }
 
@@ -14,13 +14,10 @@ int main() {
   SongScene* songScene = new SongScene(engine);
   engine->setScene(songScene);
 
-  auto fs = find_first_gbfs_file(0);
-  auto betho = fs && gbfs_get_obj(fs, "beethoven-virus-full.gsm", NULL);
-  TextStream::instance().setText(betho ? "Hay data" : "No hay data", 1, 1);
-
   player_init();
+  player_play("beethoven-virus-full.gsm");
   engine->getTimer()->start();
-  maino([]() { engine->update(); });
+  player_forever([]() { engine->update(); });
 
   return 0;
 }
