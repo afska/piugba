@@ -10,21 +10,11 @@
 #include <stdlib.h>
 #include <string.h>  // for memset
 
-#include "gbfs.h"
+#include "utils/gbfs.h"
 #include "gsm.h"
 #include "private.h" /* for sizeof(struct gsm_state) */
 
 #include "gsm_main.h"
-
-#if 0
-#define PROFILE_WAIT_Y(y) \
-  do {                    \
-  } while (REG_VCOUNT != (y))
-#define PROFILE_COLOR(r, g, b) (BG_COLORS[0] = RGB5((r), (g), (b)))
-#else
-#define PROFILE_WAIT_Y(y) ((void)0)
-#define PROFILE_COLOR(r, g, b) ((void)0)
-#endif
 
 extern const char _x16Tiles[2048];  // font
 
@@ -80,15 +70,10 @@ void hud_init(void) {
   BG_COLORS[0] = RGB5(27, 31, 27);
   BG_COLORS[1] = RGB5(0, 16, 0);
   bitunpack1(PATRAM4(0, 0), _x16Tiles, sizeof(_x16Tiles));
-  // REG_DISPCNT = 0;
+  REG_DISPCNT = 0;
   REG_BG2CNT = SCREEN_BASE(31) | CHAR_BASE(0);
 
   hud_cls();
-  // hud_wline(1, "GSM Player for GBA");
-  // hud_wline(2, "Copr. 2004, 2019");
-  // hud_wline(3, "Damian Yerrick");
-  // hud_wline(4, "and Toast contributors");
-  // hud_wline(5, "(See TOAST-COPYRIGHT.txt)");
 
   VBlankIntrWait();
   REG_DISPCNT = 0 | BG2_ON;
@@ -162,24 +147,15 @@ void hud_frame(int locked, unsigned int t) {
   hud_wline(9, line);
 }
 
-void hud_new_song(const char* name, unsigned int trackno) {
-  int upper;
-
-  hud_wline(5, "Playing");
-  hud_wline(6, name);
-  hud_clock.cycles = 0;
-
-  for (upper = 0; upper < 4; upper++)
-    hud_clock.clock[0] = 0;
-  upper = trackno / 10;
-  hud_clock.trackno[1] = trackno - upper * 10;
-
-  trackno = upper;
-  upper = trackno / 10;
-  hud_clock.trackno[0] = trackno - upper * 10;
-}
-
 // gsmplay.c ////////////////////////////////////////////////////////
+
+struct gsm_state decoder;
+const GBFS_FILE* fs;
+const unsigned char* src;
+uint32_t src_len;
+
+signed short out_samples[160];
+signed char double_buffers[2][608] __attribute__((aligned(4)));
 
 static void dsound_switch_buffers(const void* src) {
   REG_DMA1CNT = 0;
@@ -195,7 +171,9 @@ static void dsound_switch_buffers(const void* src) {
 
 #define TIMER_16MHZ 0
 
-void init_sound(void) {
+void player_init() {
+  fs = find_first_gbfs_file(0);
+
   // TM0CNT_L is count; TM0CNT_H is control
   REG_TM0CNT_H = 0;
   // turn on sound circuit
@@ -217,14 +195,6 @@ void gsm_init(gsm r) {
 void wait4vbl(void) {
   asm volatile("mov r2, #0; swi 0x05" ::: "r0", "r1", "r2", "r3");
 }
-
-struct gsm_state decoder;
-const GBFS_FILE* fs;
-const unsigned char* src;
-uint32_t src_len;
-
-signed short out_samples[160];
-signed char double_buffers[2][608] __attribute__((aligned(4)));
 
 #if 0
 
@@ -300,42 +270,11 @@ void streaming_run(void (*update)()) {
   while (1) {
     update();
 
-    // REG_BG0HOFS = ++nframes;
     unsigned short j = (REG_KEYINPUT & 0x3ff) ^ 0x3ff;
     unsigned short cmd = j & (~last_joy | KEY_R | KEY_L);
     signed char* dst_pos = double_buffers[cur_buffer];
 
     last_joy = j;
-
-    /*
-          if((j & (KEY_A | KEY_B | KEY_SELECT | KEY_START))
-             == (KEY_A | KEY_B | KEY_SELECT | KEY_START))
-            reset_gba();
-    */
-
-    // if (cmd & KEY_SELECT) {
-    //   locked ^= KEY_SELECT;
-    // }
-
-    // if (locked & KEY_SELECT) {
-    //   cmd = 0;
-    // }
-
-    // if (cmd & KEY_START) {
-    //   locked ^= KEY_START;
-    // }
-
-    // if (cmd & KEY_L) {
-    //   src_pos -= 33 * 50;
-    //   if (src_pos < src) {
-    //     cmd |= KEY_LEFT;
-    //   }
-    // }
-
-    // R button: Skip forward
-    // if (cmd & KEY_R) {
-    //   src_pos += 33 * 50;
-    // }
 
     // At end of track, proceed to the next
     if (src_pos >= src_end) {
@@ -363,7 +302,7 @@ void streaming_run(void (*update)()) {
       char name[25];
       gsm_init(&decoder);
       src = gbfs_get_nth_obj(fs, cur_song, name, &src_len);
-      // hud_new_song(name, cur_song + 1);
+
       // If reached by seek, go near end of the track.
       // Otherwise, go to the start.
       if (cmd & KEY_L) {
@@ -373,10 +312,6 @@ void streaming_run(void (*update)()) {
       }
       src_end = src + src_len;
     }
-
-    // PROFILE_WAIT_Y(0);
-
-    // BG_COLORS[0] = RGB(22, 0, 0);
 
     if (locked & KEY_START) { /* if paused */
       for (j = 304 / 2; j > 0; j--) {
@@ -419,12 +354,9 @@ void streaming_run(void (*update)()) {
       }
     }
 
-    // PROFILE_COLOR(27, 27, 27);
     VBlankIntrWait();
     dsound_switch_buffers(double_buffers[cur_buffer]);
-    // PROFILE_COLOR(27, 31, 27);
 
-    // hud_frame(locked, src_pos - src);
     cur_buffer = !cur_buffer;
   }
 }
@@ -434,17 +366,5 @@ void maino(void (*update)()) {
   irqInit();
   irqEnable(IRQ_VBLANK);
 
-  fs = find_first_gbfs_file(find_first_gbfs_file);
-  if(!fs) {
-    hud_init();
-    hud_wline(7, "Please append gsmsongs.gbfs");
-    BG_COLORS[0] = RGB5(31, 23, 23);
-    BG_COLORS[1] = RGB5(16, 0, 0);
-    while (1) {
-      VBlankIntrWait();
-    }
-  }
-
-  init_sound();
   streaming_run(update);
 }
