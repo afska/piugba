@@ -31,7 +31,11 @@ TITLE		:= $(PROJ)
 LIBS		:= -ltonc -lgba -lgba-sprite-engine
 
 BUILD		:= build
-SRCDIRS		:= src src/player src/scenes src/utils
+SRCDIRS		:= src \
+						 src/player \
+						 src/player/core \
+						 src/scenes \
+						 src/utils
 DATADIRS	:= data
 INCDIRS		:= src
 LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine

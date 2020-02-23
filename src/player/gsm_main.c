@@ -8,11 +8,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // for memset
-#include "gsm.h"
-#include "private.h" /* for sizeof(struct gsm_state) */
-#include "utils/gbfs.h"
+#include "core/gsm.h"
+#include "core/private.h" /* for sizeof(struct gsm_state) */
+#include "../utils/gbfs.h"
 
 #define CMD_START_SONG 0x0400
+#define TIMER_16MHZ 0
 
 struct gsm_state decoder;
 const GBFS_FILE* fs;
@@ -34,31 +35,9 @@ static void dsound_switch_buffers(const void* src) {
                 DMA_ENABLE | 1;
 }
 
-#define TIMER_16MHZ 0
-
-void player_init() {
-  fs = find_first_gbfs_file(0);
-
-  // TM0CNT_L is count; TM0CNT_H is control
-  REG_TM0CNT_H = 0;
-  // turn on sound circuit
-  SETSNDRES(1);
-  SNDSTAT = SNDSTAT_ENABLE;
-  DSOUNDCTRL = 0x0b0e;
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
-  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
-}
-
-/* gsm_init() **************
-   This is to gsm_create() as placement new is to new.
-*/
 void gsm_init(gsm r) {
   memset((char*)r, 0, sizeof(*r));
   r->nrp = 40;
-}
-
-void wait4vbl(void) {
-  asm volatile("mov r2, #0; swi 0x05" ::: "r0", "r1", "r2", "r3");
 }
 
 void streaming_run(void (*update)()) {
@@ -164,6 +143,19 @@ void streaming_run(void (*update)()) {
 
     cur_buffer = !cur_buffer;
   }
+}
+
+void player_init() {
+  fs = find_first_gbfs_file(0);
+
+  // TM0CNT_L is count; TM0CNT_H is control
+  REG_TM0CNT_H = 0;
+  // turn on sound circuit
+  SETSNDRES(1);
+  SNDSTAT = SNDSTAT_ENABLE;
+  DSOUNDCTRL = 0x0b0e;
+  REG_TM0CNT_L = 0x10000 - (924 / 2);
+  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 }
 
 void maino(void (*update)()) {
