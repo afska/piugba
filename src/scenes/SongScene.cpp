@@ -34,13 +34,9 @@ void SongScene::load() {
                   .buildPtr();
 
   TextStream::instance().setText("AHI TA VITEH!", 3, 8);
-
-  // engine->getTimer()->start();
 }
 
 void SongScene::tick(u16 keys) {
-  engine->getTimer()->onvblank();  // TODO: MOVE
-
   if (!started && engine->getTimer()->getTotalMsecs() > initial_offset) {
     engine->getTimer()->reset();
     started = true;
@@ -59,12 +55,14 @@ void SongScene::tick(u16 keys) {
       animation->flipHorizontally(to_left);
     }
   }
+
   TextStream::instance().setText(std::to_string(count), 10, 1);
   last_beat = beat;
 
   int is_odd = beat & 1;
-  TextStream::instance().setText("             ", !is_odd ? 18 : 15, 1);
-  TextStream::instance().setText(engine->getTimer()->to_string(), is_odd ? 18 : 15, 1);
+  TextStream::instance().setText("             ", !is_odd ? 18 : 17, 1);
+  TextStream::instance().setText(engine->getTimer()->to_string(),
+                                 is_odd ? 18 : 17, 1);
 
   // if (keys & KEY_LEFT) {
   //   animation->flipHorizontally(true);

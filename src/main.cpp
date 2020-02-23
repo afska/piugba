@@ -15,9 +15,14 @@ int main() {
   engine->setScene(songScene);
 
   player_init();
+
   player_play("beethoven-virus-full.gsm");
   engine->getTimer()->start();
-  player_forever([]() { engine->update(); });
+
+  player_forever([]() {
+    engine->getTimer()->onvblank();
+    engine->update();
+  });
 
   return 0;
 }
