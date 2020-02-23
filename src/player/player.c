@@ -76,7 +76,7 @@ void player_forever(void (*update)()) {
   enable_vblank_interrupt();
 
   while (1) {
-    update();
+    update(src, src_pos, src_end);
 
     dst_pos = double_buffers[cur_buffer];
 

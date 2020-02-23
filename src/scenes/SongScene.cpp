@@ -42,8 +42,8 @@ void SongScene::tick(u16 keys) {
     started = true;
   }
 
-  // 60000-----157beats
-  // totalmsecs-----x = totalmsecs*157/60000
+  // 60000-----156beats
+  // totalmsecs-----x = totalmsecs*156/60000
   int beat = (engine->getTimer()->getTotalMsecs() * 156) / 60000;  // 156 bpm
   if (beat != last_beat) {
     int delta = sgn(velocity);
