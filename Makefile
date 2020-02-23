@@ -168,7 +168,10 @@ endif		# End BUILD switch
 .PHONY: clean
 .PHONY: start
 
-start: $(BUILD)
-	start $(TARGET).gba
+package: $(BUILD)
+	./scripts/package.sh
+
+start: package
+	start $(TARGET).out.gba
 
 # EOF
