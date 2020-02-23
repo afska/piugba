@@ -4,7 +4,6 @@
 #include "scenes/SongScene.h"
 
 extern "C" {
-uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 #include "player/player.h"
 #include "utils/gbfs.h"
 }
@@ -18,9 +17,7 @@ int main() {
 
   player_init();
   player_play("beethoven-virus-full.gsm");
-  player_forever([](char* src, char* src_pos, char* src_end) {
-    unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, 1146880 * 1000);
+  player_forever([](unsigned int msecs) {
     songScene->setMsecs(msecs);
 
     engine->update();

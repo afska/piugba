@@ -30,6 +30,8 @@ signed char* dst_pos;
 int last_sample = 0;
 int i;
 
+uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
+
 static void dsound_switch_buffers(const void* src) {
   REG_DMA1CNT = 0;
 
@@ -76,7 +78,9 @@ void player_forever(void (*update)()) {
   enable_vblank_interrupt();
 
   while (1) {
-    update(src, src_pos, src_end);
+    unsigned int msecs = src_pos - src;
+    msecs = fracumul(msecs, 1146880 * 1000);
+    update(msecs);
 
     dst_pos = double_buffers[cur_buffer];
 
