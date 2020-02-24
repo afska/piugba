@@ -19,6 +19,11 @@ class SongScene : public Scene {
 
  private:
   std::unique_ptr<Sprite> animation;
+  std::unique_ptr<Sprite> a1;
+  std::unique_ptr<Sprite> a2;
+  std::unique_ptr<Sprite> a3;
+  std::unique_ptr<Sprite> a4;
+  std::unique_ptr<Sprite> a5;
 };
 
 #endif  // SONG_SCENE_H

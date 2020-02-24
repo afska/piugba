@@ -31,9 +31,17 @@
 
 ## Actions
 
+### Commands
+
 - `make clean`
 - `make build`
 - `make start`
+
+### Build images
+
+```
+grit *.png -ftc -pS -gB8 -O shared.c
+```
 
 ## Versions
 

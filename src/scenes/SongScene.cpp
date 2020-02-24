@@ -2,14 +2,16 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
+#include "data/downleft.h"
 #include "data/lama.h"
+#include "data/shared.h"
 
 std::vector<Background*> SongScene::backgrounds() {
   return {};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
-  return {animation.get()};
+  return {animation.get(),a1.get(),a2.get(),a3.get(),a4.get(),a5.get()};
 }
 
 unsigned int msecs;
@@ -28,13 +30,40 @@ void SongScene::load() {
 
   SpriteBuilder<Sprite> builder;
 
-  animation = builder.withData(lamaTiles, sizeof(lamaTiles))
+  TextStream::instance().setText("AHI TA VITEH!", 5, 8);
+
+  int margin = 32 + 2;
+  a1 = builder.withData(downleftTiles, sizeof(downleftTiles))
+           .withSize(SIZE_32_32)
+           .withAnimated(6, 3)
+           .withLocation(margin * 0, 0)
+           .buildPtr();
+  a2 = builder.withData(downleftTiles, sizeof(downleftTiles))
+           .withSize(SIZE_32_32)
+           .withAnimated(6, 3)
+           .withLocation(margin * 1, 0)
+           .buildPtr();
+  a3 = builder.withData(lamaTiles, sizeof(lamaTiles))
+           .withSize(SIZE_32_32)
+           .withAnimated(6, 3)
+           .withLocation(margin * 2 + 4, 0)
+           .buildPtr();
+  a4 = builder.withData(downleftTiles, sizeof(downleftTiles))
+           .withSize(SIZE_32_32)
+           .withAnimated(6, 3)
+           .withLocation(margin * 3, 0)
+           .buildPtr();
+  a5 = builder.withData(downleftTiles, sizeof(downleftTiles))
+           .withSize(SIZE_32_32)
+           .withAnimated(6, 3)
+           .withLocation(margin * 4, 0)
+           .buildPtr();
+
+  animation = builder.withData(downleftTiles, sizeof(downleftTiles))
                   .withSize(SIZE_32_32)
                   .withAnimated(6, 2)
                   .withLocation(70, 50)
                   .buildPtr();
-
-  TextStream::instance().setText("AHI TA VITEH!", 3, 8);
 }
 
 void SongScene::setMsecs(unsigned int _msecs) {
@@ -42,6 +71,9 @@ void SongScene::setMsecs(unsigned int _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
+  a2->flipHorizontally(true);
+  a5->flipHorizontally(true);
+
   if (!started && msecs > initial_offset)
     started = true;
 
