@@ -39,8 +39,9 @@
 
 ### Build images
 
-```
-grit *.png -ftc -pS -gB8 -O shared.c
+```bash
+# use #FF00FF as transparency color
+grit *.png -ftc -pS -gB8 -gT ff00ff -O shared.c
 ```
 
 ## Versions

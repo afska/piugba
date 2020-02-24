@@ -4,10 +4,11 @@
 //======================================================================
 //
 //	downleft, 16x16@8, 
+//	Transparent color : FF,00,FF
 //	+ 4 tiles not compressed
 //	Total size: 256 = 256
 //
-//	Time-stamp: 2020-02-24, 15:10:46
+//	Time-stamp: 2020-02-24, 15:17:12
 //	Exported by Cearn's GBA Image Transmogrifier, v0.8.15
 //	( http://www.coranac.com/projects/#grit )
 //
