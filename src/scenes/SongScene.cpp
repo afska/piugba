@@ -16,8 +16,8 @@ std::vector<Sprite*> SongScene::sprites() {
 
 unsigned int msecs;
 bool started = false;
-int initial_offset = 150;
-int last_beat = 0;
+unsigned int initial_offset = 150;
+unsigned int last_beat = 0;
 int count = -3;
 int velocity = 10;
 bool to_left = false;
@@ -26,40 +26,35 @@ void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
   backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager());
-
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(sharedPal, sizeof(sharedPal)));
   SpriteBuilder<Sprite> builder;
 
   TextStream::instance().setText("AHI TA VITEH!", 5, 8);
 
-  int margin = 32 + 2;
+  int marginLeft = 4;
+  int margin = 16 + 4;
   a1 = builder.withData(downleftTiles, sizeof(downleftTiles))
-           .withSize(SIZE_32_32)
-           .withAnimated(0, 1, 0)
-           .withLocation(margin * 0, 0)
+           .withSize(SIZE_16_16)
+           .withLocation(marginLeft + margin * 0, 0)
            .buildPtr();
   a2 = builder.withData(downleftTiles, sizeof(downleftTiles))
-           .withSize(SIZE_32_32)
-           .withAnimated(4, 3)
-           .withLocation(margin * 1, 0)
+           .withSize(SIZE_16_16)
+           .withLocation(marginLeft + margin * 1, 0)
            .buildPtr();
-  a3 = builder.withData(lamaTiles, sizeof(lamaTiles))
-           .withSize(SIZE_32_32)
-           .withAnimated(4, 3)
-           .withLocation(margin * 2 + 4, 0)
+  a3 = builder.withData(downleftTiles, sizeof(downleftTiles))
+           .withSize(SIZE_16_16)
+           .withLocation(marginLeft + margin * 2 + 4, 0)
            .buildPtr();
   a4 = builder.withData(downleftTiles, sizeof(downleftTiles))
-           .withSize(SIZE_32_32)
-           .withAnimated(4, 3)
-           .withLocation(margin * 3, 0)
+           .withSize(SIZE_16_16)
+           .withLocation(marginLeft + margin * 3, 0)
            .buildPtr();
   a5 = builder.withData(downleftTiles, sizeof(downleftTiles))
-           .withSize(SIZE_32_32)
-           .withAnimated(0, 1, 0)
-           .withLocation(margin * 4, 0)
+           .withSize(SIZE_16_16)
+           .withLocation(marginLeft + margin * 4, 0)
            .buildPtr();
 
-  animation = builder.withData(downleftTiles, sizeof(downleftTiles))
+  animation = builder.withData(lamaTiles, sizeof(lamaTiles))
                   .withSize(SIZE_32_32)
                   .withAnimated(6, 2)
                   .withLocation(70, 50)
@@ -83,7 +78,7 @@ void SongScene::tick(u16 keys) {
 
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
-  int beat = (millis * 156) / 60000;  // BPM bpm
+  unsigned int beat = (millis * 156) / 60000;  // BPM bpm
   if (beat != last_beat) {
     int delta = sgn(velocity);
     count += delta;
