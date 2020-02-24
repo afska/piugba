@@ -35,27 +35,27 @@ void SongScene::load() {
   int margin = 32 + 2;
   a1 = builder.withData(downleftTiles, sizeof(downleftTiles))
            .withSize(SIZE_32_32)
-           .withAnimated(6, 3)
+           .withAnimated(0, 1, 0)
            .withLocation(margin * 0, 0)
            .buildPtr();
   a2 = builder.withData(downleftTiles, sizeof(downleftTiles))
            .withSize(SIZE_32_32)
-           .withAnimated(6, 3)
+           .withAnimated(4, 3)
            .withLocation(margin * 1, 0)
            .buildPtr();
   a3 = builder.withData(lamaTiles, sizeof(lamaTiles))
            .withSize(SIZE_32_32)
-           .withAnimated(6, 3)
+           .withAnimated(4, 3)
            .withLocation(margin * 2 + 4, 0)
            .buildPtr();
   a4 = builder.withData(downleftTiles, sizeof(downleftTiles))
            .withSize(SIZE_32_32)
-           .withAnimated(6, 3)
+           .withAnimated(4, 3)
            .withLocation(margin * 3, 0)
            .buildPtr();
   a5 = builder.withData(downleftTiles, sizeof(downleftTiles))
            .withSize(SIZE_32_32)
-           .withAnimated(6, 3)
+           .withAnimated(0, 1, 0)
            .withLocation(margin * 4, 0)
            .buildPtr();
 
@@ -71,6 +71,8 @@ void SongScene::setMsecs(unsigned int _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
+  a1->setBeginFrame(4);
+  a5->setBeginFrame(4);
   a2->flipHorizontally(true);
   a5->flipHorizontally(true);
 

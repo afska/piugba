@@ -172,11 +172,15 @@ endif		# End BUILD switch
 
 .PHONY: clean
 .PHONY: start
+.PHONY: restart
 
 package: $(BUILD)
 	./scripts/package.sh
 
 start: package
+	start $(TARGET).out.gba
+
+restart: clean package
 	start $(TARGET).out.gba
 
 # EOF
