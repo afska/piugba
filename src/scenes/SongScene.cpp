@@ -16,8 +16,10 @@ std::vector<Background*> SongScene::backgrounds() {
 }
 
 std::vector<Sprite*> SongScene::sprites() {
-  return {animation->get(), a1.get(), a2.get(), a3.get(),
-          a4.get(),         a5.get(), aa1.get()};
+  return {
+      animation->get(), aa1.get(), aa2.get(), aa3.get(), aa4.get(), aa5.get(),
+      a1.get(),         a2.get(),  a3.get(),  a4.get(),  a5.get(),
+  };
 }
 
 const u32 BPM = 156;
@@ -82,6 +84,34 @@ void SongScene::load() {
             .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 0,
                           GBA_SCREEN_HEIGHT)
             .buildPtr();
+
+  aa2 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
+            .withSize(SIZE_16_16)
+            .withAnimated(5, 2)
+            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 1,
+                          GBA_SCREEN_HEIGHT - 70)
+            .buildPtr();
+
+  aa3 = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
+            .withSize(SIZE_16_16)
+            .withAnimated(5, 2)
+            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 2,
+                          GBA_SCREEN_HEIGHT - 30)
+            .buildPtr();
+
+  aa4 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
+            .withSize(SIZE_16_16)
+            .withAnimated(5, 2)
+            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 3,
+                          GBA_SCREEN_HEIGHT - 50)
+            .buildPtr();
+
+  aa5 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
+            .withSize(SIZE_16_16)
+            .withAnimated(5, 2)
+            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 4,
+                          GBA_SCREEN_HEIGHT - 30)
+            .buildPtr();
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -91,6 +121,8 @@ void SongScene::setMsecs(u32 _msecs) {
 void SongScene::tick(u16 keys) {
   a4->flipHorizontally(true);
   a5->flipHorizontally(true);
+  aa4->flipHorizontally(true);
+  aa5->flipHorizontally(true);
 
   if (!started && msecs > INITIAL_OFFSET)
     started = true;
@@ -98,7 +130,25 @@ void SongScene::tick(u16 keys) {
   u32 millis = started ? msecs - INITIAL_OFFSET : 0;
 
   aa1->moveTo(aa1->getX(), aa1->getY() - 1);
-  if (aa1->getY() < 0) aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
+  if (aa1->getY() < 0) {
+    aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
+  }
+
+  aa2->moveTo(aa2->getX(), aa2->getY() - 1);
+  if (aa2->getY() < 0)
+    aa2->moveTo(aa2->getX(), GBA_SCREEN_HEIGHT);
+
+  aa3->moveTo(aa3->getX(), aa3->getY() - 1);
+  if (aa3->getY() < 0)
+    aa3->moveTo(aa3->getX(), GBA_SCREEN_HEIGHT);
+
+  aa4->moveTo(aa4->getX(), aa4->getY() - 1);
+  if (aa4->getY() < 0)
+    aa4->moveTo(aa4->getX(), GBA_SCREEN_HEIGHT);
+
+  aa5->moveTo(aa5->getX(), aa5->getY() - 1);
+  if (aa5->getY() < 0)
+    aa5->moveTo(aa5->getX(), GBA_SCREEN_HEIGHT);
 
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
@@ -114,23 +164,23 @@ void SongScene::tick(u16 keys) {
   TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
   TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
-  a1->makeAnimated(0,0,0);
+  a1->makeAnimated(0, 0, 0);
   a1->stopAnimating();
   a1->animateToFrame(keys & KEY_DOWN ? 1 : 0);
 
-  a2->makeAnimated(0,0,0);
+  a2->makeAnimated(0, 0, 0);
   a2->stopAnimating();
   a2->animateToFrame(keys & KEY_L ? 1 : 0);
 
-  a3->makeAnimated(0,0,0);
+  a3->makeAnimated(0, 0, 0);
   a3->stopAnimating();
   a3->animateToFrame((keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
 
-  a4->makeAnimated(0,0,0);
+  a4->makeAnimated(0, 0, 0);
   a4->stopAnimating();
   a4->animateToFrame(keys & KEY_R ? 1 : 0);
 
-  a5->makeAnimated(0,0,0);
+  a5->makeAnimated(0, 0, 0);
   a5->stopAnimating();
   a5->animateToFrame(keys & KEY_A ? 1 : 0);
 }

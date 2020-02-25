@@ -28,6 +28,10 @@ class SongScene : public Scene {
   std::unique_ptr<Sprite> a4;
   std::unique_ptr<Sprite> a5;
   std::unique_ptr<Sprite> aa1;
+  std::unique_ptr<Sprite> aa2;
+  std::unique_ptr<Sprite> aa3;
+  std::unique_ptr<Sprite> aa4;
+  std::unique_ptr<Sprite> aa5;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;
