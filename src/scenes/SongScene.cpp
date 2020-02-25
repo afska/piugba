@@ -2,8 +2,11 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/downleft.h"
-#include "data/lama.h"
+#include "data/arrow_center.h"
+#include "data/arrow_downleft.h"
+#include "data/arrow_downright.h"
+#include "data/arrow_upleft.h"
+#include "data/arrow_upright.h"
 #include "data/shared.h"
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -11,7 +14,7 @@ std::vector<Background*> SongScene::backgrounds() {
 }
 
 std::vector<Sprite*> SongScene::sprites() {
-  return {animation.get(),a1.get(),a2.get(),a3.get(),a4.get(),a5.get()};
+  return {animation.get(), a1.get(), a2.get(), a3.get(), a4.get(), a5.get()};
 }
 
 unsigned int msecs;
@@ -25,39 +28,44 @@ bool to_left = false;
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(sharedPal, sizeof(sharedPal)));
+  backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
+      new BackgroundPaletteManager(sharedPal, sizeof(sharedPal)));
   SpriteBuilder<Sprite> builder;
 
   TextStream::instance().setText("AHI TA VITEH!", 5, 8);
 
   int marginLeft = 4;
   int margin = 16 + 4;
-  a1 = builder.withData(downleftTiles, sizeof(downleftTiles))
+  a1 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginLeft + margin * 0, 0)
+           .withAnimated(5, 2)
+           .withLocation(marginLeft + margin * 0, 4)
            .buildPtr();
-  a2 = builder.withData(downleftTiles, sizeof(downleftTiles))
+  a2 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginLeft + margin * 1, 0)
+           .withAnimated(5, 2)
+           .withLocation(marginLeft + margin * 1, 4)
            .buildPtr();
-  a3 = builder.withData(downleftTiles, sizeof(downleftTiles))
+  a3 = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginLeft + margin * 2 + 4, 0)
+           .withAnimated(5, 2)
+           .withLocation(marginLeft + margin * 2, 4)
            .buildPtr();
-  a4 = builder.withData(downleftTiles, sizeof(downleftTiles))
+  a4 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginLeft + margin * 3, 0)
+           .withAnimated(5, 2)
+           .withLocation(marginLeft + margin * 3, 4)
            .buildPtr();
-  a5 = builder.withData(downleftTiles, sizeof(downleftTiles))
+  a5 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginLeft + margin * 4, 0)
+           .withAnimated(5, 2)
+           .withLocation(marginLeft + margin * 4, 4)
            .buildPtr();
 
-  animation = builder.withData(lamaTiles, sizeof(lamaTiles))
-                  .withSize(SIZE_32_32)
-                  .withAnimated(6, 2)
-                  .withLocation(70, 50)
+  animation = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
+                  .withSize(SIZE_16_16)
+                  .withAnimated(5, 2)
+                  .withLocation(78, 55)
                   .buildPtr();
 }
 
@@ -66,9 +74,7 @@ void SongScene::setMsecs(unsigned int _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
-  a1->setBeginFrame(4);
-  a5->setBeginFrame(4);
-  a2->flipHorizontally(true);
+  a4->flipHorizontally(true);
   a5->flipHorizontally(true);
 
   if (!started && msecs > initial_offset)
