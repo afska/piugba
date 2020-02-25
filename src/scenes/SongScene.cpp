@@ -2,11 +2,12 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
+#include "data/arrow_downleft_placeholder.h"
+#include "data/arrow_upleft_placeholder.h"
+#include "data/arrow_center_placeholder.h"
 #include "data/arrow_center.h"
 #include "data/arrow_downleft.h"
-#include "data/arrow_downright.h"
 #include "data/arrow_upleft.h"
-#include "data/arrow_upright.h"
 #include "data/shared.h"
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -34,32 +35,27 @@ void SongScene::load() {
 
   TextStream::instance().setText("AHI TA VITEH!", 5, 8);
 
-  int marginLeft = 4;
-  int margin = 16 + 4;
-  a1 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
+  int marginBorder = 4;
+  int margin = 16 + 2;
+  a1 = builder.withData(arrow_downleft_placeholderTiles, sizeof(arrow_downleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withAnimated(5, 2)
-           .withLocation(marginLeft + margin * 0, 4)
+           .withLocation(marginBorder + margin * 0, marginBorder)
            .buildPtr();
-  a2 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
+  a2 = builder.withData(arrow_upleft_placeholderTiles, sizeof(arrow_upleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withAnimated(5, 2)
-           .withLocation(marginLeft + margin * 1, 4)
+           .withLocation(marginBorder + margin * 1, marginBorder)
            .buildPtr();
-  a3 = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
+  a3 = builder.withData(arrow_center_placeholderTiles, sizeof(arrow_center_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withAnimated(5, 2)
-           .withLocation(marginLeft + margin * 2, 4)
+           .withLocation(marginBorder + margin * 2, marginBorder)
            .buildPtr();
-  a4 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
+  a4 = builder.withData(arrow_upleft_placeholderTiles, sizeof(arrow_upleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withAnimated(5, 2)
-           .withLocation(marginLeft + margin * 3, 4)
+           .withLocation(marginBorder + margin * 3, marginBorder)
            .buildPtr();
-  a5 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
+  a5 = builder.withData(arrow_downleft_placeholderTiles, sizeof(arrow_downleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withAnimated(5, 2)
-           .withLocation(marginLeft + margin * 4, 4)
+           .withLocation(marginBorder + margin * 4, marginBorder)
            .buildPtr();
 
   animation = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
