@@ -17,7 +17,7 @@ int main() {
 
   player_init();
   player_play("beethoven-virus-full.gsm");
-  player_forever([](unsigned int msecs) {
+  player_forever([](u32 msecs) {
     songScene->setMsecs(msecs);
 
     engine->update();

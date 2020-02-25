@@ -15,16 +15,11 @@ std::vector<Background*> SongScene::backgrounds() {
 }
 
 std::vector<Sprite*> SongScene::sprites() {
-  return {animation.get(), a1.get(), a2.get(), a3.get(), a4.get(), a5.get()};
+  return {animation->get(), a1.get(), a2.get(), a3.get(), a4.get(), a5.get()};
 }
 
-unsigned int msecs;
-bool started = false;
-unsigned int initial_offset = 150;
-unsigned int last_beat = 0;
-int count = -3;
-int velocity = 10;
-bool to_left = false;
+const u32 BPM = 156;
+const u32 INITIAL_OFFSET = 150;
 
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
@@ -58,14 +53,10 @@ void SongScene::load() {
            .withLocation(marginBorder + margin * 4, marginBorder)
            .buildPtr();
 
-  animation = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
-                  .withSize(SIZE_16_16)
-                  .withAnimated(5, 2)
-                  .withLocation(78, 55)
-                  .buildPtr();
+  animation = std::unique_ptr<DanceAnimation> { new DanceAnimation(78, 55) };
 }
 
-void SongScene::setMsecs(unsigned int _msecs) {
+void SongScene::setMsecs(u32 _msecs) {
   msecs = _msecs;
 }
 
@@ -73,27 +64,18 @@ void SongScene::tick(u16 keys) {
   a4->flipHorizontally(true);
   a5->flipHorizontally(true);
 
-  if (!started && msecs > initial_offset)
+  if (!started && msecs > INITIAL_OFFSET)
     started = true;
 
-  unsigned int millis = started ? msecs - initial_offset : 0;
+  u32 millis = started ? msecs - INITIAL_OFFSET : 0;
 
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
-  unsigned int beat = (millis * 156) / 60000;  // BPM bpm
-  if (beat != last_beat) {
-    int delta = sgn(velocity);
-    count += delta;
-    animation->moveTo(animation->getX() + velocity, animation->getY());
-    if (abs(count) >= 4) {
-      velocity = -velocity;
-      to_left = !to_left;
-      animation->flipHorizontally(to_left);
-    }
-  }
+  u32 beat = (millis * BPM) / 60000;  // BPM bpm
+  if (beat != lastBeat) animation->update(beat);
+  lastBeat = beat;
 
-  TextStream::instance().setText(std::to_string(count), 10, 1);
-  last_beat = beat;
+  TextStream::instance().setText(std::to_string(beat), 10, 1);
 
   int is_odd = beat & 1;
   TextStream::instance().setText("----------", !is_odd ? 18 : 17, 1);
