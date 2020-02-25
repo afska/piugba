@@ -20,6 +20,8 @@ std::vector<Sprite*> SongScene::sprites() {
 
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
+const u32 ARROW_CORNER_MARGIN = 4;
+const u32 ARROW_MARGIN = 16 + 2;
 
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
@@ -30,27 +32,25 @@ void SongScene::load() {
 
   TextStream::instance().setText("AHI TA VITEH!", 5, 8);
 
-  int marginBorder = 4;
-  int margin = 16 + 2;
   a1 = builder.withData(arrow_downleft_placeholderTiles, sizeof(arrow_downleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginBorder + margin * 0, marginBorder)
+           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 0, ARROW_CORNER_MARGIN)
            .buildPtr();
   a2 = builder.withData(arrow_upleft_placeholderTiles, sizeof(arrow_upleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginBorder + margin * 1, marginBorder)
+           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 1, ARROW_CORNER_MARGIN)
            .buildPtr();
   a3 = builder.withData(arrow_center_placeholderTiles, sizeof(arrow_center_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginBorder + margin * 2, marginBorder)
+           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 2, ARROW_CORNER_MARGIN)
            .buildPtr();
   a4 = builder.withData(arrow_upleft_placeholderTiles, sizeof(arrow_upleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginBorder + margin * 3, marginBorder)
+           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 3, ARROW_CORNER_MARGIN)
            .buildPtr();
   a5 = builder.withData(arrow_downleft_placeholderTiles, sizeof(arrow_downleft_placeholderTiles))
            .withSize(SIZE_16_16)
-           .withLocation(marginBorder + margin * 4, marginBorder)
+           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 4, ARROW_CORNER_MARGIN)
            .buildPtr();
 
   animation = std::unique_ptr<DanceAnimation> { new DanceAnimation(78, 55) };
