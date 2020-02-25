@@ -97,13 +97,14 @@ void SongScene::tick(u16 keys) {
 
   u32 millis = started ? msecs - INITIAL_OFFSET : 0;
 
+  aa1->moveTo(aa1->getX(), aa1->getY() - 1);
+  if (aa1->getY() < 0) aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
+
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
   if (beat != lastBeat) {
     animation->update(beat);
-    aa1->moveTo(aa1->getX(), aa1->getY() - 6);
-    if (aa1->getY() < 0) aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
   }
   lastBeat = beat;
 
@@ -113,13 +114,23 @@ void SongScene::tick(u16 keys) {
   TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
   TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
-  // if (keys & KEY_LEFT) {
-  //   animation->flipHorizontally(true);
-  // } else if (keys & KEY_RIGHT) {
-  //   animation->flipHorizontally(false);
-  // } else if (keys & KEY_UP) {
-  //   animation->flipVertically(true);
-  // } else if (keys & KEY_DOWN) {
-  //   animation->flipVertically(false);
-  // }
+  a1->makeAnimated(0,0,0);
+  a1->stopAnimating();
+  a1->animateToFrame(keys & KEY_DOWN ? 1 : 0);
+
+  a2->makeAnimated(0,0,0);
+  a2->stopAnimating();
+  a2->animateToFrame(keys & KEY_L ? 1 : 0);
+
+  a3->makeAnimated(0,0,0);
+  a3->stopAnimating();
+  a3->animateToFrame((keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
+
+  a4->makeAnimated(0,0,0);
+  a4->stopAnimating();
+  a4->animateToFrame(keys & KEY_R ? 1 : 0);
+
+  a5->makeAnimated(0,0,0);
+  a5->stopAnimating();
+  a5->animateToFrame(keys & KEY_A ? 1 : 0);
 }
