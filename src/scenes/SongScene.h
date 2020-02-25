@@ -20,6 +20,7 @@ class SongScene : public Scene {
   void tick(u16 keys) override;
 
  private:
+  std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
   std::unique_ptr<Sprite> a1;
   std::unique_ptr<Sprite> a2;

@@ -8,10 +8,11 @@
 #include "data/arrow_downleft_placeholder.h"
 #include "data/arrow_upleft.h"
 #include "data/arrow_upleft_placeholder.h"
+#include "data/background.h"
 #include "data/shared.h"
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {};
+  return {bg.get()};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
@@ -28,10 +29,14 @@ void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
   backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
-      new BackgroundPaletteManager(sharedPal, sizeof(sharedPal)));
+      new BackgroundPaletteManager(bg_palette, sizeof(bg_palette)));
   SpriteBuilder<Sprite> builder;
 
-  TextStream::instance().setText("AHI TA VITEH!", 5, 8);
+  TextStream::instance().setText("AHI TA VITEH!", 5, 10);
+
+  bg = std::unique_ptr<Background>(new Background(
+      1, background_data, sizeof(background_data), map, sizeof(map)));
+  bg.get()->useMapScreenBlock(16);
 
   a1 = builder
            .withData(arrow_downleft_placeholderTiles,
@@ -69,7 +74,7 @@ void SongScene::load() {
                          ARROW_CORNER_MARGIN)
            .buildPtr();
 
-  animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(78, 55)};
+  animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
 
   aa1 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
             .withSize(SIZE_16_16)
@@ -98,14 +103,15 @@ void SongScene::tick(u16 keys) {
   if (beat != lastBeat) {
     animation->update(beat);
     aa1->moveTo(aa1->getX(), aa1->getY() - 6);
+    if (aa1->getY() < 0) aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
   }
   lastBeat = beat;
 
-  TextStream::instance().setText(std::to_string(beat), 10, 1);
+  TextStream::instance().setText(std::to_string(beat), 9, 15);
 
   int is_odd = beat & 1;
-  TextStream::instance().setText("----------", !is_odd ? 18 : 17, 1);
-  TextStream::instance().setText("oooooooooo", is_odd ? 18 : 17, 1);
+  TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
+  TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
   // if (keys & KEY_LEFT) {
   //   animation->flipHorizontally(true);
