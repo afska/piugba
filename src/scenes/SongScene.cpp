@@ -4,19 +4,23 @@
 #include "data/background.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 15;
+const u32 POOL_SIZE = 3;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {bg.get()};
+  return {};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
   // sprites.push_back(animation->get());
-  arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool1->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool2->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool3->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool4->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool5->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
   for (auto& it : arrowHolders)
     sprites.push_back(it->get());
 
@@ -33,10 +37,21 @@ void SongScene::load() {
   setUpBackground();
   setUpArrowHolders();
   // animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+  arrowPool1 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+      POOL_SIZE,
+      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::DOWNLEFT); })};
+  arrowPool2 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+      POOL_SIZE,
+      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPLEFT); })};
+  arrowPool3 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+      POOL_SIZE,
+      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::CENTER); })};
+  arrowPool4 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       POOL_SIZE,
       [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPRIGHT); })};
-  arrowPool->create([](Arrow* it) { it->initialize(); });
+  arrowPool5 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+      POOL_SIZE,
+      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::DOWNRIGHT); })};
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -86,10 +101,34 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  arrowPool->forEachActive([this](Arrow* it) {
+  arrowPool1->forEachActive([this](Arrow* it) {
     ArrowState arrowState = it->update();
     if (arrowState == ArrowState::OUT)
-      arrowPool->discard(it->getId());
+      arrowPool1->discard(it->getId());
+  });
+
+  arrowPool2->forEachActive([this](Arrow* it) {
+    ArrowState arrowState = it->update();
+    if (arrowState == ArrowState::OUT)
+      arrowPool2->discard(it->getId());
+  });
+
+  arrowPool3->forEachActive([this](Arrow* it) {
+    ArrowState arrowState = it->update();
+    if (arrowState == ArrowState::OUT)
+      arrowPool3->discard(it->getId());
+  });
+
+  arrowPool4->forEachActive([this](Arrow* it) {
+    ArrowState arrowState = it->update();
+    if (arrowState == ArrowState::OUT)
+      arrowPool4->discard(it->getId());
+  });
+
+  arrowPool5->forEachActive([this](Arrow* it) {
+    ArrowState arrowState = it->update();
+    if (arrowState == ArrowState::OUT)
+      arrowPool5->discard(it->getId());
   });
 
   // auto it = arrows.begin();
@@ -104,8 +143,24 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
+  if (keys & KEY_DOWN && arrowHolders[0]->get()->getCurrentFrame() == 0) {
+    arrowPool1->create([](Arrow* it) { it->initialize(); });
+  }
+
+  if (keys & KEY_L && arrowHolders[1]->get()->getCurrentFrame() == 0) {
+    arrowPool2->create([](Arrow* it) { it->initialize(); });
+  }
+
   if (keys & KEY_B && arrowHolders[2]->get()->getCurrentFrame() == 0) {
-    arrowPool->create([](Arrow* it) { it->initialize(); });
+    arrowPool3->create([](Arrow* it) { it->initialize(); });
+  }
+
+  if (keys & KEY_R && arrowHolders[3]->get()->getCurrentFrame() == 0) {
+    arrowPool4->create([](Arrow* it) { it->initialize(); });
+  }
+
+  if (keys & KEY_A && arrowHolders[4]->get()->getCurrentFrame() == 0) {
+    arrowPool5->create([](Arrow* it) { it->initialize(); });
   }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);

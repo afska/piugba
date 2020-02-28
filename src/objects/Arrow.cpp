@@ -65,7 +65,7 @@ u32 Arrow::getId() {
 ArrowState Arrow::update() {
   sprite->flipHorizontally(flip);
 
-  sprite->moveTo(sprite->getX(), sprite->getY() - 1);
+  sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 
   return sprite->getY() < ARROW_CORNER_MARGIN ? ArrowState::OUT
                                               : ArrowState::ACTIVE;
