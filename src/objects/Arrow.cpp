@@ -50,8 +50,12 @@ Arrow::Arrow(u32 id, ArrowType type) {
   this->flip = flip;
 }
 
+void Arrow::initialize() {
+  sprite->moveTo(ARROW_CORNER_MARGIN + ARROW_MARGIN * type, GBA_SCREEN_HEIGHT);
+}
+
 void Arrow::discard() {
-  sprite->moveTo(-100, -100);
+  sprite->moveTo(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1);
 }
 
 u32 Arrow::getId() {

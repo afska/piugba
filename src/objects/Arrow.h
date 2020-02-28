@@ -17,6 +17,7 @@ class Arrow : public IPoolable {
   void discard() override;
   u32 getId() override;
 
+  void initialize();
   ArrowState update();
   Sprite* get();
 

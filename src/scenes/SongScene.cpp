@@ -4,7 +4,7 @@
 #include "data/background.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 10;
+const u32 POOL_SIZE = 15;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -15,7 +15,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(animation->get());
+  // sprites.push_back(animation->get());
   arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
   for (auto& it : arrowHolders)
     sprites.push_back(it->get());
@@ -32,13 +32,11 @@ void SongScene::load() {
 
   setUpBackground();
   setUpArrowHolders();
-  animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
+  // animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       POOL_SIZE,
       [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPRIGHT); })};
-  arrowPool->create([](Arrow* it) {
-    it->get()->moveTo(it->get()->getX(), GBA_SCREEN_HEIGHT);
-  });
+  arrowPool->create([](Arrow* it) { it->initialize(); });
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -56,7 +54,7 @@ void SongScene::tick(u16 keys) {
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
   if (beat != lastBeat) {
-    animation->update(beat);
+    // animation->update(beat);
   }
   lastBeat = beat;
 
@@ -106,10 +104,8 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
-  if (keys & KEY_B) {
-    arrowPool->create([](Arrow* it) {
-      it->get()->moveTo(it->get()->getX(), GBA_SCREEN_HEIGHT);
-    });
+  if (keys & KEY_B && arrowHolders[2]->get()->getCurrentFrame() == 0) {
+    arrowPool->create([](Arrow* it) { it->initialize(); });
   }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);
