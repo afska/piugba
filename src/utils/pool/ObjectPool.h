@@ -34,10 +34,16 @@ class ObjectPool {
   }
 
   void discard(u32 index) {
+    ((IPoolable*) objects[index]->object)->discard();
     objects[index]->isActive = false;
   }
 
   void forEach(std::function<void(T*)> func) {
+    for (auto& it : objects)
+      func(it->object);
+  }
+
+  void forEachActive(std::function<void(T*)> func) {
     for (auto& it : objects)
       if (it->isActive)
         func(it->object);

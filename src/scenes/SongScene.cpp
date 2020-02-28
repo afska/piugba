@@ -4,7 +4,7 @@
 #include "data/background.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 100;
+const u32 POOL_SIZE = 10;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -33,9 +33,12 @@ void SongScene::load() {
   setUpBackground();
   setUpArrowHolders();
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{
-      new ObjectPool<Arrow>(POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
-  arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
+      POOL_SIZE,
+      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPRIGHT); })};
+  arrowPool->create([](Arrow* it) {
+    it->get()->moveTo(it->get()->getX(), GBA_SCREEN_HEIGHT);
+  });
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -69,9 +72,12 @@ void SongScene::setUpBackground() {
 void SongScene::setUpArrowHolders() {
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNLEFT)});
-  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
-  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
-  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNRIGHT)});
 }
@@ -82,12 +88,10 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  arrowPool->forEach([this](Arrow* it) {
+  arrowPool->forEachActive([this](Arrow* it) {
     ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT) {
-      it->discard();
+    if (arrowState == ArrowState::OUT)
       arrowPool->discard(it->getId());
-    }
   });
 
   // auto it = arrows.begin();
@@ -102,6 +106,12 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
+  if (keys & KEY_B) {
+    arrowPool->create([](Arrow* it) {
+      it->get()->moveTo(it->get()->getX(), GBA_SCREEN_HEIGHT);
+    });
+  }
+
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[1]->get(), keys & KEY_L ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[2]->get(),

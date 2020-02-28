@@ -10,11 +10,10 @@ enum ArrowState { ACTIVE, OUT };
 const u32 ARROW_CORNER_MARGIN = 4;
 const u32 ARROW_MARGIN = 16 + 2;
 
-class Arrow : public IPoolable<ArrowType> {
+class Arrow : public IPoolable {
  public:
-  Arrow(u32 id);
+  Arrow(u32 id, ArrowType type);
 
-  void initialize(ArrowType type) override;
   void discard() override;
   u32 getId() override;
 

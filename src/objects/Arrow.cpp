@@ -8,11 +8,9 @@
 const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
 
-Arrow::Arrow(u32 id) {
+Arrow::Arrow(u32 id, ArrowType type) {
   this->id = id;
-}
 
-void Arrow::initialize(ArrowType type) {
   const unsigned int* tiles;
   int size;
   bool flip = false;
@@ -65,7 +63,8 @@ ArrowState Arrow::update() {
 
   sprite->moveTo(sprite->getX(), sprite->getY() - 1);
 
-  return sprite->getY() < ARROW_CORNER_MARGIN ? ArrowState::OUT : ArrowState::ACTIVE;
+  return sprite->getY() < ARROW_CORNER_MARGIN ? ArrowState::OUT
+                                              : ArrowState::ACTIVE;
 }
 
 Sprite* Arrow::get() {
