@@ -5,6 +5,7 @@
 #include "data/background.h"
 #include "data/shared.h"
 
+const u32 POOL_SIZE = 3;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -16,12 +17,9 @@ std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
   sprites.push_back(animation->get());
-  for (auto it = arrows.begin(); it != arrows.end(); it++) {
-    sprites.push_back((*it)->get());
-  }
-  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
-    sprites.push_back((*it)->get());
-  }
+  arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  for (auto &it : arrowHolders)
+    sprites.push_back(it->get());
 
   return sprites;
 }
@@ -36,7 +34,9 @@ void SongScene::load() {
   setUpBackground();
   setUpArrowHolders();
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-  arrows.push_back(std::unique_ptr<Arrow>{new Arrow(ArrowType::UPRIGHT)});
+  arrowPool =
+      new ObjectPool<Arrow>(POOL_SIZE, []() -> Arrow* { return new Arrow(); });
+  arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -88,21 +88,25 @@ void SongScene::updateArrowHolders() {
   TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
   TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
-  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
-    (*it)->update();
-  }
+  for (auto &it : arrowHolders)
+    it->update();
 }
 
 void SongScene::updateArrows() {
-  auto it = arrows.begin();
-  while (it != arrows.end()) {
-    ArrowState arrowState = (*it)->update();
-    if (arrowState == ArrowState::OUT) {
-      it = arrows.erase(it);
-      this->engine->updateSpritesInScene();  // TODO: Create sprite pool
-    } else
-      it++;
-  }
+  arrowPool->forEach([](Arrow* it) {
+    ArrowState arrowState = it->update();
+    // TODO: REMOVE IF OUT
+  });
+
+  // auto it = arrows.begin();
+  // while (it != arrows.end()) {
+  //   ArrowState arrowState = (*it)->update();
+  //   if (arrowState == ArrowState::OUT) {
+  //     it = arrows.erase(it);
+  //     engine->updateSpritesInScene();  // TODO: Create sprite pool
+  //   } else
+  //     it++;
+  // }
 }
 
 void SongScene::processKeys(u16 keys) {
@@ -112,4 +116,8 @@ void SongScene::processKeys(u16 keys) {
                          (keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[4]->get(), keys & KEY_A ? 1 : 0);
+}
+
+SongScene::~SongScene() {
+  free(arrowPool);
 }

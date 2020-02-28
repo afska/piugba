@@ -42,12 +42,12 @@ ArrowHolder::ArrowHolder(ArrowType type) {
                .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
                              ARROW_CORNER_MARGIN)
                .buildPtr();
-  this->type = type;
-  this->flip = flip;
+  type = type;
+  flip = flip;
 }
 
 void ArrowHolder::update() {
-  sprite->flipHorizontally(this->flip);
+  sprite->flipHorizontally(flip);
 }
 
 Sprite* ArrowHolder::get() {

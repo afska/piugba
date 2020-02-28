@@ -37,7 +37,8 @@ SRCDIRS		:= src \
 						 src/player \
 						 src/player/core \
 						 src/scenes \
-						 src/utils
+						 src/utils \
+						 src/utils/pool
 DATADIRS	:= data
 INCDIRS		:= src
 LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine

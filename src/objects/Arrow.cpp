@@ -8,7 +8,9 @@
 const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
 
-Arrow::Arrow(ArrowType type) {
+Arrow::Arrow() { }
+
+void Arrow::initialize(ArrowType type) {
   const unsigned int* tiles;
   int size;
   bool flip = false;
@@ -44,12 +46,14 @@ Arrow::Arrow(ArrowType type) {
                .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
                              GBA_SCREEN_HEIGHT)
                .buildPtr();
-  this->type = type;
-  this->flip = flip;
+  type = type;
+  flip = flip;
 }
 
+void Arrow::discard() {}
+
 ArrowState Arrow::update() {
-  sprite->flipHorizontally(this->flip);
+  sprite->flipHorizontally(flip);
 
   sprite->moveTo(sprite->getX(), sprite->getY() - 1);
 

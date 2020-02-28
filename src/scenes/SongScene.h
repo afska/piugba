@@ -9,10 +9,12 @@
 #include "objects/DanceAnimation.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
+#include "utils/pool/ObjectPool.h"
 
 class SongScene : public Scene {
  public:
   SongScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
+  ~SongScene();
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -24,8 +26,8 @@ class SongScene : public Scene {
  private:
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
-  std::vector<std::unique_ptr<Arrow>> arrows;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
+  ObjectPool<Arrow>* arrowPool;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;
