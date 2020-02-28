@@ -25,11 +25,9 @@ std::vector<Sprite*> SongScene::sprites() {
   for (auto it = arrows.begin(); it != arrows.end(); it++) {
     sprites.push_back((*it)->get());
   }
-  sprites.push_back(a1.get());
-  sprites.push_back(a2.get());
-  sprites.push_back(a3.get());
-  sprites.push_back(a4.get());
-  sprites.push_back(a5.get());
+  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
+    sprites.push_back((*it)->get());
+  }
 
   return sprites;
 }
@@ -41,50 +39,9 @@ void SongScene::load() {
       new BackgroundPaletteManager(bg_palette, sizeof(bg_palette)));
   SpriteBuilder<Sprite> builder;
 
-  TextStream::instance().setText("AHI TA VITEH!", 5, 10);
-
-  bg = std::unique_ptr<Background>(new Background(
-      1, background_data, sizeof(background_data), map, sizeof(map)));
-  bg.get()->useMapScreenBlock(16);
-
-  a1 = builder
-           .withData(arrow_downleft_placeholderTiles,
-                     sizeof(arrow_downleft_placeholderTiles))
-           .withSize(SIZE_16_16)
-           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 0,
-                         ARROW_CORNER_MARGIN)
-           .buildPtr();
-  a2 = builder
-           .withData(arrow_upleft_placeholderTiles,
-                     sizeof(arrow_upleft_placeholderTiles))
-           .withSize(SIZE_16_16)
-           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 1,
-                         ARROW_CORNER_MARGIN)
-           .buildPtr();
-  a3 = builder
-           .withData(arrow_center_placeholderTiles,
-                     sizeof(arrow_center_placeholderTiles))
-           .withSize(SIZE_16_16)
-           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 2,
-                         ARROW_CORNER_MARGIN)
-           .buildPtr();
-  a4 = builder
-           .withData(arrow_upleft_placeholderTiles,
-                     sizeof(arrow_upleft_placeholderTiles))
-           .withSize(SIZE_16_16)
-           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 3,
-                         ARROW_CORNER_MARGIN)
-           .buildPtr();
-  a5 = builder
-           .withData(arrow_downleft_placeholderTiles,
-                     sizeof(arrow_downleft_placeholderTiles))
-           .withSize(SIZE_16_16)
-           .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 4,
-                         ARROW_CORNER_MARGIN)
-           .buildPtr();
-
+  setUpBackground();
+  setUpArrowHolders();
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-
   arrows.push_back(std::unique_ptr<Arrow>{new Arrow(ArrowType::UPRIGHT)});
 }
 
@@ -93,9 +50,7 @@ void SongScene::setMsecs(u32 _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
-  a4->flipHorizontally(true);
-  a5->flipHorizontally(true);
-
+  updateArrowHolders();
   updateArrows();
 
   if (!started && msecs > INITIAL_OFFSET)
@@ -117,25 +72,50 @@ void SongScene::tick(u16 keys) {
   TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
   TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
-  a1->makeAnimated(0, 0, 0);
-  a1->stopAnimating();
-  a1->animateToFrame(keys & KEY_DOWN ? 1 : 0);
+  // a1->makeAnimated(0, 0, 0);
+  // a1->stopAnimating();
+  // a1->animateToFrame(keys & KEY_DOWN ? 1 : 0);
 
-  a2->makeAnimated(0, 0, 0);
-  a2->stopAnimating();
-  a2->animateToFrame(keys & KEY_L ? 1 : 0);
+  // a2->makeAnimated(0, 0, 0);
+  // a2->stopAnimating();
+  // a2->animateToFrame(keys & KEY_L ? 1 : 0);
 
-  a3->makeAnimated(0, 0, 0);
-  a3->stopAnimating();
-  a3->animateToFrame((keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
+  // a3->makeAnimated(0, 0, 0);
+  // a3->stopAnimating();
+  // a3->animateToFrame((keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
 
-  a4->makeAnimated(0, 0, 0);
-  a4->stopAnimating();
-  a4->animateToFrame(keys & KEY_R ? 1 : 0);
+  // a4->makeAnimated(0, 0, 0);
+  // a4->stopAnimating();
+  // a4->animateToFrame(keys & KEY_R ? 1 : 0);
 
-  a5->makeAnimated(0, 0, 0);
-  a5->stopAnimating();
-  a5->animateToFrame(keys & KEY_A ? 1 : 0);
+  // a5->makeAnimated(0, 0, 0);
+  // a5->stopAnimating();
+  // a5->animateToFrame(keys & KEY_A ? 1 : 0);
+}
+
+void SongScene::setUpBackground() {
+  bg = std::unique_ptr<Background>(new Background(
+      1, background_data, sizeof(background_data), map, sizeof(map)));
+  bg.get()->useMapScreenBlock(16);
+}
+
+void SongScene::setUpArrowHolders() {
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNLEFT)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
+  arrowHolders.push_back(
+      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNRIGHT)});
+}
+
+void SongScene::updateArrowHolders() {
+  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
+    (*it)->update();
+  }
 }
 
 void SongScene::updateArrows() {
@@ -144,7 +124,7 @@ void SongScene::updateArrows() {
     ArrowState arrowState = (*it)->update();
     if (arrowState == ArrowState::OUT) {
       it = arrows.erase(it);
-      this->engine->updateSpritesInScene();
+      this->engine->updateSpritesInScene(); // TODO: Create sprite pool
     } else
       it++;
   }

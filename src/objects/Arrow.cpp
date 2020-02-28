@@ -14,8 +14,8 @@ Arrow::Arrow(ArrowType type) {
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:
-      tiles = arrow_centerTiles;
-      size = arrow_centerTilesLen;
+      tiles = arrow_downleftTiles;
+      size = arrow_downleftTilesLen;
       break;
     case ArrowType::UPLEFT:
       tiles = arrow_upleftTiles;
@@ -31,8 +31,8 @@ Arrow::Arrow(ArrowType type) {
       flip = true;
       break;
     case ArrowType::DOWNRIGHT:
-      tiles = arrow_centerTiles;
-      size = arrow_centerTilesLen;
+      tiles = arrow_downleftTiles;
+      size = arrow_downleftTilesLen;
       flip = true;
       break;
   }

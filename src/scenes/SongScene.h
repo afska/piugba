@@ -7,7 +7,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include "objects/DanceAnimation.h"
-#include <objects/Arrow.h>
+#include "objects/Arrow.h"
+#include "objects/ArrowHolder.h"
 
 class SongScene : public Scene {
  public:
@@ -24,15 +25,14 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
   std::vector<std::unique_ptr<Arrow>> arrows;
-  std::unique_ptr<Sprite> a1;
-  std::unique_ptr<Sprite> a2;
-  std::unique_ptr<Sprite> a3;
-  std::unique_ptr<Sprite> a4;
-  std::unique_ptr<Sprite> a5;
+  std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;
 
+  void setUpBackground();
+  void setUpArrowHolders();
+  void updateArrowHolders();
   void updateArrows();
 };
 
