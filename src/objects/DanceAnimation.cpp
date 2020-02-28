@@ -29,4 +29,3 @@ void DanceAnimation::update(u32 beat) {
 Sprite* DanceAnimation::get() {
   return sprite.get();
 }
-

@@ -11,21 +11,28 @@
 #include "data/background.h"
 #include "data/shared.h"
 
+const u32 BPM = 156;
+const u32 INITIAL_OFFSET = 150;
+
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
-  return {
-      animation->get(), aa1.get(), aa2.get(), aa3.get(), aa4.get(), aa5.get(),
-      a1.get(),         a2.get(),  a3.get(),  a4.get(),  a5.get(),
-  };
-}
+  std::vector<Sprite*> sprites;
 
-const u32 BPM = 156;
-const u32 INITIAL_OFFSET = 150;
-const u32 ARROW_CORNER_MARGIN = 4;
-const u32 ARROW_MARGIN = 16 + 2;
+  sprites.push_back(animation->get());
+  for (auto it = arrows.begin(); it != arrows.end(); it++) {
+    sprites.push_back((*it)->get());
+  }
+  sprites.push_back(a1.get());
+  sprites.push_back(a2.get());
+  sprites.push_back(a3.get());
+  sprites.push_back(a4.get());
+  sprites.push_back(a5.get());
+
+  return sprites;
+}
 
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
@@ -78,40 +85,7 @@ void SongScene::load() {
 
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
 
-  aa1 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
-            .withSize(SIZE_16_16)
-            .withAnimated(5, 2)
-            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 0,
-                          GBA_SCREEN_HEIGHT)
-            .buildPtr();
-
-  aa2 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
-            .withSize(SIZE_16_16)
-            .withAnimated(5, 2)
-            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 1,
-                          GBA_SCREEN_HEIGHT - 70)
-            .buildPtr();
-
-  aa3 = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
-            .withSize(SIZE_16_16)
-            .withAnimated(5, 2)
-            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 2,
-                          GBA_SCREEN_HEIGHT - 30)
-            .buildPtr();
-
-  aa4 = builder.withData(arrow_upleftTiles, sizeof(arrow_upleftTiles))
-            .withSize(SIZE_16_16)
-            .withAnimated(5, 2)
-            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 3,
-                          GBA_SCREEN_HEIGHT - 50)
-            .buildPtr();
-
-  aa5 = builder.withData(arrow_downleftTiles, sizeof(arrow_downleftTiles))
-            .withSize(SIZE_16_16)
-            .withAnimated(5, 2)
-            .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * 4,
-                          GBA_SCREEN_HEIGHT - 30)
-            .buildPtr();
+  arrows.push_back(std::unique_ptr<Arrow>{new Arrow(ArrowType::UPRIGHT)});
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -121,34 +95,13 @@ void SongScene::setMsecs(u32 _msecs) {
 void SongScene::tick(u16 keys) {
   a4->flipHorizontally(true);
   a5->flipHorizontally(true);
-  aa4->flipHorizontally(true);
-  aa5->flipHorizontally(true);
+
+  updateArrows();
 
   if (!started && msecs > INITIAL_OFFSET)
     started = true;
 
   u32 millis = started ? msecs - INITIAL_OFFSET : 0;
-
-  aa1->moveTo(aa1->getX(), aa1->getY() - 1);
-  if (aa1->getY() < 0) {
-    aa1->moveTo(aa1->getX(), GBA_SCREEN_HEIGHT);
-  }
-
-  aa2->moveTo(aa2->getX(), aa2->getY() - 1);
-  if (aa2->getY() < 0)
-    aa2->moveTo(aa2->getX(), GBA_SCREEN_HEIGHT);
-
-  aa3->moveTo(aa3->getX(), aa3->getY() - 1);
-  if (aa3->getY() < 0)
-    aa3->moveTo(aa3->getX(), GBA_SCREEN_HEIGHT);
-
-  aa4->moveTo(aa4->getX(), aa4->getY() - 1);
-  if (aa4->getY() < 0)
-    aa4->moveTo(aa4->getX(), GBA_SCREEN_HEIGHT);
-
-  aa5->moveTo(aa5->getX(), aa5->getY() - 1);
-  if (aa5->getY() < 0)
-    aa5->moveTo(aa5->getX(), GBA_SCREEN_HEIGHT);
 
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
@@ -183,4 +136,16 @@ void SongScene::tick(u16 keys) {
   a5->makeAnimated(0, 0, 0);
   a5->stopAnimating();
   a5->animateToFrame(keys & KEY_A ? 1 : 0);
+}
+
+void SongScene::updateArrows() {
+  auto it = arrows.begin();
+  while (it != arrows.end()) {
+    ArrowState arrowState = (*it)->update();
+    if (arrowState == ArrowState::OUT) {
+      it = arrows.erase(it);
+      this->engine->updateSpritesInScene();
+    } else
+      it++;
+  }
 }
