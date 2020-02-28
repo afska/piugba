@@ -12,15 +12,17 @@ const u32 ARROW_MARGIN = 16 + 2;
 
 class Arrow : public IPoolable<ArrowType> {
  public:
-  Arrow();
+  Arrow(u32 id);
 
   void initialize(ArrowType type) override;
   void discard() override;
+  u32 getId() override;
 
   ArrowState update();
   Sprite* get();
 
  private:
+  u32 id;
   std::unique_ptr<Sprite> sprite;
   ArrowType type;
   bool flip = false;

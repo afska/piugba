@@ -8,7 +8,9 @@
 const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
 
-Arrow::Arrow() { }
+Arrow::Arrow(u32 id) {
+  this->id = id;
+}
 
 void Arrow::initialize(ArrowType type) {
   const unsigned int* tiles;
@@ -50,7 +52,13 @@ void Arrow::initialize(ArrowType type) {
   this->flip = flip;
 }
 
-void Arrow::discard() {}
+void Arrow::discard() {
+  sprite->moveTo(-100, -100);
+}
+
+u32 Arrow::getId() {
+  return id;
+}
 
 ArrowState Arrow::update() {
   sprite->flipHorizontally(flip);
