@@ -1,10 +1,10 @@
 #include "SongScene.h"
-#include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/background.h"
 #include "data/shared.h"
 
+const u32 POOL_SIZE = 100;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -16,12 +16,9 @@ std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
   sprites.push_back(animation->get());
-  for (auto it = arrows.begin(); it != arrows.end(); it++) {
-    sprites.push_back((*it)->get());
-  }
-  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
-    sprites.push_back((*it)->get());
-  }
+  arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  for (auto& it : arrowHolders)
+    sprites.push_back(it->get());
 
   return sprites;
 }
@@ -36,7 +33,9 @@ void SongScene::load() {
   setUpBackground();
   setUpArrowHolders();
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-  arrows.push_back(std::unique_ptr<Arrow>{new Arrow(ArrowType::UPRIGHT)});
+  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{
+      new ObjectPool<Arrow>(POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
+  arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -58,9 +57,6 @@ void SongScene::tick(u16 keys) {
   }
   lastBeat = beat;
 
-  TextStream::instance().setText(std::to_string(beat), 9, 15);
-  // TODO: REMOVE
-
   processKeys(keys);
 }
 
@@ -73,36 +69,36 @@ void SongScene::setUpBackground() {
 void SongScene::setUpArrowHolders() {
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNRIGHT)});
 }
 
 void SongScene::updateArrowHolders() {
-  int is_odd = lastBeat & 1;
-  TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
-  TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
-
-  for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
-    (*it)->update();
-  }
+  for (auto& it : arrowHolders)
+    it->update();
 }
 
 void SongScene::updateArrows() {
-  auto it = arrows.begin();
-  while (it != arrows.end()) {
-    ArrowState arrowState = (*it)->update();
+  arrowPool->forEach([this](Arrow* it) {
+    ArrowState arrowState = it->update();
     if (arrowState == ArrowState::OUT) {
-      it = arrows.erase(it);
-      this->engine->updateSpritesInScene();  // TODO: Create sprite pool
-    } else
-      it++;
-  }
+      it->discard();
+      arrowPool->discard(it->getId());
+    }
+  });
+
+  // auto it = arrows.begin();
+  // while (it != arrows.end()) {
+  //   ArrowState arrowState = (*it)->update();
+  //   if (arrowState == ArrowState::OUT) {
+  //     it = arrows.erase(it);
+  //     engine->updateSpritesInScene();
+  //   } else
+  //     it++;
+  // }
 }
 
 void SongScene::processKeys(u16 keys) {

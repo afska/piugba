@@ -47,7 +47,7 @@ ArrowHolder::ArrowHolder(ArrowType type) {
 }
 
 void ArrowHolder::update() {
-  sprite->flipHorizontally(this->flip);
+  sprite->flipHorizontally(flip);
 }
 
 Sprite* ArrowHolder::get() {
