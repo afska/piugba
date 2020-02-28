@@ -34,6 +34,7 @@ class SongScene : public Scene {
   void setUpArrowHolders();
   void updateArrowHolders();
   void updateArrows();
+  void processKeys(u16 keys);
 };
 
 #endif  // SONG_SCENE_H

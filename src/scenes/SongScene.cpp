@@ -2,12 +2,6 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/arrow_center.h"
-#include "data/arrow_center_placeholder.h"
-#include "data/arrow_downleft.h"
-#include "data/arrow_downleft_placeholder.h"
-#include "data/arrow_upleft.h"
-#include "data/arrow_upleft_placeholder.h"
 #include "data/background.h"
 #include "data/shared.h"
 
@@ -55,9 +49,7 @@ void SongScene::tick(u16 keys) {
 
   if (!started && msecs > INITIAL_OFFSET)
     started = true;
-
   u32 millis = started ? msecs - INITIAL_OFFSET : 0;
-
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
@@ -67,30 +59,9 @@ void SongScene::tick(u16 keys) {
   lastBeat = beat;
 
   TextStream::instance().setText(std::to_string(beat), 9, 15);
+  // TODO: REMOVE
 
-  int is_odd = beat & 1;
-  TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
-  TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
-
-  // a1->makeAnimated(0, 0, 0);
-  // a1->stopAnimating();
-  // a1->animateToFrame(keys & KEY_DOWN ? 1 : 0);
-
-  // a2->makeAnimated(0, 0, 0);
-  // a2->stopAnimating();
-  // a2->animateToFrame(keys & KEY_L ? 1 : 0);
-
-  // a3->makeAnimated(0, 0, 0);
-  // a3->stopAnimating();
-  // a3->animateToFrame((keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
-
-  // a4->makeAnimated(0, 0, 0);
-  // a4->stopAnimating();
-  // a4->animateToFrame(keys & KEY_R ? 1 : 0);
-
-  // a5->makeAnimated(0, 0, 0);
-  // a5->stopAnimating();
-  // a5->animateToFrame(keys & KEY_A ? 1 : 0);
+  processKeys(keys);
 }
 
 void SongScene::setUpBackground() {
@@ -113,6 +84,10 @@ void SongScene::setUpArrowHolders() {
 }
 
 void SongScene::updateArrowHolders() {
+  int is_odd = lastBeat & 1;
+  TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
+  TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
+
   for (auto it = arrowHolders.begin(); it != arrowHolders.end(); it++) {
     (*it)->update();
   }
@@ -124,8 +99,17 @@ void SongScene::updateArrows() {
     ArrowState arrowState = (*it)->update();
     if (arrowState == ArrowState::OUT) {
       it = arrows.erase(it);
-      this->engine->updateSpritesInScene(); // TODO: Create sprite pool
+      this->engine->updateSpritesInScene();  // TODO: Create sprite pool
     } else
       it++;
   }
+}
+
+void SongScene::processKeys(u16 keys) {
+  SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);
+  SpriteUtils::goToFrame(arrowHolders[1]->get(), keys & KEY_L ? 1 : 0);
+  SpriteUtils::goToFrame(arrowHolders[2]->get(),
+                         (keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
+  SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R ? 1 : 0);
+  SpriteUtils::goToFrame(arrowHolders[4]->get(), keys & KEY_A ? 1 : 0);
 }
