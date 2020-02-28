@@ -46,8 +46,8 @@ void Arrow::initialize(ArrowType type) {
                .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
                              GBA_SCREEN_HEIGHT)
                .buildPtr();
-  type = type;
-  flip = flip;
+  this->type = type;
+  this->flip = flip;
 }
 
 void Arrow::discard() {}

@@ -14,7 +14,6 @@
 class SongScene : public Scene {
  public:
   SongScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
-  ~SongScene();
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -27,7 +26,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  ObjectPool<Arrow>* arrowPool;
+  std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;

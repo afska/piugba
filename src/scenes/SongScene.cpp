@@ -5,7 +5,7 @@
 #include "data/background.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 3;
+const u32 POOL_SIZE = 100;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -18,7 +18,7 @@ std::vector<Sprite*> SongScene::sprites() {
 
   sprites.push_back(animation->get());
   arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
-  for (auto &it : arrowHolders)
+  for (auto& it : arrowHolders)
     sprites.push_back(it->get());
 
   return sprites;
@@ -34,8 +34,8 @@ void SongScene::load() {
   setUpBackground();
   setUpArrowHolders();
   animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
-  arrowPool =
-      new ObjectPool<Arrow>(POOL_SIZE, []() -> Arrow* { return new Arrow(); });
+  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{
+      new ObjectPool<Arrow>(POOL_SIZE, []() -> Arrow* { return new Arrow(); })};
   arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
 }
 
@@ -73,12 +73,9 @@ void SongScene::setUpBackground() {
 void SongScene::setUpArrowHolders() {
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
+  arrowHolders.push_back(std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
   arrowHolders.push_back(
       std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNRIGHT)});
 }
@@ -88,7 +85,7 @@ void SongScene::updateArrowHolders() {
   TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
   TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
 
-  for (auto &it : arrowHolders)
+  for (auto& it : arrowHolders)
     it->update();
 }
 
@@ -116,8 +113,4 @@ void SongScene::processKeys(u16 keys) {
                          (keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R ? 1 : 0);
   SpriteUtils::goToFrame(arrowHolders[4]->get(), keys & KEY_A ? 1 : 0);
-}
-
-SongScene::~SongScene() {
-  free(arrowPool);
 }

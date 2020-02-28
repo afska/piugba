@@ -11,8 +11,6 @@ struct PooledObject {
   bool isActive = false;
 };
 
-// TODO: Use unique_ptr instead of classic pointers
-
 template <class T>
 class ObjectPool {
  public:
@@ -25,11 +23,10 @@ class ObjectPool {
   }
 
   ~ObjectPool() {
-    for (auto it = objects.begin(); it != objects.end(); it++) {
+    for (auto &it : objects) {
       free(it->object);
       free(it);
     }
-    free(objects);
   }
 
   void create(std::function<void(T*)> initialize) {

@@ -42,8 +42,8 @@ ArrowHolder::ArrowHolder(ArrowType type) {
                .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
                              ARROW_CORNER_MARGIN)
                .buildPtr();
-  type = type;
-  flip = flip;
+  this->type = type;
+  this->flip = flip;
 }
 
 void ArrowHolder::update() {
