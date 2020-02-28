@@ -9,7 +9,7 @@ const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {};
+  return {bg.get()};
 }
 
 std::vector<Sprite*> SongScene::sprites() {

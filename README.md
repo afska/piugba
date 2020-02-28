@@ -41,7 +41,7 @@
 
 ```bash
 # use #FF00FF as transparency color
-grit *.png -ftc -pS -gB8 -gT ff00ff -O shared.c
+grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared.c
 ```
 
 ## Versions
