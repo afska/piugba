@@ -1,8 +1,8 @@
 #include "SongScene.h"
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/background.h"
 #include "data/shared.h"
+#include "data/BeethovenVirus.h"
 
 const u32 POOL_SIZE = 5;
 const u32 BPM = 156;
@@ -31,7 +31,7 @@ void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
   backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
-      new BackgroundPaletteManager(bg_palette, sizeof(bg_palette)));
+      new BackgroundPaletteManager(BeethovenVirusPal, sizeof(BeethovenVirusPal)));
   SpriteBuilder<Sprite> builder;
 
   setUpBackground();
@@ -77,9 +77,11 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::setUpBackground() {
+  engine.get()->disableText();
+
   bg = std::unique_ptr<Background>(new Background(
-      1, background_data, sizeof(background_data), map, sizeof(map)));
-  bg.get()->useMapScreenBlock(16);
+      0, BeethovenVirusTiles, sizeof(BeethovenVirusTiles), BeethovenVirusMap, sizeof(BeethovenVirusMap)));
+  bg.get()->useMapScreenBlock(24);
 }
 
 void SongScene::setUpArrowHolders() {
