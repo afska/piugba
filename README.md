@@ -44,7 +44,21 @@
 grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared.c
 ```
 
+### Build music
+
+```bash
+ffmpeg -i file.mp3 -ac 1 -af 'aresample=18157' -strict unofficial -c:a gsm file.gsm
+ffplay -ar 18157 file.gsm
+```
+
+### Build gba-sprite-engine
+
+```bash
+rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../pumpitup-advance/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
+```
+
 ## Versions
 
 - `wgroeneveld/gba-sprite-engine`: Dec 18, 2019
+  *->* Forked at: `rodri042/gba-sprite-engine`
 - `pinobatch/gsmplayer-gba`: Feb 9, 2020

@@ -72,6 +72,11 @@ public:
     explicit Sprite(const void *imageData, int imageSize, int x, int y, SpriteSize size);
     virtual ~Sprite() {}
 
+    const void* getData() { return data; }
+    void setData(void* newData) { data = newData; }
+    u32 getImageSize() { return imageSize; }
+    void setImageSize(u32 size) { imageSize = size; }
+
     void makeAnimated(int beginFrame, int numberOfFrames, int animationDelay);
     void setBeginFrame(int frame) { this->beginFrame = frame; }
     void animateToFrame(int frame) { this->currentFrame = frame; }

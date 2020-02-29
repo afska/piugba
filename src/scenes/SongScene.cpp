@@ -4,7 +4,7 @@
 #include "data/background.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 3;
+const u32 POOL_SIZE = 5;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 

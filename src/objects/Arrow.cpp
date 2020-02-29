@@ -43,9 +43,15 @@ Arrow::Arrow(u32 id, ArrowType type) {
   sprite = builder.withData(tiles, size)
                .withSize(SIZE_16_16)
                .withAnimated(ANIMATION_FRAMES, ANIMATION_DELAY)
-               .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
-                             GBA_SCREEN_HEIGHT)
+               .withLocation(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1)
                .buildPtr();
+
+  if (id > 0) {
+    // reuse previous arrow tiles
+    sprite->setData(NULL);
+    sprite->setImageSize(0);
+  }
+
   this->type = type;
   this->flip = flip;
 }

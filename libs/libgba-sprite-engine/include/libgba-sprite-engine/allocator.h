@@ -34,13 +34,13 @@ private:
     Allocator(Allocator&& other) = delete;
 
     static u32 currentSpriteIndex;
-    static std::vector<AllocatedData> allocatedSprites;
 
 public:
     static void free();
     static u32 getCurrentSpriteIndex() { return currentSpriteIndex; }
     static int getAllocatedSprites() { return allocatedSprites.size(); }
     static AllocatedData& allocateObjectTiles(u32 size);
+    static std::vector<AllocatedData> allocatedSprites;
 };
 
 #endif //GBA_SPRITE_ENGINE_ALLOCATOR_H
