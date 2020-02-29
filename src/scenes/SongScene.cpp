@@ -15,7 +15,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  // sprites.push_back(animation->get());
+  sprites.push_back(animation->get());
   arrowPool1->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
   arrowPool2->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
   arrowPool3->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
@@ -36,7 +36,7 @@ void SongScene::load() {
 
   setUpBackground();
   setUpArrowHolders();
-  // animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(95, 55)};
+  animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
   arrowPool1 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       POOL_SIZE,
       [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::DOWNLEFT); })};
@@ -69,7 +69,7 @@ void SongScene::tick(u16 keys) {
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
   if (beat != lastBeat) {
-    // animation->update(beat);
+    animation->update(beat);
   }
   lastBeat = beat;
 

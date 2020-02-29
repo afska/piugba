@@ -1,5 +1,4 @@
 #include "DanceAnimation.h"
-#include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/arrow_center.h"
 
@@ -19,12 +18,6 @@ void DanceAnimation::update(u32 beat) {
   int delta = sgn(velocity);
   count += delta;
   sprite->moveTo(sprite->getX() + velocity, sprite->getY());
-
-  // TODO: REMOVE
-  int is_odd = beat & 1;
-  TextStream::instance().setText("----------", !is_odd ? 19 : 18, 1);
-  TextStream::instance().setText("oooooooooo", is_odd ? 19 : 18, 1);
-  TextStream::instance().setText(std::to_string(beat), 9, 15);
 
   if (abs(count) >= STEPS) {
     velocity = -velocity;
