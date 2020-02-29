@@ -26,11 +26,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  std::unique_ptr<ObjectPool<Arrow>> arrowPool1;
-  std::unique_ptr<ObjectPool<Arrow>> arrowPool2;
-  std::unique_ptr<ObjectPool<Arrow>> arrowPool3;
-  std::unique_ptr<ObjectPool<Arrow>> arrowPool4;
-  std::unique_ptr<ObjectPool<Arrow>> arrowPool5;
+  std::vector<std::unique_ptr<ObjectPool<Arrow>>> arrowPools;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;

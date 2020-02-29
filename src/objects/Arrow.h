@@ -7,6 +7,7 @@
 
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
+const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_CORNER_MARGIN = 4;
 const u32 ARROW_MARGIN = 16 + 2;
 

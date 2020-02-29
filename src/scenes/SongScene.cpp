@@ -1,8 +1,8 @@
 #include "SongScene.h"
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/shared.h"
 #include "data/BeethovenVirus.h"
+#include "data/shared.h"
 
 const u32 POOL_SIZE = 5;
 const u32 BPM = 156;
@@ -16,11 +16,12 @@ std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
   sprites.push_back(animation->get());
-  arrowPool1->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
-  arrowPool2->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
-  arrowPool3->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
-  arrowPool4->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
-  arrowPool5->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  for (auto& arrowPool : arrowPools) {
+    arrowPool->forEach([&arrowPool, &sprites](Arrow* it) {
+      sprites.push_back(it->get());
+    });
+  }
+
   for (auto& it : arrowHolders)
     sprites.push_back(it->get());
 
@@ -30,28 +31,22 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
-  backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
-      new BackgroundPaletteManager(BeethovenVirusPal, sizeof(BeethovenVirusPal)));
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          BeethovenVirusPal, sizeof(BeethovenVirusPal)));
   SpriteBuilder<Sprite> builder;
 
   setUpBackground();
   setUpArrowHolders();
-  animation = std::unique_ptr<DanceAnimation>{new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
-  arrowPool1 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
-      POOL_SIZE,
-      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::DOWNLEFT); })};
-  arrowPool2 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
-      POOL_SIZE,
-      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPLEFT); })};
-  arrowPool3 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
-      POOL_SIZE,
-      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::CENTER); })};
-  arrowPool4 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
-      POOL_SIZE,
-      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::UPRIGHT); })};
-  arrowPool5 = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
-      POOL_SIZE,
-      [](u32 id) -> Arrow* { return new Arrow(id, ArrowType::DOWNRIGHT); })};
+
+  animation = std::unique_ptr<DanceAnimation>{
+      new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
+
+  for (int i = 0; i < ARROWS_TOTAL; i++)
+    arrowPools.push_back(std::unique_ptr<ObjectPool<Arrow>>{
+        new ObjectPool<Arrow>(POOL_SIZE, [i](u32 id) -> Arrow* {
+          return new Arrow(id, static_cast<ArrowType>(i));
+        })});
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -79,22 +74,16 @@ void SongScene::tick(u16 keys) {
 void SongScene::setUpBackground() {
   engine.get()->disableText();
 
-  bg = std::unique_ptr<Background>(new Background(
-      0, BeethovenVirusTiles, sizeof(BeethovenVirusTiles), BeethovenVirusMap, sizeof(BeethovenVirusMap)));
+  bg = std::unique_ptr<Background>(
+      new Background(0, BeethovenVirusTiles, sizeof(BeethovenVirusTiles),
+                     BeethovenVirusMap, sizeof(BeethovenVirusMap)));
   bg.get()->useMapScreenBlock(24);
 }
 
 void SongScene::setUpArrowHolders() {
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPLEFT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::CENTER)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::UPRIGHT)});
-  arrowHolders.push_back(
-      std::unique_ptr<ArrowHolder>{new ArrowHolder(ArrowType::DOWNRIGHT)});
+  for (int i = 0; i < ARROWS_TOTAL; i++)
+    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
+        new ArrowHolder(static_cast<ArrowType>(i))});
 }
 
 void SongScene::updateArrowHolders() {
@@ -103,66 +92,34 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  arrowPool1->forEachActive([this](Arrow* it) {
-    ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT)
-      arrowPool1->discard(it->getId());
-  });
-
-  arrowPool2->forEachActive([this](Arrow* it) {
-    ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT)
-      arrowPool2->discard(it->getId());
-  });
-
-  arrowPool3->forEachActive([this](Arrow* it) {
-    ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT)
-      arrowPool3->discard(it->getId());
-  });
-
-  arrowPool4->forEachActive([this](Arrow* it) {
-    ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT)
-      arrowPool4->discard(it->getId());
-  });
-
-  arrowPool5->forEachActive([this](Arrow* it) {
-    ArrowState arrowState = it->update();
-    if (arrowState == ArrowState::OUT)
-      arrowPool5->discard(it->getId());
-  });
-
-  // auto it = arrows.begin();
-  // while (it != arrows.end()) {
-  //   ArrowState arrowState = (*it)->update();
-  //   if (arrowState == ArrowState::OUT) {
-  //     it = arrows.erase(it);
-  //     engine->updateSpritesInScene();
-  //   } else
-  //     it++;
-  // }
+  for (auto& arrowPool : arrowPools) {
+    arrowPool->forEachActive([&arrowPool](Arrow* it) {
+      ArrowState arrowState = it->update();
+      if (arrowState == ArrowState::OUT)
+        arrowPool->discard(it->getId());
+    });
+  }
 }
 
 void SongScene::processKeys(u16 keys) {
   if (keys & KEY_DOWN && arrowHolders[0]->get()->getCurrentFrame() == 0) {
-    arrowPool1->create([](Arrow* it) { it->initialize(); });
+    arrowPools[0]->create([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_L && arrowHolders[1]->get()->getCurrentFrame() == 0) {
-    arrowPool2->create([](Arrow* it) { it->initialize(); });
+    arrowPools[1]->create([](Arrow* it) { it->initialize(); });
   }
 
-  if (keys & KEY_B && arrowHolders[2]->get()->getCurrentFrame() == 0) {
-    arrowPool3->create([](Arrow* it) { it->initialize(); });
+  if (((keys & KEY_B) | (keys & KEY_RIGHT)) && arrowHolders[2]->get()->getCurrentFrame() == 0) {
+    arrowPools[2]->create([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_R && arrowHolders[3]->get()->getCurrentFrame() == 0) {
-    arrowPool4->create([](Arrow* it) { it->initialize(); });
+    arrowPools[3]->create([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_A && arrowHolders[4]->get()->getCurrentFrame() == 0) {
-    arrowPool5->create([](Arrow* it) { it->initialize(); });
+    arrowPools[4]->create([](Arrow* it) { it->initialize(); });
   }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);
