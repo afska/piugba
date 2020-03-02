@@ -1,8 +1,8 @@
 #!/bin/bash
 
-FILE_INPUT="pumpitup-advance.gba"
-FILE_OUTPUT="pumpitup-advance.out.gba"
-DATA="gsmsongs.gbfs"
+FILE_INPUT="piugba.gba"
+FILE_OUTPUT="piugba.out.gba"
+DATA="src/data/content/gsmsongs.gbfs"
 REQUIRED_SIZE_KB=768 # needs to be multiple of 256
 
 ROM_SIZE=$(wc -c < $FILE_INPUT)

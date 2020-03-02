@@ -2,4 +2,5 @@ build/
 *.elf
 *.gba
 *.sav
-*.gbfs
+
+src/data/content

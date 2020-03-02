@@ -5,10 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
-                "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
+                "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
+                "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
+                "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
+                "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
             ],
             "defines": [
                 "_DEBUG",
@@ -17,16 +17,16 @@
                 "ARM7",
                 "WIN32"
             ],
-            "compilerPath": "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\bin\\arm-none-eabi-g++.exe",
+            "compilerPath": "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\devkitARM\\bin\\arm-none-eabi-g++.exe",
             "intelliSenseMode": "gcc-x64",
             "browse": {
                 "path": [
                     "${workspaceFolder}/src/**",
                     "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
-                    "D:\\work\\gba\\projects\\pumpitup-advance\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
+                    "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
+                    "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
+                    "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",
+                    "D:\\work\\gba\\projects\\piugba\\..\\..\\tools\\devkitPro\\libgba\\include\\**"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

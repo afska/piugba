@@ -1,7 +1,7 @@
 #include "SongScene.h"
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/BeethovenVirus.h"
+#include "data/content/BeethovenVirus.h"
 #include "data/shared.h"
 
 const u32 POOL_SIZE = 5;

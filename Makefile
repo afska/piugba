@@ -4,8 +4,8 @@
 .SUFFIXES:
 
 # --- Paths ---
-export BASE_DIR = D:\work\gba\projects\pumpitup-advance
-export DEVKIT_PRO = D:\work\gba\projects\pumpitup-advance\..\..\tools\devkitPro
+export BASE_DIR = D:\work\gba\projects\piugba
+export DEVKIT_PRO = D:\work\gba\projects\piugba\..\..\tools\devkitPro
 
 export TONCLIB := $(DEVKIT_PRO)/libtonc
 include  $(BASE_DIR)/tonc_rules
@@ -33,6 +33,7 @@ LIBS		:= -ltonc -lgba -lgba-sprite-engine
 BUILD		:= build
 SRCDIRS		:= src \
 						 src/data \
+						 src/data/content \
 						 src/objects \
 						 src/player \
 						 src/player/core \

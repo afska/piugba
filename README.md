@@ -1,4 +1,6 @@
-# pumpitup-advance
+# piugba
+
+This is a version of PIU for the GBA. It's under development, so don't try to compile it yet: it won't work since the necessary images and audio files (`src/data/content`) are not here. A ROM creator will be provided in the final release.
 
 ## Install
 
@@ -9,7 +11,7 @@
 		* `tools`
 			* `devKitPro`
 		* `projects`
-			* `pumpitup-advance`
+			* `piugba`
 - Configure environment variables:
 	* `PATH` (add `{DEVKITARM}/bin` and `{DEVKITPRO}/tools/bin`)
 	* (it's better to `export PATH=$PATH:{NEW_PATHS}` in `~/.bash_profile`)
@@ -54,7 +56,7 @@ ffplay -ar 18157 file.gsm
 ### Build gba-sprite-engine
 
 ```bash
-rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../pumpitup-advance/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
+rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
 ## Versions
