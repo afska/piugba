@@ -59,8 +59,8 @@ ffplay -ar 18157 file.gsm
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
-## Versions
+## Open-source projects involved
 
-- `wgroeneveld/gba-sprite-engine`: Dec 18, 2019
-  *->* Forked at: `rodri042/gba-sprite-engine`
-- `pinobatch/gsmplayer-gba`: Feb 9, 2020
+- [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019
+  * Forked at: [rodri042/gba-sprite-engine](https://github.com/rodri042/gba-sprite-engine)
+- [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
