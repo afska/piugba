@@ -68,6 +68,7 @@ protected:
     void setAttributesBasedOnSize(SpriteSize size);
 
 public:
+    bool enabled = true;
     explicit Sprite(const Sprite& other);
     explicit Sprite(const void *imageData, int imageSize, int x, int y, SpriteSize size);
     virtual ~Sprite() {}

@@ -5,6 +5,8 @@
 #include "data/spr_arrow_downleft.h"
 #include "data/spr_arrow_upleft.h"
 
+const u32 HIDDEN_WIDTH = GBA_SCREEN_WIDTH - 1;
+const u32 HIDDEN_HEIGHT = GBA_SCREEN_HEIGHT - 1;
 const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
 
@@ -41,8 +43,9 @@ Arrow::Arrow(u32 id, ArrowType type) {
   sprite = builder.withData(tiles, size)
                .withSize(SIZE_16_16)
                .withAnimated(ANIMATION_FRAMES, ANIMATION_DELAY)
-               .withLocation(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1)
+               .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
+  sprite->enabled = false;
 
   if (id > 0) {
     // reuse previous arrow tiles
@@ -57,11 +60,13 @@ Arrow::Arrow(u32 id, ArrowType type) {
 void Arrow::initialize() {
   sprite->moveTo(ARROW_CORNER_MARGIN + ARROW_MARGIN * type, GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(0, ANIMATION_FRAMES, ANIMATION_DELAY);
+  sprite->enabled = true;
 }
 
 void Arrow::discard() {
-  sprite->moveTo(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1);
+  sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
   sprite->stopAnimating();
+  sprite->enabled = false;
 }
 
 ArrowState Arrow::update() {
