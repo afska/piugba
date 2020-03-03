@@ -35,15 +35,18 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 
 ### Commands
 
-- `make clean`
-- `make build`
-- `make start`
+- `make clean`: Cleans build artifacts
+- `make assets`: Compiles the needed assets (required for compiling)
+- `make build`: Compiles and generates a `.gba` file without data
+- `make package`: Compiles everything and appends the GBFS file to the ROM
+- `make start`: Starts the compiled ROM
+- `make restart`: Recompiles and starts the ROM
 
 ### Build images
 
 ```bash
 # use #FF00FF as transparency color
-grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared.c
+grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
 ```
 
 ### Build music

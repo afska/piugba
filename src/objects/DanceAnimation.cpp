@@ -1,6 +1,6 @@
 #include "DanceAnimation.h"
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/spr_arrow_center.h"
+#include "data/content/compiled/spr_arrow_center.h"
 
 const u32 STEPS = 4;
 

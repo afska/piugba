@@ -1,9 +1,9 @@
 #include "Arrow.h"
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/spr_arrow_center.h"
-#include "data/spr_arrow_downleft.h"
-#include "data/spr_arrow_upleft.h"
+#include "data/content/compiled/spr_arrow_center.h"
+#include "data/content/compiled/spr_arrow_downleft.h"
+#include "data/content/compiled/spr_arrow_upleft.h"
 
 const u32 HIDDEN_WIDTH = GBA_SCREEN_WIDTH - 1;
 const u32 HIDDEN_HEIGHT = GBA_SCREEN_HEIGHT - 1;

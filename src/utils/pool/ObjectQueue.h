@@ -73,7 +73,7 @@ class ObjectQueue {
 
  private:
   std::vector<PooledObject<T>*> objects;
-  u32 capacity;
+  int capacity;
   int front = 0;
   int rear = -1;
   u32 count = 0;

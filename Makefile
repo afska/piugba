@@ -32,15 +32,15 @@ LIBS		:= -ltonc -lgba -lgba-sprite-engine
 
 BUILD		:= build
 SRCDIRS		:= src \
-						 src/data \
 						 src/data/content \
+						 src/data/content/compiled \
 						 src/objects \
 						 src/player \
 						 src/player/core \
 						 src/scenes \
 						 src/utils \
 						 src/utils/pool
-DATADIRS	:= data
+DATADIRS	:=
 INCDIRS		:= src
 LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine
 
@@ -159,7 +159,7 @@ clean:
 
 else		# If we're here, we should be in the BUILD dir
 
-DEPENDS	:=	$(OFILES:.o=.d)
+DEPENDS	:= $(OFILES:.o=.d)
 
 # --- Main targets ----
 
@@ -176,6 +176,9 @@ endif		# End BUILD switch
 .PHONY: clean
 .PHONY: start
 .PHONY: restart
+
+assets:
+	./scripts/assets.sh
 
 package: $(BUILD)
 	./scripts/package.sh

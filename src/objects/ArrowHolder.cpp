@@ -1,11 +1,11 @@
 #include "ArrowHolder.h"
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/spr_arrow_center.h"
-#include "data/spr_arrow_center_placeholder.h"
-#include "data/spr_arrow_downleft.h"
-#include "data/spr_arrow_downleft_placeholder.h"
-#include "data/spr_arrow_upleft.h"
-#include "data/spr_arrow_upleft_placeholder.h"
+#include "data/content/compiled/spr_arrow_center.h"
+#include "data/content/compiled/spr_arrow_center_placeholder.h"
+#include "data/content/compiled/spr_arrow_downleft.h"
+#include "data/content/compiled/spr_arrow_downleft_placeholder.h"
+#include "data/content/compiled/spr_arrow_upleft.h"
+#include "data/content/compiled/spr_arrow_upleft_placeholder.h"
 
 ArrowHolder::ArrowHolder(ArrowType type) {
   const unsigned int* tiles;

@@ -2,7 +2,7 @@
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
-#include "data/shared.h"
+#include "data/content/compiled/shared_palette.h"
 
 const u32 ARROW_QUEUE_SIZE = 5;
 const u32 BPM = 156;
@@ -35,7 +35,7 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(sharedPal, sizeof(sharedPal)));
+      new ForegroundPaletteManager(shared_palettePal, sizeof(shared_palettePal)));
   backgroundPalette =
       std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
           BeethovenVirusPal, sizeof(BeethovenVirusPal)));
