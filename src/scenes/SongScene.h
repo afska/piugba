@@ -12,7 +12,7 @@
 #include "objects/ComboDigit.h"
 #include "objects/DanceAnimation.h"
 #include "objects/Feedback.h"
-#include "utils/pool/ObjectPool.h"
+#include "utils/pool/ObjectQueue.h"
 
 class SongScene : public Scene {
  public:
@@ -29,7 +29,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  std::vector<std::unique_ptr<ObjectPool<Arrow>>> arrowPools;
+  std::vector<std::unique_ptr<ObjectQueue<Arrow>>> arrowQueues;
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
   std::unique_ptr<ComboDigit> digit1;

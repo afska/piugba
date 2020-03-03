@@ -4,7 +4,7 @@
 #include "data/content/BeethovenVirus.h"
 #include "data/shared.h"
 
-const u32 POOL_SIZE = 5;
+const u32 ARROW_QUEUE_SIZE = 5;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
 
@@ -22,9 +22,9 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(digit3->get());
   sprites.push_back(animation->get());
 
-  for (auto& arrowPool : arrowPools) {
-    arrowPool->forEach(
-        [&arrowPool, &sprites](Arrow* it) { sprites.push_back(it->get()); });
+  for (auto& arrowQueue : arrowQueues) {
+    arrowQueue->forEach(
+        [&arrowQueue, &sprites](Arrow* it) { sprites.push_back(it->get()); });
   }
 
   for (auto& it : arrowHolders)
@@ -48,8 +48,8 @@ void SongScene::load() {
       new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    arrowPools.push_back(std::unique_ptr<ObjectPool<Arrow>>{
-        new ObjectPool<Arrow>(POOL_SIZE, [i](u32 id) -> Arrow* {
+    arrowQueues.push_back(std::unique_ptr<ObjectQueue<Arrow>>{
+        new ObjectQueue<Arrow>(ARROW_QUEUE_SIZE, [i](u32 id) -> Arrow* {
           return new Arrow(id, static_cast<ArrowType>(i));
         })});
 
@@ -104,35 +104,35 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  for (auto& arrowPool : arrowPools) {
-    arrowPool->forEachActive([&arrowPool](Arrow* it) {
+  for (auto& arrowQueue : arrowQueues) {
+    arrowQueue->forEachActive([&arrowQueue](Arrow* it) {
       ArrowState arrowState = it->update();
       if (arrowState == ArrowState::OUT)
-        arrowPool->discard(it->getId());
+        arrowQueue->pop();
     });
   }
 }
 
 void SongScene::processKeys(u16 keys) {
   if (keys & KEY_DOWN && arrowHolders[0]->get()->getCurrentFrame() == 0) {
-    arrowPools[0]->create([](Arrow* it) { it->initialize(); });
+    arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_L && arrowHolders[1]->get()->getCurrentFrame() == 0) {
-    arrowPools[1]->create([](Arrow* it) { it->initialize(); });
+    arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
       arrowHolders[2]->get()->getCurrentFrame() == 0) {
-    arrowPools[2]->create([](Arrow* it) { it->initialize(); });
+    arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_R && arrowHolders[3]->get()->getCurrentFrame() == 0) {
-    arrowPools[3]->create([](Arrow* it) { it->initialize(); });
+    arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_A && arrowHolders[4]->get()->getCurrentFrame() == 0) {
-    arrowPools[4]->create([](Arrow* it) { it->initialize(); });
+    arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
   }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);

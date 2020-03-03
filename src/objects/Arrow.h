@@ -16,14 +16,12 @@ class Arrow : public IPoolable {
   Arrow(u32 id, ArrowType type);
 
   void discard() override;
-  u32 getId() override;
 
   void initialize();
   ArrowState update();
   Sprite* get();
 
  private:
-  u32 id;
   std::unique_ptr<Sprite> sprite;
   ArrowType type;
   bool flip = false;

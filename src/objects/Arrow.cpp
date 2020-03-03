@@ -9,8 +9,6 @@ const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
 
 Arrow::Arrow(u32 id, ArrowType type) {
-  this->id = id;
-
   const unsigned int* tiles;
   int size;
   bool flip = false;
@@ -62,10 +60,6 @@ void Arrow::initialize() {
 
 void Arrow::discard() {
   sprite->moveTo(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1);
-}
-
-u32 Arrow::getId() {
-  return id;
 }
 
 ArrowState Arrow::update() {

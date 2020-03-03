@@ -4,7 +4,6 @@
 class IPoolable {
   public:
     virtual void discard();
-    virtual u32 getId();
 };
 
 #endif  // I_POOLABLE_H

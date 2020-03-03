@@ -1,6 +1,7 @@
 #ifndef SPRITE_POOL_H
 #define SPRITE_POOL_H
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <functional>
 #include "IPoolable.h"
@@ -13,29 +14,43 @@ struct PooledObject {
 };
 
 template <class T>
-class ObjectPool {
+class ObjectQueue {
  public:
-  ObjectPool(u32 size, std::function<T*(u32)> create) {
-    for (u32 i = 0; i < size; i++) {
+  ObjectQueue(u32 capacity, std::function<T*(u32)> create) {
+    for (u32 i = 0; i < capacity; i++) {
       PooledObject<T>* pooledObject = new PooledObject<T>;
       pooledObject->object = create(i);
       objects.push_back(pooledObject);
     }
+
+    this->capacity = capacity;
   }
 
-  void create(std::function<void(T*)> initialize) {
-    for (auto& it : objects) {
-      if (!it->isActive) {
-        it->isActive = true;
-        initialize(it->object);
-        return;
-      }
-    }
+  void push(std::function<void(T*)> initialize) {
+    if (count == capacity)
+      return;
+
+    rear++;
+    if (rear == capacity)
+      rear = 0;
+    auto element = objects[rear];
+    element->isActive = true;
+    initialize(element->object);
+    count++;
   }
 
-  void discard(u32 index) {
-    ((IPoolable*) objects[index]->object)->discard();
-    objects[index]->isActive = false;
+  void pop() {
+    if (count == 0)
+      return;
+
+    auto element = objects[front];
+    auto object = element->object;
+    element->isActive = false;
+    ((IPoolable*)object)->discard();
+    front++;
+    if (front == capacity)
+      front = 0;
+    count--;
   }
 
   void forEach(std::function<void(T*)> func) {
@@ -49,7 +64,7 @@ class ObjectPool {
         func(it->object);
   }
 
-  ~ObjectPool() {
+  ~ObjectQueue() {
     for (auto& it : objects) {
       free(it->object);
       free(it);
@@ -58,6 +73,10 @@ class ObjectPool {
 
  private:
   std::vector<PooledObject<T>*> objects;
+  u32 capacity;
+  int front = 0;
+  int rear = -1;
+  u32 count = 0;
 };
 
 #endif  // SPRITE_POOL_H
