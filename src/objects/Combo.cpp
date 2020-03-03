@@ -7,7 +7,7 @@ Combo::Combo() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_comboTiles, sizeof(spr_comboTiles))
                .withSize(SIZE_64_32)
-               .withLocation(16, 80)
+               .withLocation(16, 70)
                .buildPtr();
 }
 

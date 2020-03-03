@@ -11,7 +11,7 @@ ComboDigit::ComboDigit(u32 value, u32 position) {
           .withData(value == 0 ? spr_number0Tiles : spr_number1Tiles,
                     sizeof(value == 0 ? spr_number0Tiles : spr_number1Tiles))
           .withSize(SIZE_32_16)
-          .withLocation(7 + position * 24, 100)
+          .withLocation(7 + position * 24, 90)
           .buildPtr();
 }
 

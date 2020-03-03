@@ -9,7 +9,7 @@ Feedback::Feedback(FeedbackType type) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
                .withSize(SIZE_64_32)
-               .withLocation(16, 70)
+               .withLocation(16, 60)
                .buildPtr();
 }
 
