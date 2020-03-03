@@ -56,10 +56,12 @@ Arrow::Arrow(u32 id, ArrowType type) {
 
 void Arrow::initialize() {
   sprite->moveTo(ARROW_CORNER_MARGIN + ARROW_MARGIN * type, GBA_SCREEN_HEIGHT);
+  sprite->makeAnimated(0, ANIMATION_FRAMES, ANIMATION_DELAY);
 }
 
 void Arrow::discard() {
   sprite->moveTo(GBA_SCREEN_WIDTH - 1, GBA_SCREEN_HEIGHT - 1);
+  sprite->stopAnimating();
 }
 
 ArrowState Arrow::update() {
