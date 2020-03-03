@@ -1,0 +1,29 @@
+ARROWS:
+	Original Size:
+	52x52
+
+	Scaled Size:
+	16x16
+
+	Scale Method:
+	None -> Remark black borders
+
+	Background:
+	#FF00FF
+
+	Palette:
+	-> 35 colors
+
+	Light Placeholders:
+	-> Hue/Saturation -> Lightness=100 & Saturation=100
+
+===
+
+combo:
+-> 10 colors
+
+feedback:
+-> 60 colors
+
+numbers:
+-> 30 colors

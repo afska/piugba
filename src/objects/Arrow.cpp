@@ -48,7 +48,7 @@ Arrow::Arrow(u32 id, ArrowType type) {
   sprite->enabled = false;
 
   if (id > 0) {
-    // reuse previous arrow tiles
+    // reuse previous tiles
     sprite->setData(NULL);
     sprite->setImageSize(0);
   }
@@ -64,18 +64,22 @@ void Arrow::initialize() {
 }
 
 void Arrow::discard() {
-  sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
-  sprite->stopAnimating();
   sprite->enabled = false;
 }
 
 ArrowState Arrow::update() {
-  sprite->flipHorizontally(flip);
+  if (sprite->getX() == HIDDEN_WIDTH)
+    return ArrowState::OUT;  // async discard
 
+  sprite->flipHorizontally(flip);
   sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 
-  return sprite->getY() < ARROW_CORNER_MARGIN ? ArrowState::OUT
-                                              : ArrowState::ACTIVE;
+  if (sprite->getY() < ARROW_CORNER_MARGIN) {
+    sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
+    sprite->stopAnimating();
+  }
+
+  return ArrowState::ACTIVE;
 }
 
 Sprite* Arrow::get() {

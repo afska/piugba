@@ -2,7 +2,6 @@
 #define ARROW_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
-#include "utils/SpriteUtils.h";
 #include "utils/pool/IPoolable.h";
 
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };

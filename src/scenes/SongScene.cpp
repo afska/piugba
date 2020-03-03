@@ -3,6 +3,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
 #include "data/content/compiled/shared_palette.h"
+#include "utils/SpriteUtils.h";
 
 const u32 ARROW_QUEUE_SIZE = 5;
 const u32 BPM = 156;
@@ -34,8 +35,9 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
-  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(shared_palettePal, sizeof(shared_palettePal)));
+  foregroundPalette =
+      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
+          shared_palettePal, sizeof(shared_palettePal)));
   backgroundPalette =
       std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
           BeethovenVirusPal, sizeof(BeethovenVirusPal)));
@@ -58,7 +60,7 @@ void SongScene::load() {
   combo = std::unique_ptr<Combo>{new Combo()};
 
   digit1 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 0)};
-  digit2 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 1)};
+  digit2 = std::unique_ptr<ComboDigit>{new ComboDigit(4, 1)};
   digit3 = std::unique_ptr<ComboDigit>{new ComboDigit(1, 2)};
 }
 
