@@ -1,12 +1,12 @@
 
-//{{BLOCK(shared)
+//{{BLOCK(spr_number0)
 
 //======================================================================
 //
-//	shared, 16x16@8, 
+//	spr_number0, 32x16@8, 
 //	Transparent color : FF,00,FF
-//	+ palette 159 entries, not compressed
-//	Total size: 318 = 318
+//	+ 8 tiles not compressed
+//	Total size: 512 = 512
 //
 //	Time-stamp: 2020-03-02, 23:02:09
 //	Exported by Cearn's GBA Image Transmogrifier, v0.8.15
@@ -14,12 +14,12 @@
 //
 //======================================================================
 
-#ifndef GRIT_SHARED_H
-#define GRIT_SHARED_H
+#ifndef GRIT_SPR_NUMBER0_H
+#define GRIT_SPR_NUMBER0_H
 
-#define sharedPalLen 318
-extern const unsigned short sharedPal[160];
+#define spr_number0TilesLen 512
+extern const unsigned int spr_number0Tiles[128];
 
-#endif // GRIT_SHARED_H
+#endif // GRIT_SPR_NUMBER0_H
 
-//}}BLOCK(shared)
+//}}BLOCK(spr_number0)

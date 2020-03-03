@@ -1,12 +1,12 @@
 
-//{{BLOCK(shared)
+//{{BLOCK(spr_feedback)
 
 //======================================================================
 //
-//	shared, 16x16@8, 
+//	spr_feedback, 64x32@8, 
 //	Transparent color : FF,00,FF
-//	+ palette 159 entries, not compressed
-//	Total size: 318 = 318
+//	+ 32 tiles not compressed
+//	Total size: 2048 = 2048
 //
 //	Time-stamp: 2020-03-02, 23:02:09
 //	Exported by Cearn's GBA Image Transmogrifier, v0.8.15
@@ -14,12 +14,12 @@
 //
 //======================================================================
 
-#ifndef GRIT_SHARED_H
-#define GRIT_SHARED_H
+#ifndef GRIT_SPR_FEEDBACK_H
+#define GRIT_SPR_FEEDBACK_H
 
-#define sharedPalLen 318
-extern const unsigned short sharedPal[160];
+#define spr_feedbackTilesLen 2048
+extern const unsigned int spr_feedbackTiles[512];
 
-#endif // GRIT_SHARED_H
+#endif // GRIT_SPR_FEEDBACK_H
 
-//}}BLOCK(shared)
+//}}BLOCK(spr_feedback)

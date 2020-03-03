@@ -15,3 +15,14 @@ Palette:
 
 Light Placeholders:
 -> Hue/Saturation -> Lightness=100 & Saturation=100
+
+===
+
+combo:
+-> 8 colors
+
+perfect/great/bad/good/miss:
+-> 16 colors
+
+numbers:
+-> 16 colors

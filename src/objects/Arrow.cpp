@@ -1,9 +1,9 @@
 #include "Arrow.h"
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/arrow_center.h"
-#include "data/arrow_downleft.h"
-#include "data/arrow_upleft.h"
+#include "data/spr_arrow_center.h"
+#include "data/spr_arrow_downleft.h"
+#include "data/spr_arrow_upleft.h"
 
 const int ANIMATION_FRAMES = 5;
 const int ANIMATION_DELAY = 2;
@@ -16,25 +16,25 @@ Arrow::Arrow(u32 id, ArrowType type) {
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:
-      tiles = arrow_downleftTiles;
-      size = arrow_downleftTilesLen;
+      tiles = spr_arrow_downleftTiles;
+      size = spr_arrow_downleftTilesLen;
       break;
     case ArrowType::UPLEFT:
-      tiles = arrow_upleftTiles;
-      size = arrow_upleftTilesLen;
+      tiles = spr_arrow_upleftTiles;
+      size = spr_arrow_upleftTilesLen;
       break;
     case ArrowType::CENTER:
-      tiles = arrow_centerTiles;
-      size = arrow_centerTilesLen;
+      tiles = spr_arrow_centerTiles;
+      size = spr_arrow_centerTilesLen;
       break;
     case ArrowType::UPRIGHT:
-      tiles = arrow_upleftTiles;
-      size = arrow_upleftTilesLen;
+      tiles = spr_arrow_upleftTiles;
+      size = spr_arrow_upleftTilesLen;
       flip = true;
       break;
     case ArrowType::DOWNRIGHT:
-      tiles = arrow_downleftTiles;
-      size = arrow_downleftTilesLen;
+      tiles = spr_arrow_downleftTiles;
+      size = spr_arrow_downleftTilesLen;
       flip = true;
       break;
   }

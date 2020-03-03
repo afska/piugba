@@ -1,11 +1,11 @@
 #include "ArrowHolder.h"
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/arrow_center.h"
-#include "data/arrow_center_placeholder.h"
-#include "data/arrow_downleft.h"
-#include "data/arrow_downleft_placeholder.h"
-#include "data/arrow_upleft.h"
-#include "data/arrow_upleft_placeholder.h"
+#include "data/spr_arrow_center.h"
+#include "data/spr_arrow_center_placeholder.h"
+#include "data/spr_arrow_downleft.h"
+#include "data/spr_arrow_downleft_placeholder.h"
+#include "data/spr_arrow_upleft.h"
+#include "data/spr_arrow_upleft_placeholder.h"
 
 ArrowHolder::ArrowHolder(ArrowType type) {
   const unsigned int* tiles;
@@ -13,25 +13,25 @@ ArrowHolder::ArrowHolder(ArrowType type) {
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:
-      tiles = arrow_downleft_placeholderTiles;
-      size = arrow_downleft_placeholderTilesLen;
+      tiles = spr_arrow_downleft_placeholderTiles;
+      size = spr_arrow_downleft_placeholderTilesLen;
       break;
     case ArrowType::UPLEFT:
-      tiles = arrow_upleft_placeholderTiles;
-      size = arrow_upleft_placeholderTilesLen;
+      tiles = spr_arrow_upleft_placeholderTiles;
+      size = spr_arrow_upleft_placeholderTilesLen;
       break;
     case ArrowType::CENTER:
-      tiles = arrow_center_placeholderTiles;
-      size = arrow_center_placeholderTilesLen;
+      tiles = spr_arrow_center_placeholderTiles;
+      size = spr_arrow_center_placeholderTilesLen;
       break;
     case ArrowType::UPRIGHT:
-      tiles = arrow_upleft_placeholderTiles;
-      size = arrow_upleft_placeholderTilesLen;
+      tiles = spr_arrow_upleft_placeholderTiles;
+      size = spr_arrow_upleft_placeholderTilesLen;
       flip = true;
       break;
     case ArrowType::DOWNRIGHT:
-      tiles = arrow_downleft_placeholderTiles;
-      size = arrow_downleft_placeholderTilesLen;
+      tiles = spr_arrow_downleft_placeholderTiles;
+      size = spr_arrow_downleft_placeholderTilesLen;
       flip = true;
       break;
   }

@@ -1,13 +1,13 @@
 #include "DanceAnimation.h"
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "data/arrow_center.h"
+#include "data/spr_arrow_center.h"
 
 const u32 STEPS = 4;
 
 DanceAnimation::DanceAnimation(u32 x, u32 y) {
   SpriteBuilder<Sprite> builder;
 
-  sprite = builder.withData(arrow_centerTiles, sizeof(arrow_centerTiles))
+  sprite = builder.withData(spr_arrow_centerTiles, sizeof(spr_arrow_centerTiles))
                .withSize(SIZE_16_16)
                .withAnimated(5, 2)
                .withLocation(x, y)

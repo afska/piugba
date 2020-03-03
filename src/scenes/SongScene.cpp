@@ -15,11 +15,16 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
+  sprites.push_back(feedback->get());
+  sprites.push_back(combo->get());
+  sprites.push_back(digit1->get());
+  sprites.push_back(digit2->get());
+  sprites.push_back(digit3->get());
   sprites.push_back(animation->get());
+
   for (auto& arrowPool : arrowPools) {
-    arrowPool->forEach([&arrowPool, &sprites](Arrow* it) {
-      sprites.push_back(it->get());
-    });
+    arrowPool->forEach(
+        [&arrowPool, &sprites](Arrow* it) { sprites.push_back(it->get()); });
   }
 
   for (auto& it : arrowHolders)
@@ -42,11 +47,19 @@ void SongScene::load() {
   animation = std::unique_ptr<DanceAnimation>{
       new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
 
-  for (int i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
     arrowPools.push_back(std::unique_ptr<ObjectPool<Arrow>>{
         new ObjectPool<Arrow>(POOL_SIZE, [i](u32 id) -> Arrow* {
           return new Arrow(id, static_cast<ArrowType>(i));
         })});
+
+  feedback = std::unique_ptr<Feedback>{new Feedback(FeedbackType::PERFECT)};
+
+  combo = std::unique_ptr<Combo>{new Combo()};
+
+  digit1 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 0)};
+  digit2 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 1)};
+  digit3 = std::unique_ptr<ComboDigit>{new ComboDigit(1, 2)};
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -63,9 +76,8 @@ void SongScene::tick(u16 keys) {
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
-  if (beat != lastBeat) {
+  if (beat != lastBeat)
     animation->update(beat);
-  }
   lastBeat = beat;
 
   processKeys(keys);
@@ -81,7 +93,7 @@ void SongScene::setUpBackground() {
 }
 
 void SongScene::setUpArrowHolders() {
-  for (int i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
         new ArrowHolder(static_cast<ArrowType>(i))});
 }
@@ -110,7 +122,8 @@ void SongScene::processKeys(u16 keys) {
     arrowPools[1]->create([](Arrow* it) { it->initialize(); });
   }
 
-  if (((keys & KEY_B) | (keys & KEY_RIGHT)) && arrowHolders[2]->get()->getCurrentFrame() == 0) {
+  if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
+      arrowHolders[2]->get()->getCurrentFrame() == 0) {
     arrowPools[2]->create([](Arrow* it) { it->initialize(); });
   }
 
