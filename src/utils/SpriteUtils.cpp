@@ -5,3 +5,8 @@ void SpriteUtils::goToFrame(Sprite* sprite, int frame) {
   sprite->stopAnimating();
   sprite->animateToFrame(frame);
 }
+
+void SpriteUtils::reuseTiles(Sprite* sprite) {
+  sprite->setData(NULL);
+  sprite->setImageSize(0);
+}

@@ -4,6 +4,7 @@
 #include "data/content/compiled/spr_arrow_center.h"
 #include "data/content/compiled/spr_arrow_downleft.h"
 #include "data/content/compiled/spr_arrow_upleft.h"
+#include "utils/SpriteUtils.h";
 
 const u32 HIDDEN_WIDTH = GBA_SCREEN_WIDTH - 1;
 const u32 HIDDEN_HEIGHT = GBA_SCREEN_HEIGHT - 1;
@@ -47,11 +48,8 @@ Arrow::Arrow(u32 id, ArrowType type) {
                .buildPtr();
   sprite->enabled = false;
 
-  if (id > 0 || flip) {
-    // reuse previous tiles
-    sprite->setData(NULL);
-    sprite->setImageSize(0);
-  }
+  if (id > 0 || flip)
+    SpriteUtils::reuseTiles(sprite.get());
 
   this->type = type;
   this->flip = flip;

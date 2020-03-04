@@ -6,6 +6,7 @@
 class SpriteUtils {
  public:
   static void goToFrame(Sprite* sprite, int frame);
+  static void reuseTiles(Sprite* sprite);
 };
 
 #endif  // SPRITE_UTILS_H

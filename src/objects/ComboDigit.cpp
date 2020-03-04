@@ -12,11 +12,8 @@ ComboDigit::ComboDigit(u32 value, u32 position) {
                .buildPtr();
   SpriteUtils::goToFrame(sprite.get(), value);
 
-  if (position > 0) {
-    // reuse previous tiles
-    sprite->setData(NULL);
-    sprite->setImageSize(0);
-  }
+  if (position > 0)
+    SpriteUtils::reuseTiles(sprite.get());
 }
 
 Sprite* ComboDigit::get() {
