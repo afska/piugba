@@ -24,15 +24,18 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(digit1->get());
   sprites.push_back(digit2->get());
   sprites.push_back(digit3->get());
-  sprites.push_back(animation->get());
 
+  u32 i = 0;
   for (auto& arrowQueue : arrowQueues) {
     arrowQueue->forEach(
         [&arrowQueue, &sprites](Arrow* it) { sprites.push_back(it->get()); });
-  }
+    sprites.push_back(arrowHolders[i]->get());
 
-  for (auto& it : arrowHolders)
-    sprites.push_back(it->get());
+    if (i == ARROW_QUEUE_ORDER.size() - 1)
+      sprites.push_back(animation->get());
+
+    i++;
+  }
 
   return sprites;
 }
@@ -47,21 +50,13 @@ void SongScene::load() {
   SpriteBuilder<Sprite> builder;
 
   setUpBackground();
-  setUpArrowHolders();
+  setUpArrows();
 
   animation = std::unique_ptr<DanceAnimation>{
       new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
 
-  for (auto& arrowType : ARROW_QUEUE_ORDER)
-    arrowQueues.push_back(std::unique_ptr<ObjectQueue<Arrow>>{
-        new ObjectQueue<Arrow>(ARROW_POOL_SIZE, [&arrowType](u32 id) -> Arrow* {
-          return new Arrow(id, arrowType);
-        })});
-
   feedback = std::unique_ptr<Feedback>{new Feedback(FeedbackType::PERFECT)};
-
   combo = std::unique_ptr<Combo>{new Combo()};
-
   digit1 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 0)};
   digit2 = std::unique_ptr<ComboDigit>{new ComboDigit(4, 1)};
   digit3 = std::unique_ptr<ComboDigit>{new ComboDigit(1, 2)};
@@ -72,9 +67,6 @@ void SongScene::setMsecs(u32 _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
-  updateArrowHolders();
-  updateArrows();
-
   if (!started && msecs > INITIAL_OFFSET)
     started = true;
   u32 millis = started ? msecs - INITIAL_OFFSET : 0;
@@ -85,6 +77,8 @@ void SongScene::tick(u16 keys) {
     animation->update(beat);
   lastBeat = beat;
 
+  updateArrowHolders();
+  updateArrows(millis);
   processKeys(keys);
 }
 
@@ -97,10 +91,15 @@ void SongScene::setUpBackground() {
   bg.get()->useMapScreenBlock(24);
 }
 
-void SongScene::setUpArrowHolders() {
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowType>(i))});
+void SongScene::setUpArrows() {
+  for (auto& arrowType : ARROW_QUEUE_ORDER) {
+    arrowQueues.push_back(std::unique_ptr<ObjectQueue<Arrow>>{
+        new ObjectQueue<Arrow>(ARROW_POOL_SIZE, [&arrowType](u32 id) -> Arrow* {
+          return new Arrow(id, arrowType);
+        })});
+    arrowHolders.push_back(
+        std::unique_ptr<ArrowHolder>{new ArrowHolder(arrowType)});
+  }
 }
 
 void SongScene::updateArrowHolders() {
@@ -108,10 +107,10 @@ void SongScene::updateArrowHolders() {
     it->update();
 }
 
-void SongScene::updateArrows() {
+void SongScene::updateArrows(u32 millis) {
   for (auto& arrowQueue : arrowQueues) {
-    arrowQueue->forEachActive([&arrowQueue](Arrow* it) {
-      ArrowState arrowState = it->update();
+    arrowQueue->forEachActive([&arrowQueue, &millis](Arrow* it) {
+      ArrowState arrowState = it->update(millis);
       if (arrowState == ArrowState::OUT)
         arrowQueue->pop();
     });
@@ -119,31 +118,45 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
-  if (keys & KEY_DOWN && arrowHolders[0]->get()->getCurrentFrame() == 0) {
+  if ((keys & KEY_DOWN) &&
+      arrowHolders[0]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
     arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
   }
 
-  if (keys & KEY_L && arrowHolders[1]->get()->getCurrentFrame() == 0) {
+  if ((keys & KEY_L) &&
+      arrowHolders[2]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
     arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
   }
 
-  if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
-      arrowHolders[2]->get()->getCurrentFrame() == 0) {
+  if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
+      arrowHolders[4]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
     arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
   }
 
-  if (keys & KEY_R && arrowHolders[3]->get()->getCurrentFrame() == 0) {
+  if ((keys & KEY_R) &&
+      arrowHolders[3]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
     arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
   }
 
-  if (keys & KEY_A && arrowHolders[4]->get()->getCurrentFrame() == 0) {
+  if ((keys & KEY_A) &&
+      arrowHolders[1]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
     arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
   }
 
-  SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);
-  SpriteUtils::goToFrame(arrowHolders[1]->get(), keys & KEY_L ? 1 : 0);
-  SpriteUtils::goToFrame(arrowHolders[2]->get(),
-                         (keys & KEY_B) | (keys & KEY_RIGHT) ? 1 : 0);
-  SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R ? 1 : 0);
-  SpriteUtils::goToFrame(arrowHolders[4]->get(), keys & KEY_A ? 1 : 0);
+  SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
+                                                     ? ARROW_HOLDER_PRESSED
+                                                     : ARROW_HOLDER_IDLE);
+  SpriteUtils::goToFrame(arrowHolders[2]->get(), keys & KEY_L
+                                                     ? ARROW_HOLDER_PRESSED
+                                                     : ARROW_HOLDER_IDLE);
+  SpriteUtils::goToFrame(arrowHolders[4]->get(),
+                         (keys & KEY_B) | (keys & KEY_RIGHT)
+                             ? ARROW_HOLDER_PRESSED
+                             : ARROW_HOLDER_IDLE);
+  SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R
+                                                     ? ARROW_HOLDER_PRESSED
+                                                     : ARROW_HOLDER_IDLE);
+  SpriteUtils::goToFrame(arrowHolders[1]->get(), keys & KEY_A
+                                                     ? ARROW_HOLDER_PRESSED
+                                                     : ARROW_HOLDER_IDLE);
 }

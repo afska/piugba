@@ -8,12 +8,14 @@
 
 const u32 HIDDEN_WIDTH = GBA_SCREEN_WIDTH - 1;
 const u32 HIDDEN_HEIGHT = GBA_SCREEN_HEIGHT - 1;
-const int ANIMATION_FRAMES = 5;
-const int ANIMATION_DELAY = 2;
+const u32 ANIMATION_FRAMES = 5;
+const u32 ANIMATION_DELAY = 2;
+const u32 END_ANIMATION_START = 5;
+const u32 END_ANIMATION_DELAY_MS = 40;
 
 Arrow::Arrow(u32 id, ArrowType type) {
   const unsigned int* tiles;
-  int size;
+  u32 size;
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:
@@ -59,23 +61,39 @@ void Arrow::initialize() {
   sprite->moveTo(ARROW_CORNER_MARGIN + ARROW_MARGIN * type, GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(0, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
+  endTime = 0;
 }
 
 void Arrow::discard() {
   sprite->enabled = false;
 }
 
-ArrowState Arrow::update() {
-  if (sprite->getX() == HIDDEN_WIDTH)
-    return ArrowState::OUT;  // async discard
-
+ArrowState Arrow::update(u32 millis) {
   sprite->flipHorizontally(flip);
-  sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 
-  if (sprite->getY() < ARROW_CORNER_MARGIN) {
-    sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
-    sprite->stopAnimating();
-  }
+  if (sprite->getX() == HIDDEN_WIDTH)
+    return ArrowState::OUT;
+
+  if (endTime > 0) {
+    u32 diff = abs(millis - endTime);
+
+    if (diff > END_ANIMATION_DELAY_MS) {
+      if (diff < END_ANIMATION_DELAY_MS * 2)
+        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 1);
+      else if (diff < END_ANIMATION_DELAY_MS * 3)
+        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 2);
+      else if (diff < END_ANIMATION_DELAY_MS * 4)
+        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 3);
+      else {
+        sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
+        sprite->stopAnimating();
+      }
+    }
+  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
+    endTime = millis;
+    SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START);
+  } else
+    sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 
   return ArrowState::ACTIVE;
 }

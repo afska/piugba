@@ -4,6 +4,9 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include "Arrow.h"
 
+const u32 ARROW_HOLDER_IDLE = 5;
+const u32 ARROW_HOLDER_PRESSED = 6;
+
 class ArrowHolder {
  public:
   ArrowHolder(ArrowType type);

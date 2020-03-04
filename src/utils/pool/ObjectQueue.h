@@ -76,7 +76,7 @@ class ObjectQueue {
   int capacity;
   int front = 0;
   int rear = -1;
-  u32 count = 0;
+  int count = 0;
 };
 
 #endif  // SPRITE_POOL_H

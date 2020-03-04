@@ -40,9 +40,9 @@ class SongScene : public Scene {
   u32 lastBeat = 0;
 
   void setUpBackground();
-  void setUpArrowHolders();
+  void setUpArrows();
   void updateArrowHolders();
-  void updateArrows();
+  void updateArrows(u32 millis);
   void processKeys(u16 keys);
 };
 
