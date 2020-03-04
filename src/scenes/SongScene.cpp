@@ -5,9 +5,12 @@
 #include "data/content/compiled/shared_palette.h"
 #include "utils/SpriteUtils.h";
 
-const u32 ARROW_QUEUE_SIZE = 5;
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
+const u32 ARROW_POOL_SIZE = 5;
+const std::vector<ArrowType> ARROW_QUEUE_ORDER{
+    ArrowType::DOWNLEFT, ArrowType::DOWNRIGHT, ArrowType::UPLEFT,
+    ArrowType::UPRIGHT, ArrowType::CENTER};
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
@@ -49,10 +52,10 @@ void SongScene::load() {
   animation = std::unique_ptr<DanceAnimation>{
       new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+  for (auto& arrowType : ARROW_QUEUE_ORDER)
     arrowQueues.push_back(std::unique_ptr<ObjectQueue<Arrow>>{
-        new ObjectQueue<Arrow>(ARROW_QUEUE_SIZE, [i](u32 id) -> Arrow* {
-          return new Arrow(id, static_cast<ArrowType>(i));
+        new ObjectQueue<Arrow>(ARROW_POOL_SIZE, [&arrowType](u32 id) -> Arrow* {
+          return new Arrow(id, arrowType);
         })});
 
   feedback = std::unique_ptr<Feedback>{new Feedback(FeedbackType::PERFECT)};
@@ -121,12 +124,12 @@ void SongScene::processKeys(u16 keys) {
   }
 
   if (keys & KEY_L && arrowHolders[1]->get()->getCurrentFrame() == 0) {
-    arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
+    arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
       arrowHolders[2]->get()->getCurrentFrame() == 0) {
-    arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
+    arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
   }
 
   if (keys & KEY_R && arrowHolders[3]->get()->getCurrentFrame() == 0) {
@@ -134,7 +137,7 @@ void SongScene::processKeys(u16 keys) {
   }
 
   if (keys & KEY_A && arrowHolders[4]->get()->getCurrentFrame() == 0) {
-    arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
+    arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
   }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN ? 1 : 0);

@@ -47,7 +47,7 @@ Arrow::Arrow(u32 id, ArrowType type) {
                .buildPtr();
   sprite->enabled = false;
 
-  if (id > 0) {
+  if (id > 0 || flip) {
     // reuse previous tiles
     sprite->setData(NULL);
     sprite->setImageSize(0);

@@ -1,4 +1,4 @@
-ARROWS:
+arrows:
 	Original Size:
 	52x52
 
@@ -15,7 +15,7 @@ ARROWS:
 	-> 35 colors
 
 	Light Placeholders:
-	-> Hue/Saturation -> Lightness=100 & Saturation=100
+	-> Colors -> Hue-Saturation... -> Lightness=100 & Saturation=100
 
 ===
 
@@ -27,3 +27,8 @@ feedback:
 
 numbers:
 -> 30 colors
+	red:
+		-> Colors -> Color  Balance... ->
+			Cyan/Red = 100
+			Magenta/Green = -100
+			Yellow/Blue = -100
