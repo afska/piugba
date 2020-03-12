@@ -2,10 +2,10 @@
 #define ARROW_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+#include "score/Feedback.h"
 #include "utils/pool/IPoolable.h";
 
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
-enum ArrowState { ACTIVE, OUT };
 const u32 ARROW_CORNER_MARGIN = 4;
 const u32 ARROW_MARGIN = 16 + 2;
 
@@ -16,7 +16,7 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize();
-  ArrowState update(u32 millis);
+  FeedbackType update(u32 millis, bool isPressed);
   Sprite* get();
 
  private:
@@ -24,6 +24,7 @@ class Arrow : public IPoolable {
   ArrowType type;
   bool flip = false;
   u32 endTime = 0;
+  FeedbackType feedbackType = FeedbackType::ACTIVE;
 };
 
 #endif  // ARROW_H

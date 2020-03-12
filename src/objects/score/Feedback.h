@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS };
+enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, ACTIVE };
 
 class Feedback {
  public:

@@ -62,17 +62,18 @@ void Arrow::initialize() {
   sprite->makeAnimated(0, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
   endTime = 0;
+  feedbackType = FeedbackType::ACTIVE;
 }
 
 void Arrow::discard() {
   sprite->enabled = false;
 }
 
-ArrowState Arrow::update(u32 millis) {
+FeedbackType Arrow::update(u32 millis, bool isPressed) {
   sprite->flipHorizontally(flip);
 
   if (sprite->getX() == HIDDEN_WIDTH)
-    return ArrowState::OUT;
+    return feedbackType;
 
   if (endTime > 0) {
     u32 diff = abs(millis - endTime);
@@ -91,11 +92,15 @@ ArrowState Arrow::update(u32 millis) {
     }
   } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
     endTime = millis;
+    feedbackType =
+        isPressed
+            ? FeedbackType::PERFECT
+            : FeedbackType::MISS;  // TODO: It's really more complex than this
     SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START);
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 
-  return ArrowState::ACTIVE;
+  return FeedbackType::ACTIVE;
 }
 
 Sprite* Arrow::get() {

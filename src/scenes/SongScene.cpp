@@ -105,12 +105,18 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows(u32 millis) {
+  int i = 0;
   for (auto& arrowQueue : arrowQueues) {
-    arrowQueue->forEachActive([&arrowQueue, &millis](Arrow* it) {
-      ArrowState arrowState = it->update(millis);
-      if (arrowState == ArrowState::OUT)
+    arrowQueue->forEachActive([this, &arrowQueue, &millis, &i](Arrow* it) {
+      bool isPressed = arrowHolders[i]->get()->getCurrentFrame() != ARROW_HOLDER_IDLE; // TODO: Extract logic
+      FeedbackType feedbackType = it->update(millis, isPressed);
+      if (feedbackType != FeedbackType::ACTIVE) {
+        score->update(feedbackType);
         arrowQueue->pop();
+      }
     });
+
+    i++;
   }
 }
 

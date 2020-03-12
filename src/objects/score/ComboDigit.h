@@ -5,7 +5,7 @@
 
 class ComboDigit {
  public:
-  ComboDigit(u32 value, u32 position);
+  ComboDigit(u32 value, u32 position); // TODO: Move value to initialize
 
   Sprite* get();
 

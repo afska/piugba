@@ -11,6 +11,8 @@ class Score {
  public:
   Score();
 
+  void update(FeedbackType feedbackType);
+  void tick();
   void render(std::vector<Sprite*>* sprites);
 
  private:
