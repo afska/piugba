@@ -1,4 +1,5 @@
 #include "SongScene.h"
+#include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
@@ -19,11 +20,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(feedback->get());
-  sprites.push_back(combo->get());
-  sprites.push_back(digit1->get());
-  sprites.push_back(digit2->get());
-  sprites.push_back(digit3->get());
+  score->render(&sprites);
 
   u32 i = 0;
   for (auto& arrowQueue : arrowQueues) {
@@ -55,11 +52,7 @@ void SongScene::load() {
   animation = std::unique_ptr<DanceAnimation>{
       new DanceAnimation(GBA_SCREEN_WIDTH * 1.75 / 3, ARROW_CORNER_MARGIN)};
 
-  feedback = std::unique_ptr<Feedback>{new Feedback(FeedbackType::PERFECT)};
-  combo = std::unique_ptr<Combo>{new Combo()};
-  digit1 = std::unique_ptr<ComboDigit>{new ComboDigit(0, 0)};
-  digit2 = std::unique_ptr<ComboDigit>{new ComboDigit(4, 1)};
-  digit3 = std::unique_ptr<ComboDigit>{new ComboDigit(1, 2)};
+  score = std::unique_ptr<Score>{new Score()};
 }
 
 void SongScene::setMsecs(u32 _msecs) {
@@ -73,8 +66,12 @@ void SongScene::tick(u16 keys) {
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
-  if (beat != lastBeat)
+  if (beat != lastBeat) {
+    int arrowIndex = qran_range(0, 4);
+    arrowQueues[arrowIndex]->push([](Arrow* it) { it->initialize(); });
+
     animation->update(beat);
+  }
   lastBeat = beat;
 
   updateArrowHolders();
@@ -118,30 +115,30 @@ void SongScene::updateArrows(u32 millis) {
 }
 
 void SongScene::processKeys(u16 keys) {
-  if ((keys & KEY_DOWN) &&
-      arrowHolders[0]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-    arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
-  }
+  // if ((keys & KEY_DOWN) &&
+  //     arrowHolders[0]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+  //   arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
+  // }
 
-  if ((keys & KEY_L) &&
-      arrowHolders[2]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-    arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
-  }
+  // if ((keys & KEY_L) &&
+  //     arrowHolders[2]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+  //   arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
+  // }
 
-  if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
-      arrowHolders[4]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-    arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
-  }
+  // if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
+  //     arrowHolders[4]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+  //   arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
+  // }
 
-  if ((keys & KEY_R) &&
-      arrowHolders[3]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-    arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
-  }
+  // if ((keys & KEY_R) &&
+  //     arrowHolders[3]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+  //   arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
+  // }
 
-  if ((keys & KEY_A) &&
-      arrowHolders[1]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-    arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
-  }
+  // if ((keys & KEY_A) &&
+  //     arrowHolders[1]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+  //   arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
+  // }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
                                                      ? ARROW_HOLDER_PRESSED

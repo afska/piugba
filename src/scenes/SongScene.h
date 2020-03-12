@@ -8,10 +8,8 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
-#include "objects/Combo.h"
-#include "objects/ComboDigit.h"
 #include "objects/DanceAnimation.h"
-#include "objects/Feedback.h"
+#include "objects/score/Score.h"
 #include "utils/pool/ObjectQueue.h"
 
 class SongScene : public Scene {
@@ -28,13 +26,9 @@ class SongScene : public Scene {
  private:
   std::unique_ptr<Background> bg;
   std::unique_ptr<DanceAnimation> animation;
+  std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<ObjectQueue<Arrow>>> arrowQueues;
-  std::unique_ptr<Feedback> feedback;
-  std::unique_ptr<Combo> combo;
-  std::unique_ptr<ComboDigit> digit1;
-  std::unique_ptr<ComboDigit> digit2;
-  std::unique_ptr<ComboDigit> digit3;
   u32 msecs = 0;
   bool started = false;
   u32 lastBeat = 0;
