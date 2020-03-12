@@ -3,7 +3,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
 #include "data/content/compiled/shared_palette.h"
-#include "utils/SpriteUtils.h";
+#include "utils/SpriteUtils.h"
 
 const u32 BPM = 156;
 const u32 INITIAL_OFFSET = 150;
