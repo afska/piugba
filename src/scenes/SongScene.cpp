@@ -74,6 +74,7 @@ void SongScene::tick(u16 keys) {
   }
   lastBeat = beat;
 
+  score->tick();
   updateArrowHolders();
   updateArrows(millis);
   processKeys(keys);

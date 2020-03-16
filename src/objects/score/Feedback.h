@@ -7,8 +7,9 @@ enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, ACTIVE };
 
 class Feedback {
  public:
-  Feedback(FeedbackType type); // TODO: MOVE TO INITIALIZE
+  Feedback();
 
+  void set(FeedbackType type);
   Sprite* get();
 
  private:
