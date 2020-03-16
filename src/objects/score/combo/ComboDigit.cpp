@@ -20,11 +20,11 @@ ComboDigit::ComboDigit(u32 position) {
                .buildPtr();
 
   if (position > 0)
-    SpriteUtils::reuseTiles(sprite.get());
+    SPRITE_reuseTiles(sprite.get());
 }
 
 void ComboDigit::set(u32 value) {
-  SpriteUtils::goToFrame(sprite.get(), value);
+  SPRITE_goToFrame(sprite.get(), value);
 }
 
 Sprite* ComboDigit::get() {

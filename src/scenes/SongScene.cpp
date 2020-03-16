@@ -148,20 +148,20 @@ void SongScene::processKeys(u16 keys) {
     arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
   }
 
-  SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
+  SPRITE_goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
                                                      ? ARROW_HOLDER_PRESSED
                                                      : ARROW_HOLDER_IDLE);
-  SpriteUtils::goToFrame(arrowHolders[2]->get(), keys & KEY_L
+  SPRITE_goToFrame(arrowHolders[2]->get(), keys & KEY_L
                                                      ? ARROW_HOLDER_PRESSED
                                                      : ARROW_HOLDER_IDLE);
-  SpriteUtils::goToFrame(arrowHolders[4]->get(),
+  SPRITE_goToFrame(arrowHolders[4]->get(),
                          (keys & KEY_B) | (keys & KEY_RIGHT)
                              ? ARROW_HOLDER_PRESSED
                              : ARROW_HOLDER_IDLE);
-  SpriteUtils::goToFrame(arrowHolders[3]->get(), keys & KEY_R
+  SPRITE_goToFrame(arrowHolders[3]->get(), keys & KEY_R
                                                      ? ARROW_HOLDER_PRESSED
                                                      : ARROW_HOLDER_IDLE);
-  SpriteUtils::goToFrame(arrowHolders[1]->get(), keys & KEY_A
+  SPRITE_goToFrame(arrowHolders[1]->get(), keys & KEY_A
                                                      ? ARROW_HOLDER_PRESSED
                                                      : ARROW_HOLDER_IDLE);
 }

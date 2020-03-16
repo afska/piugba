@@ -13,7 +13,7 @@ void AnimatedIndicator::show() {
 }
 
 void AnimatedIndicator::tick() {
-  if (SpriteUtils::isHidden(get()))
+  if (SPRITE_isHidden(get()))
     return;
 
   currentFrame++;
@@ -33,6 +33,6 @@ void AnimatedIndicator::tick() {
                   animationPositionY - animationDirection * animationFrame);
 
     if (animationFrame == ANIMATION_FRAMES)
-      SpriteUtils::hide(get());
+      SPRITE_hide(get());
   }
 }

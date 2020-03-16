@@ -13,7 +13,7 @@ DanceAnimation::DanceAnimation(u32 x, u32 y) {
                .withLocation(x, y)
                .buildPtr();
 
-  SpriteUtils::reuseTiles(sprite.get());
+  SPRITE_reuseTiles(sprite.get());
 }
 
 void DanceAnimation::update(u32 beat) {

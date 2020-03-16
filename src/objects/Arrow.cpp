@@ -49,7 +49,7 @@ Arrow::Arrow(u32 id, ArrowType type) {
   sprite->enabled = false;
 
   if (id > 0 || flip)
-    SpriteUtils::reuseTiles(sprite.get());
+    SPRITE_reuseTiles(sprite.get());
 
   this->type = type;
   this->flip = flip;
@@ -70,7 +70,7 @@ void Arrow::discard() {
 FeedbackType Arrow::tick(u32 millis, bool isPressed) {
   sprite->flipHorizontally(flip);
 
-  if (SpriteUtils::isHidden(sprite.get()))
+  if (SPRITE_isHidden(sprite.get()))
     return feedbackType;
 
   if (endTime > 0) {
@@ -78,20 +78,20 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
 
     if (diff > END_ANIMATION_DELAY_MS) {
       if (diff < END_ANIMATION_DELAY_MS * 2)
-        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 1);
+        SPRITE_goToFrame(sprite.get(), END_ANIMATION_START + 1);
       else if (diff < END_ANIMATION_DELAY_MS * 3)
-        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 2);
+        SPRITE_goToFrame(sprite.get(), END_ANIMATION_START + 2);
       else if (diff < END_ANIMATION_DELAY_MS * 4)
-        SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 3);
+        SPRITE_goToFrame(sprite.get(), END_ANIMATION_START + 3);
       else {
-        SpriteUtils::hide(sprite.get());
+        SPRITE_hide(sprite.get());
         sprite->stopAnimating();
       }
     }
   } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
     endTime = millis;
     feedbackType = static_cast<FeedbackType>(qran_range(0, 5)); // TODO: Use isPressed or remove
-    SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START);
+    SPRITE_goToFrame(sprite.get(), END_ANIMATION_START);
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 

@@ -19,8 +19,8 @@ ArrowHolder::ArrowHolder(ArrowType type) {
                              ARROW_CORNER_MARGIN)
                .buildPtr();
 
-  SpriteUtils::reuseTiles(sprite.get());
-  SpriteUtils::goToFrame(sprite.get(), ARROW_HOLDER_IDLE);
+  SPRITE_reuseTiles(sprite.get());
+  SPRITE_goToFrame(sprite.get(), ARROW_HOLDER_IDLE);
 
   this->type = type;
   this->flip = flip;
