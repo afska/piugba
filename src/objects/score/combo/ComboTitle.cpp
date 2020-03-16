@@ -8,19 +8,15 @@ const u32 POSITION_X = 16;
 const u32 POSITION_Y = 70;
 
 ComboTitle::ComboTitle() {
+  animationPositionX = POSITION_X;
+  animationPositionY = POSITION_Y;
+  animationDirection = -1;
+
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_comboTiles, sizeof(spr_comboTiles))
                .withSize(SIZE_64_32)
                .withLocation(POSITION_X, POSITION_Y)
                .buildPtr();
-}
-
-void ComboTitle::show() {
-  sprite->moveTo(POSITION_X, POSITION_Y);
-}
-
-void ComboTitle::hide() {
-  SpriteUtils::hide(sprite.get());
 }
 
 Sprite* ComboTitle::get() {

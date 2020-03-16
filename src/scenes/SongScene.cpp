@@ -67,8 +67,8 @@ void SongScene::tick(u16 keys) {
   // millis-----x = millis*BPM/60000
   u32 beat = (millis * BPM) / 60000;  // BPM bpm
   if (beat != lastBeat) {
-    int arrowIndex = qran_range(0, 4);
-    arrowQueues[arrowIndex]->push([](Arrow* it) { it->initialize(); });
+    // int arrowIndex = qran_range(0, 4);
+    // arrowQueues[arrowIndex]->push([](Arrow* it) { it->initialize(); });
 
     animation->update(beat);
   }
@@ -123,30 +123,30 @@ void SongScene::updateArrows(u32 millis) {
 }
 
 void SongScene::processKeys(u16 keys) {
-  // if ((keys & KEY_DOWN) &&
-  //     arrowHolders[0]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-  //   arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
-  // }
+  if ((keys & KEY_DOWN) &&
+      arrowHolders[0]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+    arrowQueues[0]->push([](Arrow* it) { it->initialize(); });
+  }
 
-  // if ((keys & KEY_L) &&
-  //     arrowHolders[2]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-  //   arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
-  // }
+  if ((keys & KEY_L) &&
+      arrowHolders[2]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+    arrowQueues[2]->push([](Arrow* it) { it->initialize(); });
+  }
 
-  // if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
-  //     arrowHolders[4]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-  //   arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
-  // }
+  if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
+      arrowHolders[4]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+    arrowQueues[4]->push([](Arrow* it) { it->initialize(); });
+  }
 
-  // if ((keys & KEY_R) &&
-  //     arrowHolders[3]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-  //   arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
-  // }
+  if ((keys & KEY_R) &&
+      arrowHolders[3]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+    arrowQueues[3]->push([](Arrow* it) { it->initialize(); });
+  }
 
-  // if ((keys & KEY_A) &&
-  //     arrowHolders[1]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
-  //   arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
-  // }
+  if ((keys & KEY_A) &&
+      arrowHolders[1]->get()->getCurrentFrame() == ARROW_HOLDER_IDLE) {
+    arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
+  }
 
   SpriteUtils::goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
                                                      ? ARROW_HOLDER_PRESSED

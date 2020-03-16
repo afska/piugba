@@ -4,14 +4,19 @@
 #include "data/content/compiled/spr_numbers.h"
 #include "utils/SpriteUtils.h";
 
+const u32 POSITION_X = 8;
+const u32 NUMBER_WIDTH = 26;
+const u32 POSITION_Y = 89;
+
 ComboDigit::ComboDigit(u32 position) {
-  x = 8 + position * 26;
-  y = 89;
+  animationPositionX = POSITION_X + position * NUMBER_WIDTH;
+  animationPositionY = POSITION_Y;
+  animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_numbersTiles, sizeof(spr_numbersTiles))
                .withSize(SIZE_32_16)
-               .withLocation(x, y)
+               .withLocation(animationPositionX, animationPositionY)
                .buildPtr();
 
   if (position > 0)
@@ -20,14 +25,6 @@ ComboDigit::ComboDigit(u32 position) {
 
 void ComboDigit::set(u32 value) {
   SpriteUtils::goToFrame(sprite.get(), value);
-}
-
-void ComboDigit::show() {
-  sprite->moveTo(x, y);
-}
-
-void ComboDigit::hide() {
-  SpriteUtils::hide(sprite.get());
 }
 
 Sprite* ComboDigit::get() {

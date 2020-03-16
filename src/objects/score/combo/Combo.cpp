@@ -28,15 +28,11 @@ void Combo::show() {
     digit->show();
 }
 
-void Combo::hide() {
-  title->hide();
+void Combo::tick() {
+  title->tick();
 
   for (auto& digit : digits)
-    digit->hide();
-}
-
-void Combo::tick() {
-  // TODO: ANIMATE
+    digit->tick();
 }
 
 void Combo::render(std::vector<Sprite*>* sprites) {

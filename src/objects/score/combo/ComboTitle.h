@@ -2,15 +2,13 @@
 #define COMBO_TITLE_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+#include "objects/base/AnimatedIndicator.h"
 
-class ComboTitle {
+class ComboTitle : public AnimatedIndicator {
  public:
   ComboTitle();
 
-  void show();
-  void hide();
-
-  Sprite* get();
+  Sprite* get() override;
 
  private:
   std::unique_ptr<Sprite> sprite;

@@ -12,6 +12,7 @@ void Score::update(FeedbackType feedbackType) {
   feedback->setType(feedbackType);
   feedback->show();
   combo->setValue(combo->getValue() + 1);
+  combo->show();
 }
 
 void Score::tick() {

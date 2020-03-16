@@ -4,20 +4,20 @@
 #include <libgba-sprite-engine/gba_engine.h>
 
 class AnimatedIndicator {
-  public:
-    virtual void show();
-    virtual void tick();
+ public:
+  virtual void show();
+  virtual void tick();
 
-    virtual Sprite* get();
+  virtual Sprite* get();
 
-  protected:
-    u32 positionX;
-    u32 positionY;
-    s8 direction = 1;
+ protected:
+  u32 animationPositionX;
+  u32 animationPositionY;
+  s8 animationDirection = 1;
 
-  private:
-    u32 currentFrame = 0;
-    u32 animationFrame = 0;
+ private:
+  u32 currentFrame = 0;
+  u32 animationFrame = 0;
 };
 
 #endif  // ANIMATED_INDICATOR_H

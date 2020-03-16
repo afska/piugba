@@ -3,8 +3,8 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include <vector>
-#include "Combo.h"
 #include "Feedback.h"
+#include "combo/Combo.h"
 
 class Score {
  public:

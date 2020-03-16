@@ -9,13 +9,13 @@ const u32 POSITION_Y = 60;
 
 Feedback::Feedback() {
   type = FeedbackType::MISS;
-  positionX = POSITION_X;
-  positionY = POSITION_Y;
+  animationPositionX = POSITION_X;
+  animationPositionY = POSITION_Y;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
                .withSize(SIZE_64_32)
-               .withLocation(positionX, positionY)
+               .withLocation(POSITION_X, POSITION_Y)
                .buildPtr();
 }
 

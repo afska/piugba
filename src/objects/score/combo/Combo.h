@@ -13,7 +13,6 @@ class Combo {
   void setValue(u32 value);
   u32 getValue();
   void show();
-  void hide();
 
   void tick();
   void render(std::vector<Sprite*>* sprites);
