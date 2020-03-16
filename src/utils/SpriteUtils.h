@@ -10,6 +10,7 @@
 class SpriteUtils {
  public:
   static void hide(Sprite* sprite);
+  static bool isHidden(Sprite* sprite);
   static void goToFrame(Sprite* sprite, int frame);
   static void reuseTiles(Sprite* sprite);
 };

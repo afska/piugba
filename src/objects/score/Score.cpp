@@ -9,20 +9,14 @@ Score::Score() {
 }
 
 void Score::update(FeedbackType feedbackType) {
-  animationFrame = 0;
-  feedback->get()->moveTo(FEEDBACK_POSITION_X,
-                          FEEDBACK_POSITION_Y - ANIMATION_FRAMES);
   feedback->setType(feedbackType);
+  feedback->show();
   combo->setValue(combo->getValue() + 1);
 }
 
 void Score::tick() {
-  if (animationFrame < ANIMATION_FRAMES) {
-    animationFrame++;
-    feedback->get()->moveTo(
-        FEEDBACK_POSITION_X,
-        FEEDBACK_POSITION_Y - (ANIMATION_FRAMES - animationFrame));
-  }
+  feedback->tick();
+  combo->tick();
 }
 
 void Score::render(std::vector<Sprite*>* sprites) {

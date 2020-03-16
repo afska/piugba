@@ -18,7 +18,6 @@ class Score {
  private:
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
-  u32 animationFrame = 0;
 };
 
 #endif  // SCORE_H

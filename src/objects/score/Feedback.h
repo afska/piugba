@@ -2,21 +2,18 @@
 #define FEEDBACK_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+#include "objects/base/AnimatedIndicator.h"
 
 enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, ACTIVE };
-const u32 FEEDBACK_POSITION_X = 16;
-const u32 FEEDBACK_POSITION_Y = 60;
 
-class Feedback {
+class Feedback : public AnimatedIndicator {
  public:
   Feedback();
 
   void setType(FeedbackType type);
   FeedbackType getType();
-  void show();
-  void hide();
 
-  Sprite* get();
+  Sprite* get() override;
 
  private:
   std::unique_ptr<Sprite> sprite;
