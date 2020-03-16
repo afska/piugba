@@ -1,13 +1,10 @@
 #include "Arrow.h"
-#include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/compiled/spr_arrow_center.h"
 #include "data/content/compiled/spr_arrow_downleft.h"
 #include "data/content/compiled/spr_arrow_upleft.h"
 #include "utils/SpriteUtils.h";
 
-const u32 HIDDEN_WIDTH = GBA_SCREEN_WIDTH - 1;
-const u32 HIDDEN_HEIGHT = GBA_SCREEN_HEIGHT - 1;
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
 const u32 END_ANIMATION_START = 5;
@@ -86,7 +83,7 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
       else if (diff < END_ANIMATION_DELAY_MS * 4)
         SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START + 3);
       else {
-        sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
+        SpriteUtils::hide(sprite.get());
         sprite->stopAnimating();
       }
     }

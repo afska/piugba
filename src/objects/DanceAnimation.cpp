@@ -8,12 +8,10 @@ const u32 STEPS = 4;
 DanceAnimation::DanceAnimation(u32 x, u32 y) {
   SpriteBuilder<Sprite> builder;
 
-  sprite =
-      builder
-          .withSize(SIZE_16_16)
-          .withAnimated(5, 2)
-          .withLocation(x, y)
-          .buildPtr();
+  sprite = builder.withSize(SIZE_16_16)
+               .withAnimated(5, 2)
+               .withLocation(x, y)
+               .buildPtr();
 
   SpriteUtils::reuseTiles(sprite.get());
 }

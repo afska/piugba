@@ -11,6 +11,9 @@ class Feedback {
 
   void setType(FeedbackType type);
   FeedbackType getType();
+  void show();
+  void hide();
+
   Sprite* get();
 
  private:

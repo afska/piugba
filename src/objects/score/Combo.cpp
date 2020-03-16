@@ -1,0 +1,47 @@
+#include "Combo.h"
+#include <libgba-sprite-engine/sprites/sprite_builder.h>
+#include <libgba-sprite-engine/gba/tonc_bios.h>
+
+Combo::Combo() {
+  title = std::unique_ptr<ComboTitle>{new ComboTitle()};
+
+  for (int i = 0; i < 3; i++)
+    digits.push_back(std::unique_ptr<ComboDigit>{new ComboDigit(i)});
+}
+
+void Combo::setValue(u32 value) {
+  this->value = value;
+
+  digits[0]->set(Div(value, 100));
+  digits[1]->set(Div(DivMod(value, 100), 10));
+  digits[2]->set(DivMod(value, 10));
+}
+
+u32 Combo::getValue() {
+  return value;
+}
+
+void Combo::show() {
+  title->show();
+
+  for (auto& digit : digits)
+    digit->show();
+}
+
+void Combo::hide() {
+  title->hide();
+
+  for (auto& digit : digits)
+    digit->hide();
+}
+
+void Combo::tick() {
+  // TODO: ANIMATE
+}
+
+void Combo::render(std::vector<Sprite*>* sprites) {
+  sprites->push_back(title->get());
+
+  for (auto& digit : digits)
+    sprites->push_back(digit->get());
+}

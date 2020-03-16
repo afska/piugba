@@ -7,6 +7,9 @@ class ComboTitle {
  public:
   ComboTitle();
 
+  void show();
+  void hide();
+
   Sprite* get();
 
  private:

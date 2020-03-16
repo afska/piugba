@@ -64,6 +64,7 @@
 		"stdlib.h": "c",
 		"string.h": "c",
 		"private.h": "c",
-		"gbfs.h": "c"
+		"gbfs.h": "c",
+		"gsm.h": "c"
 	}
 }

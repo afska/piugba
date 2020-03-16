@@ -109,7 +109,8 @@ void SongScene::updateArrows(u32 millis) {
   int i = 0;
   for (auto& arrowQueue : arrowQueues) {
     arrowQueue->forEachActive([this, &arrowQueue, &millis, &i](Arrow* it) {
-      bool isPressed = arrowHolders[i]->get()->getCurrentFrame() != ARROW_HOLDER_IDLE; // TODO: Extract logic
+      bool isPressed = arrowHolders[i]->get()->getCurrentFrame() !=
+                       ARROW_HOLDER_IDLE;  // TODO: Extract logic
       FeedbackType feedbackType = it->tick(millis, isPressed);
       if (feedbackType != FeedbackType::ACTIVE) {
         score->update(feedbackType);

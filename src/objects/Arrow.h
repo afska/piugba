@@ -16,6 +16,7 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize();
+
   FeedbackType tick(u32 millis, bool isPressed);
   Sprite* get();
 

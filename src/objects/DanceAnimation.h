@@ -8,6 +8,7 @@ class DanceAnimation {
   DanceAnimation(u32 x, u32 y);
 
   void update(u32 beat);
+
   Sprite* get();
 
  private:

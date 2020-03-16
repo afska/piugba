@@ -3,8 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include <vector>
-#include "ComboTitle.h"
-#include "ComboDigit.h"
+#include "Combo.h"
 #include "Feedback.h"
 
 class Score {
@@ -12,15 +11,13 @@ class Score {
   Score();
 
   void update(FeedbackType feedbackType);
+
   void tick();
   void render(std::vector<Sprite*>* sprites);
 
  private:
   std::unique_ptr<Feedback> feedback;
-  std::unique_ptr<ComboTitle> comboTitle;
-  std::unique_ptr<ComboDigit> digit1;
-  std::unique_ptr<ComboDigit> digit2;
-  std::unique_ptr<ComboDigit> digit3;
+  std::unique_ptr<Combo> combo;
 };
 
 #endif  // SCORE_H
