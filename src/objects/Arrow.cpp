@@ -4,6 +4,7 @@
 #include "data/content/compiled/spr_arrow_downleft.h"
 #include "data/content/compiled/spr_arrow_upleft.h"
 #include "utils/SpriteUtils.h";
+#include <libgba-sprite-engine/gba/tonc_core.h> // TODO: REMOVE (qran_range)
 
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
@@ -89,10 +90,7 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
     }
   } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
     endTime = millis;
-    feedbackType =
-        isPressed
-            ? FeedbackType::PERFECT
-            : FeedbackType::MISS;  // TODO: It's really more complex than this
+    feedbackType = static_cast<FeedbackType>(qran_range(0, 5)); // TODO: Use isPressed or remove
     SpriteUtils::goToFrame(sprite.get(), END_ANIMATION_START);
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - 3);

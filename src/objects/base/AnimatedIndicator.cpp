@@ -24,10 +24,9 @@ void AnimatedIndicator::tick() {
     get()->moveTo(animationPositionX,
                   animationPositionY -
                       animationDirection * (ANIMATION_FRAMES - animationFrame));
-
-    if (animationFrame == ANIMATION_FRAMES)
-      animationFrame = 0;
-  } else if (currentFrame > TOTAL_FRAMES) {
+  } else if (currentFrame == TOTAL_FRAMES)
+    animationFrame = 0;
+  else if (currentFrame > TOTAL_FRAMES) {
     // out animation
     animationFrame++;
     get()->moveTo(animationPositionX,
