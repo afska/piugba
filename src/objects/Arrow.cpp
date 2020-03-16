@@ -69,7 +69,7 @@ void Arrow::discard() {
   sprite->enabled = false;
 }
 
-FeedbackType Arrow::update(u32 millis, bool isPressed) {
+FeedbackType Arrow::tick(u32 millis, bool isPressed) {
   sprite->flipHorizontally(flip);
 
   if (sprite->getX() == HIDDEN_WIDTH)

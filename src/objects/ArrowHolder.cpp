@@ -26,7 +26,7 @@ ArrowHolder::ArrowHolder(ArrowType type) {
   this->flip = flip;
 }
 
-void ArrowHolder::update() {
+void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
 }
 

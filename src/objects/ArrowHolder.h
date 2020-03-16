@@ -11,7 +11,7 @@ class ArrowHolder {
  public:
   ArrowHolder(ArrowType type);
 
-  void update();
+  void tick();
   Sprite* get();
 
  private:

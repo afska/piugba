@@ -101,7 +101,7 @@ void SongScene::setUpArrows() {
 
 void SongScene::updateArrowHolders() {
   for (auto& it : arrowHolders)
-    it->update();
+    it->tick();
 }
 
 void SongScene::updateArrows(u32 millis) {
@@ -109,7 +109,7 @@ void SongScene::updateArrows(u32 millis) {
   for (auto& arrowQueue : arrowQueues) {
     arrowQueue->forEachActive([this, &arrowQueue, &millis, &i](Arrow* it) {
       bool isPressed = arrowHolders[i]->get()->getCurrentFrame() != ARROW_HOLDER_IDLE; // TODO: Extract logic
-      FeedbackType feedbackType = it->update(millis, isPressed);
+      FeedbackType feedbackType = it->tick(millis, isPressed);
       if (feedbackType != FeedbackType::ACTIVE) {
         score->update(feedbackType);
         arrowQueue->pop();

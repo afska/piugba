@@ -1,6 +1,6 @@
 #include "Score.h"
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
-#include "utils/SpriteUtils.h" // TODO: MOVE
+#include "utils/SpriteUtils.h" // TODO: REMOVE
 
 Score::Score() {
   feedback = std::unique_ptr<Feedback>{new Feedback(FeedbackType::PERFECT)};
@@ -14,7 +14,7 @@ void Score::update(FeedbackType feedbackType) {
   SpriteUtils::goToFrame(feedback->get(), (int) feedbackType);
 }
 
-void Score::tick() { // TODO: Rename update->tick everywhere
+void Score::tick() {
 
 }
 
