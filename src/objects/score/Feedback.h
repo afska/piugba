@@ -9,7 +9,8 @@ class Feedback {
  public:
   Feedback();
 
-  void set(FeedbackType type);
+  void setType(FeedbackType type);
+  FeedbackType getType();
   Sprite* get();
 
  private:

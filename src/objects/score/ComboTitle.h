@@ -1,11 +1,11 @@
-#ifndef COMBO_H
-#define COMBO_H
+#ifndef COMBO_TITLE_H
+#define COMBO_TITLE_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-class Combo {
+class ComboTitle {
  public:
-  Combo();
+  ComboTitle();
 
   Sprite* get();
 
@@ -13,4 +13,4 @@ class Combo {
   std::unique_ptr<Sprite> sprite;
 };
 
-#endif  // COMBO_H
+#endif  // COMBO_TITLE_H

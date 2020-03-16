@@ -14,9 +14,13 @@ Feedback::Feedback() {
                .buildPtr();
 }
 
-void Feedback::set(FeedbackType type) {
+void Feedback::setType(FeedbackType type) {
   this->type = type;
   SpriteUtils::goToFrame(sprite.get(), (int) type);
+}
+
+FeedbackType Feedback::getType() {
+  return this->type;
 }
 
 Sprite* Feedback::get() {
