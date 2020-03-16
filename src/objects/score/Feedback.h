@@ -4,6 +4,8 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, ACTIVE };
+const u32 FEEDBACK_POSITION_X = 16;
+const u32 FEEDBACK_POSITION_Y = 60;
 
 class Feedback {
  public:

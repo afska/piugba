@@ -4,16 +4,13 @@
 #include "data/content/compiled/spr_feedback.h"
 #include "utils/SpriteUtils.h"
 
-const u32 POSITION_X = 16;
-const u32 POSITION_Y = 60;
-
 Feedback::Feedback() {
   this->type = FeedbackType::MISS;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
                .withSize(SIZE_64_32)
-               .withLocation(POSITION_X, POSITION_Y)
+               .withLocation(FEEDBACK_POSITION_X, FEEDBACK_POSITION_Y)
                .buildPtr();
 }
 
@@ -27,7 +24,7 @@ FeedbackType Feedback::getType() {
 }
 
 void Feedback::show() {
-  sprite->moveTo(POSITION_X, POSITION_Y);
+  sprite->moveTo(FEEDBACK_POSITION_X, FEEDBACK_POSITION_Y - 3);
 }
 
 void Feedback::hide() {
