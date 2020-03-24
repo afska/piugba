@@ -8,6 +8,7 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
+#include "objects/score/Feedback.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectQueue.h"
 

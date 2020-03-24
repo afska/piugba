@@ -53,7 +53,6 @@ void Arrow::initialize(ArrowType type) {
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
   endTime = 0;
-  feedbackType = FeedbackType::ACTIVE;
 }
 
 void Arrow::discard() {
@@ -64,7 +63,7 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
-    return feedbackType;
+    return FeedbackType::INACTIVE;
 
   if (endTime > 0) {
     u32 diff = abs(millis - endTime);
@@ -81,11 +80,14 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
         sprite->stopAnimating();
       }
     }
+
+    return FeedbackType::ENDING;
   } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
     endTime = millis;
-    feedbackType = static_cast<FeedbackType>(
-        qran_range(0, 5));  // TODO: Use isPressed or remove
     SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
+
+    return static_cast<FeedbackType>(
+        qran_range(0, 5));  // TODO: Use isPressed or remove;
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - 3);
 

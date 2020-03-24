@@ -29,7 +29,6 @@ class Arrow : public IPoolable {
   u32 start = 0;
   bool flip = false;
   u32 endTime = 0;
-  FeedbackType feedbackType = FeedbackType::ACTIVE;
 };
 
 #endif  // ARROW_H

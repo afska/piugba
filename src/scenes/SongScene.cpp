@@ -21,7 +21,7 @@ std::vector<Sprite*> SongScene::sprites() {
 
   arrowQueue->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
 
-  for (int i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(arrowHolders[i]->get());
 
   return sprites;
@@ -79,7 +79,7 @@ void SongScene::setUpArrows() {
   arrowQueue = std::unique_ptr<ObjectQueue<Arrow>>{new ObjectQueue<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (int i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
         new ArrowHolder(static_cast<ArrowType>(i))});
 }
@@ -93,11 +93,12 @@ void SongScene::updateArrows(u32 millis) {
   arrowQueue->forEachActive([this, &millis](Arrow* it) {
     bool isPressed = arrowHolders[it->type]->get()->getCurrentFrame() !=
                      ARROW_HOLDER_IDLE;  // TODO: Extract logic
+
     FeedbackType feedbackType = it->tick(millis, isPressed);
-    if (feedbackType != FeedbackType::ACTIVE) {
+    if (feedbackType < FEEDBACK_TOTAL_SCORES)
       score->update(feedbackType);
+    if (feedbackType == FeedbackType::INACTIVE)
       arrowQueue->pop();
-    }
   });
 }
 
