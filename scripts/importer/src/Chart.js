@@ -1,8 +1,5 @@
 const _ = require("lodash");
 
-const MINUTE = 60000;
-const UNIT = 4;
-
 module.exports = class Chart {
   constructor(header, content) {
     this.header = header;
@@ -25,7 +22,7 @@ module.exports = class Chart {
       const duration = subdivision * wholeNoteDuration;
 
       return events.map((data) => {
-        const timestamp = cursor;
+        const timestamp = Math.round(this.header.offset + cursor);
         cursor += duration;
 
         return {
@@ -46,3 +43,6 @@ const EVENTS = {
   STOP: 4,
   SET_SPEED: 5,
 };
+
+const MINUTE = 60000;
+const UNIT = 4;

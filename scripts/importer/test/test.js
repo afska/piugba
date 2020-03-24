@@ -5,11 +5,9 @@ const beep = () => exec(`rundll32 user32.dll,MessageBeep`);
 
 const json = fs.readFileSync("./test/test.json");
 const data = JSON.parse(json);
-
-let cursor = 0;
-
 const events = data.events;
 
+let cursor = 0;
 const processNextNote = () => {
   const note = events.shift();
 
@@ -19,5 +17,4 @@ const processNextNote = () => {
     processNextNote();
   }, note.timestamp - cursor);
 };
-
 processNextNote();
