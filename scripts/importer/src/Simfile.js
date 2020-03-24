@@ -1,6 +1,7 @@
 const _ = require("lodash");
 
 // StepMania 5 format (*.ssc)
+// (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
   constructor(content) {
@@ -14,13 +15,19 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    return this.content.match(REGEXPS.chart.start).map((chartContent) => {
-      const name = this._getSingleMatch(REGEXPS.chart.name, chartContent);
-      const level = this._getSingleMatch(REGEXPS.chart.level, chartContent);
-      const offset = this._getSingleMatch(REGEXPS.chart.offset, chartContent);
-      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, chartContent);
+    return this.content.match(REGEXPS.chart.start).map((rawChart) => {
+      const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
+      const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
+      const offset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
+      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
 
-      return { name, level, offset, bpms };
+      const notesStart = this.content.indexOf(rawChart) + rawChart.length;
+      const rawNotes = this._getSingleMatch(
+        REGEXPS.limit,
+        this.content.substring(notesStart)
+      );
+
+      return { name, level, offset, bpms, rawNotes };
     });
   }
 
@@ -45,16 +52,17 @@ const PROPERTY_FLOAT = (name) => ({
   parse: (content) => parseFloat(content),
 });
 
-const LIST = (name) => ({
+const DICTIONARY = (name) => ({
   exp: PROPERTY(name),
   parse: (content) =>
     content
-      .split(/,/)
+      .split(",")
       .map((it) => it.trim().split("="))
       .map(([key, value]) => ({ key, value })),
 });
 
 const REGEXPS = {
+  limit: /((.|(\r|\n))*?);/,
   metadata: {
     title: PROPERTY("TITLE"),
     artist: PROPERTY("ARTIST"),
@@ -67,6 +75,6 @@ const REGEXPS = {
     name: PROPERTY("DESCRIPTION"),
     level: PROPERTY_INT("METER"),
     offset: PROPERTY_FLOAT("OFFSET"),
-    bpms: LIST("BPMS"),
+    bpms: DICTIONARY("BPMS"),
   },
 };
