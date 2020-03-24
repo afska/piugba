@@ -12,182 +12,6 @@
   },
   "events": [
     {
-      "timestamp": 0,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 370.3703703703704,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 740.7407407407408,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 1111.111111111111,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 1481.4814814814815,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 1851.851851851852,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 2222.222222222222,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 2592.5925925925926,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 2962.962962962963,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 3333.3333333333335,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 3703.703703703704,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 4074.0740740740744,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 4444.444444444444,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 4814.814814814815,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 5185.185185185185,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 5555.555555555556,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 5925.925925925926,
       "type": 0,
       "arrows": [
@@ -236,39 +60,6 @@
       "type": 0,
       "arrows": [
         true,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 6851.851851851852,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 7037.037037037037,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 7222.222222222223,
-      "type": 0,
-      "arrows": [
-        false,
         false,
         false,
         false,
@@ -331,39 +122,6 @@
       ]
     },
     {
-      "timestamp": 8333.333333333334,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 8518.518518518518,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 8703.703703703703,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 8888.888888888887,
       "type": 0,
       "arrows": [
@@ -419,61 +177,6 @@
       ]
     },
     {
-      "timestamp": 10555.555555555553,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 10740.740740740737,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 10925.925925925922,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 11111.111111111106,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 11296.29629629629,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 11481.481481481474,
       "type": 0,
       "arrows": [
@@ -507,39 +210,6 @@
       ]
     },
     {
-      "timestamp": 12037.037037037027,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 12222.222222222212,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 12407.407407407396,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 12592.59259259258,
       "type": 0,
       "arrows": [
@@ -548,17 +218,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 12777.777777777765,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -595,39 +254,6 @@
       ]
     },
     {
-      "timestamp": 13518.518518518502,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 13703.703703703686,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 13888.88888888887,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 14074.074074074055,
       "type": 0,
       "arrows": [
@@ -635,17 +261,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 14259.25925925924,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -771,39 +386,6 @@
       ]
     },
     {
-      "timestamp": 16666.666666666635,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 17037.037037037004,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 17407.407407407372,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 17777.77777777774,
       "type": 0,
       "arrows": [
@@ -852,39 +434,6 @@
       "type": 0,
       "arrows": [
         true,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 18703.70370370367,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 18888.888888888858,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 19074.074074074044,
-      "type": 0,
-      "arrows": [
-        false,
         false,
         false,
         false,
@@ -947,39 +496,6 @@
       ]
     },
     {
-      "timestamp": 20185.18518518516,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 20370.370370370347,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 20555.555555555533,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 20740.74074074072,
       "type": 0,
       "arrows": [
@@ -1035,61 +551,6 @@
       ]
     },
     {
-      "timestamp": 22407.40740740738,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 22592.592592592566,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 22777.777777777752,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 22962.962962962938,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 23148.148148148124,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 23333.33333333331,
       "type": 0,
       "arrows": [
@@ -1123,39 +584,6 @@
       ]
     },
     {
-      "timestamp": 23888.88888888887,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 24074.074074074055,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 24259.25925925924,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 24444.444444444427,
       "type": 0,
       "arrows": [
@@ -1164,17 +592,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 24629.629629629613,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -1211,39 +628,6 @@
       ]
     },
     {
-      "timestamp": 25370.370370370358,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 25555.555555555544,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 25740.74074074073,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 25925.925925925916,
       "type": 0,
       "arrows": [
@@ -1251,17 +635,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 26111.111111111102,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -1387,39 +760,6 @@
       ]
     },
     {
-      "timestamp": 28518.51851851852,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 28888.888888888887,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 29259.259259259255,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 29629.629629629624,
       "type": 0,
       "arrows": [
@@ -1494,17 +834,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 30925.925925925927,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -1622,17 +951,6 @@
       "type": 0,
       "arrows": [
         true,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 33888.88888888887,
-      "type": 0,
-      "arrows": [
-        false,
         false,
         false,
         false,
@@ -1761,17 +1079,6 @@
       ]
     },
     {
-      "timestamp": 36851.85185185182,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 37037.037037037,
       "type": 0,
       "arrows": [
@@ -1827,17 +1134,6 @@
       ]
     },
     {
-      "timestamp": 37962.96296296291,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 38148.148148148095,
       "type": 0,
       "arrows": [
@@ -1845,17 +1141,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 38333.33333333328,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -1933,17 +1218,6 @@
         false,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 39814.81481481474,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -2047,39 +1321,6 @@
       ]
     },
     {
-      "timestamp": 41666.66666666656,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 41851.851851851745,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 42037.03703703693,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 42222.22222222211,
       "type": 0,
       "arrows": [
@@ -2172,39 +1413,6 @@
       "type": 0,
       "arrows": [
         true,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 44629.62962962951,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 44814.814814814694,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 44999.999999999876,
-      "type": 0,
-      "arrows": [
-        false,
         false,
         false,
         false,
@@ -2311,39 +1519,6 @@
       ]
     },
     {
-      "timestamp": 47592.59259259246,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 47777.77777777764,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 47962.962962962825,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 48148.14814814801,
       "type": 0,
       "arrows": [
@@ -2443,39 +1618,6 @@
       ]
     },
     {
-      "timestamp": 50555.55555555541,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 50740.74074074059,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 50925.925925925774,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 51111.11111111096,
       "type": 0,
       "arrows": [
@@ -2505,17 +1647,6 @@
         false,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 51666.666666666504,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -2575,34 +1706,12 @@
       ]
     },
     {
-      "timestamp": 53518.51851851836,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 53703.70370370354,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 53888.88888888872,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -2663,34 +1772,12 @@
       ]
     },
     {
-      "timestamp": 54999.99999999982,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 55185.185185185,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 55370.37037037018,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -2751,34 +1838,12 @@
       ]
     },
     {
-      "timestamp": 56481.48148148128,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 56666.66666666646,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 56851.85185185164,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -2839,34 +1904,12 @@
       ]
     },
     {
-      "timestamp": 57962.96296296274,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 58148.14814814792,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 58333.3333333331,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -2927,34 +1970,12 @@
       ]
     },
     {
-      "timestamp": 59444.4444444442,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 59629.62962962938,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 59814.81481481456,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -3015,34 +2036,12 @@
       ]
     },
     {
-      "timestamp": 60925.92592592566,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 61111.11111111084,
       "type": 0,
       "arrows": [
         false,
         false,
         true,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 61296.29629629602,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
         false,
         false
       ]
@@ -3191,39 +2190,6 @@
       ]
     },
     {
-      "timestamp": 64629.62962962934,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 64814.81481481452,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 64999.9999999997,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 65185.185185184884,
       "type": 0,
       "arrows": [
@@ -3268,17 +2234,6 @@
       ]
     },
     {
-      "timestamp": 66666.66666666635,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 67037.03703703672,
       "type": 0,
       "arrows": [
@@ -3290,17 +2245,6 @@
       ]
     },
     {
-      "timestamp": 67407.40740740708,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 67777.77777777745,
       "type": 0,
       "arrows": [
@@ -3309,17 +2253,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 68148.14814814781,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -3342,17 +2275,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 69259.2592592589,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -3455,61 +2377,6 @@
       ]
     },
     {
-      "timestamp": 71296.29629629591,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 71481.4814814811,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 71666.66666666628,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 71851.85185185146,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 72037.03703703664,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 72222.22222222183,
       "type": 0,
       "arrows": [
@@ -3543,39 +2410,6 @@
       ]
     },
     {
-      "timestamp": 72777.77777777737,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 72962.96296296256,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 73148.14814814774,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 73333.33333333292,
       "type": 0,
       "arrows": [
@@ -3584,17 +2418,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 73518.5185185181,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -3631,39 +2454,6 @@
       ]
     },
     {
-      "timestamp": 74259.25925925883,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 74444.44444444402,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 74629.6296296292,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 74814.81481481438,
       "type": 0,
       "arrows": [
@@ -3671,17 +2461,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 74999.99999999956,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -3807,50 +2586,6 @@
       ]
     },
     {
-      "timestamp": 77407.40740740694,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 77777.7777777773,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 78148.14814814767,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 78518.51851851803,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 78888.8888888884,
       "type": 0,
       "arrows": [
@@ -3862,17 +2597,6 @@
       ]
     },
     {
-      "timestamp": 79259.25925925876,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 79629.62962962913,
       "type": 0,
       "arrows": [
@@ -3881,17 +2605,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 79999.99999999949,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -3914,17 +2627,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 81111.11111111059,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -3983,61 +2685,6 @@
       ]
     },
     {
-      "timestamp": 83148.1481481476,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 83333.33333333278,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 83518.51851851796,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 83703.70370370314,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 83888.88888888832,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 84074.0740740735,
       "type": 0,
       "arrows": [
@@ -4071,39 +2718,6 @@
       ]
     },
     {
-      "timestamp": 84629.62962962905,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 84814.81481481424,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 84999.99999999942,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 85185.1851851846,
       "type": 0,
       "arrows": [
@@ -4112,17 +2726,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 85370.37037036978,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -4159,39 +2762,6 @@
       ]
     },
     {
-      "timestamp": 86111.11111111051,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 86296.2962962957,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 86481.48148148088,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 86666.66666666606,
       "type": 0,
       "arrows": [
@@ -4199,17 +2769,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 86851.85185185124,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -4335,61 +2894,6 @@
       ]
     },
     {
-      "timestamp": 89074.07407407343,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 89259.25925925862,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 89444.4444444438,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 89629.62962962898,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 89814.81481481416,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 89999.99999999935,
       "type": 0,
       "arrows": [
@@ -4423,39 +2927,6 @@
       ]
     },
     {
-      "timestamp": 90555.55555555489,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 90740.74074074008,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 90925.92592592526,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 91111.11111111044,
       "type": 0,
       "arrows": [
@@ -4464,17 +2935,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 91296.29629629562,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     },
     {
@@ -4511,39 +2971,6 @@
       ]
     },
     {
-      "timestamp": 92037.03703703635,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 92222.22222222154,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 92407.40740740672,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 92592.5925925919,
       "type": 0,
       "arrows": [
@@ -4551,17 +2978,6 @@
         true,
         false,
         true,
-        false
-      ]
-    },
-    {
-      "timestamp": 92777.77777777708,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
         false
       ]
     },
@@ -4687,39 +3103,6 @@
       ]
     },
     {
-      "timestamp": 94999.99999999927,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 95185.18518518445,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 95370.37037036964,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
       "timestamp": 95555.55555555482,
       "type": 0,
       "arrows": [
@@ -4772,39 +3155,6 @@
         false,
         false,
         true
-      ]
-    },
-    {
-      "timestamp": 96666.66666666591,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 97037.03703703628,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ]
-    },
-    {
-      "timestamp": 97407.40740740664,
-      "type": 0,
-      "arrows": [
-        false,
-        false,
-        false,
-        false,
-        false
       ]
     }
   ]

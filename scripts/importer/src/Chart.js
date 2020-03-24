@@ -34,11 +34,9 @@ module.exports = class Chart {
           arrows: data.split("").map((arrow) => (arrow == 1 ? true : false)),
         };
       });
-    });
+    }).filter((it) => it.arrows.some(_.identity));
   }
 };
-
-// TODO: Reject no-op events
 
 const EVENTS = {
   NOTE: 0,
