@@ -19,7 +19,7 @@ module.exports = class Chart {
       .filter(_.identity);
 
     let cursor = 0;
-    return measures.map((measure) => {
+    return _.flatMap(measures, (measure) => {
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
       const duration = subdivision * wholeNoteDuration;

@@ -1,0 +1,4811 @@
+{
+  "header": {
+    "name": "s7",
+    "level": 7,
+    "offset": -0.1755,
+    "bpms": [
+      {
+        "key": "0.000000",
+        "value": "162.000000"
+      }
+    ]
+  },
+  "events": [
+    {
+      "timestamp": 0,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 370.3703703703704,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 740.7407407407408,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 1111.111111111111,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 1481.4814814814815,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 1851.851851851852,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 2222.222222222222,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 2592.5925925925926,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 2962.962962962963,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 3333.3333333333335,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 3703.703703703704,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 4074.0740740740744,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 4444.444444444444,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 4814.814814814815,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 5185.185185185185,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 5555.555555555556,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 5925.925925925926,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 6111.111111111111,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 6296.2962962962965,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 6481.481481481482,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 6666.666666666667,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 6851.851851851852,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 7037.037037037037,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 7222.222222222223,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 7407.407407407408,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 7592.592592592593,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 7777.777777777778,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 7962.9629629629635,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 8148.148148148149,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 8333.333333333334,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 8518.518518518518,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 8703.703703703703,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 8888.888888888887,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "timestamp": 9259.259259259257,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 9629.629629629628,
+      "type": 0,
+      "arrows": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 9999.999999999998,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 10370.370370370369,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 10555.555555555553,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 10740.740740740737,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 10925.925925925922,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 11111.111111111106,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 11296.29629629629,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 11481.481481481474,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 11666.666666666659,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 11851.851851851843,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 12037.037037037027,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 12222.222222222212,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 12407.407407407396,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 12592.59259259258,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 12777.777777777765,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 12962.962962962949,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 13148.148148148133,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 13333.333333333318,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 13518.518518518502,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 13703.703703703686,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 13888.88888888887,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 14074.074074074055,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 14259.25925925924,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 14444.444444444423,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 14629.629629629608,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 14814.814814814792,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 14999.999999999976,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 15185.18518518516,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 15370.370370370345,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 15555.55555555553,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 15740.740740740714,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 15925.925925925898,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 16111.111111111082,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 16296.296296296267,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 16666.666666666635,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 17037.037037037004,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 17407.407407407372,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 17777.77777777774,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 17962.962962962927,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 18148.148148148113,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 18333.3333333333,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 18518.518518518486,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 18703.70370370367,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 18888.888888888858,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 19074.074074074044,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 19259.25925925923,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 19444.444444444416,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 19629.629629629602,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 19814.81481481479,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 19999.999999999975,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 20185.18518518516,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 20370.370370370347,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 20555.555555555533,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 20740.74074074072,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 21111.111111111088,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 21481.481481481456,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 21851.851851851825,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 22222.222222222194,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 22407.40740740738,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 22592.592592592566,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 22777.777777777752,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 22962.962962962938,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 23148.148148148124,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 23333.33333333331,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 23518.518518518496,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 23703.703703703683,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 23888.88888888887,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 24074.074074074055,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 24259.25925925924,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 24444.444444444427,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 24629.629629629613,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 24814.8148148148,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 24999.999999999985,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 25185.18518518517,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 25370.370370370358,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 25555.555555555544,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 25740.74074074073,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 25925.925925925916,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 26111.111111111102,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 26296.29629629629,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 26481.481481481474,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 26666.66666666666,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 26851.851851851847,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 27037.037037037033,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 27222.22222222222,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 27407.407407407405,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 27592.59259259259,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 27777.777777777777,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 27962.962962962964,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 28148.14814814815,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 28518.51851851852,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 28888.888888888887,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 29259.259259259255,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 29629.629629629624,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 29814.81481481481,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 29999.999999999996,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 30185.185185185182,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 30370.37037037037,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 30555.555555555555,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 30740.74074074074,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 30925.925925925927,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 31111.111111111113,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 31481.48148148148,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 31851.85185185185,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 32222.22222222222,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 32592.592592592588,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 32777.777777777774,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 32962.962962962956,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 33148.14814814814,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 33333.33333333332,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 33518.518518518504,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 33703.703703703686,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 33888.88888888887,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 34074.07407407405,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 34444.44444444442,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 34814.814814814796,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 35185.18518518517,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 35555.55555555554,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 35740.74074074072,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 35925.925925925905,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 36111.11111111109,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 36296.29629629627,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 36481.48148148145,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 36666.666666666635,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 36851.85185185182,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 37037.037037037,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 37222.22222222218,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 37407.407407407365,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 37592.59259259255,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 37777.77777777773,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 37962.96296296291,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 38148.148148148095,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 38333.33333333328,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 38518.51851851846,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 38703.70370370364,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 38888.888888888825,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 39074.07407407401,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 39259.25925925919,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 39444.44444444437,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 39629.629629629555,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 39814.81481481474,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 39999.99999999992,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 40185.1851851851,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 40370.370370370285,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 40555.55555555547,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 40740.74074074065,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 40925.92592592583,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 41111.111111111015,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 41296.2962962962,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 41481.48148148138,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 41666.66666666656,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 41851.851851851745,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 42037.03703703693,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 42222.22222222211,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 42407.40740740729,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 42592.592592592475,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 42777.77777777766,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 42962.96296296284,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 43333.33333333321,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 43703.703703703584,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 44074.07407407396,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 44444.44444444433,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 44629.62962962951,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 44814.814814814694,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 44999.999999999876,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 45185.18518518506,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 45370.37037037024,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 45555.555555555424,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 45740.740740740606,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 45925.92592592579,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 46296.29629629616,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 46666.66666666653,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 47037.037037036906,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 47407.40740740728,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 47592.59259259246,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 47777.77777777764,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 47962.962962962825,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 48148.14814814801,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 48333.33333333319,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 48518.51851851837,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 48703.703703703555,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 48888.88888888874,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 49259.25925925911,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 49629.62962962948,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 49999.999999999854,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 50370.37037037023,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 50555.55555555541,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 50740.74074074059,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 50925.925925925774,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 51111.11111111096,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 51296.29629629614,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 51481.48148148132,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 51666.666666666504,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 51851.85185185169,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 52222.22222222206,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 52592.59259259243,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 52962.9629629628,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 53333.333333333176,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 53518.51851851836,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 53703.70370370354,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 53888.88888888872,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 54074.074074073906,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 54259.25925925909,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 54444.44444444427,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 54629.62962962945,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 54814.814814814636,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 54999.99999999982,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 55185.185185185,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 55370.37037037018,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 55555.555555555366,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 55740.74074074055,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 55925.92592592573,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 56111.11111111091,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 56296.296296296096,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 56481.48148148128,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 56666.66666666646,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 56851.85185185164,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 57037.037037036825,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 57222.22222222201,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 57407.40740740719,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 57592.59259259237,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 57777.777777777555,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 57962.96296296274,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 58148.14814814792,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 58333.3333333331,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 58518.518518518285,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 58703.70370370347,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 58888.88888888865,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 59074.07407407383,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 59259.259259259015,
+      "type": 0,
+      "arrows": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 59444.4444444442,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 59629.62962962938,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 59814.81481481456,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 59999.999999999745,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 60185.18518518493,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 60370.37037037011,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 60555.55555555529,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 60740.740740740475,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "timestamp": 60925.92592592566,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 61111.11111111084,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 61296.29629629602,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 61481.481481481205,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 61666.66666666639,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 61851.85185185157,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 62037.03703703675,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 62222.222222221935,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 62592.59259259231,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 62962.96296296268,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 63333.33333333305,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 63703.703703703424,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 63888.88888888861,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 64074.07407407379,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 64259.25925925897,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 64444.444444444154,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 64629.62962962934,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 64814.81481481452,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 64999.9999999997,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 65185.185185184884,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 65555.55555555526,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 65925.92592592562,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 66296.29629629599,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 66666.66666666635,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 67037.03703703672,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 67407.40740740708,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 67777.77777777745,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 68148.14814814781,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 68518.51851851818,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 68888.88888888854,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 69259.2592592589,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 69629.62962962927,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 69814.81481481445,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 69999.99999999964,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 70185.18518518482,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 70370.37037037,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 70555.55555555518,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 70740.74074074037,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 70925.92592592555,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 71111.11111111073,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 71296.29629629591,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 71481.4814814811,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 71666.66666666628,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 71851.85185185146,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 72037.03703703664,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 72222.22222222183,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 72407.40740740701,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 72592.59259259219,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 72777.77777777737,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 72962.96296296256,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 73148.14814814774,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 73333.33333333292,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 73518.5185185181,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 73703.70370370329,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 73888.88888888847,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 74074.07407407365,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 74259.25925925883,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 74444.44444444402,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 74629.6296296292,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 74814.81481481438,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 74999.99999999956,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 75185.18518518475,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 75370.37037036993,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 75555.55555555511,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 75740.7407407403,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 75925.92592592548,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 76111.11111111066,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 76296.29629629584,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 76481.48148148102,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 76666.6666666662,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 76851.85185185139,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 77037.03703703657,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 77407.40740740694,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 77777.7777777773,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 78148.14814814767,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 78518.51851851803,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 78888.8888888884,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 79259.25925925876,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 79629.62962962913,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 79999.99999999949,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 80370.37037036986,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 80740.74074074022,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 81111.11111111059,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 81481.48148148095,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 81851.85185185132,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 82222.22222222168,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 82592.59259259205,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 82962.96296296241,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 83148.1481481476,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 83333.33333333278,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 83518.51851851796,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 83703.70370370314,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 83888.88888888832,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 84074.0740740735,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 84259.25925925869,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 84444.44444444387,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 84629.62962962905,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 84814.81481481424,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 84999.99999999942,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 85185.1851851846,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 85370.37037036978,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 85555.55555555497,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 85740.74074074015,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 85925.92592592533,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 86111.11111111051,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 86296.2962962957,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 86481.48148148088,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 86666.66666666606,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 86851.85185185124,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 87037.03703703643,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 87222.22222222161,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 87407.40740740679,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 87592.59259259197,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 87777.77777777716,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 87962.96296296234,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 88148.14814814752,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 88333.3333333327,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 88518.51851851789,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 88703.70370370307,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 88888.88888888825,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89074.07407407343,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89259.25925925862,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89444.4444444438,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89629.62962962898,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89814.81481481416,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 89999.99999999935,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 90185.18518518453,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 90370.37037036971,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 90555.55555555489,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 90740.74074074008,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 90925.92592592526,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 91111.11111111044,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 91296.29629629562,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 91481.4814814808,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 91666.66666666599,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 91851.85185185117,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 92037.03703703635,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 92222.22222222154,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 92407.40740740672,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 92592.5925925919,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 92777.77777777708,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 92962.96296296227,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 93148.14814814745,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 93333.33333333263,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 93518.51851851781,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "timestamp": 93703.703703703,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 93888.88888888818,
+      "type": 0,
+      "arrows": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 94074.07407407336,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 94259.25925925854,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 94444.44444444372,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 94629.62962962891,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 94814.81481481409,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 94999.99999999927,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 95185.18518518445,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 95370.37037036964,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 95555.55555555482,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 95740.74074074,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 95925.92592592518,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 96111.11111111037,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 96296.29629629555,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 96666.66666666591,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 97037.03703703628,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "timestamp": 97407.40740740664,
+      "type": 0,
+      "arrows": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  ]
+}
