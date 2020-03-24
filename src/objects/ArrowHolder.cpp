@@ -3,12 +3,24 @@
 #include "utils/SpriteUtils.h"
 
 ArrowHolder::ArrowHolder(ArrowType type) {
+  int start;
   bool flip = false;
   switch (type) {
+    case ArrowType::DOWNLEFT:
+      start = ARROW_FRAMES * 0;
+      break;
+    case ArrowType::UPLEFT:
+      start = ARROW_FRAMES * 1;
+      break;
+    case ArrowType::CENTER:
+      start = ARROW_FRAMES * 2;
+      break;
     case ArrowType::UPRIGHT:
+      start = ARROW_FRAMES * 1;
       flip = true;
       break;
     case ArrowType::DOWNRIGHT:
+      start = ARROW_FRAMES * 0;
       flip = true;
       break;
   }
@@ -20,7 +32,7 @@ ArrowHolder::ArrowHolder(ArrowType type) {
                .buildPtr();
 
   SPRITE_reuseTiles(sprite.get());
-  SPRITE_goToFrame(sprite.get(), ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
 
   this->type = type;
   this->flip = flip;

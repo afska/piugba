@@ -6,23 +6,27 @@
 #include "utils/pool/IPoolable.h";
 
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
+const u32 ARROWS_TOTAL = 5;
+const u32 ARROW_FRAMES = 9;
 const u32 ARROW_CORNER_MARGIN = 4;
 const u32 ARROW_MARGIN = 16 + 2;
 
 class Arrow : public IPoolable {
  public:
-  Arrow(u32 id, ArrowType type);
+  ArrowType type = ArrowType::DOWNLEFT;
+
+  Arrow(u32 id);
 
   void discard() override;
 
-  void initialize();
+  void initialize(ArrowType type);
 
   FeedbackType tick(u32 millis, bool isPressed);
   Sprite* get();
 
  private:
   std::unique_ptr<Sprite> sprite;
-  ArrowType type;
+  u32 start = 0;
   bool flip = false;
   u32 endTime = 0;
   FeedbackType feedbackType = FeedbackType::ACTIVE;

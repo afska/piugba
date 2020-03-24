@@ -12,7 +12,7 @@ arrows:
 	#FF00FF
 
 	Palette:
-	-> 35 colors
+	-> 35 colors x arrow group = 105 colors
 
 	Light Placeholders:
 	-> Colors -> Hue-Saturation... -> Lightness=100 & Saturation=100
