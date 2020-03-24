@@ -32,7 +32,7 @@ void AnimatedIndicator::tick() {
     get()->moveTo(animationPositionX,
                   animationPositionY - animationDirection * animationFrame);
 
-    if (animationFrame == ANIMATION_FRAMES)
+    if (animationFrame == ANIMATION_FRAMES + 1)
       SPRITE_hide(get());
   }
 }

@@ -7,7 +7,7 @@
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
 const u32 END_ANIMATION_START = 5;
-const u32 END_ANIMATION_DELAY_MS = 40;
+const u32 END_ANIMATION_DELAY_MS = 30;
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
