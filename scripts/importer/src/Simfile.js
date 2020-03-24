@@ -1,3 +1,4 @@
+const Chart = require("./Chart");
 const _ = require("lodash");
 
 // StepMania 5 format (*.ssc)
@@ -20,14 +21,16 @@ module.exports = class Simfile {
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
       const offset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
       const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+      const header = { name, level, offset, bpms };
 
       const notesStart = this.content.indexOf(rawChart) + rawChart.length;
       const rawNotes = this._getSingleMatch(
         REGEXPS.limit,
         this.content.substring(notesStart)
       );
+      const events = new Chart(header, rawNotes).events;
 
-      return { name, level, offset, bpms, rawNotes };
+      return { header, events };
     });
   }
 
