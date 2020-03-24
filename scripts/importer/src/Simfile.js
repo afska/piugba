@@ -1,20 +1,5 @@
 const _ = require("lodash");
 
-const PROPERTY = (name) => new RegExp(`^#${name}:(.+);$`);
-const REGEXPS = {
-  metadata: {
-    title: PROPERTY("TITLE"),
-    artist: PROPERTY("ARTIST"),
-    genre: PROPERTY("GENRE"),
-    sampleStart: PROPERTY("SAMPLESTART"),
-    sampleLength: PROPERTY("SAMPLELENGTH"),
-  },
-  chart: {
-    start: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
-    name: PROPERTY("DESCRIPTION"),
-  },
-};
-
 // StepMania 5 format (*.ssc)
 
 module.exports = class Simfile {
@@ -23,27 +8,65 @@ module.exports = class Simfile {
   }
 
   get metadata() {
-    const lines = this._getLinesOf(this.content);
-
     return _.mapValues(REGEXPS.metadata, (regexp) =>
-      this._getSingleMatch(lines, regexp)
+      this._getSingleMatch(regexp)
     );
   }
 
   get charts() {
-    return this.content.match(REGEXPS.chart.start).map((rawChart) => {
-      const lines = this._getLinesOf(rawChart);
-      return this._getSingleMatch(lines, REGEXPS.chart.name);
+    return this.content.match(REGEXPS.chart.start).map((chartContent) => {
+      const name = this._getSingleMatch(REGEXPS.chart.name, chartContent);
+      const level = this._getSingleMatch(REGEXPS.chart.level, chartContent);
+      const offset = this._getSingleMatch(REGEXPS.chart.offset, chartContent);
+      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, chartContent);
+
+      return { name, level, offset, bpms };
     });
   }
 
-  _getSingleMatch(lines, regexp) {
-    const line = _.find(lines, (line) => regexp.test(line));
-    const match = line && line.match(regexp);
-    return (match && match[1]) || null;
-  }
+  _getSingleMatch(regexp, content = this.content) {
+    const exp = regexp.exp || regexp;
+    const parse = regexp.parse || _.identity;
 
-  _getLinesOf(content) {
-    return content.split("\n").map((it) => it.trim());
+    const match = content && content.match(exp);
+    return parse((match && match[1]) || null);
   }
+};
+
+const PROPERTY = (name) => new RegExp(`#${name}:((.|(\r|\n))*?);`);
+
+const PROPERTY_INT = (name) => ({
+  exp: PROPERTY(name),
+  parse: (content) => parseInt(content),
+});
+
+const PROPERTY_FLOAT = (name) => ({
+  exp: PROPERTY(name),
+  parse: (content) => parseFloat(content),
+});
+
+const LIST = (name) => ({
+  exp: PROPERTY(name),
+  parse: (content) =>
+    content
+      .split(/,/)
+      .map((it) => it.trim().split("="))
+      .map(([key, value]) => ({ key, value })),
+});
+
+const REGEXPS = {
+  metadata: {
+    title: PROPERTY("TITLE"),
+    artist: PROPERTY("ARTIST"),
+    genre: PROPERTY("GENRE"),
+    sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
+    sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
+  },
+  chart: {
+    start: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
+    name: PROPERTY("DESCRIPTION"),
+    level: PROPERTY_INT("METER"),
+    offset: PROPERTY_FLOAT("OFFSET"),
+    bpms: LIST("BPMS"),
+  },
 };
