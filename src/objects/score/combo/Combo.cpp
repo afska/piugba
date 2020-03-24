@@ -1,6 +1,6 @@
 #include "Combo.h"
-#include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include <libgba-sprite-engine/gba/tonc_bios.h>
+#include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};

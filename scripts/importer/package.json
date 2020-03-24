@@ -1,0 +1,14 @@
+{
+  "name": "importer",
+  "version": "1.0.0",
+  "description": "PIUGBA Steps Importer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "2.0.2"
+  }
+}

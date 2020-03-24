@@ -1,5 +1,5 @@
 #include "SongScene.h"
-#include <libgba-sprite-engine/gba/tonc_core.h> // TODO: REMOVE (qran_range)
+#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE tonc_core (qran_range)
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
@@ -148,20 +148,15 @@ void SongScene::processKeys(u16 keys) {
     arrowQueues[1]->push([](Arrow* it) { it->initialize(); });
   }
 
-  SPRITE_goToFrame(arrowHolders[0]->get(), keys & KEY_DOWN
-                                                     ? ARROW_HOLDER_PRESSED
-                                                     : ARROW_HOLDER_IDLE);
-  SPRITE_goToFrame(arrowHolders[2]->get(), keys & KEY_L
-                                                     ? ARROW_HOLDER_PRESSED
-                                                     : ARROW_HOLDER_IDLE);
-  SPRITE_goToFrame(arrowHolders[4]->get(),
-                         (keys & KEY_B) | (keys & KEY_RIGHT)
-                             ? ARROW_HOLDER_PRESSED
-                             : ARROW_HOLDER_IDLE);
-  SPRITE_goToFrame(arrowHolders[3]->get(), keys & KEY_R
-                                                     ? ARROW_HOLDER_PRESSED
-                                                     : ARROW_HOLDER_IDLE);
-  SPRITE_goToFrame(arrowHolders[1]->get(), keys & KEY_A
-                                                     ? ARROW_HOLDER_PRESSED
-                                                     : ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(arrowHolders[0]->get(),
+                   keys & KEY_DOWN ? ARROW_HOLDER_PRESSED : ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(arrowHolders[2]->get(),
+                   keys & KEY_L ? ARROW_HOLDER_PRESSED : ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(arrowHolders[4]->get(), (keys & KEY_B) | (keys & KEY_RIGHT)
+                                               ? ARROW_HOLDER_PRESSED
+                                               : ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(arrowHolders[3]->get(),
+                   keys & KEY_R ? ARROW_HOLDER_PRESSED : ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(arrowHolders[1]->get(),
+                   keys & KEY_A ? ARROW_HOLDER_PRESSED : ARROW_HOLDER_IDLE);
 }
