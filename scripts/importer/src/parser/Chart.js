@@ -39,8 +39,8 @@ const EVENTS = {
   NOTE: 0,
   HOLD_START: 1,
   HOLD_TAIL: 2,
-  HOLD_END: 3,
-  STOP: 4,
+  STOP: 3,
+  SET_TEMPO: 4,
   SET_SPEED: 5,
 };
 
