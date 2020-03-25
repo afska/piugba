@@ -6,8 +6,8 @@
 #include "data/content/compiled/shared_palette.h"
 #include "utils/SpriteUtils.h"
 
-const u32 BPM = 156;
-const u32 INITIAL_OFFSET = 150;
+const u32 BPM = 162;
+const int INITIAL_OFFSET = -175;
 const u32 ARROW_POOL_SIZE = 14;
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -47,13 +47,26 @@ void SongScene::setMsecs(u32 _msecs) {
 }
 
 void SongScene::tick(u16 keys) {
-  if (!started && msecs > INITIAL_OFFSET)
-    started = true;
-  u32 millis = started ? msecs - INITIAL_OFFSET : 0;
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
-  u32 beat = (millis * BPM) / 60000;  // BPM bpm
+  int millis = msecs + INITIAL_OFFSET;
+  int beat = (millis * BPM) / 60000;  // BPM bpm
   if (beat != lastBeat) {
+    // SPRITE_goToFrame(arrowHolders[0]->get(),
+    //                  ARROW_FRAMES * 0 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
+    //                                                    : ARROW_HOLDER_IDLE));
+    // SPRITE_goToFrame(arrowHolders[1]->get(),
+    //                  ARROW_FRAMES * 1 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
+    //                                                    : ARROW_HOLDER_IDLE));
+    // SPRITE_goToFrame(arrowHolders[2]->get(),
+    //                  ARROW_FRAMES * 2 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
+    //                                                    : ARROW_HOLDER_IDLE));
+    // SPRITE_goToFrame(arrowHolders[3]->get(),
+    //                  ARROW_FRAMES * 1 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
+    //                                                    : ARROW_HOLDER_IDLE));
+    // SPRITE_goToFrame(arrowHolders[4]->get(),
+    //                  ARROW_FRAMES * 0 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
+    //                                                    : ARROW_HOLDER_IDLE));
     // arrowQueue->push([](Arrow* it) {
     //   it->initialize(static_cast<ArrowType>(qran_range(0, 4)));
     // });

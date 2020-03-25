@@ -29,8 +29,7 @@ class SongScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectQueue<Arrow>> arrowQueue;
   u32 msecs = 0;
-  bool started = false;
-  u32 lastBeat = 0;
+  int lastBeat = 0;
 
   void setUpBackground();
   void setUpArrows();
