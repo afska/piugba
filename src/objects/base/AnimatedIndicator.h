@@ -6,8 +6,8 @@
 class AnimatedIndicator {
  public:
   virtual void show();
-  virtual void tick();
 
+  virtual void tick();
   virtual Sprite* get();
 
  protected:

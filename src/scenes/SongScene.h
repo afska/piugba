@@ -14,11 +14,12 @@
 
 class SongScene : public Scene {
  public:
+  u32 msecs = 0;
+
   SongScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
-  void setMsecs(u32 msecs);
 
   void load() override;
   void tick(u16 keys) override;
@@ -28,7 +29,6 @@ class SongScene : public Scene {
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectQueue<Arrow>> arrowQueue;
-  u32 msecs = 0;
   int lastBeat = 0;
 
   void setUpBackground();

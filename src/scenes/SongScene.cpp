@@ -8,7 +8,7 @@
 
 const u32 BPM = 162;
 const int INITIAL_OFFSET = -175;
-const u32 ARROW_POOL_SIZE = 14;
+const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
@@ -42,15 +42,11 @@ void SongScene::load() {
   score = std::unique_ptr<Score>{new Score()};
 }
 
-void SongScene::setMsecs(u32 _msecs) {
-  msecs = _msecs;
-}
-
 void SongScene::tick(u16 keys) {
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   int millis = msecs + INITIAL_OFFSET;
-  int beat = (millis * BPM) / 60000;  // BPM bpm
+  int beat = Div(millis * BPM, 60000);  // BPM bpm
   if (beat != lastBeat) {
     // SPRITE_goToFrame(arrowHolders[0]->get(),
     //                  ARROW_FRAMES * 0 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
