@@ -40,7 +40,11 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.UInt32LE(event.timestamp).UInt8(1); // TODO: Unhardcode data with event.type and event.arrows
+        const data = _.range(0, 5).reduce(
+          (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
+          event.type
+        );
+        this.UInt32LE(event.timestamp).UInt8(data);
       },
     });
 
@@ -61,3 +65,11 @@ module.exports = class SongSerializer {
 const TITLE_LEN = 40 - 1;
 const ARTIST_LEN = 15 - 1;
 // (-1 for \0)
+
+const ARROW_MASKS = [
+  0b00001000,
+  0b00010000,
+  0b00100000,
+  0b01000000,
+  0b10000000,
+];
