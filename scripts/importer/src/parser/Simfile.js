@@ -10,9 +10,17 @@ module.exports = class Simfile {
   }
 
   get metadata() {
-    return _.mapValues(REGEXPS.metadata, (regexp) =>
-      this._getSingleMatch(regexp)
-    );
+    return {
+      title: this._getSingleMatch(REGEXPS.metadata.title),
+      artist: this._getSingleMatch(REGEXPS.metadata.artist),
+      genre: this._getSingleMatch(REGEXPS.metadata.genre),
+      sampleStart: this._toMilliseconds(
+        this._getSingleMatch(REGEXPS.metadata.sampleStart)
+      ),
+      sampleLength: this._toMilliseconds(
+        this._getSingleMatch(REGEXPS.metadata.sampleLength)
+      ),
+    };
   }
 
   get charts() {
@@ -40,7 +48,16 @@ module.exports = class Simfile {
     const parse = regexp.parse || _.identity;
 
     const match = content && content.match(exp);
-    return parse((match && match[1]) || null);
+    const result = parse((match && match[1]) || null);
+    return _.isString(result) ? this._toAsciiOnly(result) : result;
+  }
+
+  _toAsciiOnly(string) {
+    return string.replace(/[^ -~]+/g, "");
+  }
+
+  _toMilliseconds(float) {
+    return Math.round(float * 1000);
   }
 };
 
