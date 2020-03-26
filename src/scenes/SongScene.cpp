@@ -30,7 +30,7 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   // TODO: REMOVE
   Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
-  log_text(song->artist);
+  log_text(std::to_string(song->sampleStart).c_str());
 
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(

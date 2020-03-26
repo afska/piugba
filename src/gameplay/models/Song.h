@@ -12,9 +12,9 @@ extern "C" {
 enum Channel { ORIGINAL, KPOP, WORLD };
 
 typedef struct {
-  char* name;        // (40 bytes)
+  char* title;       // (40 bytes)
   char* artist;      // (15 bytes)
-  Channel channel;   // (0 = ORIGINAL, 1 = K-POP, 2 = WORLD)
+  Channel channel;   // (u8)
   u32 sampleStart;   // in ms
   u32 sampleLength;  // in ms
 
