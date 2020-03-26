@@ -6,7 +6,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
-#include "gameplay/Song.h"
+#include "gameplay/models/Song.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/score/Feedback.h"

@@ -80,6 +80,12 @@ cat rom.gba files.gbfs > rom.out.gba
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
+### Troubleshooting
+
+#### undefined reference to <function name>
+
+If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
+
 ## Open-source projects involved
 
 - [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019

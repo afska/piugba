@@ -28,6 +28,9 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
+  failure_gba(song->artist);
+
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
           shared_palettePal, sizeof(shared_palettePal)));
