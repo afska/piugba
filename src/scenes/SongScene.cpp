@@ -11,7 +11,7 @@ const int INITIAL_OFFSET = -175;
 const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {bg.get()};
+  return {/*bg.get()*/};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
@@ -28,8 +28,9 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  // TODO: REMOVE
   Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
-  failure_gba(song->artist);
+  log_text(song->artist);
 
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
@@ -39,7 +40,7 @@ void SongScene::load() {
           BeethovenVirusPal, sizeof(BeethovenVirusPal)));
   SpriteBuilder<Sprite> builder;
 
-  setUpBackground();
+  // setUpBackground();
   setUpArrows();
 
   score = std::unique_ptr<Score>{new Score()};
