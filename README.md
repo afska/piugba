@@ -82,7 +82,7 @@ rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmak
 
 ### Troubleshooting
 
-#### undefined reference to <function name>
+#### Undefined reference to *function name*
 
 If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
 
