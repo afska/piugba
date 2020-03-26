@@ -5,7 +5,7 @@ const beep = () => exec(`rundll32 user32.dll,MessageBeep`);
 
 const json = fs.readFileSync("./test/test.json");
 const data = JSON.parse(json);
-const events = data.events;
+const events = data.charts.find((it) => it.header.level === 7).events;
 
 let cursor = 0;
 const processNextNote = () => {

@@ -53,7 +53,7 @@ module.exports = class Simfile {
   }
 
   _toAsciiOnly(string) {
-    return string.replace(/[^ -~]+/g, "");
+    return string.replace(/[^\x00-\x7F]+/g, "");
   }
 
   _toMilliseconds(float) {
