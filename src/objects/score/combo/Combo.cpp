@@ -5,7 +5,7 @@
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
-  for (int i = 0; i < 3; i++)
+  for (u32 i = 0; i < 3; i++)
     digits.push_back(std::unique_ptr<ComboDigit>{new ComboDigit(i)});
 }
 

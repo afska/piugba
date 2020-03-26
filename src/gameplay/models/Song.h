@@ -19,7 +19,7 @@ typedef struct {
   u32 sampleLength;  // in ms
 
   u8 length;
-  Chart* chart;  // ("length" times)
+  Chart* charts;  // ("length" times)
 } Song;
 
 Song* Song_parse(const GBFS_FILE* fs, char* fileName);

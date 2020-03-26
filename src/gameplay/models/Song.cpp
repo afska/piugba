@@ -37,11 +37,36 @@ Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
   parse_u32(data, &cursor, &song->sampleStart);
   parse_u32(data, &cursor, &song->sampleLength);
 
+  parse_u8(data, &cursor, &song->length);
+  song->charts = (Chart*)malloc(sizeof(Chart) * song->length);
+  for (u32 i = 0; i < song->length; i++) {
+    auto chart = song->charts + i;
+
+    parse_u8(data, &cursor, (u8*)&chart->difficulty);
+    parse_u8(data, &cursor, &chart->level);
+
+    parse_u32(data, &cursor, &chart->length);
+    chart->events = (Event*)malloc(sizeof(Event) * chart->length);
+    for (u32 j = 0; j < chart->length; j++) {
+      auto event = chart->events + j;
+
+      parse_u32(data, &cursor, &event->timestamp);
+      parse_u8(data, &cursor, &event->data);
+    }
+  }
+
   return song;
 }
 
 void Song_free(Song* song) {
   free(song->title);
   free(song->artist);
+
+  for (u32 i = 0; i < song->length; i++) {
+    for (u32 j = 0; j < song->charts[i].length; j++)
+      free((song->charts + i)->events);
+  }
+  free(song->charts);
+
   free(song);
 }
