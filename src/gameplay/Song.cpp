@@ -1,9 +1,5 @@
 #include "Song.h"
 
-extern "C" {
-#include "utils/gbfs.h"
-}
+Song* Song_parse(const GBFS_FILE* fs, char* fileName) {}
 
-Song* song_parse(char* fileName) {}
-
-void song_free(Song* song) {}
+void Song_free(Song* song) {}

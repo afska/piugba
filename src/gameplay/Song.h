@@ -3,6 +3,10 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+extern "C" {
+#include "utils/gbfs.h"
+}
+
 enum Channel { ORIGINAL, KPOP, WORLD };
 enum Difficulty { NORMAL, HARD, CRAZY, NUMERIC };
 
@@ -42,8 +46,8 @@ typedef struct {
   */
 } Event;
 
-Song* song_parse(char* fileName) {}
+Song* Song_parse(const GBFS_FILE* fs, char* fileName) {}
 
-void song_free() {}
+void Song_free() {}
 
 #endif  // SONG_H

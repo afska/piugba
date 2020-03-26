@@ -12,7 +12,9 @@ std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 SongScene* songScene;
 
 int main() {
-  songScene = new SongScene(engine);
+  const GBFS_FILE* fs = find_first_gbfs_file(0);
+
+  songScene = new SongScene(engine, fs);
   engine->setScene(songScene);
 
   player_init();

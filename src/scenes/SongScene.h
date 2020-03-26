@@ -6,17 +6,25 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
+#include "gameplay/Song.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/score/Feedback.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectQueue.h"
 
+extern "C" {
+#include "utils/gbfs.h"
+}
+
 class SongScene : public Scene {
  public:
   u32 msecs = 0;
 
-  SongScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
+  SongScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
+      : Scene(engine) {
+    this->fs = fs;
+  }
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -25,6 +33,7 @@ class SongScene : public Scene {
   void tick(u16 keys) override;
 
  private:
+  const GBFS_FILE* fs;
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
