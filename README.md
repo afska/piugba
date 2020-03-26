@@ -49,23 +49,34 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 - `make start`: Starts the compiled ROM
 - `make restart`: Recompiles and starts the ROM
 
-### Build images
+### Scripts
+
+#### Build images
 
 ```bash
 # use #FF00FF as transparency color
 grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
 ```
 
-### Build music
+#### Build music
 
 ```bash
 ffmpeg -i file.mp3 -ac 1 -af 'aresample=18157' -strict unofficial -c:a gsm file.gsm
 ffplay -ar 18157 file.gsm
 ```
 
-### Build gba-sprite-engine
+#### Build filesystem
 
 ```bash
+gbfs files.gbfs file1.bmp file2.txt *.gsm
+# pad rom.gba to a 256-byte boundary
+cat rom.gba files.gbfs > rom.out.gba
+```
+
+#### Build gba-sprite-engine
+
+```bash
+# (git bash with admin rights)
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
