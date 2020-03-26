@@ -65,6 +65,8 @@
 		"string.h": "c",
 		"private.h": "c",
 		"gbfs.h": "c",
-		"gsm.h": "c"
+		"gsm.h": "c",
+		"stddef.h": "c",
+		"tonc_core.h": "c"
 	}
 }

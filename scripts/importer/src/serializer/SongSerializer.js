@@ -15,7 +15,7 @@ module.exports = class SongSerializer {
 
     return buffer
       .String(_.padEnd(metadata.title, TITLE_LEN))
-      .String(_.padEnd(metadata.artist, TITLE_LEN))
+      .String(_.padEnd(metadata.artist, ARTIST_LEN))
       .UInt8(2) // TODO: Unhardcode channel
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)

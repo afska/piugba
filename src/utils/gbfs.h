@@ -39,6 +39,8 @@ Your gba.h should do this for you.
 extern "C" {
 #endif
 
+#include <stddef.h>
+
 /* to make a 300 KB space called samples do GBFS_SPACE(samples, 300) */
 
 #define GBFS_SPACE(filename, kbytes)                                \
