@@ -10,6 +10,11 @@ void parse_array(u8* source, u32* cursor, void* target, u32 length) {
   *cursor += length;
 }
 
+void parse_u8(u8* source, u32* cursor, u8* target) {
+  *target = *(source + *cursor);
+  *cursor += sizeof(u8);
+}
+
 void parse_u32(u8* source, u32* cursor, u32* target) {
   *target = *((u32*)(source + *cursor));
   *cursor += sizeof(u32);
@@ -28,9 +33,7 @@ Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
   song->artist = (char*)malloc(ARTIST_LEN);
   parse_array(data, &cursor, song->artist, ARTIST_LEN);
 
-  // parse_array(data, &cursor, &song->channel, sizeof(u8));
-  cursor += 1;
-
+  parse_u8(data, &cursor, (u8*)&song->channel);
   parse_u32(data, &cursor, &song->sampleStart);
   parse_u32(data, &cursor, &song->sampleLength);
 
