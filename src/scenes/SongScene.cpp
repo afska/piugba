@@ -11,7 +11,7 @@ const int INITIAL_OFFSET = -175;
 const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {/*bg.get()*/};
+  return {bg.get()};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
@@ -30,8 +30,17 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   // TODO: REMOVE
   Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
-  log_text(std::to_string(song->sampleStart).c_str());
-  Song_free(song);
+  u32 index = 0;
+  for (u32 i = 0; i < song->length; i++) {
+    if (song->charts[i].level == 7) {
+      index = i;
+      break;
+    }
+  }
+  chartReader =
+      std::unique_ptr<ChartReader>(new ChartReader(song->charts + index));
+  // log_text(std::to_string(song->sampleStart).c_str());
+  // Song_free(song);
 
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
@@ -41,13 +50,16 @@ void SongScene::load() {
           BeethovenVirusPal, sizeof(BeethovenVirusPal)));
   SpriteBuilder<Sprite> builder;
 
-  // setUpBackground();
+  setUpBackground();
   setUpArrows();
 
   score = std::unique_ptr<Score>{new Score()};
 }
 
 void SongScene::tick(u16 keys) {
+  // TODO: REMOVE
+  chartReader->update(msecs, arrowQueue.get());
+
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
   int millis = msecs + INITIAL_OFFSET;

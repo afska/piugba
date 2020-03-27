@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
+#include "gameplay/ChartReader.h"
 #include "gameplay/models/Song.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
@@ -34,6 +35,7 @@ class SongScene : public Scene {
 
  private:
   const GBFS_FILE* fs;
+  std::unique_ptr<ChartReader> chartReader;
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;

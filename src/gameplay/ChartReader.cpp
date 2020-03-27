@@ -4,8 +4,7 @@ ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
 };
 
-void ChartReader::update(u32 msecs,
-                         std::unique_ptr<ObjectQueue<Arrow>> arrowQueue) {
+void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
   while (msecs >= chart->events[eventIndex].timestamp &&
          eventIndex < chart->length) {
     auto event = chart->events[eventIndex];
@@ -13,9 +12,7 @@ void ChartReader::update(u32 msecs,
 
     switch (type) {
       case EventType::NOTE:
-        ArrowType arrowType = getArrowType(event.data);
-        arrowQueue->push(
-            [&arrowType](Arrow* it) { it->initialize(arrowType); });
+        processNote(event.data, arrowQueue);
         break;
     }
 
@@ -23,17 +20,15 @@ void ChartReader::update(u32 msecs,
   }
 };
 
-ArrowType getArrowType(u8 data) {
+void ChartReader::processNote(u8 data, ObjectQueue<Arrow>* arrowQueue) {
   if (data & EVENT_ARROW_DOWNLEFT)
-    return ArrowType::DOWNLEFT;
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
   if (data & EVENT_ARROW_UPLEFT)
-    return ArrowType::UPLEFT;
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
   if (data & EVENT_ARROW_CENTER)
-    return ArrowType::CENTER;
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
   if (data & EVENT_ARROW_UPRIGHT)
-    return ArrowType::UPRIGHT;
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
   if (data & EVENT_ARROW_DOWNRIGHT)
-    return ArrowType::DOWNRIGHT;
-
-  return ArrowType::DOWNLEFT;
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
 }
