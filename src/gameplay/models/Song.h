@@ -23,6 +23,6 @@ typedef struct {
 } Song;
 
 Song* Song_parse(const GBFS_FILE* fs, char* fileName);
-void Song_free();
+void Song_free(Song* song);
 
 #endif  // SONG_H

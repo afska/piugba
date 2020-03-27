@@ -31,6 +31,7 @@ void SongScene::load() {
   // TODO: REMOVE
   Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
   log_text(std::to_string(song->sampleStart).c_str());
+  Song_free(song);
 
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
