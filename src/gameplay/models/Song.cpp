@@ -1,4 +1,5 @@
 #include "Song.h"
+#include <libgba-sprite-engine/background/text_stream.h>  // TODO: log_text
 #include <stdlib.h>
 #include <string.h>
 
@@ -49,8 +50,16 @@ Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
 
     parse_u32le(data, &cursor, &chart->length);
     chart->events = (Event*)malloc(sizeof(Event) * chart->length);
+
     for (u32 j = 0; j < chart->length; j++) {
       auto event = chart->events + j;
+
+      if (chart->level == 7 && j == 200) {
+        u32 value = *(data + cursor) + (*(data + cursor + 1) << 8) +
+                    (*(data + cursor + 2) << 16) + (*(data + cursor + 3) << 24);
+        // TODO: Acá lo leo bien! Mantener la data en ROM y no RAM
+        log_text(std::to_string(value).c_str());
+      }
 
       parse_u32le(data, &cursor, &event->timestamp);
       parse_u8(data, &cursor, &event->data);

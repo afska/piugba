@@ -1,5 +1,5 @@
 #include "SongScene.h"
-#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE tonc_core (qran_range)
+#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE (qran_range)
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
@@ -11,7 +11,7 @@ const int INITIAL_OFFSET = -175;
 const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
-  return {bg.get()};
+  return {/*bg.get()*/};
 }
 
 std::vector<Sprite*> SongScene::sprites() {
@@ -39,7 +39,6 @@ void SongScene::load() {
   }
   chartReader =
       std::unique_ptr<ChartReader>(new ChartReader(song->charts + index));
-  // log_text(std::to_string(song->sampleStart).c_str());
   // Song_free(song);
 
   foregroundPalette =
@@ -50,7 +49,7 @@ void SongScene::load() {
           BeethovenVirusPal, sizeof(BeethovenVirusPal)));
   SpriteBuilder<Sprite> builder;
 
-  setUpBackground();
+  // setUpBackground();
   setUpArrows();
 
   score = std::unique_ptr<Score>{new Score()};
