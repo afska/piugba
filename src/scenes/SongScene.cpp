@@ -2,6 +2,7 @@
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include "data/content/BeethovenVirus.h"
 #include "data/content/compiled/shared_palette.h"
+#include "gameplay/Key.h"
 #include "utils/SpriteUtils.h"
 
 const u32 ARROW_POOL_SIZE = 20;
@@ -37,7 +38,7 @@ void SongScene::load() {
 void SongScene::tick(u16 keys) {
   bool isNewBeat = chartReader->update(msecs, arrowQueue.get());
 
-  if (isNewBeat)
+  if (isNewBeat && !KEY_ANY_PRESSED(keys))
     for (auto& arrowHolder : arrowHolders)
       arrowHolder->blink();
 
@@ -92,40 +93,31 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
-  // if (((keys & KEY_DOWN) | (keys & KEY_LEFT)) &&
-  //     !arrowHolders[0]->getIsPressed()) {
-  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
-  // }
-  // if (((keys & KEY_L) | (keys & KEY_UP)) && !arrowHolders[1]->getIsPressed())
-  // {
-  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
-  // }
-  // if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
-  //     !arrowHolders[2]->getIsPressed()) {
-  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
-  // }
-  // if (keys & KEY_R && !arrowHolders[3]->getIsPressed()) {
-  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
-  // }
-  // if (keys & KEY_A && !arrowHolders[4]->getIsPressed()) {
-  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
-  //   });
-  // }
-
-  if (arrowHolders[0]->setIsPressed((keys & KEY_DOWN) | (keys & KEY_LEFT)))
+  if (arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys))) {
     judge->onPress(ArrowType::DOWNLEFT);
+    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+  }
 
-  if (arrowHolders[1]->setIsPressed((keys & KEY_L) | (keys & KEY_UP)))
+  if (arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys))) {
     judge->onPress(ArrowType::UPLEFT);
+    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+  }
 
-  if (arrowHolders[2]->setIsPressed((keys & KEY_B) | (keys & KEY_RIGHT)))
+  if (arrowHolders[2]->setIsPressed(KEY_CENTER(keys))) {
     judge->onPress(ArrowType::CENTER);
+    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+  }
 
-  if (arrowHolders[3]->setIsPressed(keys & KEY_R))
+  if (arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys))) {
     judge->onPress(ArrowType::UPRIGHT);
+    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+  }
 
-  if (arrowHolders[4]->setIsPressed(keys & KEY_A))
+  if (arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys))) {
     judge->onPress(ArrowType::DOWNRIGHT);
+    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
+    // });
+  }
 }
 
 SongScene::~SongScene() {
