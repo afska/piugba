@@ -90,6 +90,26 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::processKeys(u16 keys) {
+  // if (((keys & KEY_DOWN) | (keys & KEY_LEFT)) &&
+  //     !arrowHolders[0]->getIsPressed()) {
+  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+  // }
+  // if (((keys & KEY_L) | (keys & KEY_UP)) && !arrowHolders[1]->getIsPressed())
+  // {
+  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+  // }
+  // if (((keys & KEY_B) | (keys & KEY_RIGHT)) &&
+  //     !arrowHolders[2]->getIsPressed()) {
+  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+  // }
+  // if (keys & KEY_R && !arrowHolders[3]->getIsPressed()) {
+  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+  // }
+  // if (keys & KEY_A && !arrowHolders[4]->getIsPressed()) {
+  //   arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
+  //   });
+  // }
+
   arrowHolders[0]->setIsPressed((keys & KEY_DOWN) | (keys & KEY_LEFT));
   arrowHolders[1]->setIsPressed((keys & KEY_L) | (keys & KEY_UP));
   arrowHolders[2]->setIsPressed((keys & KEY_B) | (keys & KEY_RIGHT));

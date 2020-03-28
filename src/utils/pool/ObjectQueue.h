@@ -27,8 +27,10 @@ class ObjectQueue {
   }
 
   void push(std::function<void(T*)> initialize) {
-    if (count == capacity)
+    if (count == capacity) {
+      // (*(u8*)NULL) = 1;  // CRASH!
       return;
+    }
 
     rear++;
     if (rear == capacity)

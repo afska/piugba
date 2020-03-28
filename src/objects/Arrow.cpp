@@ -87,7 +87,7 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
     SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 
     return static_cast<FeedbackType>(
-        qran_range(0, 5));  // TODO: Use isPressed or remove;
+        qran_range(0, 2));  // TODO: Use isPressed or remove;
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
