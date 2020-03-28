@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // for memset
-#include "../utils/gbfs.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
+#include "utils/gbfs/gbfs.h"
 
 #define CMD_START_SONG 0x0400
 #define TIMER_16MHZ 0

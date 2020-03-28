@@ -14,7 +14,7 @@
 #include "utils/pool/ObjectQueue.h"
 
 extern "C" {
-#include "utils/gbfs.h"
+#include "utils/gbfs/gbfs.h"
 }
 
 class SongScene : public Scene {

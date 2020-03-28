@@ -44,6 +44,7 @@ SRCDIRS		:= src \
 						 src/player/core \
 						 src/scenes \
 						 src/utils \
+						 src/utils/gbfs \
 						 src/utils/pool
 DATADIRS	:=
 INCDIRS		:= src

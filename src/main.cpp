@@ -5,7 +5,7 @@
 
 extern "C" {
 #include "player/player.h"
-#include "utils/gbfs.h"
+#include "utils/gbfs/gbfs.h"
 }
 
 std::shared_ptr<GBAEngine> engine{new GBAEngine()};

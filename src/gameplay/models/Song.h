@@ -7,7 +7,7 @@
 #include "utils/parse.h"
 
 extern "C" {
-#include "utils/gbfs.h"
+#include "utils/gbfs/gbfs.h"
 }
 
 enum Channel { ORIGINAL, KPOP, WORLD };
