@@ -5,7 +5,7 @@
 #include "Arrow.h"
 
 const u32 ARROW_HOLDER_IDLE = 5;
-const u32 ARROW_HOLDER_PRESSED = 6;
+const u32 ARROW_HOLDER_PRESSED = 7;
 
 class ArrowHolder {
  public:

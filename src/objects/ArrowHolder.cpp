@@ -45,13 +45,16 @@ bool ArrowHolder::getIsPressed() {
 
 void ArrowHolder::setIsPressed(bool isPressed) {
   this->isPressed = isPressed;
-
-  SPRITE_goToFrame(sprite.get(), this->start + (isPressed ? ARROW_HOLDER_PRESSED
-                                                          : ARROW_HOLDER_IDLE));
 }
 
 void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
+
+  u32 currentFrame = sprite->getCurrentFrame();
+  if (isPressed && currentFrame < start + ARROW_HOLDER_PRESSED)
+    SPRITE_goToFrame(sprite.get(), currentFrame + 1);
+  if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
+    SPRITE_goToFrame(sprite.get(), currentFrame - 1);
 }
 
 Sprite* ArrowHolder::get() {
