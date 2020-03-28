@@ -35,7 +35,19 @@ ArrowHolder::ArrowHolder(ArrowType type) {
   SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
 
   this->type = type;
+  this->start = start;
   this->flip = flip;
+}
+
+bool ArrowHolder::getIsPressed() {
+  return isPressed;
+}
+
+void ArrowHolder::setIsPressed(bool isPressed) {
+  this->isPressed = isPressed;
+
+  SPRITE_goToFrame(sprite.get(), this->start + (isPressed ? ARROW_HOLDER_PRESSED
+                                                          : ARROW_HOLDER_IDLE));
 }
 
 void ArrowHolder::tick() {

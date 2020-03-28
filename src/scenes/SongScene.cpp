@@ -97,8 +97,7 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows(u32 millis) {
   arrowQueue->forEachActive([this, &millis](Arrow* it) {
-    bool isPressed = arrowHolders[it->type]->get()->getCurrentFrame() !=
-                     ARROW_HOLDER_IDLE;  // TODO: Extract logic
+    bool isPressed = arrowHolders[it->type]->getIsPressed();
 
     FeedbackType feedbackType = it->tick(millis, isPressed);
     if (feedbackType < FEEDBACK_TOTAL_SCORES)
@@ -109,22 +108,11 @@ void SongScene::updateArrows(u32 millis) {
 }
 
 void SongScene::processKeys(u16 keys) {
-  SPRITE_goToFrame(arrowHolders[0]->get(),
-                   ARROW_FRAMES * 0 + (keys & KEY_DOWN ? ARROW_HOLDER_PRESSED
-                                                       : ARROW_HOLDER_IDLE));
-  SPRITE_goToFrame(arrowHolders[1]->get(),
-                   ARROW_FRAMES * 1 + (keys & KEY_L ? ARROW_HOLDER_PRESSED
-                                                    : ARROW_HOLDER_IDLE));
-  SPRITE_goToFrame(arrowHolders[2]->get(),
-                   ARROW_FRAMES * 2 + ((keys & KEY_B) | (keys & KEY_RIGHT)
-                                           ? ARROW_HOLDER_PRESSED
-                                           : ARROW_HOLDER_IDLE));
-  SPRITE_goToFrame(arrowHolders[3]->get(),
-                   ARROW_FRAMES * 1 + (keys & KEY_R ? ARROW_HOLDER_PRESSED
-                                                    : ARROW_HOLDER_IDLE));
-  SPRITE_goToFrame(arrowHolders[4]->get(),
-                   ARROW_FRAMES * 0 + (keys & KEY_A ? ARROW_HOLDER_PRESSED
-                                                    : ARROW_HOLDER_IDLE));
+  arrowHolders[0]->setIsPressed((keys & KEY_DOWN) | (keys & KEY_LEFT));
+  arrowHolders[1]->setIsPressed((keys & KEY_L) | (keys & KEY_UP));
+  arrowHolders[2]->setIsPressed((keys & KEY_B) | (keys & KEY_RIGHT));
+  arrowHolders[3]->setIsPressed(keys & KEY_R);
+  arrowHolders[4]->setIsPressed(keys & KEY_A);
 }
 
 SongScene::~SongScene() {
