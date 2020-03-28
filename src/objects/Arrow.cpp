@@ -82,14 +82,14 @@ FeedbackType Arrow::tick(u32 millis, bool isPressed) {
     }
 
     return FeedbackType::ENDING;
-  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < 3) {
+  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < ARROW_SPEED) {
     endTime = millis;
     SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 
     return static_cast<FeedbackType>(
         qran_range(0, 5));  // TODO: Use isPressed or remove;
   } else
-    sprite->moveTo(sprite->getX(), sprite->getY() - 3);
+    sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
   return FeedbackType::ACTIVE;
 }

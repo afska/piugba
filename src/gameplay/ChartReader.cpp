@@ -1,26 +1,21 @@
 #include "ChartReader.h"
 
+/*
+  x = x0 + v * t
+  ARROW_CORNER_MARGIN = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
+  t = (ARROW_CORNER_MARGIN - GBA_SCREEN_HEIGHT) px / SPEED px/frame
+  t = (4 - 160) / 3 = -52 frames * 16.73322954 ms/frame = -870,12793608 frames
+*/
+int TIME_BEFOREHAND = 870;
+
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
 };
 
 void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
   // TODO: Unhardcode speed, time offset, etc
-  /*
-    x = x0 + v * t
-    ARROW_CORNER_MARGIN = GBA_SCREEN_HEIGHT + SPEED * t
 
-    ARROW_CORNER_MARGIN px - GBA_SCREEN_HEIGHT px
-    _____________________________________________  = t
-                  SPEED px/frame
-
-    -156 px
-    __________ = t = -52 frames = 870 ms
-    3 px/frame
-
-    1 frame = 16.73322954 ms
-  */
-  while (msecs >= chart->events[eventIndex].timestamp - 870 &&
+  while (msecs >= chart->events[eventIndex].timestamp - TIME_BEFOREHAND &&
          eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_ARROW_TYPE));

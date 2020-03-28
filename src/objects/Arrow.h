@@ -10,6 +10,7 @@ const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 9;
 const u32 ARROW_CORNER_MARGIN = 4;
 const u32 ARROW_MARGIN = 16 + 2;
+const u32 ARROW_SPEED = 3;
 
 class Arrow : public IPoolable {
  public:
