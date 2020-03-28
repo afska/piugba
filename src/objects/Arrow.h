@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 #include "score/Feedback.h"
-#include "utils/pool/IPoolable.h";
+#include "utils/pool/IPoolable.h"
 
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 const u32 ARROWS_TOTAL = 5;

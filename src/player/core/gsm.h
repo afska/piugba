@@ -10,6 +10,8 @@
 #ifndef GSM_H
 #define GSM_H
 
+#pragma GCC system_header
+
 #ifdef __cplusplus
 #define NeedFunctionPrototypes 1
 #endif

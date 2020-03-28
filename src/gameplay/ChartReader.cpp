@@ -14,6 +14,8 @@ void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
       case EventType::NOTE:
         processNote(event.data, arrowQueue);
         break;
+      default:
+        break;
     }
 
     eventIndex++;

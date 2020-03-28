@@ -10,6 +10,8 @@
 #ifdef PROTO_H /* sic */
 #undef PROTO_H
 
+#pragma GCC system_header
+
 #undef P
 #undef P0
 #undef P1

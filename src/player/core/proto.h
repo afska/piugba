@@ -10,6 +10,8 @@
 #ifndef PROTO_H
 #define PROTO_H
 
+#pragma GCC system_header
+
 #if __cplusplus
 #define NeedFunctionPrototypes 1
 #endif

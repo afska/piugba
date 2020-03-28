@@ -2,7 +2,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE (qran_range)
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/compiled/spr_arrows.h"
-#include "utils/SpriteUtils.h";
+#include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
@@ -23,7 +23,7 @@ Arrow::Arrow(u32 id) {
 }
 
 void Arrow::initialize(ArrowType type) {
-  u32 start;
+  u32 start = 0;
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:

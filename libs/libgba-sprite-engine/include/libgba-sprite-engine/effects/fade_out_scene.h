@@ -5,22 +5,21 @@
 #ifndef GBA_SPRITE_ENGINE_FADE_OUT_SCENE_H
 #define GBA_SPRITE_ENGINE_FADE_OUT_SCENE_H
 
+#pragma GCC system_header
 
 #include <libgba-sprite-engine/scene.h>
 #include "scene_effect.h"
 
 class FadeOutScene : public SceneEffect {
-private:
-    int timesUpdated;
-    int speed;
-    std::unique_ptr<CombinedPalette> palette;
+ private:
+  int timesUpdated;
+  int speed;
+  std::unique_ptr<CombinedPalette> palette;
 
-public:
-    FadeOutScene(int speed);
-    void update() override;
-    bool isDone() override { return timesUpdated >= (32 / speed); }
-
+ public:
+  FadeOutScene(int speed);
+  void update() override;
+  bool isDone() override { return timesUpdated >= (32 / speed); }
 };
 
-
-#endif //GBA_SPRITE_ENGINE_FADE_OUT_SCENE_H
+#endif  // GBA_SPRITE_ENGINE_FADE_OUT_SCENE_H

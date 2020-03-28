@@ -10,6 +10,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#pragma GCC system_header
+
 /*efine	SIGHANDLER_T	int 		/* signal handlers are void	*/
 /*efine HAS_SYSV_SIGNAL	1		/* sigs not blocked/reset?	*/
 

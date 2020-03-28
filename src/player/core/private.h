@@ -10,6 +10,8 @@
 #ifndef PRIVATE_H
 #define PRIVATE_H
 
+#pragma GCC system_header
+
 typedef short word;    /* 16 bit signed int	*/
 typedef long longword; /* 32 bit signed int	*/
 

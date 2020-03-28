@@ -3,7 +3,7 @@
 #include "utils/SpriteUtils.h"
 
 ArrowHolder::ArrowHolder(ArrowType type) {
-  int start;
+  int start = 0;
   bool flip = false;
   switch (type) {
     case ArrowType::DOWNLEFT:

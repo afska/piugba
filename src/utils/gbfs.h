@@ -35,6 +35,9 @@ Your gba.h should do this for you.
 
 #ifndef INCLUDE_GBFS_H
 #define INCLUDE_GBFS_H
+
+#pragma GCC system_header
+
 #ifdef __cplusplus
 extern "C" {
 #endif

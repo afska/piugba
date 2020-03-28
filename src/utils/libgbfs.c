@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+
 /* libgbfs.c
    access object in a GBFS file
 
