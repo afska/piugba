@@ -6,7 +6,7 @@
 #include "utils/SpriteUtils.h"
 
 const u32 BPM = 162;
-const int INITIAL_OFFSET = -175;
+const int INITIAL_OFFSET = 175;
 const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -59,7 +59,7 @@ void SongScene::tick(u16 keys) {
 
   // 60000-----BPMbeats
   // millis-----x = millis*BPM/60000
-  int millis = msecs + INITIAL_OFFSET;
+  int millis = msecs - INITIAL_OFFSET;
   int beat = Div(millis * BPM, 60000);  // BPM bpm
   if (beat != lastBeat) {
     // TODO: ANIMATE

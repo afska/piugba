@@ -28,7 +28,7 @@ module.exports = class Simfile {
       const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
       const offset =
-        this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
+        -this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
       const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
       const header = { name, level, offset, bpms };
 
