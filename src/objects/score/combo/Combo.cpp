@@ -5,8 +5,10 @@
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
-  for (u32 i = 0; i < 3; i++)
-    digits.push_back(std::unique_ptr<ComboDigit>{new ComboDigit(i)});
+  for (u32 i = 0; i < 3; i++) {
+    auto digit = std::unique_ptr<ComboDigit>{new ComboDigit(i)};
+    digits.push_back(std::move(digit));
+  }
 }
 
 void Combo::setValue(u32 value) {
@@ -40,4 +42,8 @@ void Combo::render(std::vector<Sprite*>* sprites) {
 
   for (auto& digit : digits)
     sprites->push_back(digit->get());
+}
+
+Combo::~Combo() {
+  digits.clear();
 }

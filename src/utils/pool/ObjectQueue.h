@@ -66,8 +66,8 @@ class ObjectQueue {
 
   ~ObjectQueue() {
     for (auto& it : objects) {
-      free(it->object);
-      free(it);
+      delete it->object;
+      delete it;
     }
   }
 

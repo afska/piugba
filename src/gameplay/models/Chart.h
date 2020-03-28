@@ -10,8 +10,8 @@ typedef struct {
   Difficulty difficulty;  // u8
   u8 level;               // 0-30
 
-  u32 length;
-  Event* events;  // ("length" times)
+  u32 eventCount;
+  Event* events;  // ("eventCount" times)
 } Chart;
 
 #endif  // CHART_H

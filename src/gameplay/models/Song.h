@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include "Chart.h"
 #include "Event.h"
+#include "utils/parse.h"
 
 extern "C" {
 #include "utils/gbfs.h"
@@ -18,8 +19,8 @@ typedef struct {
   u32 sampleStart;   // in ms
   u32 sampleLength;  // in ms
 
-  u8 length;
-  Chart* charts;  // ("length" times)
+  u8 chartCount;
+  Chart* charts;  // ("chartCount" times)
 } Song;
 
 Song* Song_parse(const GBFS_FILE* fs, char* fileName);

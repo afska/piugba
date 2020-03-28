@@ -17,6 +17,8 @@ class Combo {
   void tick();
   void render(std::vector<Sprite*>* sprites);
 
+  ~Combo();
+
  private:
   u32 value = 0;
   std::unique_ptr<ComboTitle> title;

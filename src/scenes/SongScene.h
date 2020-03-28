@@ -32,6 +32,8 @@ class SongScene : public Scene {
   void load() override;
   void tick(u16 keys) override;
 
+  ~SongScene();
+
  private:
   const GBFS_FILE* fs;
   std::unique_ptr<ChartReader> chartReader;

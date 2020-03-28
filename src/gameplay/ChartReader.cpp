@@ -6,7 +6,7 @@ ChartReader::ChartReader(Chart* chart) {
 
 void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
   while (msecs >= chart->events[eventIndex].timestamp &&
-         eventIndex < chart->length) {
+         eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_ARROW_TYPE));
 
