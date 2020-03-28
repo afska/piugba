@@ -66,7 +66,7 @@ class ObjectQueue {
 
   ~ObjectQueue() {
     for (auto& it : objects) {
-      delete it->object;
+      delete it->object;  // TODO: FIX undefined behavior
       delete it;
     }
   }

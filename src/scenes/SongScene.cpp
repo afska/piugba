@@ -1,5 +1,4 @@
 #include "SongScene.h"
-#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE (qran_range)
 #include <libgba-sprite-engine/palette/palette_manager.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
@@ -63,24 +62,7 @@ void SongScene::tick(u16 keys) {
   int millis = msecs + INITIAL_OFFSET;
   int beat = Div(millis * BPM, 60000);  // BPM bpm
   if (beat != lastBeat) {
-    // SPRITE_goToFrame(arrowHolders[0]->get(),
-    //                  ARROW_FRAMES * 0 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
-    //                                                    : ARROW_HOLDER_IDLE));
-    // SPRITE_goToFrame(arrowHolders[1]->get(),
-    //                  ARROW_FRAMES * 1 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
-    //                                                    : ARROW_HOLDER_IDLE));
-    // SPRITE_goToFrame(arrowHolders[2]->get(),
-    //                  ARROW_FRAMES * 2 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
-    //                                                    : ARROW_HOLDER_IDLE));
-    // SPRITE_goToFrame(arrowHolders[3]->get(),
-    //                  ARROW_FRAMES * 1 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
-    //                                                    : ARROW_HOLDER_IDLE));
-    // SPRITE_goToFrame(arrowHolders[4]->get(),
-    //                  ARROW_FRAMES * 0 + (beat % 2 == 0 ? ARROW_HOLDER_PRESSED
-    //                                                    : ARROW_HOLDER_IDLE));
-    // arrowQueue->push([](Arrow* it) {
-    //   it->initialize(static_cast<ArrowType>(qran_range(0, 4)));
-    // });
+    // TODO: ANIMATE
   }
   lastBeat = beat;
 
@@ -127,32 +109,6 @@ void SongScene::updateArrows(u32 millis) {
 }
 
 void SongScene::processKeys(u16 keys) {
-  if ((keys & KEY_DOWN) && arrowHolders[0]->get()->getCurrentFrame() ==
-                               ARROW_FRAMES * 0 + ARROW_HOLDER_IDLE) {
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
-  }
-
-  if ((keys & KEY_L) && arrowHolders[1]->get()->getCurrentFrame() ==
-                            ARROW_FRAMES * 1 + ARROW_HOLDER_IDLE) {
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
-  }
-
-  if ((((keys & KEY_B) | (keys & KEY_RIGHT))) &&
-      arrowHolders[2]->get()->getCurrentFrame() ==
-          ARROW_FRAMES * 2 + ARROW_HOLDER_IDLE) {
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
-  }
-
-  if ((keys & KEY_R) && arrowHolders[3]->get()->getCurrentFrame() ==
-                            ARROW_FRAMES * 1 + ARROW_HOLDER_IDLE) {
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
-  }
-
-  if ((keys & KEY_A) && arrowHolders[4]->get()->getCurrentFrame() ==
-                            ARROW_FRAMES * 0 + ARROW_HOLDER_IDLE) {
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
-  }
-
   SPRITE_goToFrame(arrowHolders[0]->get(),
                    ARROW_FRAMES * 0 + (keys & KEY_DOWN ? ARROW_HOLDER_PRESSED
                                                        : ARROW_HOLDER_IDLE));
