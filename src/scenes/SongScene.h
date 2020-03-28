@@ -35,12 +35,11 @@ class SongScene : public Scene {
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectQueue<Arrow>> arrowQueue;
-  int lastBeat = 0;
 
   void setUpBackground();
   void setUpArrows();
   void updateArrowHolders();
-  void updateArrows(u32 millis);
+  void updateArrows();
   void processKeys(u16 keys);
 };
 

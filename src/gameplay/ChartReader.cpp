@@ -1,21 +1,40 @@
 #include "ChartReader.h"
 
+// TODO: Unhardcode offset (header), tempo (SET_TEMPO), speed (SET_SPEED),
+// anticipation (look-up table: 3=870, 4=653, etc).
+const u32 BPM = 162;
+const int OFFSET = 175;
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
-  t = (ARROW_CORNER_MARGIN - GBA_SCREEN_HEIGHT) px / SPEED px/frame
+  t = (ARROW_CORNER_MARGIN - GBA_SCREEN_HEIGHT) px / ARROW_SPEED px/frame
   t = (4 - 160) / 3 = -52 frames * 16.73322954 ms/frame = -870,12793608 frames
 */
-int TIME_BEFOREHAND = 870;
+const int ANTICIPATION = 870;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
 };
 
-void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
-  // TODO: Unhardcode speed, time offset, etc
+bool ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
+  processNextEvent(msecs, arrowQueue);
+  return animateBpm(msecs);
+};
 
-  while (msecs >= chart->events[eventIndex].timestamp - TIME_BEFOREHAND &&
+bool ChartReader::animateBpm(u32 msecs) {
+  int msecsWithOffset = msecs - OFFSET;
+
+  // 60000 ms           -> BPM beats
+  // msecsWithOffset ms -> x = millis * BPM / 60000
+  int beat = Div(msecsWithOffset * BPM, 60000);
+  bool hasChanged = beat != lastBeat;
+  lastBeat = beat;
+
+  return hasChanged;
+}
+
+void ChartReader::processNextEvent(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
+  while (msecs >= chart->events[eventIndex].timestamp - ANTICIPATION &&
          eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_ARROW_TYPE));
@@ -30,7 +49,7 @@ void ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
 
     eventIndex++;
   }
-};
+}
 
 void ChartReader::processNote(u8 data, ObjectQueue<Arrow>* arrowQueue) {
   if (data & EVENT_ARROW_DOWNLEFT)

@@ -9,12 +9,15 @@ class ChartReader {
  public:
   ChartReader(Chart* chart);
 
-  void update(u32 msecs, ObjectQueue<Arrow>* arrowQueue);
+  bool update(u32 msecs, ObjectQueue<Arrow>* arrowQueue);
 
  private:
   Chart* chart;
   u32 eventIndex = 0;
+  int lastBeat = 0;
 
+  bool animateBpm(u32 msecs);
+  void processNextEvent(u32 msecs, ObjectQueue<Arrow>* arrowQueue);
   void processNote(u8 data, ObjectQueue<Arrow>* arrowQueue);
 };
 

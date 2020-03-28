@@ -22,7 +22,7 @@ class Arrow : public IPoolable {
 
   void initialize(ArrowType type);
 
-  FeedbackType tick(u32 millis, bool isPressed);
+  FeedbackType tick(u32 msecs, bool isPressed);
   Sprite* get();
 
  private:

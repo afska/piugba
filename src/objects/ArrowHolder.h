@@ -13,6 +13,7 @@ class ArrowHolder {
 
   ArrowHolder(ArrowType type);
 
+  void blink();
   bool getIsPressed();
   void setIsPressed(bool isPressed);
 
@@ -24,6 +25,7 @@ class ArrowHolder {
   u32 start = 0;
   bool flip = false;
   bool isPressed = false;
+  bool isBlinking = false;
 };
 
 #endif  // ARROW_HOLDER_H

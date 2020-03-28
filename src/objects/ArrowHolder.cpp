@@ -39,6 +39,10 @@ ArrowHolder::ArrowHolder(ArrowType type) {
   this->flip = flip;
 }
 
+void ArrowHolder::blink() {
+  isBlinking = true;
+}
+
 bool ArrowHolder::getIsPressed() {
   return isPressed;
 }
@@ -51,9 +55,14 @@ void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
 
   u32 currentFrame = sprite->getCurrentFrame();
-  if (isPressed && currentFrame < start + ARROW_HOLDER_PRESSED)
+
+  if ((isPressed || isBlinking) &&
+      currentFrame < start + ARROW_HOLDER_PRESSED) {
     SPRITE_goToFrame(sprite.get(), currentFrame + 1);
-  if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
+
+    if (currentFrame + 1 == start + ARROW_HOLDER_PRESSED)
+      isBlinking = false;
+  } else if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
     SPRITE_goToFrame(sprite.get(), currentFrame - 1);
 }
 

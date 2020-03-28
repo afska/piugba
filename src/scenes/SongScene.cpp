@@ -5,8 +5,6 @@
 #include "data/content/compiled/shared_palette.h"
 #include "utils/SpriteUtils.h"
 
-const u32 BPM = 162;
-const int INITIAL_OFFSET = 175;
 const u32 ARROW_POOL_SIZE = 20;
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -44,20 +42,15 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  chartReader->update(msecs, arrowQueue.get());
+  bool isNewBeat = chartReader->update(msecs, arrowQueue.get());
 
-  // 60000-----BPMbeats
-  // millis-----x = millis*BPM/60000
-  int millis = msecs - INITIAL_OFFSET;
-  int beat = Div(millis * BPM, 60000);  // BPM bpm
-  if (beat != lastBeat) {
-    // TODO: ANIMATE
-  }
-  lastBeat = beat;
+  if (isNewBeat)
+    for (auto& arrowHolder : arrowHolders)
+      arrowHolder->blink();
 
   score->tick();
   updateArrowHolders();
-  updateArrows(millis);
+  updateArrows();
   processKeys(keys);
 }
 
@@ -84,11 +77,11 @@ void SongScene::updateArrowHolders() {
     it->tick();
 }
 
-void SongScene::updateArrows(u32 millis) {
-  arrowQueue->forEachActive([this, &millis](Arrow* it) {
+void SongScene::updateArrows() {
+  arrowQueue->forEachActive([this](Arrow* it) {
     bool isPressed = arrowHolders[it->type]->getIsPressed();
 
-    FeedbackType feedbackType = it->tick(millis, isPressed);
+    FeedbackType feedbackType = it->tick(msecs, isPressed);
     if (feedbackType < FEEDBACK_TOTAL_SCORES)
       score->update(feedbackType);
     if (feedbackType == FeedbackType::INACTIVE)
