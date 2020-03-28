@@ -24,6 +24,7 @@ typedef struct {
 } Song;
 
 Song* Song_parse(const GBFS_FILE* fs, char* fileName);
+Chart* Song_findChartByLevel(Song* song, u8 level);
 void Song_free(Song* song);
 
 #endif  // SONG_H

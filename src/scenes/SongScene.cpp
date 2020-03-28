@@ -27,18 +27,7 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
-  // TODO: REMOVE
-  Song* song = Song_parse(fs, (char*)"beethoven-virus.pius");
-  u32 index = 0;
-  for (u32 i = 0; i < song->chartCount; i++) {
-    if (song->charts[i].level == 7) {
-      index = i;
-      break;
-    }
-  }
-  chartReader =
-      std::unique_ptr<ChartReader>(new ChartReader(song->charts + index));
-  // Song_free(song);
+  chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
 
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(

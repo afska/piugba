@@ -44,6 +44,15 @@ Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
   return song;
 }
 
+Chart* Song_findChartByLevel(Song* song, u8 level) {
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if (song->charts[i].level == level)
+      return song->charts + i;
+  }
+
+  return NULL;
+}
+
 void Song_free(Song* song) {
   free(song->title);
   free(song->artist);
