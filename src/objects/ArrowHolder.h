@@ -15,7 +15,7 @@ class ArrowHolder {
 
   void blink();
   bool getIsPressed();
-  void setIsPressed(bool isPressed);
+  bool setIsPressed(bool isPressed);
 
   void tick();
   Sprite* get();

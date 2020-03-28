@@ -47,8 +47,10 @@ bool ArrowHolder::getIsPressed() {
   return isPressed;
 }
 
-void ArrowHolder::setIsPressed(bool isPressed) {
+bool ArrowHolder::setIsPressed(bool isPressed) {
+  bool isNewPressEvent = !this->isPressed && isPressed;
   this->isPressed = isPressed;
+  return isNewPressEvent;
 }
 
 void ArrowHolder::tick() {

@@ -1,6 +1,5 @@
 #include "SongScene.h"
 #include <libgba-sprite-engine/palette/palette_manager.h>
-#include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/BeethovenVirus.h"
 #include "data/content/compiled/shared_palette.h"
 #include "utils/SpriteUtils.h"
@@ -26,15 +25,9 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
+  judge = std::unique_ptr<Judge>(new Judge());
 
-  foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          shared_palettePal, sizeof(shared_palettePal)));
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          BeethovenVirusPal, sizeof(BeethovenVirusPal)));
-  SpriteBuilder<Sprite> builder;
-
+  setUpPalettes();
   setUpBackground();
   setUpArrows();
 
@@ -52,6 +45,15 @@ void SongScene::tick(u16 keys) {
   updateArrowHolders();
   updateArrows();
   processKeys(keys);
+}
+
+void SongScene::setUpPalettes() {
+  foregroundPalette =
+      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
+          shared_palettePal, sizeof(shared_palettePal)));
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          BeethovenVirusPal, sizeof(BeethovenVirusPal)));
 }
 
 void SongScene::setUpBackground() {
@@ -110,11 +112,20 @@ void SongScene::processKeys(u16 keys) {
   //   });
   // }
 
-  arrowHolders[0]->setIsPressed((keys & KEY_DOWN) | (keys & KEY_LEFT));
-  arrowHolders[1]->setIsPressed((keys & KEY_L) | (keys & KEY_UP));
-  arrowHolders[2]->setIsPressed((keys & KEY_B) | (keys & KEY_RIGHT));
-  arrowHolders[3]->setIsPressed(keys & KEY_R);
-  arrowHolders[4]->setIsPressed(keys & KEY_A);
+  if (arrowHolders[0]->setIsPressed((keys & KEY_DOWN) | (keys & KEY_LEFT)))
+    judge->onPress(ArrowType::DOWNLEFT);
+
+  if (arrowHolders[1]->setIsPressed((keys & KEY_L) | (keys & KEY_UP)))
+    judge->onPress(ArrowType::UPLEFT);
+
+  if (arrowHolders[2]->setIsPressed((keys & KEY_B) | (keys & KEY_RIGHT)))
+    judge->onPress(ArrowType::CENTER);
+
+  if (arrowHolders[3]->setIsPressed(keys & KEY_R))
+    judge->onPress(ArrowType::UPRIGHT);
+
+  if (arrowHolders[4]->setIsPressed(keys & KEY_A))
+    judge->onPress(ArrowType::DOWNRIGHT);
 }
 
 SongScene::~SongScene() {
