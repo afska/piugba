@@ -4,6 +4,8 @@
 class IPoolable {
  public:
   virtual void discard();
+
+  virtual ~IPoolable() {}
 };
 
 #endif  // I_POOLABLE_H
