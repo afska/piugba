@@ -3,7 +3,6 @@
 #include "data/content/BeethovenVirus.h"
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
-#include "utils/SpriteUtils.h"
 
 const u32 ARROW_POOL_SIZE = 20;
 
@@ -14,6 +13,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
+  sprites.push_back(lifeBar->get());
   score->render(&sprites);
 
   arrowQueue->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
@@ -32,6 +32,7 @@ void SongScene::load() {
   setUpBackground();
   setUpArrows();
 
+  lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score()};
 }
 
@@ -95,28 +96,27 @@ void SongScene::updateArrows() {
 void SongScene::processKeys(u16 keys) {
   if (arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys))) {
     judge->onPress(ArrowType::DOWNLEFT);
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
   }
 
   if (arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys))) {
     judge->onPress(ArrowType::UPLEFT);
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
   }
 
   if (arrowHolders[2]->setIsPressed(KEY_CENTER(keys))) {
     judge->onPress(ArrowType::CENTER);
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
   }
 
   if (arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys))) {
     judge->onPress(ArrowType::UPRIGHT);
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
   }
 
   if (arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys))) {
     judge->onPress(ArrowType::DOWNRIGHT);
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
-    // });
+    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
   }
 }
 

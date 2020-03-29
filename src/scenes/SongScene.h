@@ -9,6 +9,7 @@
 #include "gameplay/Judge.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
+#include "objects/LifeBar.h"
 #include "objects/score/Feedback.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectQueue.h"
@@ -33,6 +34,7 @@ class SongScene : public Scene {
   Chart* chart;
   std::unique_ptr<ChartReader> chartReader;
   std::unique_ptr<Judge> judge;
+  std::unique_ptr<LifeBar> lifeBar;
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
