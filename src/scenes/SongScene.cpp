@@ -1,6 +1,6 @@
 #include "SongScene.h"
 #include <libgba-sprite-engine/palette/palette_manager.h>
-#include "data/content/BeethovenVirus.h"
+#include "data/content/TestSong.h"
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
@@ -53,17 +53,16 @@ void SongScene::setUpPalettes() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
           shared_palettePal, sizeof(shared_palettePal)));
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          BeethovenVirusPal, sizeof(BeethovenVirusPal)));
+  backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
+      new BackgroundPaletteManager(TestSongPal, sizeof(TestSongPal)));
 }
 
 void SongScene::setUpBackground() {
   engine.get()->disableText();
 
   bg = std::unique_ptr<Background>(
-      new Background(0, BeethovenVirusTiles, sizeof(BeethovenVirusTiles),
-                     BeethovenVirusMap, sizeof(BeethovenVirusMap)));
+      new Background(0, TestSongTiles, sizeof(TestSongTiles), TestSongMap,
+                     sizeof(TestSongMap)));
   bg.get()->useMapScreenBlock(24);
 }
 

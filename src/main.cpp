@@ -9,8 +9,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-char* EXAMPLE_PIUS = (char*)"beethoven-virus.pius";
-char* EXAMPLE_GSM = (char*)"beethoven-virus.gsm";
+char* EXAMPLE_PIUS = (char*)"TestSong.pius";
+char* EXAMPLE_GSM = (char*)"TestSong.gsm";
 u8 EXAMPLE_LEVEL = 7;
 
 std::shared_ptr<GBAEngine> engine{new GBAEngine()};

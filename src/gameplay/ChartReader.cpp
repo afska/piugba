@@ -9,9 +9,9 @@ const int EMULATOR_MGBA_LAG = 150;
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
   t = (ARROW_CORNER_MARGIN_Y - GBA_SCREEN_HEIGHT) px / ARROW_SPEED px/frame
-  t = (14 - 160) / 3 = -48.66 frames * 16.73322954 ms/frame = -814,350 frames
+  t = (15 - 160) / 3 = -48.33 frames * 16.73322954 ms/frame = -808,77 frames
 */
-const int ANTICIPATION = 814 - EMULATOR_MGBA_LAG;
+const int ANTICIPATION = 809 - EMULATOR_MGBA_LAG;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
