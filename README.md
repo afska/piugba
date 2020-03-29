@@ -51,11 +51,17 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 
 ### Scripts
 
-#### Build images
+#### Build sprites
 
 ```bash
 # use #FF00FF as transparency color
 grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
+```
+
+#### Build backgrounds
+
+```bash
+grit *.bmp -gt -gB8 -mR! -mLs -ftc
 ```
 
 #### Build music
