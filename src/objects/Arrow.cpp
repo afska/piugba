@@ -49,7 +49,8 @@ void Arrow::initialize(ArrowType type) {
   this->start = start;
   this->flip = flip;
 
-  sprite->moveTo(ARROW_CORNER_MARGIN + ARROW_MARGIN * type, GBA_SCREEN_HEIGHT);
+  sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * type,
+                 GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
   endTime = 0;
@@ -82,8 +83,9 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
     }
 
     return FeedbackType::ENDING;
-  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN) < ARROW_SPEED) {
+  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN_Y) < ARROW_SPEED) {
     endTime = msecs;
+    sprite->moveTo(sprite->getX(), ARROW_CORNER_MARGIN_Y);
     SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 
     return static_cast<FeedbackType>(

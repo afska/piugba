@@ -27,8 +27,8 @@ ArrowHolder::ArrowHolder(ArrowType type) {
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withSize(SIZE_16_16)
-               .withLocation(ARROW_CORNER_MARGIN + ARROW_MARGIN * type,
-                             ARROW_CORNER_MARGIN)
+               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * type,
+                             ARROW_CORNER_MARGIN_Y)
                .buildPtr();
 
   SPRITE_reuseTiles(sprite.get());
