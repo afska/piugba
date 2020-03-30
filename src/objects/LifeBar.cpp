@@ -10,6 +10,8 @@ const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
 const u8 PALETTE_INDICES[] = {173, 175, 179, 180, 188, 186, 194, 190, 202,
                               197, 203, 199, 204, 198, 196, 193, 201, 192};
 
+// foregroundPalette->change(...);  // TODO: IMPLEMENT
+
 LifeBar::LifeBar() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
