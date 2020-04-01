@@ -41,7 +41,8 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
 
   animatedFlag = !animatedFlag;
 
-  if (animatedValue > max(MIN_VALUE, value - ANIMATION_OFFSET) && wait == 0) {
+  if (animatedValue > (u32)max(MIN_VALUE, value - ANIMATION_OFFSET) &&
+      wait == 0) {
     animatedValue--;
     wait = WAIT_TIME;
   } else if (wait > 0)
