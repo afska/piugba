@@ -8,14 +8,18 @@ class LifeBar {
  public:
   LifeBar();
 
+  void blink(ForegroundPaletteManager* foregroundPalette);
+
   void tick(ForegroundPaletteManager* foregroundPalette);
   Sprite* get();
 
  private:
   std::unique_ptr<Sprite> sprite;
   u32 value = 6;
+  u32 animatedValue = value;
+  u32 wait = 0;
 
-  void paint(u32 value, ForegroundPaletteManager* foregroundPalette);
+  void paint(ForegroundPaletteManager* foregroundPalette);
 };
 
 #endif  // LIFE_BAR_H

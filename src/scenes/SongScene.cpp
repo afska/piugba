@@ -4,7 +4,7 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-const u32 ARROW_POOL_SIZE = 17;
+const u32 ARROW_POOL_SIZE = 16;
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
@@ -39,9 +39,12 @@ void SongScene::load() {
 void SongScene::tick(u16 keys) {
   bool isNewBeat = chartReader->update(msecs, arrowQueue.get());
 
-  if (isNewBeat && !KEY_ANY_PRESSED(keys))
-    for (auto& arrowHolder : arrowHolders)
-      arrowHolder->blink();
+  if (isNewBeat)
+    for (auto& arrowHolder : arrowHolders) {
+      lifeBar->blink(foregroundPalette.get());
+      if (!KEY_ANY_PRESSED(keys))
+        arrowHolder->blink();
+    }
 
   score->tick();
   lifeBar->tick(foregroundPalette.get());

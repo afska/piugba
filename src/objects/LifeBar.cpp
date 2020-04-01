@@ -5,6 +5,8 @@
 
 const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;
+const u32 ANIMATION_OFFSET = 2;
+const u32 WAIT_TIME = 3;
 const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
                               894, 988,  923, 1017, 951,  974,  879, 9199, 936};
 const u8 PALETTE_INDICES[] = {173, 175, 179, 180, 188, 186, 194, 190, 202,
@@ -22,16 +24,27 @@ LifeBar::LifeBar() {
                .buildPtr();
 }
 
-void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
-  paint(6, foregroundPalette);
+void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
+  animatedValue = value;
+  wait = WAIT_TIME;
 }
 
-void LifeBar::paint(u32 value, ForegroundPaletteManager* foregroundPalette) {
+void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
+  paint(foregroundPalette);
+
+  if (animatedValue > value - ANIMATION_OFFSET && wait == 0) {
+    animatedValue--;
+    wait = WAIT_TIME;
+  } else if (wait > 0)
+    wait--;
+}
+
+void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   bool odd = false;
   for (u32 i = 0; i < sizeof(PALETTE_INDICES); i++) {
     COLOR color = PALETTE_COLORS[i + odd];
 
-    if (i >= value * 2)
+    if (i >= animatedValue * 2 - 2)
       color = (odd ? DISABLED_COLOR_BORDER : DISABLED_COLOR);
 
     if (i >= value * 2 - 2 && i < value * 2)
