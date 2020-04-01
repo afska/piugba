@@ -16,7 +16,7 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(lifeBar->get());
   score->render(&sprites);
 
-  arrowQueue->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(arrowHolders[i]->get());
@@ -37,7 +37,7 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  bool isNewBeat = chartReader->update(msecs, arrowQueue.get());
+  bool isNewBeat = chartReader->update(msecs, arrowPool.get());
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
@@ -71,7 +71,7 @@ void SongScene::setUpBackground() {
 }
 
 void SongScene::setUpArrows() {
-  arrowQueue = std::unique_ptr<ObjectQueue<Arrow>>{new ObjectQueue<Arrow>(
+  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
@@ -85,41 +85,42 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  arrowQueue->forEachActive([this](Arrow* it) {
+  arrowPool->forEachActive([this](Arrow* it) {
     bool isPressed = arrowHolders[it->type]->getIsPressed();
 
     FeedbackType feedbackType = it->tick(msecs, isPressed);
     if (feedbackType < FEEDBACK_TOTAL_SCORES)
       score->update(feedbackType);
     if (feedbackType == FeedbackType::ENDED)
-      arrowQueue->pop();
+      arrowPool->discard(it->id);
   });
 }
 
 void SongScene::processKeys(u16 keys) {
   if (arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys))) {
-    judge->onPress(ArrowType::DOWNLEFT, arrowQueue.get(), score.get());
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+    judge->onPress(ArrowType::DOWNLEFT, arrowPool.get(), score.get());
+    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT);
+    // });
   }
 
   if (arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys))) {
-    judge->onPress(ArrowType::UPLEFT, arrowQueue.get(), score.get());
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+    judge->onPress(ArrowType::UPLEFT, arrowPool.get(), score.get());
+    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
   }
 
   if (arrowHolders[2]->setIsPressed(KEY_CENTER(keys))) {
-    judge->onPress(ArrowType::CENTER, arrowQueue.get(), score.get());
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+    judge->onPress(ArrowType::CENTER, arrowPool.get(), score.get());
+    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::CENTER); });
   }
 
   if (arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys))) {
-    judge->onPress(ArrowType::UPRIGHT, arrowQueue.get(), score.get());
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+    judge->onPress(ArrowType::UPRIGHT, arrowPool.get(), score.get());
+    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
   }
 
   if (arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys))) {
-    judge->onPress(ArrowType::DOWNRIGHT, arrowQueue.get(), score.get());
-    // arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
+    judge->onPress(ArrowType::DOWNRIGHT, arrowPool.get(), score.get());
+    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
     // });
   }
 }

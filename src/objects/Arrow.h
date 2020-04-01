@@ -15,6 +15,7 @@ const u32 ARROW_SPEED = 3;
 
 class Arrow : public IPoolable {
  public:
+  u32 id = 0;
   ArrowType type = ArrowType::DOWNLEFT;
 
   Arrow(u32 id);

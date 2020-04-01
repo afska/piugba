@@ -3,9 +3,9 @@
 Judge::Judge() {}
 
 void Judge::onPress(ArrowType type,
-                    ObjectQueue<Arrow>* arrowQueue,
+                    ObjectPool<Arrow>* arrowPool,
                     Score* score) {
-  arrowQueue->forEachActive([type, score](Arrow* it) {
+  arrowPool->forEachActive([type, score](Arrow* it) {
     int diff = it->get()->getY() - ARROW_CORNER_MARGIN_Y;
 
     if (!it->isEnding() && it->type == type &&

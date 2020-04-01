@@ -3,15 +3,13 @@
 
 #include "objects/Arrow.h"
 #include "objects/score/Score.h"
-#include "utils/pool/ObjectQueue.h"
+#include "utils/pool/ObjectPool.h"
 
 class Judge {
  public:
   Judge();
 
-  void onPress(ArrowType arrowType,
-               ObjectQueue<Arrow>* arrowQueue,
-               Score* score);
+  void onPress(ArrowType arrowType, ObjectPool<Arrow>* arrowPool, Score* score);
 };
 
 #endif  // JUDGE_H

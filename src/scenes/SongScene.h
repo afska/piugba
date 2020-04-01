@@ -11,7 +11,7 @@
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
 #include "objects/score/Score.h"
-#include "utils/pool/ObjectQueue.h"
+#include "utils/pool/ObjectPool.h"
 
 class SongScene : public Scene {
  public:
@@ -37,7 +37,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  std::unique_ptr<ObjectQueue<Arrow>> arrowQueue;
+  std::unique_ptr<ObjectPool<Arrow>> arrowPool;
 
   void setUpPalettes();
   void setUpBackground();

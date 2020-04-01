@@ -17,8 +17,8 @@ ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
 };
 
-bool ChartReader::update(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
-  processNextEvent(msecs, arrowQueue);
+bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
+  processNextEvent(msecs, arrowPool);
   return animateBpm(msecs);
 };
 
@@ -34,7 +34,7 @@ bool ChartReader::animateBpm(u32 msecs) {
   return hasChanged;
 }
 
-void ChartReader::processNextEvent(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
+void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   while (msecs >= chart->events[eventIndex].timestamp - ANTICIPATION &&
          eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
@@ -42,7 +42,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
 
     switch (type) {
       case EventType::NOTE:
-        processNote(event.data, arrowQueue);
+        processNote(event.data, arrowPool);
         break;
       default:
         break;
@@ -52,15 +52,15 @@ void ChartReader::processNextEvent(u32 msecs, ObjectQueue<Arrow>* arrowQueue) {
   }
 }
 
-void ChartReader::processNote(u8 data, ObjectQueue<Arrow>* arrowQueue) {
+void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
   if (data & EVENT_ARROW_DOWNLEFT)
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
   if (data & EVENT_ARROW_UPLEFT)
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
   if (data & EVENT_ARROW_CENTER)
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::CENTER); });
   if (data & EVENT_ARROW_UPRIGHT)
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
   if (data & EVENT_ARROW_DOWNRIGHT)
-    arrowQueue->push([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
+    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
 }

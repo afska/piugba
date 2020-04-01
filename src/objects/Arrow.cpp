@@ -20,6 +20,8 @@ Arrow::Arrow(u32 id) {
 
   if (id > 0)
     SPRITE_reuseTiles(sprite.get());
+
+  this->id = id;
 }
 
 void Arrow::discard() {
