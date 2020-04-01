@@ -23,6 +23,7 @@ class Arrow : public IPoolable {
 
   void initialize(ArrowType type);
   void press();
+  bool isEnding();
 
   FeedbackType tick(u32 msecs, bool isPressed);
   Sprite* get();

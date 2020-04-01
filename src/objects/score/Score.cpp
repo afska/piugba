@@ -11,7 +11,8 @@ Score::Score() {
 void Score::update(FeedbackType feedbackType) {
   feedback->setType(feedbackType);
   feedback->show();
-  combo->setValue(combo->getValue() + 1);
+  combo->setValue(feedbackType == FeedbackType::MISS ? 0
+                                                     : combo->getValue() + 1);
   combo->show();
 }
 

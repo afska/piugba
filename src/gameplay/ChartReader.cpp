@@ -4,14 +4,14 @@
 // anticipation (look-up table: 3=870, 4=653, etc).
 const u32 BPM = 162;
 const int OFFSET = 175;
-const int EMULATOR_MGBA_LAG = 150;
+const int EMULATOR_AUDIO_LAG = 170;
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
   t = (ARROW_CORNER_MARGIN_Y - GBA_SCREEN_HEIGHT) px / ARROW_SPEED px/frame
   t = (15 - 160) / 3 = -48.33 frames * 16.73322954 ms/frame = -808,77 frames
 */
-const int ANTICIPATION = 809 - EMULATOR_MGBA_LAG;
+const int ANTICIPATION = 809 - EMULATOR_AUDIO_LAG;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;

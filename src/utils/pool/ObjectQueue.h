@@ -61,6 +61,7 @@ class ObjectQueue {
   }
 
   void forEachActive(std::function<void(T*)> func) {
+    // TODO: Improve performance
     for (auto& it : objects)
       if (it->isActive)
         func(it->object);

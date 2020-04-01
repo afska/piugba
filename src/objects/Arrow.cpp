@@ -67,14 +67,18 @@ void Arrow::press() {
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }
 
+bool Arrow::isEnding() {
+  return endTime > 0;
+}
+
 FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
-    return FeedbackType::INACTIVE;
+    return FeedbackType::ENDED;
 
-  if (endTime > 0) {
+  if (isEnding()) {
     u32 diff = abs(msecs - endTime);
 
     if (diff > END_ANIMATION_DELAY_MS) {
@@ -92,6 +96,7 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
 
     return FeedbackType::ENDING;
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
+    endTime = msecs;
     SPRITE_hide(sprite.get());
     sprite->stopAnimating();
 
