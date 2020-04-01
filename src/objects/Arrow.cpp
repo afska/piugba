@@ -1,9 +1,9 @@
 #include "Arrow.h"
-#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: REMOVE (qran_range)
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 #include "data/content/compiled/spr_arrows.h"
 #include "utils/SpriteUtils.h"
 
+const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
 const u32 END_ANIMATION_START = 5;
@@ -83,13 +83,11 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
     }
 
     return FeedbackType::ENDING;
-  } else if (abs(sprite->getY() - ARROW_CORNER_MARGIN_Y) < ARROW_SPEED) {
-    endTime = msecs;
-    sprite->moveTo(sprite->getX(), ARROW_CORNER_MARGIN_Y);
-    SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
+  } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
+    SPRITE_hide(sprite.get());
+    sprite->stopAnimating();
 
-    return static_cast<FeedbackType>(
-        qran_range(0, 2));  // TODO: Use isPressed or remove;
+    return FeedbackType::MISS;
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
