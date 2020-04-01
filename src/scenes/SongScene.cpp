@@ -44,6 +44,7 @@ void SongScene::tick(u16 keys) {
       arrowHolder->blink();
 
   score->tick();
+  lifeBar->tick(foregroundPalette.get());
   updateArrowHolders();
   updateArrows();
   processKeys(keys);
