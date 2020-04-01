@@ -13,6 +13,9 @@ class LifeBar {
 
  private:
   std::unique_ptr<Sprite> sprite;
+  u32 value = 6;
+
+  void paint(u32 value, ForegroundPaletteManager* foregroundPalette);
 };
 
 #endif  // LIFE_BAR_H
