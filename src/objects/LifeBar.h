@@ -18,6 +18,7 @@ class LifeBar {
   u32 value = 6;
   u32 animatedValue = value;
   u32 wait = 0;
+  bool animatedFlag = false;
 
   void paint(ForegroundPaletteManager* foregroundPalette);
 };
