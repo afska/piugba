@@ -22,6 +22,10 @@ Arrow::Arrow(u32 id) {
     SPRITE_reuseTiles(sprite.get());
 }
 
+void Arrow::discard() {
+  sprite->enabled = false;
+}
+
 void Arrow::initialize(ArrowType type) {
   u32 start = 0;
   bool flip = false;
@@ -53,14 +57,18 @@ void Arrow::initialize(ArrowType type) {
                  GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
+  msecs = 0;
   endTime = 0;
 }
 
-void Arrow::discard() {
-  sprite->enabled = false;
+void Arrow::press() {
+  endTime = msecs;
+  sprite->moveTo(sprite->getX(), ARROW_CORNER_MARGIN_Y);
+  SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }
 
 FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
+  this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))

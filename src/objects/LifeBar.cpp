@@ -49,6 +49,10 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
     wait--;
 }
 
+Sprite* LifeBar::get() {
+  return sprite.get();
+}
+
 void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   bool odd = false;
   for (u32 i = 0; i < sizeof(PALETTE_INDICES); i++) {
@@ -69,8 +73,4 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
     foregroundPalette->change(0, PALETTE_INDICES[i], color);
     odd = !odd;
   }
-}
-
-Sprite* LifeBar::get() {
-  return sprite.get();
 }

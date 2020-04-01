@@ -22,6 +22,7 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize(ArrowType type);
+  void press();
 
   FeedbackType tick(u32 msecs, bool isPressed);
   Sprite* get();
@@ -30,6 +31,7 @@ class Arrow : public IPoolable {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
+  u32 msecs = 0;
   u32 endTime = 0;
 };
 
