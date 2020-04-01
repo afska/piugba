@@ -8,7 +8,7 @@ const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;
 const u32 ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
-const u32 BLINK_START = 4;
+const u32 BLINK_START = 4 - 1;
 const u32 MIN_VALUE = 1;
 const u32 MAX_VALUE = 9;
 const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
@@ -36,7 +36,8 @@ void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
 }
 
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
-  paint(foregroundPalette);
+  if (wait == 0)
+    paint(foregroundPalette);
 
   animatedFlag = !animatedFlag;
 
@@ -61,7 +62,7 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
 
       if (i >= value * 2 - 2 && i < value * 2)
         color = (odd ? CURSOR_COLOR_BORDER : CURSOR_COLOR);
-    } else if (animatedFlag && !odd && i >= BLINK_START)
+    } else if (animatedFlag && !odd && i >= BLINK_START * 2)
       color = BLINK_MAX_COLOR;
 
     foregroundPalette->change(0, PALETTE_INDICES[i], color);
