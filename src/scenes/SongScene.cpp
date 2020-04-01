@@ -4,7 +4,7 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-const u32 ARROW_POOL_SIZE = 20;
+const u32 ARROW_POOL_SIZE = 17;
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
