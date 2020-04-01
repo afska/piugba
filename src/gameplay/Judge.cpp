@@ -10,7 +10,7 @@ void Judge::onPress(ArrowType type,
 
     if (!it->isEnding() && it->type == type &&
         abs(diff) < (int)ARROW_SPEED * 5) {
-      it->press();
+      it->schedulePress();
 
       score->update(abs(diff) > (int)ARROW_SPEED * 4
                         ? FeedbackType::GOOD
