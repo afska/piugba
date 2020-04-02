@@ -1,5 +1,7 @@
 #include "ArrowHolder.h"
+
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
+
 #include "utils/SpriteUtils.h"
 
 ArrowHolder::ArrowHolder(ArrowType type) {
@@ -47,16 +49,21 @@ bool ArrowHolder::getIsPressed() {
   return isPressed;
 }
 
-bool ArrowHolder::setIsPressed(bool isPressed) {
+bool ArrowHolder::hasBeenPressedNow() {
+  return isNewPressEvent;
+}
+
+void ArrowHolder::setIsPressed(bool isPressed) {
   bool isNewPressEvent = !this->isPressed && isPressed;
   this->isPressed = isPressed;
 
-  IFTEST return isPressed;
-  return isNewPressEvent;
+  this->isNewPressEvent = isNewPressEvent;
+  IFTEST this->isNewPressEvent = isPressed;
 }
 
 void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
+  isNewPressEvent = false;
 
   u32 currentFrame = sprite->getCurrentFrame();
 

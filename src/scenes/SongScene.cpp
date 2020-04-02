@@ -1,10 +1,17 @@
 #include "SongScene.h"
+
 #include <libgba-sprite-engine/palette/palette_manager.h>
+
 #include "data/content/TestSong.h"
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-const u32 ARROW_POOL_SIZE = 45;
+const u32 ARROW_POOL_SIZE = 50;
+
+SongScene::SongScene(std::shared_ptr<GBAEngine> engine, Chart* chart)
+    : Scene(engine) {
+  this->chart = chart;
+}
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
@@ -25,15 +32,15 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
-  chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
-  judge = std::unique_ptr<Judge>(new Judge());
-
   setUpPalettes();
   setUpBackground();
   setUpArrows();
 
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score()};
+
+  chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
+  judge = std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get()));
 }
 
 void SongScene::tick(u16 keys) {
@@ -46,11 +53,11 @@ void SongScene::tick(u16 keys) {
         arrowHolder->blink();
     }
 
+  updateArrowHolders();
+  processKeys(keys);
+  updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
-  updateArrowHolders();
-  updateArrows();
-  processKeys(keys);
 }
 
 void SongScene::setUpPalettes() {
@@ -86,45 +93,27 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    bool isPressed = arrowHolders[it->type]->getIsPressed();
+    auto arrowState = it->tick(msecs);
 
-    FeedbackType feedbackType = it->tick(msecs, isPressed);
-    if (feedbackType < FEEDBACK_TOTAL_SCORES)
-      score->update(feedbackType);
-    if (feedbackType == FeedbackType::ENDED)
-      arrowPool->discard(it->id);
+    if (arrowState == ArrowState::OUT)
+      judge->onOut(it);
+    else if (arrowHolders[it->type]->hasBeenPressedNow())
+      judge->onPress(it);
   });
 }
 
 void SongScene::processKeys(u16 keys) {
-  if (arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys))) {
-    judge->onPress(ArrowType::DOWNLEFT, arrowPool.get(), score.get());
-    IFTEST arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
-  }
+  arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys));
+  arrowHolders[2]->setIsPressed(KEY_CENTER(keys));
+  arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
 
-  if (arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys))) {
-    judge->onPress(ArrowType::UPLEFT, arrowPool.get(), score.get());
-    IFTEST arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
-  }
-
-  if (arrowHolders[2]->setIsPressed(KEY_CENTER(keys))) {
-    judge->onPress(ArrowType::CENTER, arrowPool.get(), score.get());
-    IFTEST arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::CENTER); });
-  }
-
-  if (arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys))) {
-    judge->onPress(ArrowType::UPRIGHT, arrowPool.get(), score.get());
-    IFTEST arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
-  }
-
-  if (arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys))) {
-    judge->onPress(ArrowType::DOWNRIGHT, arrowPool.get(), score.get());
-    IFTEST arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
+  IFTEST {
+    for (auto& arrowHolder : arrowHolders)
+      if (arrowHolder->hasBeenPressedNow())
+        arrowPool->create(
+            [&arrowHolder](Arrow* it) { it->initialize(arrowHolder->type); });
   }
 }
 

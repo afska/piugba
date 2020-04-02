@@ -7,9 +7,14 @@
 
 class Judge {
  public:
-  Judge();
+  Judge(ObjectPool<Arrow>* arrowPool, Score* score);
 
-  void onPress(ArrowType arrowType, ObjectPool<Arrow>* arrowPool, Score* score);
+  void onPress(Arrow* arrow);
+  void onOut(Arrow* arrow);
+
+ private:
+  ObjectPool<Arrow>* arrowPool;
+  Score* score;
 };
 
 #endif  // JUDGE_H

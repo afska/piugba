@@ -5,32 +5,37 @@ const u32 BAD_OFFSET = 6;
 const u32 GOOD_OFFSET = 4;
 const u32 GREAT_OFFSET = 2;
 
-Judge::Judge() {}
+Judge::Judge(ObjectPool<Arrow>* arrowPool, Score* score) {
+  this->arrowPool = arrowPool;
+  this->score = score;
+}
 
-void Judge::onPress(ArrowType type,
-                    ObjectPool<Arrow>* arrowPool,
-                    Score* score) {
-  IFTEST return;
+void Judge::onPress(Arrow* arrow) {
+  if (arrow->getIsPressed())
+    return;
 
-  arrowPool->forEachActive([type, score](Arrow* it) {
-    int diff = it->get()->getY() - ARROW_CORNER_MARGIN_Y;
-    u32 absDiff = (u32)abs(diff);
+  int y = arrow->get()->getY();
+  u32 diff = (u32)abs(y - ARROW_CORNER_MARGIN_Y);
 
-    if (!it->isEnding() && it->type == type &&
-        absDiff < ARROW_SPEED * MISS_OFFSET) {
-      if (absDiff >= ARROW_SPEED * BAD_OFFSET) {
-        score->update(FeedbackType::BAD);
-        it->markAsPressed();
-      } else if (absDiff >= ARROW_SPEED * GOOD_OFFSET) {
-        score->update(FeedbackType::GOOD);
-        it->markAsPressed();
-      } else if (absDiff >= ARROW_SPEED * GREAT_OFFSET) {
-        score->update(FeedbackType::GREAT);
-        it->press();
-      } else {
-        score->update(FeedbackType::PERFECT);
-        it->press();
-      }
+  if (diff < ARROW_SPEED * MISS_OFFSET) {
+    if (diff >= ARROW_SPEED * BAD_OFFSET) {
+      score->update(FeedbackType::BAD);
+      arrow->markAsPressed();
+    } else if (diff >= ARROW_SPEED * GOOD_OFFSET) {
+      score->update(FeedbackType::GOOD);
+      arrow->markAsPressed();
+    } else if (diff >= ARROW_SPEED * GREAT_OFFSET) {
+      score->update(FeedbackType::GREAT);
+      arrow->press();
+    } else {
+      score->update(FeedbackType::PERFECT);
+      arrow->press();
     }
-  });
+  }
+}
+
+void Judge::onOut(Arrow* arrow) {
+  if (!arrow->getIsPressed())
+    score->update(FeedbackType::MISS);
+  arrowPool->discard(arrow->id);
 }
