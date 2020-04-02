@@ -5,6 +5,8 @@
 #include "score/Feedback.h"
 #include "utils/pool/IPoolable.h"
 
+#define IFTEST if (false)
+
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 9;

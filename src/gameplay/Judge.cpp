@@ -10,6 +10,8 @@ Judge::Judge() {}
 void Judge::onPress(ArrowType type,
                     ObjectPool<Arrow>* arrowPool,
                     Score* score) {
+  IFTEST return;
+
   arrowPool->forEachActive([type, score](Arrow* it) {
     int diff = it->get()->getY() - ARROW_CORNER_MARGIN_Y;
     u32 absDiff = (u32)abs(diff);

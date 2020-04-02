@@ -53,7 +53,6 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 }
 
 void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
-  // TODO: Replace std::vector by std::array
   std::vector<Arrow*> arrows;
 
   if (data & EVENT_ARROW_DOWNLEFT)

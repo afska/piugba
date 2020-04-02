@@ -4,8 +4,6 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-#define IFTEST if (false)
-
 const u32 ARROW_POOL_SIZE = 45;
 
 std::vector<Background*> SongScene::backgrounds() {

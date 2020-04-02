@@ -50,6 +50,8 @@ bool ArrowHolder::getIsPressed() {
 bool ArrowHolder::setIsPressed(bool isPressed) {
   bool isNewPressEvent = !this->isPressed && isPressed;
   this->isPressed = isPressed;
+
+  IFTEST return isPressed;
   return isNewPressEvent;
 }
 
