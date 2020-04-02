@@ -11,7 +11,7 @@ extern "C" {
 
 char* EXAMPLE_PIUS = (char*)"TestSong.pius";
 char* EXAMPLE_GSM = (char*)"TestSong.gsm";
-u8 EXAMPLE_LEVEL = 18;
+u8 EXAMPLE_LEVEL = 7;
 
 std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 SongScene* songScene;
