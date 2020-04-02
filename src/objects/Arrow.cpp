@@ -62,13 +62,20 @@ void Arrow::initialize(ArrowType type) {
   msecs = 0;
   endTime = 0;
   wasPressed = false;
+  needsAnimation = false;
 }
 
-void Arrow::schedulePress() {
+void Arrow::press() {
   if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
-    press();
-  else
-    wasPressed = true;
+    animatePress();
+  else {
+    markAsPressed();
+    needsAnimation = true;
+  }
+}
+
+void Arrow::markAsPressed() {
+  wasPressed = true;
 }
 
 bool Arrow::isEnding() {
@@ -99,14 +106,14 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
     }
 
     return FeedbackType::ENDING;
-  } else if (isAligned() && wasPressed) {
-    press();
+  } else if (isAligned() && wasPressed && needsAnimation) {
+    animatePress();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     endTime = msecs;
     SPRITE_hide(sprite.get());
     sprite->stopAnimating();
 
-    return FeedbackType::MISS;
+    return wasPressed ? FeedbackType::ACTIVE : FeedbackType::MISS;
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
@@ -117,7 +124,7 @@ Sprite* Arrow::get() {
   return sprite.get();
 }
 
-void Arrow::press() {
+void Arrow::animatePress() {
   endTime = msecs;
   sprite->moveTo(sprite->getX(), ARROW_CORNER_MARGIN_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);

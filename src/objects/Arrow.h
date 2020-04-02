@@ -23,7 +23,8 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize(ArrowType type);
-  void schedulePress();
+  void press();
+  void markAsPressed();
   bool isEnding();
 
   FeedbackType tick(u32 msecs, bool isPressed);
@@ -36,8 +37,9 @@ class Arrow : public IPoolable {
   u32 msecs = 0;
   u32 endTime = 0;
   bool wasPressed = false;
+  bool needsAnimation = false;
 
-  void press();
+  void animatePress();
   bool isAligned();
 };
 
