@@ -4,7 +4,9 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-const u32 ARROW_POOL_SIZE = 65;
+#define IFTEST if (false)
+
+const u32 ARROW_POOL_SIZE = 45;
 
 std::vector<Background*> SongScene::backgrounds() {
   return {bg.get()};
@@ -99,29 +101,32 @@ void SongScene::updateArrows() {
 void SongScene::processKeys(u16 keys) {
   if (arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys))) {
     judge->onPress(ArrowType::DOWNLEFT, arrowPool.get(), score.get());
-    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT);
-    // });
+    IFTEST arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
   }
 
   if (arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys))) {
     judge->onPress(ArrowType::UPLEFT, arrowPool.get(), score.get());
-    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+    IFTEST arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
   }
 
   if (arrowHolders[2]->setIsPressed(KEY_CENTER(keys))) {
     judge->onPress(ArrowType::CENTER, arrowPool.get(), score.get());
-    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+    IFTEST arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::CENTER); });
   }
 
   if (arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys))) {
     judge->onPress(ArrowType::UPRIGHT, arrowPool.get(), score.get());
-    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+    IFTEST arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
   }
 
   if (arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys))) {
     judge->onPress(ArrowType::DOWNRIGHT, arrowPool.get(), score.get());
-    // arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT);
-    // });
+    IFTEST arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
   }
 }
 
