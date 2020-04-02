@@ -23,6 +23,7 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize(ArrowType type);
+  void setNextId(int nextId);
   void press();
   void markAsPressed();
   bool isEnding();
@@ -34,6 +35,7 @@ class Arrow : public IPoolable {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
+  int nextId = -1;
   u32 msecs = 0;
   u32 endTime = 0;
   bool wasPressed = false;

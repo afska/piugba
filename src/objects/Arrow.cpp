@@ -59,10 +59,16 @@ void Arrow::initialize(ArrowType type) {
                  GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
+
+  nextId = -1;
   msecs = 0;
   endTime = 0;
   wasPressed = false;
   needsAnimation = false;
+}
+
+void Arrow::setNextId(int nextId) {
+  this->nextId = nextId;
 }
 
 void Arrow::press() {

@@ -24,16 +24,17 @@ class ObjectPool {
     }
   }
 
-  void create(std::function<void(T*)> initialize) {
+  T* create(std::function<void(T*)> initialize) {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
         initialize(it->object);
-        return;
+        return it->object;
       }
     }
 
     // (*(u8*)NULL) = 1;  // CRASH!
+    return NULL;
   }
 
   void discard(u32 index) {
