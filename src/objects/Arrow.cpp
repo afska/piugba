@@ -65,7 +65,7 @@ void Arrow::initialize(ArrowType type) {
 }
 
 void Arrow::schedulePress() {
-  if (sprite->getY() <= ARROW_CORNER_MARGIN_Y)
+  if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
     press();
   else
     wasPressed = true;
