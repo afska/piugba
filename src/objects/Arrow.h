@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "score/Feedback.h"
-#include "utils/pool/IPoolable.h"
+#include "utils/pool/ObjectPool.h"
 
 #define IFTEST if (false)
 
@@ -29,7 +29,11 @@ class Arrow : public IPoolable {
   void discard() override;
 
   void initialize(ArrowType type);
-  void setNextId(int nextId);
+  void setSiblingId(int siblingId);
+  void forAllSiblings(ObjectPool<Arrow>* arrowPool,
+                      std::function<void(Arrow*)> func);
+  FeedbackType getResult(FeedbackType partialResult,
+                         ObjectPool<Arrow>* arrowPool);
   void press();
   bool getIsPressed();
   void markAsPressed();
@@ -41,7 +45,8 @@ class Arrow : public IPoolable {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
-  int nextId = -1;
+  int siblingId = -1;
+  FeedbackType partialResult = FeedbackType::UNKNOWN;
   u32 msecs = 0;
   u32 endTime = 0;
   bool isPressed = false;

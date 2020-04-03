@@ -15,6 +15,8 @@ class Judge {
  private:
   ObjectPool<Arrow>* arrowPool;
   Score* score;
+
+  FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
 };
 
 #endif  // JUDGE_H

@@ -61,15 +61,43 @@ void Arrow::initialize(ArrowType type) {
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
 
-  nextId = -1;
+  siblingId = -1;
+  partialResult = FeedbackType::UNKNOWN;
   msecs = 0;
   endTime = 0;
   isPressed = false;
   needsAnimation = false;
 }
 
-void Arrow::setNextId(int nextId) {
-  this->nextId = nextId;
+void Arrow::setSiblingId(int siblingId) {
+  this->siblingId = siblingId;
+}
+
+void Arrow::forAllSiblings(ObjectPool<Arrow>* arrowPool,
+                           std::function<void(Arrow*)> func) {
+  func(this);
+
+  if (siblingId < 0)
+    return;
+
+  u32 currentId = siblingId;
+  do {
+    Arrow* current = arrowPool->getByIndex(currentId);
+    currentId = current->siblingId;
+    func(current);
+  } while (currentId != id);
+}
+
+FeedbackType Arrow::getResult(FeedbackType partialResult,
+                              ObjectPool<Arrow>* arrowPool) {
+  this->partialResult = partialResult;
+
+  FeedbackType result = partialResult;
+  forAllSiblings(arrowPool, [&result](Arrow* sibling) {
+    result = static_cast<FeedbackType>(max(result, sibling->partialResult));
+  });
+
+  return result;
 }
 
 void Arrow::press() {

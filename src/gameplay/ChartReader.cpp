@@ -73,7 +73,7 @@ void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
 
   if (arrows.size() > 1) {
     for (u32 i = 0; i < arrows.size(); i++) {
-      arrows[i]->setNextId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
+      arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
     }
   }
 }

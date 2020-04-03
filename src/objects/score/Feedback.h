@@ -5,8 +5,7 @@
 
 #include "objects/base/AnimatedIndicator.h"
 
-const u32 FEEDBACK_TYPES_TOTAL = 5;
-enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS };
+enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, UNKNOWN };
 
 class Feedback : public AnimatedIndicator {
  public:

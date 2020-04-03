@@ -3,7 +3,9 @@
 
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
+
 #include <functional>
+
 #include "IPoolable.h"
 
 template <class T>
@@ -35,6 +37,11 @@ class ObjectPool {
 
     // (*(u8*)NULL) = 1;  // CRASH!
     return NULL;
+  }
+
+  T* getByIndex(u32 index) {
+    auto element = objects[index];
+    return element->isActive ? objects[index]->object : NULL;
   }
 
   void discard(u32 index) {
