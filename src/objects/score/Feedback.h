@@ -7,6 +7,8 @@
 
 enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, UNKNOWN };
 
+const int FEEDBACK_TYPES_TOTAL = 5;
+
 class Feedback : public AnimatedIndicator {
  public:
   Feedback();

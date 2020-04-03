@@ -8,8 +8,8 @@
 
 #define IFTEST if (false)
 
-enum ArrowState { ACTIVE, OUT };
 enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
+enum ArrowState { ACTIVE, OUT };
 
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 9;
