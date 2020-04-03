@@ -53,14 +53,27 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 }
 
 void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+  std::vector<Arrow*> arrows;
+
   if (data & EVENT_ARROW_DOWNLEFT)
-    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); });
+    arrows.push_back(arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); }));
   if (data & EVENT_ARROW_UPLEFT)
-    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPLEFT); });
+    arrows.push_back(arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::UPLEFT); }));
   if (data & EVENT_ARROW_CENTER)
-    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::CENTER); });
+    arrows.push_back(arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::CENTER); }));
   if (data & EVENT_ARROW_UPRIGHT)
-    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::UPRIGHT); });
+    arrows.push_back(arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::UPRIGHT); }));
   if (data & EVENT_ARROW_DOWNRIGHT)
-    arrowPool->create([](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); });
+    arrows.push_back(arrowPool->create(
+        [](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); }));
+
+  if (arrows.size() > 1) {
+    for (u32 i = 0; i < arrows.size(); i++) {
+      arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
+    }
+  }
 }

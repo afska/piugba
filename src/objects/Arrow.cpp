@@ -1,9 +1,10 @@
 #include "Arrow.h"
+
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
+
 #include "data/content/compiled/spr_arrows.h"
 #include "utils/SpriteUtils.h"
 
-const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
 const u32 END_ANIMATION_START = 5;
@@ -59,10 +60,44 @@ void Arrow::initialize(ArrowType type) {
                  GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;
+
+  siblingId = -1;
+  partialResult = FeedbackType::UNKNOWN;
   msecs = 0;
   endTime = 0;
-  wasPressed = false;
+  isPressed = false;
   needsAnimation = false;
+}
+
+void Arrow::setSiblingId(int siblingId) {
+  this->siblingId = siblingId;
+}
+
+void Arrow::forAll(ObjectPool<Arrow>* arrowPool,
+                   std::function<void(Arrow*)> func) {
+  func(this);
+
+  if (siblingId < 0)
+    return;
+
+  u32 currentId = siblingId;
+  do {
+    Arrow* current = arrowPool->getByIndex(currentId);
+    currentId = current->siblingId;
+    func(current);
+  } while (currentId != id);
+}
+
+FeedbackType Arrow::getResult(FeedbackType partialResult,
+                              ObjectPool<Arrow>* arrowPool) {
+  this->partialResult = partialResult;
+
+  FeedbackType result = partialResult;
+  forAll(arrowPool, [&result](Arrow* sibling) {
+    result = static_cast<FeedbackType>(max(result, sibling->partialResult));
+  });
+
+  return result;
 }
 
 void Arrow::press() {
@@ -74,22 +109,22 @@ void Arrow::press() {
   }
 }
 
+bool Arrow::getIsPressed() {
+  return isPressed;
+}
+
 void Arrow::markAsPressed() {
-  wasPressed = true;
+  isPressed = true;
 }
 
-bool Arrow::isEnding() {
-  return endTime > 0;
-}
-
-FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
+ArrowState Arrow::tick(u32 msecs) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
-    return FeedbackType::ENDED;
+    return ArrowState::OUT;
 
-  if (isEnding()) {
+  if (isShowingPressAnimation()) {
     u32 diff = abs(msecs - endTime);
 
     if (diff > END_ANIMATION_DELAY_MS) {
@@ -99,35 +134,38 @@ FeedbackType Arrow::tick(u32 msecs, bool isPressed) {
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
       else if (diff < END_ANIMATION_DELAY_MS * 4)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      else {
-        SPRITE_hide(sprite.get());
-        sprite->stopAnimating();
-      }
+      else
+        end();
     }
-
-    return FeedbackType::ENDING;
-  } else if (isAligned() && wasPressed && needsAnimation) {
+  } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
-    endTime = msecs;
-    SPRITE_hide(sprite.get());
-    sprite->stopAnimating();
-
-    return wasPressed ? FeedbackType::ACTIVE : FeedbackType::MISS;
+    end();
   } else
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
-  return FeedbackType::ACTIVE;
+  return ArrowState::ACTIVE;
 }
 
 Sprite* Arrow::get() {
   return sprite.get();
 }
 
+void Arrow::end() {
+  SPRITE_hide(sprite.get());
+  sprite->stopAnimating();
+}
+
 void Arrow::animatePress() {
+  markAsPressed();
+
   endTime = msecs;
   sprite->moveTo(sprite->getX(), ARROW_CORNER_MARGIN_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
+}
+
+bool Arrow::isShowingPressAnimation() {
+  return endTime > 0;
 }
 
 bool Arrow::isAligned() {

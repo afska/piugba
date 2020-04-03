@@ -3,7 +3,9 @@
 
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
+
 #include <functional>
+
 #include "IPoolable.h"
 
 template <class T>
@@ -24,16 +26,22 @@ class ObjectPool {
     }
   }
 
-  void create(std::function<void(T*)> initialize) {
+  T* create(std::function<void(T*)> initialize) {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
         initialize(it->object);
-        return;
+        return it->object;
       }
     }
 
     // (*(u8*)NULL) = 1;  // CRASH!
+    return NULL;
+  }
+
+  T* getByIndex(u32 index) {
+    auto element = objects[index];
+    return element->isActive ? objects[index]->object : NULL;
   }
 
   void discard(u32 index) {

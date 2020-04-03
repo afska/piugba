@@ -2,6 +2,7 @@
 #define ARROW_HOLDER_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+
 #include "Arrow.h"
 
 const u32 ARROW_HOLDER_IDLE = 5;
@@ -15,7 +16,8 @@ class ArrowHolder {
 
   void blink();
   bool getIsPressed();
-  bool setIsPressed(bool isPressed);
+  bool hasBeenPressedNow();
+  void setIsPressed(bool isPressed);
 
   void tick();
   Sprite* get();
@@ -25,6 +27,7 @@ class ArrowHolder {
   u32 start = 0;
   bool flip = false;
   bool isPressed = false;
+  bool isNewPressEvent = false;
   bool isBlinking = false;
 };
 

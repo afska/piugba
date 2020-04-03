@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
+
 #include "gameplay/ChartReader.h"
 #include "gameplay/Judge.h"
 #include "objects/Arrow.h"
@@ -17,9 +18,7 @@ class SongScene : public Scene {
  public:
   u32 msecs = 0;
 
-  SongScene(std::shared_ptr<GBAEngine> engine, Chart* chart) : Scene(engine) {
-    this->chart = chart;
-  }
+  SongScene(std::shared_ptr<GBAEngine> engine, Chart* chart);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;

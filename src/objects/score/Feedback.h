@@ -2,10 +2,10 @@
 #define FEEDBACK_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+
 #include "objects/base/AnimatedIndicator.h"
 
-const u32 FEEDBACK_TOTAL_SCORES = 5;
-enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, ACTIVE, ENDING, ENDED };
+enum FeedbackType { PERFECT, GREAT, GOOD, BAD, MISS, UNKNOWN };
 
 class Feedback : public AnimatedIndicator {
  public:
