@@ -73,8 +73,8 @@ void Arrow::setSiblingId(int siblingId) {
   this->siblingId = siblingId;
 }
 
-void Arrow::forAllSiblings(ObjectPool<Arrow>* arrowPool,
-                           std::function<void(Arrow*)> func) {
+void Arrow::forAll(ObjectPool<Arrow>* arrowPool,
+                   std::function<void(Arrow*)> func) {
   func(this);
 
   if (siblingId < 0)
@@ -93,7 +93,7 @@ FeedbackType Arrow::getResult(FeedbackType partialResult,
   this->partialResult = partialResult;
 
   FeedbackType result = partialResult;
-  forAllSiblings(arrowPool, [&result](Arrow* sibling) {
+  forAll(arrowPool, [&result](Arrow* sibling) {
     result = static_cast<FeedbackType>(max(result, sibling->partialResult));
   });
 

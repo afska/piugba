@@ -30,8 +30,7 @@ class Arrow : public IPoolable {
 
   void initialize(ArrowType type);
   void setSiblingId(int siblingId);
-  void forAllSiblings(ObjectPool<Arrow>* arrowPool,
-                      std::function<void(Arrow*)> func);
+  void forAll(ObjectPool<Arrow>* arrowPool, std::function<void(Arrow*)> func);
   FeedbackType getResult(FeedbackType partialResult,
                          ObjectPool<Arrow>* arrowPool);
   void press();

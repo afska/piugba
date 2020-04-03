@@ -6,7 +6,7 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
-const u32 ARROW_POOL_SIZE = 50;
+const u32 ARROW_POOL_SIZE = 45;
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine, Chart* chart)
     : Scene(engine) {

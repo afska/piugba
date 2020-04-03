@@ -36,8 +36,8 @@ void Judge::onOut(Arrow* arrow) {
       return;
   }
 
-  arrow->forAllSiblings(
-      arrowPool, [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
+  arrow->forAll(arrowPool,
+                [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
@@ -50,12 +50,11 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
       case FeedbackType::MISS:
       case FeedbackType::BAD:
       case FeedbackType::GOOD:
-        arrow->forAllSiblings(arrowPool,
-                              [](Arrow* arrow) { arrow->markAsPressed(); });
+        arrow->forAll(arrowPool, [](Arrow* arrow) { arrow->markAsPressed(); });
         break;
       case FeedbackType::GREAT:
       case FeedbackType::PERFECT:
-        arrow->forAllSiblings(arrowPool, [](Arrow* arrow) { arrow->press(); });
+        arrow->forAll(arrowPool, [](Arrow* arrow) { arrow->press(); });
         break;
       default:
         break;
