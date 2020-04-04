@@ -10,11 +10,10 @@ const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;
 const u32 ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
-const u32 BLINK_START = 4 - 1;
 const u32 MIN_VALUE = 0;
-const u32 MIN_ANIMATED_VALUE = 1;
 const u32 ALMOST_MIN_VALUE = 1;
-const u32 ALMOST_MAX_VALUE = 9;
+const u32 MAX_VALUE = 10;
+const u32 MIN_ANIMATED_VALUE = 1;
 const u32 UNIT = 2;
 const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
                               894, 988,  923, 1017, 951,  974,  879, 9199, 936};
@@ -45,8 +44,7 @@ void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
 }
 
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
-  if (wait == 0)
-    paint(foregroundPalette);
+  paint(foregroundPalette);
 
   animatedFlag = !animatedFlag;
 
@@ -79,7 +77,7 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
         // red mini blink
         color =
             i < UNIT ? (isBorder ? DISABLED_COLOR_BORDER : redBlink) : disabled;
-    } else if (value < ALMOST_MAX_VALUE) {
+    } else if (value < MAX_VALUE) {
       // middle
       COLOR disabled = isBorder ? DISABLED_COLOR_BORDER : DISABLED_COLOR;
       COLOR cursor = isBorder ? CURSOR_COLOR_BORDER : CURSOR_COLOR;
@@ -91,16 +89,9 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
         color = disabled;
       if (i >= index * UNIT && i <= index * UNIT + 1)
         color = cursor;
-    } else if (value == ALMOST_MAX_VALUE) {
-      // green mini blink
-      color = PALETTE_COLORS[i];
-      if (i >= sizeof(PALETTE_INDEXES) - UNIT && animatedFlag && !isBorder)
-        color = BLINK_MAX_COLOR;
     } else {
       // blink green
-      color = (animatedFlag && !isBorder && i >= BLINK_START * UNIT)
-                  ? BLINK_MAX_COLOR
-                  : PALETTE_COLORS[i];
+      color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR : PALETTE_COLORS[i];
     }
 
     foregroundPalette->change(0, PALETTE_INDEXES[i], color);
