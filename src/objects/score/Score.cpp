@@ -40,21 +40,40 @@ void Score::updateCombo(FeedbackType feedbackType) {
 
   switch (feedbackType) {
     case FeedbackType::MISS:
+      if (hasMissCombo)
+        value++;
+      else {
+        value = 1;
+        hasMissCombo = true;
+      }
+      break;
     case FeedbackType::BAD:
+      hasMissCombo = false;
       value = 0;
+      break;
+    case FeedbackType::GOOD:
+      if (hasMissCombo) {
+        hasMissCombo = false;
+        value = 0;
+      }
       break;
     case FeedbackType::GREAT:
     case FeedbackType::PERFECT:
+      if (hasMissCombo) {
+        hasMissCombo = false;
+        value = 0;
+      }
+
       value = value + 1;
       break;
     default:
       break;
   }
 
-  if (value > maxCombo)
+  if (!hasMissCombo && value > maxCombo)
     maxCombo = value;
 
-  combo->setValue(value);
+  combo->setValue(value * (hasMissCombo ? -1 : 1));
   if (value >= MIN_VISIBLE_COMBO)
     combo->show();
 }

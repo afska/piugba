@@ -26,8 +26,8 @@ ComboDigit::ComboDigit(u32 position) {
     SPRITE_reuseTiles(sprite.get());
 }
 
-void ComboDigit::set(int value) {
-  SPRITE_goToFrame(sprite.get(), value >= 0 ? value : abs(value) + RED_OFFSET);
+void ComboDigit::set(u32 value, bool isRed) {
+  SPRITE_goToFrame(sprite.get(), value + (isRed ? RED_OFFSET : 0));
 }
 
 Sprite* ComboDigit::get() {

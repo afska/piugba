@@ -12,12 +12,14 @@ Combo::Combo() {
   }
 }
 
-void Combo::setValue(u32 value) {
-  this->value = value;
+void Combo::setValue(int value) {
+  bool isRed = value < 0;
+  u32 absValue = abs(value);
 
-  digits[0]->set(Div(value, 100));
-  digits[1]->set(Div(DivMod(value, 100), 10));
-  digits[2]->set(DivMod(value, 10));
+  this->value = absValue;
+  digits[0]->set(Div(absValue, 100), isRed);
+  digits[1]->set(Div(DivMod(absValue, 100), 10), isRed);
+  digits[2]->set(DivMod(absValue, 10), isRed);
 }
 
 u32 Combo::getValue() {

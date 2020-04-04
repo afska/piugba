@@ -12,7 +12,7 @@ class Combo {
  public:
   Combo();
 
-  void setValue(u32 value);
+  void setValue(int value);
   u32 getValue();
   void show();
 

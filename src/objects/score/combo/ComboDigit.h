@@ -9,7 +9,7 @@ class ComboDigit : public AnimatedIndicator {
  public:
   ComboDigit(u32 position);
 
-  void set(int value);
+  void set(u32 value, bool isRed);
 
   Sprite* get() override;
 

@@ -23,6 +23,7 @@ class Score {
   std::unique_ptr<Combo> combo;
   LifeBar* lifeBar;
 
+  bool hasMissCombo = false;
   u32 maxCombo = 0;
   int life = INITIAL_LIFE;
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
