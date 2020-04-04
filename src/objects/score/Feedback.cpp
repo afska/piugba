@@ -15,7 +15,7 @@ Feedback::Feedback() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
                .withSize(SIZE_64_32)
-               .withLocation(POSITION_X, POSITION_Y)
+               .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
 }
 
