@@ -2,7 +2,9 @@
 #define COMBO_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+
 #include <vector>
+
 #include "ComboDigit.h"
 #include "ComboTitle.h"
 

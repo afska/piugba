@@ -37,6 +37,7 @@ typedef unsigned long u32;
 
 #include <stdlib.h>
 #include <string.h>
+
 #include "gbfs.h"
 
 /* change this to the end of your ROM, or to 0x02040000 for multiboot */

@@ -2,6 +2,7 @@
 #define SONG_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include "Chart.h"
 #include "Event.h"
 #include "utils/parse.h"

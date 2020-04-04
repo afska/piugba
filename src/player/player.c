@@ -1,4 +1,5 @@
 #include "player.h"
+
 #include <gba_dma.h>
 #include <gba_input.h>
 #include <gba_interrupt.h>
@@ -8,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // for memset
+
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"

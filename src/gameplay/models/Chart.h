@@ -2,6 +2,7 @@
 #define CHART_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include "Event.h"
 
 enum Difficulty { NORMAL, HARD, CRAZY, NUMERIC };

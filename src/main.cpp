@@ -1,6 +1,8 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/gba_engine.h>
+
 #include <iostream>
+
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
 

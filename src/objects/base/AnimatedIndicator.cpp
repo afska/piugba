@@ -1,4 +1,5 @@
 #include "AnimatedIndicator.h"
+
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 4;

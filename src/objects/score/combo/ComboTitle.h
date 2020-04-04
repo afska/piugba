@@ -2,6 +2,7 @@
 #define COMBO_TITLE_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
+
 #include "objects/base/AnimatedIndicator.h"
 
 class ComboTitle : public AnimatedIndicator {
