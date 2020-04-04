@@ -37,7 +37,7 @@ void SongScene::load() {
   setUpArrows();
 
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
-  score = std::unique_ptr<Score>{new Score()};
+  score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
   chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
   judge = std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get()));

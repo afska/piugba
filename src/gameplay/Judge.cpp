@@ -1,9 +1,9 @@
 #include "Judge.h"
 
-const u32 MISS_OFFSET = 8;
-const u32 BAD_OFFSET = 6;
-const u32 GOOD_OFFSET = 4;
-const u32 GREAT_OFFSET = 2;
+const u32 OFFSET_MISS = 8;
+const u32 OFFSET_BAD = 6;
+const u32 OFFSET_GOOD = 4;
+const u32 OFFSET_GREAT = 2;
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool, Score* score) {
   this->arrowPool = arrowPool;
@@ -17,12 +17,12 @@ void Judge::onPress(Arrow* arrow) {
   int y = arrow->get()->getY();
   u32 diff = (u32)abs(y - ARROW_CORNER_MARGIN_Y);
 
-  if (diff < ARROW_SPEED * MISS_OFFSET) {
-    if (diff >= ARROW_SPEED * BAD_OFFSET)
+  if (diff < ARROW_SPEED * OFFSET_MISS) {
+    if (diff >= ARROW_SPEED * OFFSET_BAD)
       onResult(arrow, FeedbackType::BAD);
-    else if (diff >= ARROW_SPEED * GOOD_OFFSET)
+    else if (diff >= ARROW_SPEED * OFFSET_GOOD)
       onResult(arrow, FeedbackType::GOOD);
-    else if (diff >= ARROW_SPEED * GREAT_OFFSET)
+    else if (diff >= ARROW_SPEED * OFFSET_GREAT)
       onResult(arrow, FeedbackType::GREAT);
     else
       onResult(arrow, FeedbackType::PERFECT);

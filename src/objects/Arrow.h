@@ -12,12 +12,12 @@ enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
 
 const u32 ARROWS_TOTAL = 5;
+const u32 ARROW_SPEED = 3;
 const u32 ARROW_FRAMES = 9;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_CORNER_MARGIN_Y = 15;
 const u32 ARROW_MARGIN = 16 + 2;
-const u32 ARROW_SPEED = 3;
 
 class Arrow : public IPoolable {
  public:

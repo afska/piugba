@@ -7,10 +7,11 @@
 
 #include "Feedback.h"
 #include "combo/Combo.h"
+#include "objects/LifeBar.h"
 
 class Score {
  public:
-  Score();
+  Score(LifeBar* lifeBar);
 
   void update(FeedbackType feedbackType);
 
@@ -20,11 +21,17 @@ class Score {
  private:
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
+  LifeBar* lifeBar;
 
-  int life = 60;
-  std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 maxCombo = 0;
+  int life = INITIAL_LIFE;
+  std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;
+
+  void updateCombo(FeedbackType feedbackType);
+  void updateLife(FeedbackType feedbackType);
+  void updateCounters(FeedbackType feedbackType);
+  void updatePoints(FeedbackType feedbackType);
 };
 
 #endif  // SCORE_H

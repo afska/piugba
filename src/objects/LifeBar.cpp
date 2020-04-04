@@ -1,7 +1,9 @@
 #include "LifeBar.h"
+
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
+
 #include "data/content/compiled/spr_lifebar.h"
 
 const u32 POSITION_X = 15;
@@ -28,6 +30,15 @@ LifeBar::LifeBar() {
                .withSize(SIZE_64_32)
                .withLocation(POSITION_X, POSITION_Y)
                .buildPtr();
+}
+
+void LifeBar::setLife(int life) {
+  value = Div(life < 0 ? 0 : life, 10);
+  if (value < 1)
+    value = 1;
+  if (value > 9)
+    value = 9;
+  // TODO: Add conversions -25, etc, change range to 0,10
 }
 
 void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
