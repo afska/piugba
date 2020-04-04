@@ -76,6 +76,8 @@ void Score::updateCombo(FeedbackType feedbackType) {
   combo->setValue(value * (hasMissCombo ? -1 : 1));
   if (value >= MIN_VISIBLE_COMBO)
     combo->show();
+  else
+    combo->hide();
 }
 
 void Score::updateLife(FeedbackType feedbackType) {

@@ -3,6 +3,8 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
+#include "utils/SpriteUtils.h"
+
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
@@ -31,6 +33,13 @@ void Combo::show() {
 
   for (auto& digit : digits)
     digit->show();
+}
+
+void Combo::hide() {
+  SPRITE_hide(title->get());
+
+  for (auto& digit : digits)
+    SPRITE_hide(digit->get());
 }
 
 void Combo::tick() {
