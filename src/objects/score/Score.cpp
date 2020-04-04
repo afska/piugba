@@ -11,7 +11,7 @@ Score::Score(LifeBar* lifeBar) {
   feedback = std::unique_ptr<Feedback>{new Feedback()};
   combo = std::unique_ptr<Combo>{new Combo()};
 
-  for (int i = 0; i < counters.size(); i++)
+  for (u32 i = 0; i < counters.size(); i++)
     counters[i] = 0;
 }
 
