@@ -3,14 +3,15 @@
 // TODO: Unhardcode offset (header), tempo (SET_TEMPO),
 // anticipation (look-up table: 3=870, 4=653, etc).
 const u32 BPM = 162;
-const int EMULATOR_AUDIO_LAG = 170;
+const int AUDIO_LAG = 170;
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
   t = (ARROW_CORNER_MARGIN_Y - GBA_SCREEN_HEIGHT) px / ARROW_SPEED px/frame
   t = (15 - 160) / 3 = -48.33 frames * 16.73322954 ms/frame = -808,77 frames
+  => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
-const int ANTICIPATION = 809 - EMULATOR_AUDIO_LAG;
+const int ANTICIPATION[] = {0, 2426, 1213, 809, 607};
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
@@ -34,7 +35,9 @@ bool ChartReader::animateBpm(u32 msecs) {
 }
 
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
-  while (msecs >= chart->events[eventIndex].timestamp - ANTICIPATION &&
+  int anticipation = ANTICIPATION[ARROW_SPEED] - AUDIO_LAG;
+
+  while (msecs >= chart->events[eventIndex].timestamp - anticipation &&
          eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_ARROW_TYPE));
