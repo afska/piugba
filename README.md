@@ -6,19 +6,27 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 
 ### Windows
 
-- Install dependencies: Everything under [scripts/toolchain/programs](this directory) is required.
-- Create a directory in `D:\work\gba` with this file structure:
+- Use this file structure in `D:\work\gba`:
 	* `gba`
 		* `tools`
-			* `devKitPro`
+			* `devkitPro`
 		* `projects`
 			* `piugba`
-- Configure environment variables:
-	* `PATH` (add `{DEVKITARM}/bin` and `{DEVKITPRO}/tools/bin`)
-	* (it's better to `export PATH=$PATH:{NEW_PATHS}` in `~/.bash_profile`)
-- Run script:
-	* `./configure.sh`
-- Use `msys2` as shell when using `make`, and never move any folder ¯\_(ツ)_/¯
+- Install the toolchain from [scripts/toolchain/programs](this directory):
+  * **VSCode**: The IDE
+  * **devkitPro**: The devkit for compiling GBA roms. It comes with:
+    * **grit**: Used to convert paletted bitmaps to C arrays or raw binary files
+    * **gbfs**: Used to create a package with all the game assets
+  * **ImageMagick**: The tool used to convert images to paletted bitmaps
+  * **ffmpeg** *(with libgsm)*: The tool used to convert audio files to PCM
+- Add to `PATH`:
+  * `D:\work\gba\tools\devkitPro\bin`
+  * `D:\work\gba\tools\devkitPro\tools\bin`
+	  * (add them with `export PATH=$PATH:{NEW_PATHS}` in `~/.bash_profile`, so works in both **MSYS2** and **Git Bash**)
+    * (be careful with **ffmpeg** as **ImageMagick** already includes a version of it - add it first!)
+- As **Git Bash** doesn't work well with the `make` command from our toolchain, you'll be using:
+  * **MSYS2** (integrated with VSCode) to run `make` commands
+  * **Git Bash** to run anything else
 
 ### VSCode
 
