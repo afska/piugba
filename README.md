@@ -12,8 +12,9 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 			* `devkitPro`
 		* `projects`
 			* `piugba`
-- Install the toolchain from [scripts/toolchain/programs](this directory):
-  * **VSCode**: The IDE
+- Install the toolchain:
+  * [VSCode](scripts/toolchain/programs/VSCodeSetup-x64-1.42.1.exe): The IDE
+  * **Git Bash**: The console
   * **devkitPro**: The devkit for compiling GBA roms. It comes with:
     * **grit**: Used to convert paletted bitmaps to C arrays or raw binary files
     * **gbfs**: Used to create a package with all the game assets
