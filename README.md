@@ -61,7 +61,8 @@ grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
 #### Build backgrounds
 
 ```bash
-grit *.bmp -gt -gB8 -mR! -mLs -ftb
+magick file.png -resize 240x160\! -colors 255 file.bmp
+grit file.bmp -gt -gB8 -mR! -mLs -ftb
 ```
 
 #### Build music
