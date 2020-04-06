@@ -1,4 +1,5 @@
 const Protocol = require("bin-protocol");
+const Events = require("../parser/Events");
 const _ = require("lodash");
 
 module.exports = class SongSerializer {
@@ -44,11 +45,17 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        const data = _.range(0, 5).reduce(
-          (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
-          event.type
-        );
-        this.UInt32LE(event.timestamp).UInt8(data);
+        this.UInt32LE(event.timestamp);
+
+        if (event.type == Events.SET_TEMPO)
+          this.UInt8(event.type).UInt8(event.bpm);
+        else {
+          const data = _.range(0, 5).reduce(
+            (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
+            event.type
+          );
+          this.UInt8(data);
+        }
       },
     });
 

@@ -1,3 +1,4 @@
+const Events = require("./Events");
 const _ = require("lodash");
 
 module.exports = class Chart {
@@ -10,13 +11,17 @@ module.exports = class Chart {
     const bpm = parseFloat(_.first(this.header.bpms).value);
     const wholeNoteDuration = (MINUTE / bpm) * UNIT;
 
+    // if (this.header.bpms.length > 1)
+    //   throw new Error("Multiple BPM values are not supported");
+    // TODO: Implement multiple bpm
+
     const measures = this.content
       .split(",")
       .map((it) => it.trim())
       .filter(_.identity);
 
     let cursor = 0;
-    return _.flatMap(measures, (measure) => {
+    const notes = _.flatMap(measures, (measure) => {
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
       const duration = subdivision * wholeNoteDuration;
@@ -27,20 +32,20 @@ module.exports = class Chart {
 
         return {
           timestamp,
-          type: EVENTS.NOTE,
+          type: Events.NOTE,
           arrows: data.split("").map((arrow) => (arrow == 1 ? true : false)),
         };
       });
     }).filter((it) => it.arrows.some(_.identity));
-  }
-};
 
-const EVENTS = {
-  NOTE: 0,
-  HOLD_START: 1,
-  HOLD_TAIL: 2,
-  STOP: 3,
-  SET_TEMPO: 4,
+    return [
+      {
+        timestamp: 0,
+        type: Events.SET_TEMPO,
+        bpm: bpm,
+      },
+    ].concat(notes);
+  }
 };
 
 const MINUTE = 60000;

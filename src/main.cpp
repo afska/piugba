@@ -9,8 +9,10 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-char* SONG_NAME = (char*)"Extravaganza";
-u8 EXAMPLE_LEVEL = 11;
+// char* SONG_NAME = (char*)"Extravaganza";
+// u8 EXAMPLE_LEVEL = 11;
+char* SONG_NAME = (char*)"Beethoven Virus";
+u8 EXAMPLE_LEVEL = 13;
 
 std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 SongScene* songScene;

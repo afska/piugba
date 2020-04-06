@@ -14,6 +14,7 @@ class ChartReader {
  private:
   Chart* chart;
   u32 eventIndex = 0;
+  u32 bpm = 0;
   int lastBeat = 0;
 
   bool animateBpm(u32 msecs);

@@ -1,9 +1,5 @@
 #include "ChartReader.h"
 
-// TODO: Unhardcode offset (header), tempo (SET_TEMPO),
-// anticipation (look-up table: 3=870, 4=653, etc).
-const u32 BPM = 162;
-const int AUDIO_LAG = 170;
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
@@ -12,6 +8,7 @@ const int AUDIO_LAG = 170;
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const int ANTICIPATION[] = {0, 2426, 1213, 809, 607};
+const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
@@ -27,7 +24,7 @@ bool ChartReader::animateBpm(u32 msecs) {
 
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000
-  int beat = Div(msecsWithOffset * BPM, 60000);
+  int beat = Div(msecsWithOffset * bpm, 60000);
   bool hasChanged = beat != lastBeat;
   lastBeat = beat;
 
@@ -37,12 +34,16 @@ bool ChartReader::animateBpm(u32 msecs) {
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   int anticipation = ANTICIPATION[ARROW_SPEED] - AUDIO_LAG;
 
-  while (msecs >= chart->events[eventIndex].timestamp - anticipation &&
+  while ((int)msecs >=
+             (int)chart->events[eventIndex].timestamp - anticipation &&
          eventIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
-    EventType type = static_cast<EventType>((event.data & EVENT_ARROW_TYPE));
+    EventType type = static_cast<EventType>((event.data & EVENT_TYPE));
 
     switch (type) {
+      case EventType::SET_TEMPO:
+        bpm = event.extra;
+        break;
       case EventType::NOTE:
         processNote(event.data, arrowPool);
         break;

@@ -5,7 +5,7 @@
 
 enum EventType { NOTE, HOLD_START, HOLD_TAIL, STOP, SET_TEMPO };
 
-#define EVENT_ARROW_TYPE /*       */ 0b00000111
+#define EVENT_TYPE /*             */ 0b00000111
 #define EVENT_ARROW_DOWNLEFT /*   */ 0b00001000
 #define EVENT_ARROW_UPLEFT /*     */ 0b00010000
 #define EVENT_ARROW_CENTER /*     */ 0b00100000
@@ -20,6 +20,7 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
+  u8 extra;  // not present in note-related events
 } Event;
 
 #endif  // EVENT_H
