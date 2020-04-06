@@ -4,6 +4,7 @@
 
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
+#include "player/PlaybackState.h"
 
 extern "C" {
 #include "player/player.h"
@@ -54,6 +55,7 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
+  msecs = PlaybackState.msecs;
   bool isNewBeat = chartReader->update(msecs, arrowPool.get());
 
   if (isNewBeat)

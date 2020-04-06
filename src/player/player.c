@@ -10,12 +10,15 @@
 #include <stdlib.h>
 #include <string.h>  // for memset
 
+#include "PlaybackState.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"
 
 #define CMD_START_SONG 0x0400
 #define TIMER_16MHZ 0
+
+Playback PlaybackState;
 
 struct gsm_state decoder;
 const GBFS_FILE* fs;
@@ -92,7 +95,8 @@ void player_forever(void (*update)()) {
   while (1) {
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, 1146880 * 1000);
-    update(msecs);
+    PlaybackState.msecs = msecs;
+    update();
 
     dst_pos = double_buffers[cur_buffer];
 

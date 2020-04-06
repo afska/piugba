@@ -16,8 +16,6 @@
 
 class SongScene : public Scene {
  public:
-  u32 msecs = 0;
-
   SongScene(std::shared_ptr<GBAEngine> engine,
             const GBFS_FILE* fs,
             Song* song,
@@ -42,6 +40,7 @@ class SongScene : public Scene {
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
+  u32 msecs = 0;
 
   void setUpPalettes();
   void setUpBackground();

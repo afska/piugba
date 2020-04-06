@@ -10,10 +10,10 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-// char* SONG_NAME = (char*)"Extravaganza";
-// u8 EXAMPLE_LEVEL = 11;
-char* SONG_NAME = (char*)"Beethoven Virus";
-u8 EXAMPLE_LEVEL = 13;
+char* SONG_NAME = (char*)"Extravaganza";
+u8 EXAMPLE_LEVEL = 11;
+// char* SONG_NAME = (char*)"Beethoven Virus";
+// u8 EXAMPLE_LEVEL = 13;
 
 SongScene* songScene;
 
@@ -40,7 +40,7 @@ void StartScene::tick(u16 keys) {
     Chart* chart = Song_findChartByLevel(song, EXAMPLE_LEVEL);
 
     engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                                new FadeOutScene(1));
+                                new FadeOutScene(2));
   }
 }
 

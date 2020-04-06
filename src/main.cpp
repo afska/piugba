@@ -11,11 +11,7 @@ std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 int main() {
   player_init();
   engine->setScene(new StartScene(engine));
-  player_forever([](u32 msecs) {
-    // songScene->msecs = msecs;
-
-    engine->update();
-  });
+  player_forever([]() { engine->update(); });
 
   return 0;
 }
