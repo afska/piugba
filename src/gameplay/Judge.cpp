@@ -1,9 +1,9 @@
 #include "Judge.h"
 
-const u32 OFFSET_MISS = 8;
-const u32 OFFSET_BAD = 6;
-const u32 OFFSET_GOOD = 4;
-const u32 OFFSET_GREAT = 2;
+const u32 OFFSET_MISS = 9;
+const u32 OFFSET_BAD = 7;
+const u32 OFFSET_GOOD = 5;
+const u32 OFFSET_GREAT = 3;
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool, Score* score) {
   this->arrowPool = arrowPool;
