@@ -6,7 +6,8 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 
 ### Windows
 
-- Install `devKitPro` (v2.10.0) and clone the project. Use this file structure:
+- Install dependencies: Everything under [scripts/toolchain/programs](this directory) is required.
+- Create a directory in `D:\work\gba` with this file structure:
 	* `gba`
 		* `tools`
 			* `devKitPro`
@@ -22,21 +23,7 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 ### VSCode
 
 - Recommended plugins: `C/C++ Extensions`, `EditorConfig`, `Prettier - Code formatter`
-- Configuration:
-
-```json
-{
-  "extensions.ignoreRecommendations": false,
-  "terminal.integrated.shell.windows": "{PATH_TO_MSYS2_BASH.exe}",
-  "terminal.integrated.shellArgs.windows": ["--login", "-i"],
-  "C_Cpp.clang_format_style": "{ BasedOnStyle: Chromium }",
-  "editor.formatOnSave": true,
-  "prettier.requireConfig": true,
-  "[javascript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
-}
-```
+- Recommended settings: [here](scripts/toolchain/vscode_settings.json)
 
 ## Actions
 
