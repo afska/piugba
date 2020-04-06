@@ -16,18 +16,20 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
   * [VSCode](scripts/toolchain/programs/VSCodeSetup-x64-1.42.1.exe): The IDE
   * [Git Bash](scripts/toolchain/programs/Git-2.26.0-64-bit.exe): The console
   * [devkitPro](scripts/toolchain/programs/devkitProUpdater-3.0.3.exe): The devkit for compiling GBA roms. It comes with:
-    * **grit**: Used to convert paletted bitmaps to C arrays or raw binary files
-    * **gbfs**: Used to create a package with all the game assets
+    * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
+    * *gbfs*: Used to create a package with all the game assets
   * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
   * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
-- Add to `PATH`:
-  * `D:\work\gba\tools\devkitPro\bin`
-  * `D:\work\gba\tools\devkitPro\tools\bin`
-	  * (add them with `export PATH=$PATH:{NEW_PATHS}` in `~/.bash_profile`, so works in both **MSYS2** and **Git Bash**)
-    * (be careful with **ffmpeg** as **ImageMagick** already includes a version of it - add it first!)
-- As **Git Bash** doesn't work well with the `make` command from our toolchain, you'll be using:
-  * **MSYS2** (integrated with VSCode) to run `make` commands
-  * **Git Bash** to run anything else
+    * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+- Add to `~/.bash_profile`:
+```bash
+export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
+export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
+export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
+```
+- As *Git Bash* doesn't work well with the `make` command from our toolchain, you'll be using:
+  * *MSYS2* (integrated with VSCode) to run `make` commands
+  * *Git Bash* to run anything else
 
 ### VSCode
 
