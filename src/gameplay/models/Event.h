@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum EventType { NOTE, HOLD_START, HOLD_TAIL, STOP, SET_TEMPO, SET_SPEED };
+enum EventType { NOTE, HOLD_START, HOLD_TAIL, STOP, SET_TEMPO };
 
 #define EVENT_ARROW_TYPE /*       */ 0b00000111
 #define EVENT_ARROW_DOWNLEFT /*   */ 0b00001000

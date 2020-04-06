@@ -41,7 +41,6 @@ const EVENTS = {
   HOLD_TAIL: 2,
   STOP: 3,
   SET_TEMPO: 4,
-  SET_SPEED: 5,
 };
 
 const MINUTE = 60000;

@@ -1,6 +1,6 @@
 #include "ChartReader.h"
 
-// TODO: Unhardcode offset (header), tempo (SET_TEMPO), speed (SET_SPEED),
+// TODO: Unhardcode offset (header), tempo (SET_TEMPO),
 // anticipation (look-up table: 3=870, 4=653, etc).
 const u32 BPM = 162;
 const int EMULATOR_AUDIO_LAG = 170;
