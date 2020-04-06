@@ -25,5 +25,8 @@ echo "✔️  grit"
 try make -version > /dev/null
 echo "✔️  make"
 
+try node -v > /dev/null
+echo "✔️  node"
+
 echo ""
 echo "✔️  all tools are installed!"

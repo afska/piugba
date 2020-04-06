@@ -17,7 +17,6 @@ const COMMAND_BACKGROUND_1 = (input, output) =>
 const COMMAND_BACKGROUND_2 = (input) =>
   `grit "${input}" -gt -gB8 -mR! -mLs -ftb`;
 const COMMAND_BACKGROUND_3 = (tmp1, tmp2) => `rm "${tmp1}" && rm "${tmp2}"`;
-// const COMMAND_GBFS = (output) => `gbfs files.gbfs *`;
 
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
@@ -76,6 +75,3 @@ fs.readdirSync(SONGS_PATH)
     run(COMMAND_BACKGROUND_2(tempFile1), { cwd: OUTPUT_PATH });
     run(COMMAND_BACKGROUND_3(tempFile1, tempFile2));
   });
-
-// gbfs
-// run(COMMAND_GBFS(GBFS_PATH), { cwd: OUTPUT_PATH });

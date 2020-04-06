@@ -41,9 +41,10 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 ### Commands
 
 - `make clean`: Cleans build artifacts
-- `make assets`: Compiles the needed assets (required for compiling)
+- `make assets`: Compiles the needed assets in `src/data/content/compiled` (required for compiling)
 - `make build`: Compiles and generates a `.gba` file without data
-- `make package`: Compiles everything and appends the GBFS file to the ROM
+- `make import`: Imports the songs from `src/data/content/songs` to a GBFS file
+- `make package`: Compiles and appends the GBFS file to the ROM
 - `make start`: Starts the compiled ROM
 - `make restart`: Recompiles and starts the ROM
 

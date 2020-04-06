@@ -186,6 +186,10 @@ endif		# End BUILD switch
 assets:
 	./scripts/assets.sh
 
+import:
+	node ./scripts/importer/src/index.js
+	cd src/data/content/#compiled_songs && gbfs ../files.gbfs *
+
 package: $(BUILD)
 	./scripts/package.sh
 
