@@ -5,13 +5,14 @@ const _ = require("lodash");
 // (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
-  constructor(content) {
+  constructor(content, title) {
     this.content = content;
+    this.title = title;
   }
 
   get metadata() {
     return {
-      title: this._getSingleMatch(REGEXPS.metadata.title),
+      title: this.title || this._getSingleMatch(REGEXPS.metadata.title),
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
       genre: this._getSingleMatch(REGEXPS.metadata.genre),
       sampleStart: this._toMilliseconds(

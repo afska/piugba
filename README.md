@@ -66,14 +66,14 @@ grit file.bmp -gt -gB8 -mR! -mLs -ftb
 #### Build music
 
 ```bash
-ffmpeg -i file.mp3 -ac 1 -af 'aresample=18157' -strict unofficial -c:a gsm file.gsm
+ffmpeg -y -i file.mp3 -ac 1 -af 'aresample=18157' -strict unofficial -c:a gsm file.gsm
 ffplay -ar 18157 file.gsm
 ```
 
 #### Build filesystem
 
 ```bash
-gbfs files.gbfs *.bin *.gsm *.pius
+gbfs files.gbfs *.pius *.gsm *.bin
 # pad rom.gba to a 256-byte boundary
 cat rom.gba files.gbfs > rom.out.gba
 ```
