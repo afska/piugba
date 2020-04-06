@@ -28,6 +28,7 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 ```
+- You can check if the tools are installed correctly running `./scripts/toolchain/check.sh`
 - As *Git Bash* doesn't work well with the `make` command from our toolchain, you'll be using:
   * *MSYS2* (integrated with VSCode) to run `make` commands
   * *Git Bash* to run anything else
