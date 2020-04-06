@@ -81,7 +81,7 @@ void Score::updateCombo(FeedbackType feedbackType) {
 }
 
 void Score::updateLife(FeedbackType feedbackType) {
-  life += clamp(LIFE_DIFFS[feedbackType], MIN_LIFE, MAX_LIFE + 1);
+  life = clamp(life + LIFE_DIFFS[feedbackType], MIN_LIFE, MAX_LIFE + 1);
   lifeBar->setLife(life);
 }
 
