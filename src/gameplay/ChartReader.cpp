@@ -3,7 +3,6 @@
 // TODO: Unhardcode offset (header), tempo (SET_TEMPO), speed (SET_SPEED),
 // anticipation (look-up table: 3=870, 4=653, etc).
 const u32 BPM = 162;
-const int OFFSET = 175;
 const int EMULATOR_AUDIO_LAG = 170;
 /*
   x = x0 + v * t
@@ -23,7 +22,7 @@ bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 };
 
 bool ChartReader::animateBpm(u32 msecs) {
-  int msecsWithOffset = msecs - OFFSET;
+  int msecsWithOffset = msecs - chart->offset;
 
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000

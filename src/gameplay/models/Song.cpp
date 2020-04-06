@@ -28,6 +28,8 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
   for (u32 i = 0; i < song->chartCount; i++) {
     auto chart = song->charts + i;
 
+    u8 hasPositiveOffset = parse_u8(data, &cursor);
+    chart->offset = parse_u32le(data, &cursor) * (hasPositiveOffset ? 1 : -1);
     chart->difficulty = static_cast<Difficulty>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
 
