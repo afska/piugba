@@ -13,9 +13,10 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 		* `projects`
 			* `piugba`
 - Install the toolchain:
-  * [VSCode](scripts/toolchain/programs/VSCodeSetup-x64-1.42.1.exe): The IDE
-  * [Git Bash](scripts/toolchain/programs/Git-2.26.0-64-bit.exe): The console
-  * [devkitPro](scripts/toolchain/programs/devkitProUpdater-3.0.3.exe): The devkit for compiling GBA roms. It comes with:
+  * [node.js >= 10](https://nodejs.org/en): The JS runtime
+  * [VSCode](https://code.visualstudio.com): The IDE
+  * [Git Bash](https://gitforwindows.org): The console
+  * [devkitPro](https://github.com/devkitPro/installer/releases): The devkit for compiling GBA roms. It comes with:
     * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
     * *gbfs*: Used to create a package with all the game assets
   * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
