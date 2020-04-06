@@ -23,7 +23,7 @@ try grit > /dev/null
 echo "✔️  grit"
 
 try make -version > /dev/null
-echo "✔️ make"
+echo "✔️  make"
 
 echo ""
 echo "✔️  all tools are installed!"

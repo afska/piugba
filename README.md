@@ -13,12 +13,13 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 		* `projects`
 			* `piugba`
 - Install the toolchain:
-  * [node.js >= 10](https://nodejs.org/en): The JS runtime
   * [VSCode](https://code.visualstudio.com): The IDE
   * [Git Bash](https://gitforwindows.org): The console
   * [devkitPro](https://github.com/devkitPro/installer/releases): The devkit for compiling GBA roms. It comes with:
     * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
     * *gbfs*: Used to create a package with all the game assets
+  * [node.js >= 10](https://nodejs.org/en): The JS runtime
+  * [make](scripts/toolchain/programs/make-3.81.zip): The build automation tool
   * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
   * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
     * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
@@ -29,9 +30,6 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 ```
 - You can check if the tools are installed correctly running `./scripts/toolchain/check.sh`
-- As *Git Bash* doesn't work well with the `make` command from our toolchain, you'll be using:
-  * *MSYS2* (integrated with VSCode) to run `make` commands
-  * *Git Bash* to run anything else
 
 ### VSCode
 

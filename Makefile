@@ -190,9 +190,9 @@ package: $(BUILD)
 	./scripts/package.sh
 
 start: package
-	start $(TARGET).out.gba
+	start "$(TARGET).out.gba"
 
 restart: clean package
-	start $(TARGET).out.gba
+	start "$(TARGET).out.gba"
 
 # EOF

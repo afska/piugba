@@ -1,6 +1,6 @@
 {
   "extensions.ignoreRecommendations": false,
-  "terminal.integrated.shell.windows": "D:\\work\\gba\\tools\\devkitPro\\msys2\\usr\\bin\\bash.exe",
+  "terminal.integrated.shell.windows": "C:\\Program Files\\Git\\bin\\bash.exe",
   "terminal.integrated.shellArgs.windows": [
       "--login",
       "-i"
