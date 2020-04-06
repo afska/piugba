@@ -14,12 +14,12 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
 			* `piugba`
 - Install the toolchain:
   * [VSCode](scripts/toolchain/programs/VSCodeSetup-x64-1.42.1.exe): The IDE
-  * **Git Bash**: The console
-  * **devkitPro**: The devkit for compiling GBA roms. It comes with:
+  * [Git Bash](scripts/toolchain/programs/Git-2.26.0-64-bit.exe): The console
+  * [devkitPro](scripts/toolchain/programs/devkitProUpdater-3.0.3.exe): The devkit for compiling GBA roms. It comes with:
     * **grit**: Used to convert paletted bitmaps to C arrays or raw binary files
     * **gbfs**: Used to create a package with all the game assets
-  * **ImageMagick**: The tool used to convert images to paletted bitmaps
-  * **ffmpeg** *(with libgsm)*: The tool used to convert audio files to PCM
+  * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
+  * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
 - Add to `PATH`:
   * `D:\work\gba\tools\devkitPro\bin`
   * `D:\work\gba\tools\devkitPro\tools\bin`
