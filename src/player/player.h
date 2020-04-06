@@ -3,7 +3,8 @@
 
 void player_init();
 void player_play(const char* name);
-void player_stop();
+void player_unmute();
+void player_mute();
 void player_forever(void (*update)(unsigned int msecs));
 
 #endif  // PLAYER_H
