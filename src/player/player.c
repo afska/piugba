@@ -69,7 +69,7 @@ void player_init() {
   REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 }
 
-void player_play(char* name) {
+void player_play(const char* name) {
   gsm_init(&decoder);
   src = gbfs_get_obj(fs, name, &src_len);
   src_pos = src;

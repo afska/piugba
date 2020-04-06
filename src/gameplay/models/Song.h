@@ -5,6 +5,7 @@
 
 #include "Chart.h"
 #include "Event.h"
+#include "SongFile.h"
 #include "utils/parse.h"
 
 extern "C" {
@@ -22,9 +23,15 @@ typedef struct {
 
   u8 chartCount;
   Chart* charts;  // ("chartCount" times)
+
+  // custom fields:
+  std::string audioPath;
+  std::string backgroundTilesPath;
+  std::string backgroundPalettePath;
+  std::string backgroundMapPath;
 } Song;
 
-Song* Song_parse(const GBFS_FILE* fs, char* fileName);
+Song* Song_parse(const GBFS_FILE* fs, SongFile file);
 Chart* Song_findChartByLevel(Song* song, u8 level);
 void Song_free(Song* song);
 

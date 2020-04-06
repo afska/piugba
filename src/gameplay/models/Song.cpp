@@ -6,9 +6,9 @@
 const u32 TITLE_LEN = 40;
 const u32 ARTIST_LEN = 15;
 
-Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
+Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
   u32 length;
-  auto data = (u8*)gbfs_get_obj(fs, fileName, &length);
+  auto data = (u8*)gbfs_get_obj(fs, file.getMetadataFile().c_str(), &length);
 
   u32 cursor = 0;
   auto song = new Song();
@@ -41,6 +41,11 @@ Song* Song_parse(const GBFS_FILE* fs, char* fileName) {
       event->data = parse_u8(data, &cursor);
     }
   }
+
+  song->audioPath = file.getAudioFile();
+  song->backgroundTilesPath = file.getBackgroundTilesFile();
+  song->backgroundPalettePath = file.getBackgroundPaletteFile();
+  song->backgroundMapPath = file.getBackgroundMapFile();
 
   return song;
 }

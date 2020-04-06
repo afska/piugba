@@ -2,14 +2,22 @@
 
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
-#include "data/content/TestSong.h"
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 
+extern "C" {
+#include "player/player.h"
+}
+
 const u32 ARROW_POOL_SIZE = 45;
 
-SongScene::SongScene(std::shared_ptr<GBAEngine> engine, Chart* chart)
+SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
+                     const GBFS_FILE* fs,
+                     Song* song,
+                     Chart* chart)
     : Scene(engine) {
+  this->fs = fs;
+  this->song = song;
   this->chart = chart;
 }
 
@@ -32,6 +40,8 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  player_play(song->audioPath.c_str());
+
   setUpPalettes();
   setUpBackground();
   setUpArrows();
@@ -64,16 +74,28 @@ void SongScene::setUpPalettes() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
           shared_palettePal, sizeof(shared_palettePal)));
-  backgroundPalette = std::unique_ptr<BackgroundPaletteManager>(
-      new BackgroundPaletteManager(TestSongPal, sizeof(TestSongPal)));
+
+  u32 backgroundPaletteLength;
+  auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
+      fs, song->backgroundPalettePath.c_str(), &backgroundPaletteLength);
+
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          backgroundPaletteData, backgroundPaletteLength));
 }
 
 void SongScene::setUpBackground() {
   engine.get()->disableText();
 
+  u32 backgroundTilesLength, backgroundMapLength;
+  auto backgroundTilesData = gbfs_get_obj(fs, song->backgroundTilesPath.c_str(),
+                                          &backgroundTilesLength);
+  auto backgroundMapData =
+      gbfs_get_obj(fs, song->backgroundMapPath.c_str(), &backgroundMapLength);
+
   bg = std::unique_ptr<Background>(
-      new Background(0, TestSongTiles, sizeof(TestSongTiles), TestSongMap,
-                     sizeof(TestSongMap)));
+      new Background(0, backgroundTilesData, backgroundTilesLength,
+                     backgroundMapData, backgroundMapLength));
   bg.get()->useMapScreenBlock(24);
 }
 
@@ -119,4 +141,5 @@ void SongScene::processKeys(u16 keys) {
 
 SongScene::~SongScene() {
   arrowHolders.clear();
+  Song_free(song);
 }

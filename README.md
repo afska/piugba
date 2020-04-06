@@ -60,7 +60,7 @@ grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
 #### Build backgrounds
 
 ```bash
-grit *.bmp -gt -gB8 -mR! -mLs -ftc
+grit *.bmp -gt -gB8 -mR! -mLs -ftb
 ```
 
 #### Build music
@@ -73,7 +73,7 @@ ffplay -ar 18157 file.gsm
 #### Build filesystem
 
 ```bash
-gbfs files.gbfs file1.bmp file2.txt *.gsm
+gbfs files.gbfs *.bin *.gsm *.pius
 # pad rom.gba to a 256-byte boundary
 cat rom.gba files.gbfs > rom.out.gba
 ```
