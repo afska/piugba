@@ -67,6 +67,8 @@ void player_init() {
   DSOUNDCTRL = 0x0b0e;
   REG_TM0CNT_L = 0x10000 - (924 / 2);
   REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
+
+  player_stop();
 }
 
 void player_play(const char* name) {
@@ -74,6 +76,12 @@ void player_play(const char* name) {
   src = gbfs_get_obj(fs, name, &src_len);
   src_pos = src;
   src_end = src + src_len;
+
+  SNDSTAT = SNDSTAT | 0b0000000010000000;
+}
+
+void player_stop() {
+  SNDSTAT = SNDSTAT & 0b1111111101111111;
 }
 
 void player_forever(void (*update)()) {
