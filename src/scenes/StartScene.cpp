@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "gameplay/models/Song.h"
+#include "player/PlaybackState.h"
 #include "scenes/SongScene.h"
 
 extern "C" {
@@ -14,8 +15,6 @@ char* SONG_NAME = (char*)"Extravaganza";
 u8 EXAMPLE_LEVEL = 11;
 // char* SONG_NAME = (char*)"Beethoven Virus";
 // u8 EXAMPLE_LEVEL = 13;
-
-SongScene* songScene;
 
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 

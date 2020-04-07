@@ -5,9 +5,12 @@ const u32 OFFSET_BAD = 7;
 const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
 
-Judge::Judge(ObjectPool<Arrow>* arrowPool, Score* score) {
+Judge::Judge(ObjectPool<Arrow>* arrowPool,
+             Score* score,
+             std::function<void()> onStageBreak) {
   this->arrowPool = arrowPool;
   this->score = score;
+  this->onStageBreak = onStageBreak;
 }
 
 void Judge::onPress(Arrow* arrow) {
@@ -44,7 +47,9 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
   if (result != FeedbackType::UNKNOWN) {
-    score->update(result);
+    bool isAlive = score->update(result);
+    if (!isAlive)
+      this->onStageBreak();
 
     switch (result) {
       case FeedbackType::MISS:

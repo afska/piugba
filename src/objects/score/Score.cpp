@@ -15,14 +15,16 @@ Score::Score(LifeBar* lifeBar) {
     counters[i] = 0;
 }
 
-void Score::update(FeedbackType feedbackType) {
+bool Score::update(FeedbackType feedbackType) {
   feedback->setType(feedbackType);
   feedback->show();
 
+  bool isAlive = updateLife(feedbackType);
   updateCombo(feedbackType);
-  updateLife(feedbackType);
   updateCounters(feedbackType);
   updatePoints(feedbackType);
+
+  return isAlive;
 }
 
 void Score::tick() {
@@ -33,6 +35,16 @@ void Score::tick() {
 void Score::render(std::vector<Sprite*>* sprites) {
   sprites->push_back(feedback->get());
   combo->render(sprites);
+}
+
+bool Score::updateLife(FeedbackType feedbackType) {
+  life = min(life + LIFE_DIFFS[feedbackType], MAX_LIFE);
+  bool isAlive = life >= MIN_LIFE;
+  if (!isAlive)
+    life = MIN_LIFE;
+  lifeBar->setLife(life);
+
+  return isAlive;
 }
 
 void Score::updateCombo(FeedbackType feedbackType) {
@@ -78,11 +90,6 @@ void Score::updateCombo(FeedbackType feedbackType) {
     combo->show();
   else
     combo->hide();
-}
-
-void Score::updateLife(FeedbackType feedbackType) {
-  life = clamp(life + LIFE_DIFFS[feedbackType], MIN_LIFE, MAX_LIFE + 1);
-  lifeBar->setLife(life);
 }
 
 void Score::updateCounters(FeedbackType feedbackType) {

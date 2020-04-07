@@ -1,7 +1,9 @@
 #include "SongScene.h"
 
+#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
+#include "StageBreakScene.h"
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
@@ -51,10 +53,19 @@ void SongScene::load() {
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
   chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
-  judge = std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get()));
+  judge =
+      std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
+        player_stop();
+        engine->enableText();
+        engine->transitionIntoScene(new StageBreakScene(engine),
+                                    new FadeOutScene(2));
+      }));
 }
 
 void SongScene::tick(u16 keys) {
+  if (engine->isTransitioning())
+    return;
+
   msecs = PlaybackState.msecs;
   bool isNewBeat = chartReader->update(msecs, arrowPool.get());
 
@@ -87,7 +98,7 @@ void SongScene::setUpPalettes() {
 }
 
 void SongScene::setUpBackground() {
-  engine.get()->disableText();
+  engine->disableText();
 
   u32 backgroundTilesLength, backgroundMapLength;
   auto backgroundTilesData = gbfs_get_obj(fs, song->backgroundTilesPath.c_str(),

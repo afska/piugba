@@ -59,6 +59,14 @@ void enable_vblank_interrupt() {
   irqEnable(IRQ_VBLANK);
 }
 
+void unmute() {
+  SNDSTAT = SNDSTAT | 0b0000000010000000;
+}
+
+void mute() {
+  SNDSTAT = SNDSTAT & 0b1111111101111111;
+}
+
 void player_init() {
   fs = find_first_gbfs_file(0);
 
@@ -71,7 +79,7 @@ void player_init() {
   REG_TM0CNT_L = 0x10000 - (924 / 2);
   REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 
-  player_mute();
+  mute();
 }
 
 void player_play(const char* name) {
@@ -79,14 +87,14 @@ void player_play(const char* name) {
   src = gbfs_get_obj(fs, name, &src_len);
   src_pos = src;
   src_end = src + src_len;
+  PlaybackState.msecs = 0;
 }
 
-void player_unmute() {
-  SNDSTAT = SNDSTAT | 0b0000000010000000;
-}
-
-void player_mute() {
-  SNDSTAT = SNDSTAT & 0b1111111101111111;
+void player_stop() {
+  src_pos = NULL;
+  src_end = NULL;
+  PlaybackState.msecs = 0;
+  mute();
 }
 
 void player_forever(void (*update)()) {
@@ -132,17 +140,14 @@ void player_forever(void (*update)()) {
         *dst_pos++ = cur_sample >> 8;
         last_sample = cur_sample;
       }
-    } else {
-      src_pos = NULL;
-      src_end = NULL;
-      player_mute();
-    }
+    } else
+      player_stop();
 
     VBlankIntrWait();
     dsound_switch_buffers(double_buffers[cur_buffer]);
 
     if (src_pos != NULL)
-      player_unmute();
+      unmute();
 
     cur_buffer = !cur_buffer;
   }

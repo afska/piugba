@@ -7,7 +7,9 @@
 
 class Judge {
  public:
-  Judge(ObjectPool<Arrow>* arrowPool, Score* score);
+  Judge(ObjectPool<Arrow>* arrowPool,
+        Score* score,
+        std::function<void()> onStageBreak);
 
   void onPress(Arrow* arrow);
   void onOut(Arrow* arrow);
@@ -15,6 +17,7 @@ class Judge {
  private:
   ObjectPool<Arrow>* arrowPool;
   Score* score;
+  std::function<void()> onStageBreak;
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
 };

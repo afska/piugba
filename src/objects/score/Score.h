@@ -13,7 +13,7 @@ class Score {
  public:
   Score(LifeBar* lifeBar);
 
-  void update(FeedbackType feedbackType);
+  bool update(FeedbackType feedbackType);
 
   void tick();
   void render(std::vector<Sprite*>* sprites);
@@ -23,14 +23,14 @@ class Score {
   std::unique_ptr<Combo> combo;
   LifeBar* lifeBar;
 
+  int life = INITIAL_LIFE;
   bool hasMissCombo = false;
   u32 maxCombo = 0;
-  int life = INITIAL_LIFE;
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;
 
+  bool updateLife(FeedbackType feedbackType);
   void updateCombo(FeedbackType feedbackType);
-  void updateLife(FeedbackType feedbackType);
   void updateCounters(FeedbackType feedbackType);
   void updatePoints(FeedbackType feedbackType);
 };
