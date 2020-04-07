@@ -11,11 +11,6 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-char* SONG_NAME = (char*)"Extravaganza";
-u8 EXAMPLE_LEVEL = 11;
-// char* SONG_NAME = (char*)"Beethoven Virus";
-// u8 EXAMPLE_LEVEL = 13;
-
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 
 std::vector<Background*> StartScene::backgrounds() {
@@ -29,14 +24,51 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
-  log_text("Press any key to play");
+  TextStream::instance().setText("piuGBA 0.0.1", 0, 0);
+  TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
+
+  TextStream::instance().setText("SEL - Don't Bother Me (EASY)", 10, 0);
+
+  TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
+  TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
+
+  TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
+  TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
+
+  TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
 }
 
 void StartScene::tick(u16 keys) {
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     const GBFS_FILE* fs = find_first_gbfs_file(0);
-    Song* song = Song_parse(fs, SongFile(SONG_NAME));
-    Chart* chart = Song_findChartByLevel(song, EXAMPLE_LEVEL);
+
+    char* name;
+    u8 level;
+
+    if (keys & KEY_SELECT) {
+      name = "Don't Bother Me";
+      level = 4;
+    } else if (keys & KEY_L) {
+      name = "Beethoven Virus";
+      level = 7;
+    } else if (keys & KEY_R) {
+      name = "Beethoven Virus";
+      level = 13;
+    } else if (keys & KEY_LEFT) {
+      name = "Run to You";
+      level = 5;
+    } else if (keys & KEY_RIGHT) {
+      name = "Run to You";
+      level = 12;
+    } else if (keys & KEY_START) {
+      name = "Extravaganza";
+      level = 11;
+    } else {
+      return;
+    }
+
+    Song* song = Song_parse(fs, SongFile(name));
+    Chart* chart = Song_findChartByLevel(song, level);
 
     engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                                 new FadeOutScene(2));

@@ -20,7 +20,10 @@ std::vector<Sprite*> StageBreakScene::sprites() {
 }
 
 void StageBreakScene::load() {
-  log_text("Hey! Why don't you just get up and dance man?");
+  TextStream::instance().setText("Hey!", 7, 0);
+  TextStream::instance().setText("Why don't you", 9, 0);
+  TextStream::instance().setText("just get up and dance,", 10, 7);
+  TextStream::instance().setText("man?", 11, 26);
 }
 
 void StageBreakScene::tick(u16 keys) {

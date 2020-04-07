@@ -55,8 +55,7 @@ void SongScene::load() {
   chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
   judge =
       std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
-        player_stop();
-        engine->enableText();
+        unload();
         engine->transitionIntoScene(new StageBreakScene(engine),
                                     new FadeOutScene(2));
       }));
@@ -150,6 +149,11 @@ void SongScene::processKeys(u16 keys) {
         arrowPool->create(
             [&arrowHolder](Arrow* it) { it->initialize(arrowHolder->type); });
   }
+}
+
+void SongScene::unload() {
+  player_stop();
+  engine->enableText();
 }
 
 SongScene::~SongScene() {
