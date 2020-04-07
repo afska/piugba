@@ -54,11 +54,6 @@ void gsm_init(gsm r) {
   r->nrp = 40;
 }
 
-void enable_vblank_interrupt() {
-  irqInit();
-  irqEnable(IRQ_VBLANK);
-}
-
 void unmute() {
   SNDSTAT = SNDSTAT | 0b0000000010000000;
 }
@@ -100,8 +95,6 @@ void player_stop() {
 }
 
 void player_forever(void (*update)()) {
-  enable_vblank_interrupt();
-
   while (1) {
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, 1146880 * 1000);

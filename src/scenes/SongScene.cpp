@@ -8,6 +8,7 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
+#include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -45,10 +46,9 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   player_play(song->audioPath.c_str());
-  REG_DISPCNT &= ~DCNT_BG1;
-  REG_DISPCNT &= ~DCNT_BG2;
-  REG_DISPCNT &= ~DCNT_BG3;
-  engine->disableText();
+  BACKGROUND1_DISABLE();
+  BACKGROUND2_DISABLE();
+  BACKGROUND3_DISABLE();
 
   setUpPalettes();
   setUpBackground();
@@ -162,10 +162,9 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::unload() {
   player_stop();
-  REG_DISPCNT |= DCNT_BG1;
-  REG_DISPCNT |= DCNT_BG2;
-  REG_DISPCNT |= DCNT_BG3;
-  engine->enableText();
+  BACKGROUND1_ENABLE();
+  BACKGROUND2_ENABLE();
+  BACKGROUND3_ENABLE();
 }
 
 SongScene::~SongScene() {
