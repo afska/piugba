@@ -45,6 +45,10 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   player_play(song->audioPath.c_str());
+  REG_DISPCNT &= ~DCNT_BG1;
+  REG_DISPCNT &= ~DCNT_BG2;
+  REG_DISPCNT &= ~DCNT_BG3;
+  engine->disableText();
 
   setUpPalettes();
   setUpBackground();
@@ -104,8 +108,6 @@ void SongScene::setUpPalettes() {
 }
 
 void SongScene::setUpBackground() {
-  engine->disableText();
-
   u32 backgroundTilesLength, backgroundMapLength;
   auto backgroundTilesData = gbfs_get_obj(fs, song->backgroundTilesPath.c_str(),
                                           &backgroundTilesLength);
@@ -160,6 +162,9 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::unload() {
   player_stop();
+  REG_DISPCNT |= DCNT_BG1;
+  REG_DISPCNT |= DCNT_BG2;
+  REG_DISPCNT |= DCNT_BG3;
   engine->enableText();
 }
 
