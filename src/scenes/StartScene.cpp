@@ -27,7 +27,11 @@ void StartScene::load() {
   TextStream::instance().setText("piuGBA 0.0.1", 0, 0);
   TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
 
-  TextStream::instance().setText("SEL - Don't Bother Me (EASY)", 10, 0);
+  TextStream::instance().setText("SEL - Don't Bother Me (EASY)", 6, 0);
+
+  TextStream::instance().setText("ARR - Tepris (EASY)", 8, 0);
+  TextStream::instance().setText("B - Tepris (HARD)", 9, 0);
+  TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
 
   TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
   TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
@@ -48,6 +52,15 @@ void StartScene::tick(u16 keys) {
     if (keys & KEY_SELECT) {
       name = (char*)"Don't Bother Me";
       level = 4;
+    } else if (keys & KEY_UP) {
+      name = (char*)"Tepris";
+      level = 4;
+    } else if (keys & KEY_B) {
+      name = (char*)"Tepris";
+      level = 7;
+    } else if (keys & KEY_A) {
+      name = (char*)"Tepris";
+      level = 16;
     } else if (keys & KEY_L) {
       name = (char*)"Beethoven Virus";
       level = 7;

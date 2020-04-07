@@ -45,6 +45,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         bpm = event.extra;
         break;
       case EventType::NOTE:
+      case EventType::HOLD_START:
         processNote(event.data, arrowPool);
         break;
       default:
