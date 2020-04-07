@@ -88,12 +88,14 @@ void player_play(const char* name) {
   src_pos = src;
   src_end = src + src_len;
   PlaybackState.msecs = 0;
+  PlaybackState.hasFinished = false;
 }
 
 void player_stop() {
   src_pos = NULL;
   src_end = NULL;
   PlaybackState.msecs = 0;
+  PlaybackState.hasFinished = false;
   mute();
 }
 
@@ -140,8 +142,10 @@ void player_forever(void (*update)()) {
         *dst_pos++ = cur_sample >> 8;
         last_sample = cur_sample;
       }
-    } else
+    } else {
       player_stop();
+      PlaybackState.hasFinished = true;
+    }
 
     VBlankIntrWait();
     dsound_switch_buffers(double_buffers[cur_buffer]);

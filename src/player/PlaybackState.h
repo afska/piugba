@@ -3,6 +3,7 @@
 
 typedef struct {
   unsigned int msecs;
+  bool hasFinished;
 } Playback;
 
 extern Playback PlaybackState;

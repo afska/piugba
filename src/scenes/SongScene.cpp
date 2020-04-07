@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
 #include "StageBreakScene.h"
+#include "StartScene.h"  // TODO: REMOVE
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
@@ -64,6 +65,12 @@ void SongScene::load() {
 void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  if (PlaybackState.hasFinished) {
+    unload();
+    engine->transitionIntoScene(new StartScene(engine), new FadeOutScene(2));
+    return;
+  }
 
   msecs = PlaybackState.msecs;
   bool isNewBeat = chartReader->update(msecs, arrowPool.get());

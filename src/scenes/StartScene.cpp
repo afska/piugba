@@ -46,22 +46,22 @@ void StartScene::tick(u16 keys) {
     u8 level;
 
     if (keys & KEY_SELECT) {
-      name = "Don't Bother Me";
+      name = (char*)"Don't Bother Me";
       level = 4;
     } else if (keys & KEY_L) {
-      name = "Beethoven Virus";
+      name = (char*)"Beethoven Virus";
       level = 7;
     } else if (keys & KEY_R) {
-      name = "Beethoven Virus";
+      name = (char*)"Beethoven Virus";
       level = 13;
     } else if (keys & KEY_LEFT) {
-      name = "Run to You";
+      name = (char*)"Run to You";
       level = 5;
     } else if (keys & KEY_RIGHT) {
-      name = "Run to You";
+      name = (char*)"Run to You";
       level = 12;
     } else if (keys & KEY_START) {
-      name = "Extravaganza";
+      name = (char*)"Extravaganza";
       level = 11;
     } else {
       return;
