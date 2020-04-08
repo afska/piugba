@@ -24,7 +24,7 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
-  TextStream::instance().setText("piuGBA 0.0.1", 0, 0);
+  TextStream::instance().setText("piuGBA 0.0.2", 0, 0);
   TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
 
   TextStream::instance().setText("SEL - Don't Bother Me (EASY)", 6, 0);
