@@ -82,7 +82,6 @@ cat rom.gba files.gbfs > rom.out.gba
 #### Build gba-sprite-engine
 
 ```bash
-# (git bash with admin rights)
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
