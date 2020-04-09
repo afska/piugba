@@ -4,7 +4,6 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "gameplay/models/Song.h"
-#include "player/PlaybackState.h"
 #include "scenes/SongScene.h"
 
 extern "C" {
