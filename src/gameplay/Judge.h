@@ -1,6 +1,8 @@
 #ifndef JUDGE_H
 #define JUDGE_H
 
+#include <functional>
+
 #include "objects/Arrow.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"

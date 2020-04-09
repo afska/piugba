@@ -1,5 +1,7 @@
 #include "ChartReader.h"
 
+#include <vector>
+
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
@@ -59,30 +61,33 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
   std::vector<Arrow*> arrows;
 
-  if (data & EVENT_ARROW_DOWNLEFT)
-    arrows.push_back(arrowPool->create([](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, ArrowDirection::DOWNLEFT);
+  forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
+    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+      it->initialize(ArrowType::UNIQUE, direction);
     }));
-  if (data & EVENT_ARROW_UPLEFT)
-    arrows.push_back(arrowPool->create([](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, ArrowDirection::UPLEFT);
-    }));
-  if (data & EVENT_ARROW_CENTER)
-    arrows.push_back(arrowPool->create([](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, ArrowDirection::CENTER);
-    }));
-  if (data & EVENT_ARROW_UPRIGHT)
-    arrows.push_back(arrowPool->create([](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, ArrowDirection::UPRIGHT);
-    }));
-  if (data & EVENT_ARROW_DOWNRIGHT)
-    arrows.push_back(arrowPool->create([](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, ArrowDirection::DOWNRIGHT);
-    }));
+  });
 
   if (arrows.size() > 1) {
     for (u32 i = 0; i < arrows.size(); i++) {
       arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
     }
   }
+}
+
+void ChartReader::forEachDirection(u8 data,
+                                   std::function<void(ArrowDirection)> action) {
+  if (data & EVENT_ARROW_DOWNLEFT)
+    action(ArrowDirection::DOWNLEFT);
+
+  if (data & EVENT_ARROW_UPLEFT)
+    action(ArrowDirection::UPLEFT);
+
+  if (data & EVENT_ARROW_CENTER)
+    action(ArrowDirection::CENTER);
+
+  if (data & EVENT_ARROW_UPRIGHT)
+    action(ArrowDirection::UPRIGHT);
+
+  if (data & EVENT_ARROW_DOWNRIGHT)
+    action(ArrowDirection::DOWNRIGHT);
 }

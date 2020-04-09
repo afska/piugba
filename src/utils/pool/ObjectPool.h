@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 
 #include <functional>
+#include <vector>
 
 #include "IPoolable.h"
 
