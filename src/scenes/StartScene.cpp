@@ -27,7 +27,7 @@ void StartScene::load() {
   TextStream::instance().setText("piuGBA 0.0.2", 0, 0);
   TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
 
-  TextStream::instance().setText("SEL - Don't Bother Me (EASY)", 6, 0);
+  TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
 
   TextStream::instance().setText("ARR - Tepris (EASY)", 8, 0);
   TextStream::instance().setText("B - Tepris (HARD)", 9, 0);
@@ -51,7 +51,7 @@ void StartScene::tick(u16 keys) {
 
     if (keys & KEY_SELECT) {
       name = (char*)"Don't Bother Me";
-      level = 4;
+      level = 6;
     } else if (keys & KEY_UP) {
       name = (char*)"Tepris";
       level = 4;
