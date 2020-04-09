@@ -8,7 +8,7 @@
 
 #define IFTEST if (false)
 
-enum ArrowType { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
+enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
 
 const u32 ARROWS_TOTAL = 5;
@@ -22,13 +22,13 @@ const u32 ARROW_MARGIN = 16 + 2;
 class Arrow : public IPoolable {
  public:
   u32 id = 0;
-  ArrowType type = ArrowType::DOWNLEFT;
+  ArrowDirection direction = ArrowDirection::DOWNLEFT;
 
   Arrow(u32 id);
 
   void discard() override;
 
-  void initialize(ArrowType type);
+  void initialize(ArrowDirection direction);
   void setSiblingId(int siblingId);
   void forAll(ObjectPool<Arrow>* arrowPool, std::function<void(Arrow*)> func);
   FeedbackType getResult(FeedbackType partialResult,

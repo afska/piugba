@@ -126,7 +126,7 @@ void SongScene::setUpArrows() {
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowType>(i))});
+        new ArrowHolder(static_cast<ArrowDirection>(i))});
 }
 
 void SongScene::updateArrowHolders() {
@@ -140,7 +140,7 @@ void SongScene::updateArrows() {
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
-    else if (arrowHolders[it->type]->hasBeenPressedNow())
+    else if (arrowHolders[it->direction]->hasBeenPressedNow())
       judge->onPress(it);
   });
 }
@@ -155,8 +155,9 @@ void SongScene::processKeys(u16 keys) {
   IFTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
-        arrowPool->create(
-            [&arrowHolder](Arrow* it) { it->initialize(arrowHolder->type); });
+        arrowPool->create([&arrowHolder](Arrow* it) {
+          it->initialize(arrowHolder->direction);
+        });
   }
 }
 

@@ -61,19 +61,19 @@ void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
 
   if (data & EVENT_ARROW_DOWNLEFT)
     arrows.push_back(arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::DOWNLEFT); }));
+        [](Arrow* it) { it->initialize(ArrowDirection::DOWNLEFT); }));
   if (data & EVENT_ARROW_UPLEFT)
     arrows.push_back(arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::UPLEFT); }));
+        [](Arrow* it) { it->initialize(ArrowDirection::UPLEFT); }));
   if (data & EVENT_ARROW_CENTER)
     arrows.push_back(arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::CENTER); }));
+        [](Arrow* it) { it->initialize(ArrowDirection::CENTER); }));
   if (data & EVENT_ARROW_UPRIGHT)
     arrows.push_back(arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::UPRIGHT); }));
+        [](Arrow* it) { it->initialize(ArrowDirection::UPRIGHT); }));
   if (data & EVENT_ARROW_DOWNRIGHT)
     arrows.push_back(arrowPool->create(
-        [](Arrow* it) { it->initialize(ArrowType::DOWNRIGHT); }));
+        [](Arrow* it) { it->initialize(ArrowDirection::DOWNRIGHT); }));
 
   if (arrows.size() > 1) {
     for (u32 i = 0; i < arrows.size(); i++) {

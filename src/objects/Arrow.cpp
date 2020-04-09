@@ -29,34 +29,34 @@ void Arrow::discard() {
   sprite->enabled = false;
 }
 
-void Arrow::initialize(ArrowType type) {
+void Arrow::initialize(ArrowDirection direction) {
   u32 start = 0;
   bool flip = false;
-  switch (type) {
-    case ArrowType::DOWNLEFT:
+  switch (direction) {
+    case ArrowDirection::DOWNLEFT:
       start = ARROW_FRAMES * 0;
       break;
-    case ArrowType::UPLEFT:
+    case ArrowDirection::UPLEFT:
       start = ARROW_FRAMES * 1;
       break;
-    case ArrowType::CENTER:
+    case ArrowDirection::CENTER:
       start = ARROW_FRAMES * 2;
       break;
-    case ArrowType::UPRIGHT:
+    case ArrowDirection::UPRIGHT:
       start = ARROW_FRAMES * 1;
       flip = true;
       break;
-    case ArrowType::DOWNRIGHT:
+    case ArrowDirection::DOWNRIGHT:
       start = ARROW_FRAMES * 0;
       flip = true;
       break;
   }
 
-  this->type = type;
+  this->direction = direction;
   this->start = start;
   this->flip = flip;
 
-  sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * type,
+  sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  GBA_SCREEN_HEIGHT);
   sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   sprite->enabled = true;

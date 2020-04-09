@@ -10,9 +10,9 @@ const u32 ARROW_HOLDER_PRESSED = 7;
 
 class ArrowHolder {
  public:
-  ArrowType type;
+  ArrowDirection direction;
 
-  ArrowHolder(ArrowType type);
+  ArrowHolder(ArrowDirection direction);
 
   void blink();
   bool getIsPressed();
