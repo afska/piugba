@@ -1,7 +1,7 @@
 const events = {
   NOTE: 0,
   HOLD_START: 1,
-  HOLD_TAIL: 2,
+  HOLD_END: 2,
   STOP: 3,
   SET_TEMPO: 4,
 };
@@ -15,7 +15,7 @@ module.exports = {
       case "2":
         return events.HOLD_START;
       case "3":
-        return events.HOLD_TAIL;
+        return events.HOLD_END;
       default:
         return null;
     }

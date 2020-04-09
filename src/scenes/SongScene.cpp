@@ -156,7 +156,7 @@ void SongScene::processKeys(u16 keys) {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder](Arrow* it) {
-          it->initialize(arrowHolder->direction);
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction);
         });
   }
 }

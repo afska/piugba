@@ -7,6 +7,8 @@
 
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
+const u32 HOLD_FILL_TILE = 9;
+const u32 HOLD_END_TILE = 4;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_MS = 30;
 
@@ -29,7 +31,10 @@ void Arrow::discard() {
   sprite->enabled = false;
 }
 
-void Arrow::initialize(ArrowDirection direction) {
+void Arrow::initialize(ArrowType type, ArrowDirection direction) {
+  bool isHoldFill = type == ArrowType::HOLD_FILL;
+  bool isHoldEnd = type == ArrowType::HOLD_TAIL;
+
   u32 start = 0;
   bool flip = false;
   switch (direction) {
@@ -52,14 +57,20 @@ void Arrow::initialize(ArrowDirection direction) {
       break;
   }
 
+  this->type = type;
   this->direction = direction;
   this->start = start;
   this->flip = flip;
 
+  sprite->enabled = true;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  GBA_SCREEN_HEIGHT);
-  sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
-  sprite->enabled = true;
+
+  if (isHoldFill || isHoldEnd) {
+    u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_END_TILE;
+    SPRITE_goToFrame(sprite.get(), start + tileOffset);
+  } else
+    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
