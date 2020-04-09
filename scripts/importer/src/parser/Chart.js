@@ -26,17 +26,29 @@ module.exports = class Chart {
       const subdivision = 1 / events.length;
       const duration = subdivision * wholeNoteDuration;
 
-      return events.map((data) => {
+      return _.flatMap(events, (data) => {
         const timestamp = Math.round(this.header.offset + cursor);
         cursor += duration;
 
-        return {
+        const eventsByType = _(data)
+          .split("")
+          .map((eventType, i) => ({ i, eventType }))
+          .groupBy("eventType")
+          .map((events, eventType) => ({
+            type: Events.parse(eventType),
+            arrows: events.map((it) => it.i),
+          }))
+          .values()
+          .filter((it) => it.type != null)
+          .value();
+
+        return eventsByType.map(({ type, arrows }) => ({
           timestamp,
-          type: Events.NOTE,
-          arrows: data.split("").map((arrow) => (arrow == 1 ? true : false)),
-        };
+          type,
+          arrows: _.range(0, 5).map((id) => arrows.includes(id)),
+        }));
       });
-    }).filter((it) => it.arrows.some(_.identity));
+    });
 
     return [
       {
