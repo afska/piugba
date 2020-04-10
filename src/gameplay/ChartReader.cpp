@@ -14,6 +14,8 @@ const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    holdState[i] = false;
 };
 
 bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
@@ -42,41 +44,61 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_TYPE));
 
+    std::vector<Arrow*> arrows;
     switch (type) {
       case EventType::SET_TEMPO:
         bpm = event.extra;
         break;
       case EventType::NOTE:
-        processUniqueNote(event.data, arrowPool);
+        processUniqueNote(event.data, arrows, arrowPool);
         break;
       case EventType::HOLD_START:
+        startHoldNote(event.data, arrows, arrowPool);
+        break;
       case EventType::HOLD_END:
-        processHoldNote(type, event.data, arrowPool);
+        endHoldNote(event.data, arrows, arrowPool);
         break;
       default:
         break;
     }
+    connectArrows(arrows);
 
     eventIndex++;
   }
 }
 
-void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
-  std::vector<Arrow*> arrows;
-
+void ChartReader::processUniqueNote(u8 data,
+                                    std::vector<Arrow*>& arrows,
+                                    ObjectPool<Arrow>* arrowPool) {
   forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
     arrows.push_back(arrowPool->create([&direction](Arrow* it) {
       it->initialize(ArrowType::UNIQUE, direction);
     }));
   });
-
-  connectArrows(arrows);
 }
 
-void ChartReader::processHoldNote(EventType type,
-                                  u8 data,
-                                  ObjectPool<Arrow>* arrowPool) {
-  // TODO: PROCESS
+void ChartReader::startHoldNote(u8 data,
+                                std::vector<Arrow*>& arrows,
+                                ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
+    holdState[(int)direction] = true;
+
+    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+      it->initialize(ArrowType::HOLD_HEAD, direction);
+    }));
+  });
+}
+
+void ChartReader::endHoldNote(u8 data,
+                              std::vector<Arrow*>& arrows,
+                              ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
+    holdState[(int)direction] = false;
+
+    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+      it->initialize(ArrowType::HOLD_TAIL, direction);
+    }));
+  });
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {

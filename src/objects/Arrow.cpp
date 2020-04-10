@@ -33,7 +33,7 @@ void Arrow::discard() {
 
 void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
-  bool isHoldEnd = type == ArrowType::HOLD_TAIL;
+  bool isHoldTail = type == ArrowType::HOLD_TAIL;
 
   u32 start = 0;
   bool flip = false;
@@ -66,7 +66,7 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  GBA_SCREEN_HEIGHT);
 
-  if (isHoldFill || isHoldEnd) {
+  if (isHoldFill || isHoldTail) {
     u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_END_TILE;
     SPRITE_goToFrame(sprite.get(), start + tileOffset);
   } else
