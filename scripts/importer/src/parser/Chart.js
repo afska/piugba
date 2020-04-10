@@ -8,17 +8,14 @@ module.exports = class Chart {
   }
 
   get events() {
-    const measures = this.content
-      .split(",")
-      .map((it) => it.trim())
-      .filter(_.identity);
+    const measures = this._getMeasures();
 
     let cursor = 0;
     const notes = _.flatMap(measures, (measure, measureId) => {
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
 
-      return _.flatMap(events, (data, noteId) => {
+      return _.flatMap(events, (line, noteId) => {
         const beat = measureId * UNIT + noteId * subdivision;
         const bpm = this._getBpmByBeat(beat);
         const wholeNoteDuration = (MINUTE / bpm) * UNIT;
@@ -27,17 +24,7 @@ module.exports = class Chart {
         const timestamp = Math.round(this.header.offset + cursor);
         cursor += duration;
 
-        const eventsByType = _(data)
-          .split("")
-          .map((eventType, i) => ({ i, eventType }))
-          .groupBy("eventType")
-          .map((events, eventType) => ({
-            type: Events.parse(eventType),
-            arrows: events.map((it) => it.i),
-          }))
-          .values()
-          .filter((it) => it.type != null)
-          .value();
+        const eventsByType = this._getEventsByType(line);
 
         // TODO: Meter eventos SET_TEMPO donde corresponda
         // TODO: Meter eventos HOLD_TICK al encontrar un HOLD_END según el tickcount que había en el HOLD_START
@@ -58,6 +45,27 @@ module.exports = class Chart {
         bpm: 123, // TODO: SET BPM EVENTS
       },
     ].concat(notes);
+  }
+
+  _getMeasures() {
+    return this.content
+      .split(",")
+      .map((it) => it.trim())
+      .filter(_.identity);
+  }
+
+  _getEventsByType(line) {
+    return _(line)
+      .split("")
+      .map((eventType, i) => ({ i, eventType }))
+      .groupBy("eventType")
+      .map((events, eventType) => ({
+        type: Events.parse(eventType),
+        arrows: events.map((it) => it.i),
+      }))
+      .values()
+      .filter((it) => it.type != null)
+      .value();
   }
 
   _getBpmByBeat(beat) {

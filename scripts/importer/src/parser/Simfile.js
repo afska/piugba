@@ -30,10 +30,7 @@ module.exports = class Simfile {
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
       const offset =
         -this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
-      const bpms = _(this._getSingleMatch(REGEXPS.chart.bpms, rawChart))
-        .map((it) => ({ key: parseFloat(it.key), value: parseFloat(it.value) }))
-        .sortBy("key")
-        .value();
+      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
       const header = { name, level, offset, bpms };
 
       const notesStart = this.content.indexOf(rawChart) + rawChart.length;
@@ -80,10 +77,15 @@ const PROPERTY_FLOAT = (name) => ({
 const DICTIONARY = (name) => ({
   exp: PROPERTY(name),
   parse: (content) =>
-    content
+    _(content)
       .split(",")
       .map((it) => it.trim().split("="))
-      .map(([key, value]) => ({ key, value })),
+      .map(([key, value]) => ({
+        key: parseFloat(key),
+        value: parseFloat(value),
+      }))
+      .sortBy("key")
+      .value(),
 });
 
 const REGEXPS = {
