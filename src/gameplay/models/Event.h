@@ -20,7 +20,7 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
-  u8 extra;  // not present in note-related events
+  u32 extra;  // not present in note-related events
 } Event;
 
 #endif  // EVENT_H

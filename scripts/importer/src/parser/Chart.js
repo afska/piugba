@@ -8,25 +8,33 @@ module.exports = class Chart {
   }
 
   get events() {
-    const measures = this._getMeasures();
+    const noteEvents = this._getNoteEvents();
+    const tempoEvents = this._getTempoEvents();
 
+    return this._applyOffset(
+      _.sortBy([...noteEvents, ...tempoEvents], "timestamp")
+    );
+  }
+
+  _getNoteEvents() {
+    const measures = this._getMeasures();
     let cursor = 0;
-    const notes = _.flatMap(measures, (measure, measureId) => {
+
+    return _.flatMap(measures, (measure, measureId) => {
+      // 1 measure = 1 whole note = BEAT_UNIT beats
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
 
       return _.flatMap(events, (line, noteId) => {
-        const beat = measureId * UNIT + noteId * subdivision;
+        const beat = measureId * BEAT_UNIT + noteId * subdivision;
         const bpm = this._getBpmByBeat(beat);
-        const wholeNoteDuration = (MINUTE / bpm) * UNIT;
+        const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
+        const noteDuration = subdivision * wholeNoteLength;
+        const timestamp = cursor;
 
-        const duration = subdivision * wholeNoteDuration;
-        const timestamp = Math.round(this.header.offset + cursor);
-        cursor += duration;
-
+        cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
-        // TODO: Meter eventos SET_TEMPO donde corresponda
         // TODO: Meter eventos HOLD_TICK al encontrar un HOLD_END según el tickcount que había en el HOLD_START
         // TODO: Probar DELAYS con level 17
 
@@ -37,14 +45,33 @@ module.exports = class Chart {
         }));
       });
     });
+  }
 
-    return [
-      {
-        timestamp: 0,
+  _getTempoEvents() {
+    let currentTimestamp = 0;
+    let currentBeat = 0;
+    let currentBpm = 0;
+
+    return this.header.bpms.map((it, i) => {
+      const beat = it.key;
+      const beatLength = this._getBeatLengthByBpm(currentBpm);
+      currentTimestamp += (beat - currentBeat) * beatLength;
+      currentBeat = beat;
+      currentBpm = it.value;
+
+      return {
+        timestamp: currentTimestamp,
         type: Events.SET_TEMPO,
-        bpm: 123, // TODO: SET BPM EVENTS
-      },
-    ].concat(notes);
+        bpm: currentBpm,
+      };
+    });
+  }
+
+  _applyOffset(events) {
+    return events.map((it) => ({
+      ...it,
+      timestamp: Math.round(this.header.offset + it.timestamp),
+    }));
   }
 
   _getMeasures() {
@@ -68,10 +95,19 @@ module.exports = class Chart {
       .value();
   }
 
+  _getWholeNoteLengthByBpm(bpm) {
+    return this._getBeatLengthByBpm(bpm) * BEAT_UNIT;
+  }
+
+  _getBeatLengthByBpm(bpm) {
+    if (bpm === 0) return 0;
+    return MINUTE / bpm;
+  }
+
   _getBpmByBeat(beat) {
     return _.findLast(this.header.bpms, (bpm) => beat >= bpm.key).value;
   }
 };
 
 const MINUTE = 60000;
-const UNIT = 4;
+const BEAT_UNIT = 4;
