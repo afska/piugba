@@ -21,7 +21,9 @@ class ChartReader {
 
   bool animateBpm(u32 msecs);
   void processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool);
-  void processNote(u8 data, ObjectPool<Arrow>* arrowPool);
+  void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
+  void processHoldNote(EventType type, u8 data, ObjectPool<Arrow>* arrowPool);
+  void connectArrows(std::vector<Arrow*>& arrows);
   void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
 };
 

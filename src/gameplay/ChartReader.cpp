@@ -47,8 +47,11 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         bpm = event.extra;
         break;
       case EventType::NOTE:
+        processUniqueNote(event.data, arrowPool);
+        break;
       case EventType::HOLD_START:
-        processNote(event.data, arrowPool);
+      case EventType::HOLD_END:
+        processHoldNote(type, event.data, arrowPool);
         break;
       default:
         break;
@@ -58,7 +61,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   }
 }
 
-void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
   std::vector<Arrow*> arrows;
 
   forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
@@ -67,10 +70,21 @@ void ChartReader::processNote(u8 data, ObjectPool<Arrow>* arrowPool) {
     }));
   });
 
-  if (arrows.size() > 1) {
-    for (u32 i = 0; i < arrows.size(); i++) {
-      arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
-    }
+  connectArrows(arrows);
+}
+
+void ChartReader::processHoldNote(EventType type,
+                                  u8 data,
+                                  ObjectPool<Arrow>* arrowPool) {
+  // TODO: PROCESS
+}
+
+void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
+  if (arrows.size() <= 1)
+    return;
+
+  for (u32 i = 0; i < arrows.size(); i++) {
+    arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
   }
 }
 
