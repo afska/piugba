@@ -6,7 +6,9 @@
 #include "score/Feedback.h"
 #include "utils/pool/ObjectPool.h"
 
-#define IFTEST if (false)
+#define TEST_MODE false
+#define IFTEST if (TEST_MODE)
+#define IFNOTTEST if (!TEST_MODE)
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL };
 enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };

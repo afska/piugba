@@ -60,9 +60,11 @@ void SongScene::load() {
   chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
   judge =
       std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
-        unload();
-        engine->transitionIntoScene(new StageBreakScene(engine),
-                                    new FadeOutScene(2));
+        IFNOTTEST {
+          unload();
+          engine->transitionIntoScene(new StageBreakScene(engine),
+                                      new FadeOutScene(2));
+        }
       }));
 }
 
