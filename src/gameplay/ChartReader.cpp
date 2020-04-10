@@ -24,7 +24,7 @@ bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 };
 
 bool ChartReader::animateBpm(u32 msecs) {
-  int msecsWithOffset = msecs - chart->offset;
+  int msecsWithOffset = (msecs - lastBpmChange) - chart->offset;
 
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000
@@ -48,6 +48,9 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
     switch (type) {
       case EventType::SET_TEMPO:
         bpm = event.extra;
+        lastBeat = 0;
+        lastBpmChange = msecs;
+        // TODO: Handle anticipation
         break;
       case EventType::NOTE:
         processUniqueNote(event.data, arrows, arrowPool);
