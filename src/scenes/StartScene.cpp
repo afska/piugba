@@ -28,7 +28,7 @@ void StartScene::load() {
 
   TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
 
-  TextStream::instance().setText("ARR - Tepris (EASY)", 8, 0);
+  TextStream::instance().setText("ARR - Beat of the War 2", 8, 0);
   TextStream::instance().setText("B - Tepris (HARD)", 9, 0);
   TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
 
@@ -52,8 +52,8 @@ void StartScene::tick(u16 keys) {
       name = (char*)"Don't Bother Me";
       level = 6;
     } else if (keys & KEY_UP) {
-      name = (char*)"Tepris";
-      level = 4;
+      name = (char*)"Beat of the War 2";
+      level = 16;
     } else if (keys & KEY_B) {
       name = (char*)"Tepris";
       level = 7;

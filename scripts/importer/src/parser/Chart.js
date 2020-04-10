@@ -8,25 +8,22 @@ module.exports = class Chart {
   }
 
   get events() {
-    const bpm = parseFloat(_.first(this.header.bpms).value);
-    const wholeNoteDuration = (MINUTE / bpm) * UNIT;
-
-    // if (this.header.bpms.length > 1)
-    //   throw new Error("Multiple BPM values are not supported");
-    // TODO: Implement multiple bpm
-
     const measures = this.content
       .split(",")
       .map((it) => it.trim())
       .filter(_.identity);
 
     let cursor = 0;
-    const notes = _.flatMap(measures, (measure) => {
+    const notes = _.flatMap(measures, (measure, measureId) => {
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
-      const duration = subdivision * wholeNoteDuration;
 
-      return _.flatMap(events, (data) => {
+      return _.flatMap(events, (data, noteId) => {
+        const beat = measureId * UNIT + noteId * subdivision;
+        const bpm = this._getBpmByBeat(beat);
+        const wholeNoteDuration = (MINUTE / bpm) * UNIT;
+
+        const duration = subdivision * wholeNoteDuration;
         const timestamp = Math.round(this.header.offset + cursor);
         cursor += duration;
 
@@ -42,6 +39,10 @@ module.exports = class Chart {
           .filter((it) => it.type != null)
           .value();
 
+        // TODO: Meter eventos SET_TEMPO donde corresponda
+        // TODO: Meter eventos HOLD_TICK al encontrar un HOLD_END según el tickcount que había en el HOLD_START
+        // TODO: Probar DELAYS con level 17
+
         return eventsByType.map(({ type, arrows }) => ({
           timestamp,
           type,
@@ -54,9 +55,13 @@ module.exports = class Chart {
       {
         timestamp: 0,
         type: Events.SET_TEMPO,
-        bpm: bpm,
+        bpm: 123, // TODO: SET BPM EVENTS
       },
     ].concat(notes);
+  }
+
+  _getBpmByBeat(beat) {
+    return _.findLast(this.header.bpms, (bpm) => beat >= bpm.key).value;
   }
 };
 

@@ -30,7 +30,10 @@ module.exports = class Simfile {
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
       const offset =
         -this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
-      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+      const bpms = _(this._getSingleMatch(REGEXPS.chart.bpms, rawChart))
+        .map((it) => ({ key: parseFloat(it.key), value: parseFloat(it.value) }))
+        .sortBy("key")
+        .value();
       const header = { name, level, offset, bpms };
 
       const notesStart = this.content.indexOf(rawChart) + rawChart.length;
