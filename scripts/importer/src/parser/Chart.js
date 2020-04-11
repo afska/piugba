@@ -87,12 +87,6 @@ module.exports = class Chart {
               type,
               length: Math.round(length),
             };
-          case Events.SET_TEMPO:
-            return {
-              timestamp,
-              type,
-              bpm: currentBpm,
-            };
           case Events.STOP_ASYNC:
             const scrollEnabled = data.value > 0;
 
@@ -111,6 +105,12 @@ module.exports = class Chart {
             currentScrollEnabled = scrollEnabled;
             currentScrollTimestamp = timestamp;
             return null;
+          case Events.SET_TEMPO:
+            return {
+              timestamp,
+              type,
+              bpm: currentBpm,
+            };
           default:
             throw new Error("unknown_timing_segment");
         }
