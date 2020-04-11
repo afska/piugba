@@ -21,6 +21,7 @@ typedef struct {
       }
   */
   u32 extra;  // not present in note-related events
+  bool handled = false;
 } Event;
 
 #endif  // EVENT_H

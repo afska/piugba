@@ -37,36 +37,59 @@ bool ChartReader::animateBpm(u32 msecs) {
 
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   int anticipation = ANTICIPATION[ARROW_SPEED] - AUDIO_LAG;
+  u32 currentIndex = eventIndex;
+  bool skipped = false;
 
   while ((int)msecs >=
              (int)chart->events[eventIndex].timestamp - anticipation &&
-         eventIndex < chart->eventCount) {
+         currentIndex < chart->eventCount) {
     auto event = chart->events[eventIndex];
     EventType type = static_cast<EventType>((event.data & EVENT_TYPE));
+    bool handled = true;
 
-    std::vector<Arrow*> arrows;
-    switch (type) {
-      case EventType::SET_TEMPO:
-        bpm = event.extra;
-        lastBeat = 0;
-        lastBpmChange = msecs;
-        // TODO: Handle anticipation
-        break;
-      case EventType::NOTE:
-        processUniqueNote(event.data, arrows, arrowPool);
-        break;
-      case EventType::HOLD_START:
-        startHoldNote(event.data, arrows, arrowPool);
-        break;
-      case EventType::HOLD_END:
-        endHoldNote(event.data, arrows, arrowPool);
-        break;
-      default:
-        break;
+    if (chart->events[eventIndex].handled) {
+      currentIndex++;
+      continue;
     }
-    connectArrows(arrows);
 
-    eventIndex++;
+    if (msecs < chart->events[eventIndex].timestamp) {
+      // events with anticipation
+      std::vector<Arrow*> arrows;
+
+      switch (type) {
+        case EventType::NOTE:
+          processUniqueNote(event.data, arrows, arrowPool);
+          break;
+        case EventType::HOLD_START:
+          startHoldNote(event.data, arrows, arrowPool);
+          break;
+        case EventType::HOLD_END:
+          endHoldNote(event.data, arrows, arrowPool);
+          break;
+        default:
+          handled = false;
+          skipped = true;
+          break;
+      }
+
+      connectArrows(arrows);
+    } else {
+      // exact events
+      switch (type) {
+        case EventType::SET_TEMPO:
+          bpm = event.extra;
+          lastBeat = 0;
+          lastBpmChange = msecs;
+          break;
+        default:
+          break;
+      }
+    }
+
+    (chart->events + eventIndex)->handled = handled;
+    currentIndex++;
+    if (!skipped)
+      eventIndex++;
   }
 }
 

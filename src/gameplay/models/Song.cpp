@@ -44,6 +44,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
       if (eventType == EventType::STOP || eventType == EventType::SET_TEMPO)
         event->extra = parse_u32le(data, &cursor);
+      event->handled = false;
     }
   }
 
