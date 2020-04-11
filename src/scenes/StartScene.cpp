@@ -53,7 +53,7 @@ void StartScene::tick(u16 keys) {
       level = 6;
     } else if (keys & KEY_UP) {
       name = (char*)"Beat of the War 2";
-      level = 16;
+      level = 17;
     } else if (keys & KEY_B) {
       name = (char*)"Tepris";
       level = 7;

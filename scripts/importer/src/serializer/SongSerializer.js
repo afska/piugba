@@ -49,6 +49,8 @@ module.exports = class SongSerializer {
 
         if (event.type === Events.SET_TEMPO)
           this.UInt8(event.type).UInt32LE(event.bpm);
+        else if (event.type === Events.STOP)
+          this.UInt8(event.type).UInt32LE(event.length);
         else {
           const data = _.range(0, 5).reduce(
             (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),

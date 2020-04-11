@@ -36,7 +36,8 @@ bool ChartReader::animateBpm(u32 msecs) {
 }
 
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
-  int anticipation = ANTICIPATION[ARROW_SPEED] - AUDIO_LAG;
+  msecs -= AUDIO_LAG;
+  int anticipation = ANTICIPATION[ARROW_SPEED];
   u32 currentIndex = eventIndex;
   bool skipped = false;
 
@@ -80,6 +81,11 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           bpm = event->extra;
           lastBeat = -1;
           lastBpmChange = msecs;
+          break;
+        case EventType::STOP:
+          arrowPool->forEachActive(
+              [&arrowPool](Arrow* it) { arrowPool->discard(it->id); });
+          // TODO: Implement stops properly
           break;
         default:
           break;

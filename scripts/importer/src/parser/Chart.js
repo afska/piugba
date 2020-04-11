@@ -10,9 +10,12 @@ module.exports = class Chart {
   get events() {
     const noteEvents = this._getNoteEvents();
     const tempoEvents = this._getTempoEvents();
+    const delayEvents = this._getDelayEvents();
 
     return this._applyOffset(
-      _.sortBy([...noteEvents, ...tempoEvents], "timestamp")
+      this._applyDelays(
+        _.sortBy([...tempoEvents, ...delayEvents, ...noteEvents], "timestamp")
+      )
     );
   }
 
@@ -48,22 +51,39 @@ module.exports = class Chart {
   }
 
   _getTempoEvents() {
-    let currentTimestamp = 0;
-    let currentBeat = 0;
-    let currentBpm = 0;
+    return this._mapBeatDictionary(this.header.bpms, (timestamp, { bpm }) => ({
+      timestamp,
+      type: Events.SET_TEMPO,
+      bpm,
+    }));
+  }
 
-    return this.header.bpms.map((it, i) => {
-      const beat = it.key;
-      const beatLength = this._getBeatLengthByBpm(currentBpm);
-      currentTimestamp += (beat - currentBeat) * beatLength;
-      currentBeat = beat;
-      currentBpm = it.value;
+  _getDelayEvents() {
+    return this._mapBeatDictionary(
+      this.header.delays,
+      (timestamp, { value }) => ({
+        timestamp,
+        type: Events.STOP,
+        length: Math.round(value * SECOND),
+      })
+    );
+  }
 
-      return {
-        timestamp: currentTimestamp,
-        type: Events.SET_TEMPO,
-        bpm: currentBpm,
-      };
+  _applyDelays(events) {
+    let offset = 0;
+
+    return events.map((event) => {
+      switch (event.type) {
+        case Events.STOP:
+          offset += event.length;
+          return event;
+        case Events.NOTE:
+        case Events.HOLD_START:
+        case Events.HOLD_END:
+          return { ...event, timestamp: Math.round(offset + event.timestamp) };
+        default:
+          return event;
+      }
     });
   }
 
@@ -95,6 +115,27 @@ module.exports = class Chart {
       .value();
   }
 
+  _mapBeatDictionary(dictionary, transform) {
+    let currentTimestamp = 0;
+    let currentBeat = 0;
+    let currentBpm = 0;
+
+    return dictionary.map((it, i) => {
+      const beat = it.key;
+      const beatLength = this._getBeatLengthByBpm(currentBpm);
+      currentTimestamp += (beat - currentBeat) * beatLength;
+      currentBeat = beat;
+      currentBpm = this._getBpmByBeat(beat);
+
+      return transform(currentTimestamp, {
+        beat,
+        value: it.value,
+        bpm: currentBpm,
+        beatLength,
+      });
+    });
+  }
+
   _getWholeNoteLengthByBpm(bpm) {
     return this._getBeatLengthByBpm(bpm) * BEAT_UNIT;
   }
@@ -109,5 +150,6 @@ module.exports = class Chart {
   }
 };
 
-const MINUTE = 60000;
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;

@@ -42,7 +42,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
       event->timestamp = parse_u32le(data, &cursor);
       event->data = parse_u8(data, &cursor);
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
-      if (eventType == EventType::STOP || eventType == EventType::SET_TEMPO)
+      if (EVENT_HAS_EXTRA(eventType))
         event->extra = parse_u32le(data, &cursor);
       event->handled = false;
     }
