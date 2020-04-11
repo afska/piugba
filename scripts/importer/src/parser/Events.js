@@ -5,6 +5,7 @@ const events = {
   HOLD_END: 3,
   SET_TEMPO: 4,
   STOP: 5,
+  STOP_ASYNC: 15,
 };
 
 module.exports = {

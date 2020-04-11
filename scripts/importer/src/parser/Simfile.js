@@ -33,7 +33,8 @@ module.exports = class Simfile {
       const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
       const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
       const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
-      const header = { name, level, offset, bpms, stops, delays };
+      const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
+      const header = { name, level, offset, bpms, stops, delays, scrolls };
 
       const notesStart = this.content.indexOf(rawChart) + rawChart.length;
       const rawNotes = this._getSingleMatch(
@@ -108,6 +109,7 @@ const REGEXPS = {
     bpms: DICTIONARY("BPMS"),
     stops: DICTIONARY("STOPS"),
     delays: DICTIONARY("DELAYS"),
+    scrolls: DICTIONARY("SCROLLS"),
   },
 };
 

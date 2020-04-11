@@ -56,6 +56,7 @@ module.exports = class Chart {
         data: it,
       })),
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
     ])
       .flatten()
       .sortBy("data.key")
@@ -64,35 +65,58 @@ module.exports = class Chart {
     let currentTimestamp = 0;
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
+    let currentScrollEnabled = true;
+    let currentScrollTimestamp = 0;
 
-    return segments.map(({ type, data }, i) => {
-      const beat = data.key;
-      const beatLength = this._getBeatLengthByBpm(currentBpm);
-      currentTimestamp += (beat - currentBeat) * beatLength;
-      currentBeat = beat;
-      currentBpm = this._getBpmByBeat(beat);
-      const timestamp = currentTimestamp;
+    return _(segments)
+      .map(({ type, data }, i) => {
+        const beat = data.key;
+        const beatLength = this._getBeatLengthByBpm(currentBpm);
+        currentTimestamp += (beat - currentBeat) * beatLength;
+        currentBeat = beat;
+        currentBpm = this._getBpmByBeat(beat);
+        const timestamp = currentTimestamp;
 
-      switch (type) {
-        case Events.STOP:
-          const length = data.value * SECOND;
-          currentTimestamp += length;
+        switch (type) {
+          case Events.STOP:
+            const length = data.value * SECOND;
+            currentTimestamp += length;
 
-          return {
-            timestamp,
-            type,
-            length: Math.round(length),
-          };
-        case Events.SET_TEMPO:
-          return {
-            timestamp,
-            type,
-            bpm: currentBpm,
-          };
-        default:
-          throw new Error("unknown_timing_segment");
-      }
-    });
+            return {
+              timestamp,
+              type,
+              length: Math.round(length),
+            };
+          case Events.SET_TEMPO:
+            return {
+              timestamp,
+              type,
+              bpm: currentBpm,
+            };
+          case Events.STOP_ASYNC:
+            const scrollEnabled = data.value > 0;
+
+            if (scrollEnabled && !currentScrollEnabled) {
+              const length = timestamp - currentScrollTimestamp;
+              currentScrollEnabled = true;
+              currentScrollTimestamp = timestamp;
+
+              return {
+                timestamp,
+                type,
+                length: Math.round(length),
+              };
+            }
+
+            currentScrollEnabled = scrollEnabled;
+            currentScrollTimestamp = timestamp;
+            return null;
+          default:
+            throw new Error("unknown_timing_segment");
+        }
+      })
+      .compact()
+      .value();
   }
 
   _applyOffset(events) {
