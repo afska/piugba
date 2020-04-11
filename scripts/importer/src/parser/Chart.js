@@ -72,7 +72,7 @@ module.exports = class Chart {
 
       switch (type) {
         case Events.STOP:
-          const length = data.value * SECOND; // beatLength; // TODO: or seconds?
+          const length = data.value * SECOND;
           currentTimestamp += length;
 
           return {

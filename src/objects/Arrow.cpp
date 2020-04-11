@@ -75,6 +75,7 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
   msecs = 0;
+  freezeTime = 0;
   endTime = 0;
   isPressed = false;
   needsAnimation = false;
@@ -128,9 +129,20 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
+void Arrow::freeze(int freezeTime) {
+  if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
+    return;
+
+  this->freezeTime = freezeTime;
+}
+
 ArrowState Arrow::tick(u32 msecs) {
+  u32 previousMsecs = this->msecs;
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
+
+  if (freezeTime > 0)
+    freezeTime -= (int)(msecs - previousMsecs);
 
   if (SPRITE_isHidden(sprite.get()))
     return ArrowState::OUT;
@@ -152,7 +164,7 @@ ArrowState Arrow::tick(u32 msecs) {
     animatePress();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
-  } else
+  } else if (freezeTime <= 0)
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
   return ArrowState::ACTIVE;

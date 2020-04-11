@@ -87,8 +87,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           break;
         case EventType::STOP:
           arrowPool->forEachActive(
-              [&arrowPool](Arrow* it) { arrowPool->discard(it->id); });
-          // TODO: Implement stops properly
+              [&event](Arrow* it) { it->freeze(event->extra); });
           break;
         default:
           break;
