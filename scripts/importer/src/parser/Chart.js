@@ -34,6 +34,7 @@ module.exports = class Chart {
       const subdivision = 1 / events.length;
 
       return _.flatMap(events, (line, noteId) => {
+        // TODO: A este punto, ver el delay total para aplicarlo al offset, this._getBpmByBeat ya no es confiable. Habría que darle el delayOffset, o directamente que sea ByTimestamp
         const beat = measureId * BEAT_UNIT + noteId * subdivision;
         const bpm = this._getBpmByBeat(beat);
         const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);

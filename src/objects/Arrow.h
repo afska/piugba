@@ -6,7 +6,7 @@
 #include "score/Feedback.h"
 #include "utils/pool/ObjectPool.h"
 
-#define TEST_MODE true  // TODO: Desactivar
+#define TEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
 

@@ -64,6 +64,9 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         case EventType::HOLD_START:
           startHoldNote(event->data, arrows, arrowPool);
           break;
+        case EventType::HOLD_TICK:
+          // TODO: Process tick
+          break;
         case EventType::HOLD_END:
           endHoldNote(event->data, arrows, arrowPool);
           break;
