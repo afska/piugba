@@ -9,8 +9,13 @@ module.exports = class Chart {
 
   get events() {
     const noteEvents = this._getNoteEvents();
-    const tempoEvents = this._getTempoEvents();
+    const tempoEvents = this._getTempoEvents(); // TODO: Calcular tempo & delay events todos juntos, el delay corre los tempo events también
     const delayEvents = this._getDelayEvents();
+
+    // if (this.header.level == 17) {
+    //   console.log(delayEvents);
+    //   process.exit(1);
+    // } // TODO: REMOVE
 
     return this._applyOffset(
       this._applyDelays(
@@ -61,10 +66,10 @@ module.exports = class Chart {
   _getDelayEvents() {
     return this._mapBeatDictionary(
       this.header.delays,
-      (timestamp, { value }) => ({
+      (timestamp, { value, beatLength }) => ({
         timestamp,
         type: Events.STOP,
-        length: Math.round(value * SECOND),
+        length: Math.round(value * beatLength), // TODO: or seconds?
       })
     );
   }
@@ -80,7 +85,7 @@ module.exports = class Chart {
         case Events.NOTE:
         case Events.HOLD_START:
         case Events.HOLD_END:
-          return { ...event, timestamp: Math.round(offset + event.timestamp) };
+          return { ...event, timestamp: offset + event.timestamp };
         default:
           return event;
       }
@@ -118,7 +123,7 @@ module.exports = class Chart {
   _mapBeatDictionary(dictionary, transform) {
     let currentTimestamp = 0;
     let currentBeat = 0;
-    let currentBpm = 0;
+    let currentBpm = this._getBpmByBeat(0);
 
     return dictionary.map((it, i) => {
       const beat = it.key;
