@@ -41,30 +41,30 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   bool skipped = false;
 
   while ((int)msecs >=
-             (int)chart->events[eventIndex].timestamp - anticipation &&
+             (int)chart->events[currentIndex].timestamp - anticipation &&
          currentIndex < chart->eventCount) {
-    auto event = chart->events[eventIndex];
-    EventType type = static_cast<EventType>((event.data & EVENT_TYPE));
+    auto event = chart->events + currentIndex;
+    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
     bool handled = true;
 
-    if (chart->events[eventIndex].handled) {
+    if (event->handled) {
       currentIndex++;
       continue;
     }
 
-    if (msecs < chart->events[eventIndex].timestamp) {
+    if (msecs < event->timestamp) {
       // events with anticipation
       std::vector<Arrow*> arrows;
 
       switch (type) {
         case EventType::NOTE:
-          processUniqueNote(event.data, arrows, arrowPool);
+          processUniqueNote(event->data, arrows, arrowPool);
           break;
         case EventType::HOLD_START:
-          startHoldNote(event.data, arrows, arrowPool);
+          startHoldNote(event->data, arrows, arrowPool);
           break;
         case EventType::HOLD_END:
-          endHoldNote(event.data, arrows, arrowPool);
+          endHoldNote(event->data, arrows, arrowPool);
           break;
         default:
           handled = false;
@@ -77,7 +77,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       // exact events
       switch (type) {
         case EventType::SET_TEMPO:
-          bpm = event.extra;
+          bpm = event->extra;
           lastBeat = -1;
           lastBpmChange = msecs;
           break;
@@ -86,7 +86,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       }
     }
 
-    (chart->events + eventIndex)->handled = handled;
+    event->handled = handled;
     currentIndex++;
     if (!skipped)
       eventIndex++;
