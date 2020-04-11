@@ -8,44 +8,37 @@ module.exports = class Chart {
   }
 
   get events() {
-    const noteEvents = this._getNoteEvents();
-    const tempoEvents = this._getTempoEvents(); // TODO: Calcular tempo & delay events todos juntos, el delay corre los tempo events también
-    const delayEvents = this._getDelayEvents();
-
-    // if (this.header.level == 17) {
-    //   console.log(delayEvents);
-    //   process.exit(1);
-    // } // TODO: REMOVE
+    const timingEvents = this._getTimingEvents();
+    const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._applyDelays(
-        _.sortBy([...tempoEvents, ...delayEvents, ...noteEvents], "timestamp")
-      )
+      _.sortBy([...timingEvents, ...noteEvents], "timestamp")
     );
   }
 
-  _getNoteEvents() {
+  _getNoteEvents(timingEvents) {
     const measures = this._getMeasures();
     let cursor = 0;
 
-    return _.flatMap(measures, (measure, measureId) => {
+    return _.flatMap(measures, (measure) => {
       // 1 measure = 1 whole note = BEAT_UNIT beats
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
 
-      return _.flatMap(events, (line, noteId) => {
-        // TODO: A este punto, ver el delay total para aplicarlo al offset, this._getBpmByBeat ya no es confiable. Habría que darle el delayOffset, o directamente que sea ByTimestamp
-        const beat = measureId * BEAT_UNIT + noteId * subdivision;
-        const bpm = this._getBpmByBeat(beat);
+      return _.flatMap(events, (line) => {
+        const stop = this._getStopByTimestamp(cursor, timingEvents);
+        if (stop && !stop.handled) {
+          stop.handled = true;
+          cursor += stop.length;
+        }
+        const bpm = this._getBpmByTimestamp(cursor, timingEvents);
         const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
         const noteDuration = subdivision * wholeNoteLength;
         const timestamp = cursor;
-
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
         // TODO: Meter eventos HOLD_TICK al encontrar un HOLD_END según el tickcount que había en el HOLD_START
-        // TODO: Probar DELAYS con level 17
 
         return eventsByType.map(({ type, arrows }) => ({
           timestamp,
@@ -56,39 +49,45 @@ module.exports = class Chart {
     });
   }
 
-  _getTempoEvents() {
-    return this._mapBeatDictionary(this.header.bpms, (timestamp, { bpm }) => ({
-      timestamp,
-      type: Events.SET_TEMPO,
-      bpm,
-    }));
-  }
+  _getTimingEvents() {
+    const segments = _([
+      this.header.delays.map((it) => ({ type: Events.STOP, data: it })),
+      this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+    ])
+      .flatten()
+      .sortBy("data.key")
+      .value();
 
-  _getDelayEvents() {
-    return this._mapBeatDictionary(
-      this.header.delays,
-      (timestamp, { value, beatLength }) => ({
-        timestamp,
-        type: Events.STOP,
-        length: Math.round(value * beatLength), // TODO: or seconds?
-      })
-    );
-  }
+    let currentTimestamp = 0;
+    let currentBeat = 0;
+    let currentBpm = this._getBpmByBeat(0);
 
-  _applyDelays(events) {
-    let offset = 0;
+    return segments.map(({ type, data }, i) => {
+      const beat = data.key;
+      const beatLength = this._getBeatLengthByBpm(currentBpm);
+      currentTimestamp += (beat - currentBeat) * beatLength;
+      currentBeat = beat;
+      currentBpm = this._getBpmByBeat(beat);
+      const timestamp = currentTimestamp;
 
-    return events.map((event) => {
-      switch (event.type) {
+      switch (type) {
         case Events.STOP:
-          offset += event.length;
-          return event;
-        case Events.NOTE:
-        case Events.HOLD_START:
-        case Events.HOLD_END:
-          return { ...event, timestamp: offset + event.timestamp };
+          const length = data.value * SECOND; // beatLength; // TODO: or seconds?
+          currentTimestamp += length;
+
+          return {
+            timestamp,
+            type,
+            length: Math.round(length),
+          };
+        case Events.SET_TEMPO:
+          return {
+            timestamp,
+            type,
+            bpm: currentBpm,
+          };
         default:
-          return event;
+          throw new Error("unknown_timing_segment");
       }
     });
   }
@@ -121,27 +120,6 @@ module.exports = class Chart {
       .value();
   }
 
-  _mapBeatDictionary(dictionary, transform) {
-    let currentTimestamp = 0;
-    let currentBeat = 0;
-    let currentBpm = this._getBpmByBeat(0);
-
-    return dictionary.map((it, i) => {
-      const beat = it.key;
-      const beatLength = this._getBeatLengthByBpm(currentBpm);
-      currentTimestamp += (beat - currentBeat) * beatLength;
-      currentBeat = beat;
-      currentBpm = this._getBpmByBeat(beat);
-
-      return transform(currentTimestamp, {
-        beat,
-        value: it.value,
-        bpm: currentBpm,
-        beatLength,
-      });
-    });
-  }
-
   _getWholeNoteLengthByBpm(bpm) {
     return this._getBeatLengthByBpm(bpm) * BEAT_UNIT;
   }
@@ -153,6 +131,24 @@ module.exports = class Chart {
 
   _getBpmByBeat(beat) {
     return _.findLast(this.header.bpms, (bpm) => beat >= bpm.key).value;
+  }
+
+  _getBpmByTimestamp(timestamp, timingEvents) {
+    const event = _.findLast(
+      timingEvents,
+      (event) => event.type === Events.SET_TEMPO && timestamp >= event.timestamp
+    );
+
+    return (event && event.bpm) || 0;
+  }
+
+  _getStopByTimestamp(timestamp, timingEvents) {
+    const event = _.findLast(
+      timingEvents,
+      (event) => event.type === Events.STOP && timestamp >= event.timestamp
+    );
+
+    return event && timestamp < event.timestamp + event.length ? event : null;
   }
 };
 
