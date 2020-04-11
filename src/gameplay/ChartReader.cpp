@@ -78,7 +78,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       switch (type) {
         case EventType::SET_TEMPO:
           bpm = event.extra;
-          lastBeat = 0;
+          lastBeat = -1;
           lastBpmChange = msecs;
           break;
         default:
