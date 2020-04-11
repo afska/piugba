@@ -51,7 +51,10 @@ module.exports = class Chart {
 
   _getTimingEvents() {
     const segments = _([
-      this.header.delays.map((it) => ({ type: Events.STOP, data: it })),
+      [...this.header.stops, ...this.header.delays].map((it) => ({
+        type: Events.STOP,
+        data: it,
+      })),
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
     ])
       .flatten()
