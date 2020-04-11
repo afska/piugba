@@ -1,5 +1,7 @@
 #include "ChartReader.h"
 
+#include <libgba-sprite-engine/gba/tonc_math.h>
+
 #include <vector>
 
 /*
@@ -36,7 +38,7 @@ bool ChartReader::animateBpm(u32 msecs) {
 }
 
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
-  msecs -= AUDIO_LAG;
+  msecs = max((int)msecs - AUDIO_LAG, 0);
   int anticipation = ANTICIPATION[ARROW_SPEED];
   u32 currentIndex = eventIndex;
   bool skipped = false;

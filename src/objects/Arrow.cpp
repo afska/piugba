@@ -1,5 +1,6 @@
 #include "Arrow.h"
 
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/compiled/spr_arrows.h"
