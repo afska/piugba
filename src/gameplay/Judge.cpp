@@ -33,7 +33,8 @@ void Judge::onPress(Arrow* arrow) {
 }
 
 void Judge::onOut(Arrow* arrow) {
-  if (!arrow->getIsPressed()) {
+  bool isUniqueArrow = arrow->type == ArrowType::UNIQUE;
+  if (!arrow->getIsPressed() && isUniqueArrow) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
