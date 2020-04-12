@@ -129,7 +129,7 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(u32 msecs, bool hasStopped) {
+ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isKeyPressed) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
@@ -149,7 +149,7 @@ ArrowState Arrow::tick(u32 msecs, bool hasStopped) {
       else
         end();
     }
-  } else if (isAligned() && isPressed && needsAnimation) {
+  } else if (isAligned() && (isKeyPressed || (isPressed && needsAnimation))) {
     animatePress();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();

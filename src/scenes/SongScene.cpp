@@ -140,7 +140,8 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    auto arrowState = it->tick(msecs, chartReader->hasStopped);
+    auto arrowState = it->tick(msecs, chartReader->hasStopped,
+                               arrowHolders[it->direction]->getIsPressed());
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
