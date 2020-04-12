@@ -23,7 +23,7 @@ class ChartReader {
   u32 timeNeeded = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
-  int lastBeat = 0;
+  int lastBeat = -1;
   u32 lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;

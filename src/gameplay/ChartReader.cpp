@@ -94,9 +94,11 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 
       switch (type) {
         case EventType::SET_TEMPO:
+          if (bpm > 0) {
+            lastBeat = -1;
+            lastBpmChange = msecs;
+          }
           bpm = event->extra;
-          lastBeat = -1;
-          lastBpmChange = msecs;
           break;
         case EventType::SET_TICKCOUNT:
           tickCount = event->extra;
