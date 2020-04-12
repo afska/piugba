@@ -16,10 +16,14 @@ class ChartReader {
 
  private:
   Chart* chart;
+  u32 timeNeeded = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
   int lastBeat = 0;
   u32 lastBpmChange = 0;
+  bool hasStopped = false;
+  u32 stopStart = 0;
+  u32 stopEnd = 0;
   std::array<bool, ARROWS_TOTAL> holdState;
 
   bool animateBpm(u32 msecs);

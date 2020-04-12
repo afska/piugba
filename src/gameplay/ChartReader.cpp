@@ -11,13 +11,15 @@
   t = (15 - 160) / 3 = -48.33 frames * 16.73322954 ms/frame = -808,77 frames
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
-const int ANTICIPATION[] = {0, 2426, 1213, 809, 607};
+const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     holdState[i] = false;
+
+  timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
 
 bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
@@ -43,8 +45,10 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   int anticipation = getAnticipationFor(msecs);
   bool skipped = false;
 
-  while ((int)msecs >=
-             (int)chart->events[currentIndex].timestamp - anticipation &&
+  while ((anticipation == -1
+              ? msecs >= chart->events[currentIndex].timestamp
+              : (int)msecs >= (int)chart->events[currentIndex].timestamp -
+                                  anticipation) &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
@@ -55,10 +59,10 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       continue;
     }
 
-    if (msecs < event->timestamp) {
+    if (anticipation != -1 && msecs < event->timestamp) {
       // events with anticipation
-      std::vector<Arrow*> arrows;
 
+      std::vector<Arrow*> arrows;
       switch (type) {
         case EventType::NOTE:
           processUniqueNote(event->data, arrows, arrowPool);
@@ -77,10 +81,13 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           skipped = true;
           break;
       }
-
       connectArrows(arrows);
     } else {
       // exact events
+
+      if (hasStopped && msecs >= stopEnd)  // TODO: Borrar stopStart & stopEnd
+        hasStopped = false;
+
       switch (type) {
         case EventType::SET_TEMPO:
           bpm = event->extra;
@@ -88,6 +95,9 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           lastBpmChange = msecs;
           break;
         case EventType::STOP:
+          hasStopped = true;
+          stopStart = msecs;
+          stopEnd = msecs + event->extra;
           arrowPool->forEachActive(
               [&event](Arrow* it) { it->freeze(event->extra); });
           break;
@@ -167,22 +177,34 @@ void ChartReader::forEachDirection(u8 data,
 }
 
 int ChartReader::getAnticipationFor(u32 msecs) {
-  int baseAnticipation = ANTICIPATION[ARROW_SPEED];
-  int targetMsecs = (int)msecs + baseAnticipation;
-  u32 stopAnticipation = 0;
+  u32 stoppedTime = 0;
+  u32 targetMsecs = msecs + timeNeeded;
   u32 currentIndex = eventIndex;
 
-  while (targetMsecs >= (int)chart->events[currentIndex].timestamp &&
+  // if (hasStopped)
+  //   return -1;
+
+  while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
-    if (type == EventType::STOP/* &&
-        (int)(event->timestamp + event->extra) <= targetMsecs*/)
-      stopAnticipation += event->extra;
+    if (event->handled) {
+      currentIndex++;
+      continue;
+    }
+
+    if (type == EventType::STOP) {
+      u32 stopStart = event->timestamp;
+      u32 stopEnd = stopStart + event->extra;
+      u32 lostTime = min(stopEnd, targetMsecs) - stopStart;
+
+      targetMsecs += lostTime;
+      stoppedTime += lostTime;
+    }
 
     currentIndex++;
   }
 
-  return baseAnticipation + stopAnticipation;
+  return (int)(timeNeeded + stoppedTime);
 }
