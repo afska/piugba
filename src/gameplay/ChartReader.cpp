@@ -13,6 +13,8 @@
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
+const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
+const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
 const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart) {
@@ -135,9 +137,9 @@ void ChartReader::startHoldNote(u8 data,
     holdArrows[direction] = arrowPool->createWithIdGreaterThan(
         [&direction, &head](Arrow* it) {
           it->initialize(ArrowType::HOLD_FILL, direction);
-          it->get()->moveTo(
-              head->get()->getX(),
-              head->get()->getY() + ARROW_HEIGHT - 5);  // TODO: UNHARDCODE
+          it->get()->moveTo(head->get()->getX(),
+                            head->get()->getY() + ARROW_HEIGHT -
+                                HOLD_ARROW_FILL_OFFSETS[direction]);
         },
         head->id);
 
@@ -156,9 +158,9 @@ void ChartReader::endHoldNote(u8 data,
     arrows.push_back(arrowPool->createWithIdGreaterThan(
         [&fill, &direction](Arrow* it) {
           it->initialize(ArrowType::HOLD_TAIL, direction);
-          it->get()->moveTo(
-              fill->get()->getX(),
-              fill->get()->getY() + ARROW_HEIGHT - 8);  // TODO: UNHARDCODE
+          it->get()->moveTo(fill->get()->getX(),
+                            fill->get()->getY() + ARROW_HEIGHT -
+                                HOLD_ARROW_END_OFFSETS[direction]);
         },
         fill->id));
 
