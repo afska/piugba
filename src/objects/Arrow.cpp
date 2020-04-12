@@ -131,9 +131,6 @@ void Arrow::markAsPressed() {
 }
 
 void Arrow::freeze(int freezeTime) {
-  if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
-    return;
-
   this->freezeTime = freezeTime;
 }
 

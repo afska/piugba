@@ -35,6 +35,7 @@ class ChartReader {
                    ObjectPool<Arrow>* arrowPool);
   void connectArrows(std::vector<Arrow*>& arrows);
   void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
+  int getAnticipationFor(u32 msecs);
 };
 
 #endif  // CHART_READER_H

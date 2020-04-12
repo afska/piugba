@@ -39,8 +39,8 @@ bool ChartReader::animateBpm(u32 msecs) {
 
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   msecs = max((int)msecs - AUDIO_LAG, 0);
-  int anticipation = ANTICIPATION[ARROW_SPEED];
   u32 currentIndex = eventIndex;
+  int anticipation = getAnticipationFor(msecs);
   bool skipped = false;
 
   while ((int)msecs >=
@@ -116,6 +116,7 @@ void ChartReader::processUniqueNote(u8 data,
 void ChartReader::startHoldNote(u8 data,
                                 std::vector<Arrow*>& arrows,
                                 ObjectPool<Arrow>* arrowPool) {
+  return;  // TODO: IMPLEMENT
   forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
     holdState[(int)direction] = true;
 
@@ -128,6 +129,7 @@ void ChartReader::startHoldNote(u8 data,
 void ChartReader::endHoldNote(u8 data,
                               std::vector<Arrow*>& arrows,
                               ObjectPool<Arrow>* arrowPool) {
+  return;  // TODO: IMPLEMENT
   forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
     holdState[(int)direction] = false;
 
@@ -162,4 +164,25 @@ void ChartReader::forEachDirection(u8 data,
 
   if (data & EVENT_ARROW_DOWNRIGHT)
     action(ArrowDirection::DOWNRIGHT);
+}
+
+int ChartReader::getAnticipationFor(u32 msecs) {
+  int baseAnticipation = ANTICIPATION[ARROW_SPEED];
+  int targetMsecs = (int)msecs + baseAnticipation;
+  u32 stopAnticipation = 0;
+  u32 currentIndex = eventIndex;
+
+  while (targetMsecs >= (int)chart->events[currentIndex].timestamp &&
+         currentIndex < chart->eventCount) {
+    auto event = chart->events + currentIndex;
+    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+
+    if (type == EventType::STOP/* &&
+        (int)(event->timestamp + event->extra) <= targetMsecs*/)
+      stopAnticipation += event->extra;
+
+    currentIndex++;
+  }
+
+  return baseAnticipation + stopAnticipation;
 }
