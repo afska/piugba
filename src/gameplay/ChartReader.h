@@ -10,6 +10,8 @@
 
 class ChartReader {
  public:
+  bool hasStopped = false;
+
   ChartReader(Chart* chart);
 
   bool update(u32 msecs, ObjectPool<Arrow>* arrowPool);
@@ -21,7 +23,6 @@ class ChartReader {
   u32 bpm = 0;
   int lastBeat = 0;
   u32 lastBpmChange = 0;
-  bool hasStopped = false;
   u32 stopStart = 0;
   u32 stopEnd = 0;
   std::array<bool, ARROWS_TOTAL> holdState;

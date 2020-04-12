@@ -45,6 +45,9 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   int anticipation = getAnticipationFor(msecs);
   bool skipped = false;
 
+  if (hasStopped && msecs >= stopEnd)
+    hasStopped = false;
+
   while ((anticipation == -1
               ? msecs >= chart->events[currentIndex].timestamp
               : (int)msecs >= (int)chart->events[currentIndex].timestamp -
@@ -85,9 +88,6 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
     } else {
       // exact events
 
-      if (hasStopped && msecs >= stopEnd)  // TODO: Borrar stopStart & stopEnd
-        hasStopped = false;
-
       switch (type) {
         case EventType::SET_TEMPO:
           bpm = event->extra;
@@ -98,8 +98,6 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           hasStopped = true;
           stopStart = msecs;
           stopEnd = msecs + event->extra;
-          arrowPool->forEachActive(
-              [&event](Arrow* it) { it->freeze(event->extra); });
           break;
         default:
           break;
@@ -181,8 +179,8 @@ int ChartReader::getAnticipationFor(u32 msecs) {
   u32 targetMsecs = msecs + timeNeeded;
   u32 currentIndex = eventIndex;
 
-  // if (hasStopped)
-  //   return -1;
+  if (hasStopped)
+    return -1;
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -195,12 +193,8 @@ int ChartReader::getAnticipationFor(u32 msecs) {
     }
 
     if (type == EventType::STOP) {
-      u32 stopStart = event->timestamp;
-      u32 stopEnd = stopStart + event->extra;
-      u32 lostTime = min(stopEnd, targetMsecs) - stopStart;
-
-      targetMsecs += lostTime;
-      stoppedTime += lostTime;
+      targetMsecs += event->extra;
+      stoppedTime += event->extra;
     }
 
     currentIndex++;
