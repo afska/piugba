@@ -3,10 +3,11 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum EventType { NOTE, HOLD_START, HOLD_TICK, HOLD_END, SET_TEMPO, STOP };
+enum EventType { NOTE, HOLD_START, HOLD_END, SET_TEMPO, SET_TICKCOUNT, STOP };
 
 inline bool EVENT_HAS_EXTRA(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::STOP;
+  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+         event == EventType::STOP;
 }
 
 #define EVENT_TYPE /*             */ 0b00000111

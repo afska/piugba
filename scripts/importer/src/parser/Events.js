@@ -1,9 +1,9 @@
 const events = {
   NOTE: 0,
   HOLD_START: 1,
-  HOLD_TICK: 2,
-  HOLD_END: 3,
-  SET_TEMPO: 4,
+  HOLD_END: 2,
+  SET_TEMPO: 3,
+  SET_TICKCOUNT: 4,
   STOP: 5,
   STOP_ASYNC: 15,
 };

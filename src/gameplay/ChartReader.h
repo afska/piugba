@@ -23,6 +23,8 @@ class ChartReader {
   u32 bpm = 0;
   int lastBeat = 0;
   u32 lastBpmChange = 0;
+  u32 tickCount = 4;
+  int lastTick = 0;
   u32 stopStart = 0;
   u32 stopEnd = 0;
   std::array<Arrow*, ARROWS_TOTAL> holdArrows;
@@ -39,6 +41,7 @@ class ChartReader {
                    std::vector<Arrow*>& arrows,
                    ObjectPool<Arrow>* arrowPool);
   void updateHoldArrows(ObjectPool<Arrow>* arrowPool);
+  void processHoldTicks(u32 msecs);
   void connectArrows(std::vector<Arrow*>& arrows);
   void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
 };

@@ -15,6 +15,8 @@
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
+const u32 MINUTE = 60000;
+const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart) {
@@ -27,6 +29,7 @@ ChartReader::ChartReader(Chart* chart) {
 
 bool ChartReader::update(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   processNextEvent(msecs, arrowPool);
+  processHoldTicks(msecs);
   return animateBpm(msecs);
 };
 
@@ -35,7 +38,7 @@ bool ChartReader::animateBpm(u32 msecs) {
 
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000
-  int beat = Div(msecsWithOffset * bpm, 60000);
+  int beat = Div(msecsWithOffset * bpm, MINUTE);
   bool hasChanged = beat != lastBeat;
   lastBeat = beat;
 
@@ -78,9 +81,6 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         case EventType::HOLD_START:
           startHoldNote(event->data, arrows, arrowPool);
           break;
-        case EventType::HOLD_TICK:
-          // TODO: Process tick
-          break;
         case EventType::HOLD_END:
           endHoldNote(event->data, arrows, arrowPool);
           break;
@@ -98,6 +98,10 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           bpm = event->extra;
           lastBeat = -1;
           lastBpmChange = msecs;
+          break;
+        case EventType::SET_TICKCOUNT:
+          tickCount = event->extra;
+          lastTick = -1;
           break;
         case EventType::STOP:
           hasStopped = true;
@@ -182,6 +186,18 @@ void ChartReader::updateHoldArrows(ObjectPool<Arrow>* arrowPool) {
       holdArrows[i] = fill;
     }
   }
+}
+
+void ChartReader::processHoldTicks(u32 msecs) {
+  int msecsWithOffset = (msecs - lastBpmChange) - chart->offset;
+
+  int tick = Div(msecsWithOffset * bpm * Div(tickCount, BEAT_UNIT), MINUTE);
+  bool hasChanged = tick != lastTick;
+  if (hasChanged) {
+    // TODO: Update hold ticks
+  }
+
+  lastTick = tick;
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {

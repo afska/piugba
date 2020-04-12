@@ -38,8 +38,6 @@ module.exports = class Chart {
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
-        // TODO: Meter eventos HOLD_TICK al encontrar un HOLD_END según el tickcount que había en el HOLD_START
-
         return eventsByType.map(({ type, arrows }) => ({
           timestamp,
           type,
@@ -56,6 +54,10 @@ module.exports = class Chart {
         data: it,
       })),
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.tickcounts.map((it) => ({
+        type: Events.SET_TICKCOUNT,
+        data: it,
+      })),
       this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
     ])
       .flatten()
@@ -110,6 +112,12 @@ module.exports = class Chart {
               timestamp,
               type,
               bpm: currentBpm,
+            };
+          case Events.SET_TICKCOUNT:
+            return {
+              timestamp,
+              type,
+              tickcount: Math.round(data.value),
             };
           default:
             throw new Error("unknown_timing_segment");
