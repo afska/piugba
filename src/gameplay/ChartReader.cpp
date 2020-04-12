@@ -42,16 +42,13 @@ bool ChartReader::animateBpm(u32 msecs) {
 void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   msecs = max((int)msecs - AUDIO_LAG, 0);
   u32 currentIndex = eventIndex;
-  int anticipation = getAnticipationFor(msecs);
+  u32 targetMsecs = msecs + timeNeeded;
   bool skipped = false;
 
   if (hasStopped && msecs >= stopEnd)
     hasStopped = false;
 
-  while ((anticipation == -1
-              ? msecs >= chart->events[currentIndex].timestamp
-              : (int)msecs >= (int)chart->events[currentIndex].timestamp -
-                                  anticipation) &&
+  while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
@@ -62,7 +59,10 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       continue;
     }
 
-    if (anticipation != -1 && msecs < event->timestamp) {
+    if (type == EventType::STOP)
+      targetMsecs += event->extra;
+
+    if (msecs < event->timestamp) {
       // events with anticipation
 
       std::vector<Arrow*> arrows;
@@ -172,33 +172,4 @@ void ChartReader::forEachDirection(u8 data,
 
   if (data & EVENT_ARROW_DOWNRIGHT)
     action(ArrowDirection::DOWNRIGHT);
-}
-
-int ChartReader::getAnticipationFor(u32 msecs) {
-  u32 stoppedTime = 0;
-  u32 targetMsecs = msecs + timeNeeded;
-  u32 currentIndex = eventIndex;
-
-  if (hasStopped)
-    return -1;
-
-  while (targetMsecs >= chart->events[currentIndex].timestamp &&
-         currentIndex < chart->eventCount) {
-    auto event = chart->events + currentIndex;
-    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-
-    if (event->handled) {
-      currentIndex++;
-      continue;
-    }
-
-    if (type == EventType::STOP) {
-      targetMsecs += event->extra;
-      stoppedTime += event->extra;
-    }
-
-    currentIndex++;
-  }
-
-  return (int)(timeNeeded + stoppedTime);
 }
