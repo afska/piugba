@@ -196,8 +196,8 @@ void ChartReader::processHoldTicks(u32 msecs) {
   bool hasChanged = tick != lastTick;
   if (hasChanged) {
     for (u32 i = 0; i < ARROWS_TOTAL; i++)
-      if (holdArrows[i] != NULL) {
-            }
+      if (holdArrows[i] != NULL)
+        judge->onHoldTick(static_cast<ArrowDirection>(i));
   }
 
   lastTick = tick;

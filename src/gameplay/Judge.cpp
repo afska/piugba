@@ -44,6 +44,10 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
+void Judge::onHoldTick(ArrowDirection direction) {
+  score->update(FeedbackType::PERFECT);  // TODO: Implement
+}
+
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
