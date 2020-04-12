@@ -61,9 +61,9 @@ void SongScene::load() {
   judge =
       std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
         IFNOTTEST {
-          unload();
-          engine->transitionIntoScene(new StageBreakScene(engine),
-                                      new FadeOutScene(2));
+          // unload();
+          // engine->transitionIntoScene(new StageBreakScene(engine),
+          //                             new FadeOutScene(2)); // TODO: RESTORE
         }
       }));
 }

@@ -1,6 +1,7 @@
 #include "ChartReader.h"
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
+#include <libgba-sprite-engine/gba_engine.h>
 
 #include <vector>
 
@@ -48,7 +49,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   if (hasStopped && msecs >= stopEnd)
     hasStopped = false;
 
-  updateHoldArrows(msecs);
+  updateHoldArrows(arrowPool);
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -155,8 +156,20 @@ void ChartReader::endHoldNote(u8 data,
   });
 }
 
-void ChartReader::updateHoldArrows(u32 msecs) {
-  // TODO: IMPLEMENT
+void ChartReader::updateHoldArrows(ObjectPool<Arrow>* arrowPool) {
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+
+    if (holdArrows[i] != NULL &&
+        holdArrows[i]->get()->getY() <
+            (int)(GBA_SCREEN_HEIGHT - ARROW_HEIGHT + ARROW_SPEED)) {
+      Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
+        it->initialize(ArrowType::HOLD_FILL, direction);
+      });
+
+      holdArrows[i] = fill;
+    }
+  }
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {

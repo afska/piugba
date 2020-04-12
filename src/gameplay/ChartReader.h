@@ -38,7 +38,7 @@ class ChartReader {
   void endHoldNote(u8 data,
                    std::vector<Arrow*>& arrows,
                    ObjectPool<Arrow>* arrowPool);
-  void updateHoldArrows(u32 msecs);
+  void updateHoldArrows(ObjectPool<Arrow>* arrowPool);
   void connectArrows(std::vector<Arrow*>& arrows);
   void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
 };
