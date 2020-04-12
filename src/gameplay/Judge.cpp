@@ -14,7 +14,8 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
 }
 
 void Judge::onPress(Arrow* arrow) {
-  if (arrow->getIsPressed())
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  if (!isUnique || arrow->getIsPressed())
     return;
 
   int y = arrow->get()->getY();
@@ -33,8 +34,8 @@ void Judge::onPress(Arrow* arrow) {
 }
 
 void Judge::onOut(Arrow* arrow) {
-  bool isUniqueArrow = arrow->type == ArrowType::UNIQUE;
-  if (!arrow->getIsPressed() && isUniqueArrow) {
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  if (isUnique && !arrow->getIsPressed()) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;

@@ -149,7 +149,8 @@ ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isKeyPressed) {
       else
         end();
     }
-  } else if (isAligned() && (isKeyPressed || (isPressed && needsAnimation))) {
+  } else if (isAligned() && ((type != ArrowType::UNIQUE && isKeyPressed) ||
+                             (isPressed && needsAnimation))) {
     animatePress();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();

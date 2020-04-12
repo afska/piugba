@@ -15,7 +15,6 @@
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
-const u32 TICKCOUNT_MULTIPLIER = 2;
 const u32 MINUTE = 60000;
 const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
@@ -75,23 +74,21 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
     if (msecs < event->timestamp) {
       // events with anticipation
 
-      std::vector<Arrow*> arrows;
       switch (type) {
         case EventType::NOTE:
-          processUniqueNote(event->data, arrows, arrowPool);
+          processUniqueNote(event->data, arrowPool);
           break;
         case EventType::HOLD_START:
-          startHoldNote(event->data, arrows, arrowPool);
+          startHoldNote(event->data, arrowPool);
           break;
         case EventType::HOLD_END:
-          endHoldNote(event->data, arrows, arrowPool);
+          endHoldNote(event->data, arrowPool);
           break;
         default:
           handled = false;
           skipped = true;
           break;
       }
-      connectArrows(arrows);
     } else {
       // exact events
 
@@ -122,20 +119,20 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   }
 }
 
-void ChartReader::processUniqueNote(u8 data,
-                                    std::vector<Arrow*>& arrows,
-                                    ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+  std::vector<Arrow*> arrows;
+
   forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
     arrows.push_back(arrowPool->create([&direction](Arrow* it) {
       it->initialize(ArrowType::UNIQUE, direction);
     }));
   });
+
+  connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(u8 data,
-                                std::vector<Arrow*>& arrows,
-                                ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
+void ChartReader::startHoldNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(data, [&arrowPool, this](ArrowDirection direction) {
     Arrow* head = arrowPool->create([&direction](Arrow* it) {
       it->initialize(ArrowType::HOLD_HEAD, direction);
     });
@@ -148,27 +145,23 @@ void ChartReader::startHoldNote(u8 data,
                                 HOLD_ARROW_FILL_OFFSETS[direction]);
         },
         head->id);
-
-    arrows.push_back(head);
   });
 }
 
-void ChartReader::endHoldNote(u8 data,
-                              std::vector<Arrow*>& arrows,
-                              ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
+void ChartReader::endHoldNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(data, [&arrowPool, this](ArrowDirection direction) {
     Arrow* fill = holdArrows[direction];
     if (fill == NULL)
       return;
 
-    arrows.push_back(arrowPool->createWithIdGreaterThan(
+    arrowPool->createWithIdGreaterThan(
         [&fill, &direction](Arrow* it) {
           it->initialize(ArrowType::HOLD_TAIL, direction);
           it->get()->moveTo(fill->get()->getX(),
                             fill->get()->getY() + ARROW_HEIGHT -
                                 HOLD_ARROW_END_OFFSETS[direction]);
         },
-        fill->id));
+        fill->id);
 
     holdArrows[direction] = NULL;
   });
@@ -193,9 +186,8 @@ void ChartReader::updateHoldArrows(ObjectPool<Arrow>* arrowPool) {
 void ChartReader::processHoldTicks(u32 msecs) {
   int msecsWithOffset = (msecs - lastBpmChange) - chart->offset;
 
-  int tick = Div(
-      msecsWithOffset * bpm * Div(tickCount * TICKCOUNT_MULTIPLIER, BEAT_UNIT),
-      MINUTE);
+  // TODO: Understand tickCount
+  int tick = Div(msecsWithOffset * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
   if (hasChanged) {
     for (u32 i = 0; i < ARROWS_TOTAL; i++)

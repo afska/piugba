@@ -33,15 +33,9 @@ class ChartReader {
 
   bool animateBpm(u32 msecs);
   void processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(u8 data,
-                         std::vector<Arrow*>& arrows,
-                         ObjectPool<Arrow>* arrowPool);
-  void startHoldNote(u8 data,
-                     std::vector<Arrow*>& arrows,
-                     ObjectPool<Arrow>* arrowPool);
-  void endHoldNote(u8 data,
-                   std::vector<Arrow*>& arrows,
-                   ObjectPool<Arrow>* arrowPool);
+  void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
+  void startHoldNote(u8 data, ObjectPool<Arrow>* arrowPool);
+  void endHoldNote(u8 data, ObjectPool<Arrow>* arrowPool);
   void updateHoldArrows(ObjectPool<Arrow>* arrowPool);
   void processHoldTicks(u32 msecs);
   void connectArrows(std::vector<Arrow*>& arrows);
