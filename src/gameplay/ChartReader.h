@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 
+#include "gameplay/Judge.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
 #include "utils/pool/ObjectPool.h"
@@ -12,12 +13,13 @@ class ChartReader {
  public:
   bool hasStopped = false;
 
-  ChartReader(Chart* chart);
+  ChartReader(Chart* chart, Judge* judge);
 
   bool update(u32 msecs, ObjectPool<Arrow>* arrowPool);
 
  private:
   Chart* chart;
+  Judge* judge;
   u32 timeNeeded = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;

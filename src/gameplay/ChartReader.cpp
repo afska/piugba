@@ -19,8 +19,9 @@ const u32 MINUTE = 60000;
 const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
 
-ChartReader::ChartReader(Chart* chart) {
+ChartReader::ChartReader(Chart* chart, Judge* judge) {
   this->chart = chart;
+  this->judge = judge;
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     holdArrows[i] = NULL;
 
@@ -194,7 +195,9 @@ void ChartReader::processHoldTicks(u32 msecs) {
   int tick = Div(msecsWithOffset * bpm * Div(tickCount, BEAT_UNIT), MINUTE);
   bool hasChanged = tick != lastTick;
   if (hasChanged) {
-    // TODO: Update hold ticks
+    for (u32 i = 0; i < ARROWS_TOTAL; i++)
+      if (holdArrows[i] != NULL) {
+            }
   }
 
   lastTick = tick;

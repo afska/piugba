@@ -57,7 +57,6 @@ void SongScene::load() {
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
-  chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
   judge =
       std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
         IFNOTTEST {
@@ -66,6 +65,8 @@ void SongScene::load() {
           //                             new FadeOutScene(2)); // TODO: RESTORE
         }
       }));
+  chartReader =
+      std::unique_ptr<ChartReader>(new ChartReader(chart, judge.get()));
 }
 
 void SongScene::tick(u16 keys) {
