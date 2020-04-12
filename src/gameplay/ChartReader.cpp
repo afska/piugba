@@ -17,7 +17,7 @@ const int AUDIO_LAG = 170;
 ChartReader::ChartReader(Chart* chart) {
   this->chart = chart;
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    holdState[i] = false;
+    holdArrows[i] = NULL;
 
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
@@ -47,6 +47,8 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 
   if (hasStopped && msecs >= stopEnd)
     hasStopped = false;
+
+  updateHoldArrows(msecs);
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -124,27 +126,37 @@ void ChartReader::processUniqueNote(u8 data,
 void ChartReader::startHoldNote(u8 data,
                                 std::vector<Arrow*>& arrows,
                                 ObjectPool<Arrow>* arrowPool) {
-  return;  // TODO: IMPLEMENT
   forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
-    holdState[(int)direction] = true;
-
-    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+    Arrow* head = arrowPool->create([&direction](Arrow* it) {
       it->initialize(ArrowType::HOLD_HEAD, direction);
-    }));
+    });
+
+    holdArrows[direction] = arrowPool->createWithIdGreaterThan(
+        [&direction, &head](Arrow* it) {
+          it->initialize(ArrowType::HOLD_FILL, direction);
+          it->get()->moveTo(head->get()->getX(),
+                            head->get()->getY() + ARROW_HEIGHT - 5);
+        },
+        head->id);
+
+    arrows.push_back(head);
   });
 }
 
 void ChartReader::endHoldNote(u8 data,
                               std::vector<Arrow*>& arrows,
                               ObjectPool<Arrow>* arrowPool) {
-  return;  // TODO: IMPLEMENT
   forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
-    holdState[(int)direction] = false;
+    // holdState[(int)direction] = false;
 
-    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
-      it->initialize(ArrowType::HOLD_TAIL, direction);
-    }));
+    // arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+    //   it->initialize(ArrowType::HOLD_TAIL, direction);
+    // }));
   });
+}
+
+void ChartReader::updateHoldArrows(u32 msecs) {
+  // TODO: IMPLEMENT
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {

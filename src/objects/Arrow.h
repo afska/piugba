@@ -20,7 +20,8 @@ const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_CORNER_MARGIN_Y = 15;
-const u32 ARROW_MARGIN = 16 + 2;
+const u32 ARROW_HEIGHT = 16;
+const u32 ARROW_MARGIN = ARROW_HEIGHT + 2;
 
 class Arrow : public IPoolable {
  public:

@@ -29,7 +29,7 @@ void StartScene::load() {
   TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
 
   TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
-  TextStream::instance().setText("B - Beat of the War 2 (17)", 9, 0);
+  TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
   TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
 
   TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
@@ -56,7 +56,7 @@ void StartScene::tick(u16 keys) {
       level = 16;
     } else if (keys & KEY_B) {
       name = (char*)"Beat of the War 2";
-      level = 17;
+      level = 16;
     } else if (keys & KEY_A) {
       name = (char*)"Tepris";
       level = 16;

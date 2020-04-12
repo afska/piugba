@@ -36,7 +36,30 @@ class ObjectPool {
       }
     }
 
-    // (*(u8*)NULL) = 1;  // CRASH!
+    return NULL;
+  }
+
+  T* createWithIdGreaterThan(std::function<void(T*)> initialize, u32 id) {
+    for (auto& it : objects) {
+      if (!it->isActive && it->object->id > id) {
+        it->isActive = true;
+        initialize(it->object);
+        return it->object;
+      }
+    }
+
+    return NULL;
+  }
+
+  T* createWithIdLowerThan(std::function<void(T*)> initialize, u32 id) {
+    for (auto& it : objects) {
+      if (!it->isActive && it->object->id < id) {
+        it->isActive = true;
+        initialize(it->object);
+        return it->object;
+      }
+    }
+
     return NULL;
   }
 
@@ -50,15 +73,15 @@ class ObjectPool {
     objects[index]->isActive = false;
   }
 
-  void forEach(std::function<void(T*)> func) {
+  void forEach(std::function<void(T*)> action) {
     for (auto& it : objects)
-      func(it->object);
+      action(it->object);
   }
 
-  void forEachActive(std::function<void(T*)> func) {
+  void forEachActive(std::function<void(T*)> action) {
     for (auto& it : objects)
       if (it->isActive)
-        func(it->object);
+        action(it->object);
   }
 
   ~ObjectPool() {
