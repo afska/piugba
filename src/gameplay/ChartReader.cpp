@@ -135,8 +135,9 @@ void ChartReader::startHoldNote(u8 data,
     holdArrows[direction] = arrowPool->createWithIdGreaterThan(
         [&direction, &head](Arrow* it) {
           it->initialize(ArrowType::HOLD_FILL, direction);
-          it->get()->moveTo(head->get()->getX(),
-                            head->get()->getY() + ARROW_HEIGHT - 5);
+          it->get()->moveTo(
+              head->get()->getX(),
+              head->get()->getY() + ARROW_HEIGHT - 5);  // TODO: UNHARDCODE
         },
         head->id);
 
@@ -148,11 +149,20 @@ void ChartReader::endHoldNote(u8 data,
                               std::vector<Arrow*>& arrows,
                               ObjectPool<Arrow>* arrowPool) {
   forEachDirection(data, [&arrowPool, &arrows, this](ArrowDirection direction) {
-    // holdState[(int)direction] = false;
+    Arrow* fill = holdArrows[direction];
+    if (fill == NULL)
+      return;
 
-    // arrows.push_back(arrowPool->create([&direction](Arrow* it) {
-    //   it->initialize(ArrowType::HOLD_TAIL, direction);
-    // }));
+    arrows.push_back(arrowPool->createWithIdGreaterThan(
+        [&fill, &direction](Arrow* it) {
+          it->initialize(ArrowType::HOLD_TAIL, direction);
+          it->get()->moveTo(
+              fill->get()->getX(),
+              fill->get()->getY() + ARROW_HEIGHT - 8);  // TODO: UNHARDCODE
+        },
+        fill->id));
+
+    holdArrows[direction] = NULL;
   });
 }
 
