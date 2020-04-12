@@ -6,9 +6,15 @@
 #include "score/Feedback.h"
 #include "utils/pool/ObjectPool.h"
 
+// TEST MACROS
 #define TEST_MODE false
+#define KEYTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
+#define IFKEYTEST if (KEYTEST_MODE)
+#define IFNOTKEYTEST if (!KEYTEST_MODE)
+#define LOG(NUM) (log_text(std::to_string(NUM).c_str()))
+#include <libgba-sprite-engine/background/text_stream.h>
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL };
 enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };

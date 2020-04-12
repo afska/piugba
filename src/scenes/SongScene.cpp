@@ -27,6 +27,7 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
 }
 
 std::vector<Background*> SongScene::backgrounds() {
+  IFTEST { return {}; }
   return {bg.get()};
 }
 
@@ -51,7 +52,7 @@ void SongScene::load() {
   BACKGROUND3_DISABLE();
 
   setUpPalettes();
-  setUpBackground();
+  IFNOTTEST { setUpBackground(); }
   setUpArrows();
 
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
@@ -60,9 +61,9 @@ void SongScene::load() {
   judge =
       std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
         IFNOTTEST {
-          // unload();
-          // engine->transitionIntoScene(new StageBreakScene(engine),
-          //                             new FadeOutScene(2)); // TODO: RESTORE
+          unload();
+          engine->transitionIntoScene(new StageBreakScene(engine),
+                                      new FadeOutScene(2));
         }
       }));
   chartReader =
@@ -155,7 +156,7 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
 
-  IFTEST {
+  IFKEYTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder](Arrow* it) {

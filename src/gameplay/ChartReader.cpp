@@ -15,6 +15,7 @@
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
+const u32 TICKCOUNT_MULTIPLIER = 2;
 const u32 MINUTE = 60000;
 const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
@@ -192,7 +193,9 @@ void ChartReader::updateHoldArrows(ObjectPool<Arrow>* arrowPool) {
 void ChartReader::processHoldTicks(u32 msecs) {
   int msecsWithOffset = (msecs - lastBpmChange) - chart->offset;
 
-  int tick = Div(msecsWithOffset * bpm * Div(tickCount, BEAT_UNIT), MINUTE);
+  int tick = Div(
+      msecsWithOffset * bpm * Div(tickCount * TICKCOUNT_MULTIPLIER, BEAT_UNIT),
+      MINUTE);
   bool hasChanged = tick != lastTick;
   if (hasChanged) {
     for (u32 i = 0; i < ARROWS_TOTAL; i++)
