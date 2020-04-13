@@ -176,9 +176,6 @@ void SongScene::updateFakeHeads() {
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
 
-    if (i == 2)  // TODO: REMOVE
-      LOG((isHoldMode ? 10 : 0) + (isPressing ? 1 : 0));
-
     bool hidingNow = false;
     if (isHoldMode && isPressing) {
       if (!isActive)

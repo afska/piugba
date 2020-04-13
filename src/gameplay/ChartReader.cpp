@@ -15,6 +15,7 @@
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
+const u32 HOLD_ARROW_POOL_SIZE = 4;
 const u32 MINUTE = 60000;
 const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
@@ -22,6 +23,9 @@ const int AUDIO_LAG = 170;
 ChartReader::ChartReader(Chart* chart, Judge* judge) {
   this->chart = chart;
   this->judge = judge;
+  holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
+      HOLD_ARROW_POOL_SIZE,
+      [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
 
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
@@ -40,14 +44,15 @@ bool ChartReader::update(u32* msecs, ObjectPool<Arrow>* arrowPool) {
 
 void ChartReader::withNextHoldArrow(ArrowDirection direction,
                                     std::function<void(HoldArrow*)> action) {
-  for (auto& holdArrow : holdArrows) {
-    if (holdArrow->direction != direction)
-      continue;
+  holdArrows->forEachActiveWithBreak(
+      [&direction, &action, this](HoldArrow* holdArrow) {
+        if (holdArrow->direction != direction)
+          return true;
 
-    action(holdArrow.get());
+        action(holdArrow);
 
-    return;
-  }
+        return false;
+      });
 }
 
 bool ChartReader::animateBpm(int msecsWithOffset) {
@@ -151,19 +156,20 @@ void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
           it->initialize(ArrowType::HOLD_HEAD, direction);
         });
 
-        auto holdArrow = std::unique_ptr<HoldArrow>{new HoldArrow()};
-        holdArrow->direction = direction;
-        holdArrow->startTime = event->timestamp;
-        holdArrow->endTime = 0;
-        holdArrow->lastFill = arrowPool->createWithIdGreaterThan(
-            [&direction, &head](Arrow* it) {
-              it->initialize(ArrowType::HOLD_FILL, direction);
-              it->get()->moveTo(head->get()->getX(),
-                                head->get()->getY() + ARROW_HEIGHT -
-                                    HOLD_ARROW_FILL_OFFSETS[direction]);
-            },
-            head->id);
-        holdArrows.push_back(std::move(holdArrow));
+        holdArrows->create(
+            [event, arrowPool, &direction, &head](HoldArrow* holdArrow) {
+              holdArrow->direction = direction;
+              holdArrow->startTime = event->timestamp;
+              holdArrow->endTime = 0;
+              holdArrow->lastFill = arrowPool->createWithIdGreaterThan(
+                  [&direction, &head](Arrow* it) {
+                    it->initialize(ArrowType::HOLD_FILL, direction);
+                    it->get()->moveTo(head->get()->getX(),
+                                      head->get()->getY() + ARROW_HEIGHT -
+                                          HOLD_ARROW_FILL_OFFSETS[direction]);
+                  },
+                  head->id);
+            });
       });
 }
 
@@ -187,14 +193,12 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
 }
 
 void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
-  auto it = holdArrows.begin();
-  while (it != holdArrows.end()) {
-    HoldArrow* holdArrow = it->get();
+  holdArrows->forEachActive([&msecs, arrowPool, this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
 
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
-      it = holdArrows.erase(it);
-      continue;
+      holdArrows->discard(holdArrow->id);
+      return;
     }
 
     if (holdArrow->endTime == 0 &&
@@ -207,8 +211,8 @@ void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
       holdArrow->lastFill = fill;
     }
 
-    ++it;
-  }
+    return;
+  });
 }
 
 void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
@@ -256,8 +260,4 @@ void ChartReader::forEachDirection(u8 data,
 
   if (data & EVENT_ARROW_DOWNRIGHT)
     action(ArrowDirection::DOWNRIGHT);
-}
-
-ChartReader::~ChartReader() {
-  holdArrows.clear();
 }

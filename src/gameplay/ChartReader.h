@@ -5,30 +5,22 @@
 #include <functional>
 #include <vector>
 
-#include "gameplay/Judge.h"
+#include "HoldArrow.h"
+#include "Judge.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
 #include "utils/pool/ObjectPool.h"
 
-typedef struct {
-  ArrowDirection direction;
-  u32 startTime;
-  u32 endTime;
-  Arrow* lastFill;
-} HoldArrow;
-
 class ChartReader {
  public:
   bool hasStopped = false;
-  std::vector<std::unique_ptr<HoldArrow>> holdArrows;
+  std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
 
   ChartReader(Chart* chart, Judge* judge);
 
   bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
   void withNextHoldArrow(ArrowDirection direction,
                          std::function<void(HoldArrow*)> action);
-
-  ~ChartReader();
 
  private:
   Chart* chart;
