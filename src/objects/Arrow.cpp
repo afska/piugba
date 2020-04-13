@@ -132,7 +132,10 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isPressing) {
+ArrowState Arrow::tick(u32 msecs,
+                       bool hasStopped,
+                       bool isPressing,
+                       bool& isHoldMode) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
@@ -158,16 +161,19 @@ ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isPressing) {
     animatePress();
   } else if (type == ArrowType::HOLD_HEAD &&
              get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
+    isHoldMode = true;
     end();
   } else if (type == ArrowType::HOLD_TAIL &&
              get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
+    isHoldMode = true;
     end();
   } else if (type != ArrowType::UNIQUE && isAligned(ARROW_SPEED) &&
              isPressing) {
+    isHoldMode = true;
     end();
-  } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
+  } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT)
     end();
-  } else if (!hasStopped)
+  else if (!hasStopped)
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
   return ArrowState::ACTIVE;
