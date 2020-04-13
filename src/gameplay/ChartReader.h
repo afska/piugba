@@ -21,7 +21,7 @@ class ChartReader {
   bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
 
   template <typename F>
-  void withNextHoldArrow(ArrowDirection direction, F action) {
+  inline void withNextHoldArrow(ArrowDirection direction, F action) {
     HoldArrow* min = NULL;
     holdArrows->forEachActive(
         [&direction, &action, &min, this](HoldArrow* holdArrow) {
@@ -37,7 +37,7 @@ class ChartReader {
   }
 
   template <typename F>
-  void withLastHoldArrow(ArrowDirection direction, F action) {
+  inline void withLastHoldArrow(ArrowDirection direction, F action) {
     HoldArrow* max = NULL;
     holdArrows->forEachActive(
         [&direction, &action, &max, this](HoldArrow* holdArrow) {
@@ -75,7 +75,7 @@ class ChartReader {
   void connectArrows(std::vector<Arrow*>& arrows);
 
   template <typename F>
-  void forEachDirection(u8 data, F action) {
+  inline void forEachDirection(u8 data, F action) {
     if (data & EVENT_ARROW_DOWNLEFT)
       action(ArrowDirection::DOWNLEFT);
 

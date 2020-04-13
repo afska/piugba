@@ -33,7 +33,7 @@ class ObjectPool {
   }
 
   template <typename F>
-  T* create(F initialize) {
+  inline T* create(F initialize) {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
@@ -47,7 +47,7 @@ class ObjectPool {
   }
 
   template <typename F>
-  T* createWithIdGreaterThan(F initialize, u32 id) {
+  inline T* createWithIdGreaterThan(F initialize, u32 id) {
     for (auto& it : objects) {
       if (!it->isActive && it->object->id > id) {
         it->isActive = true;
@@ -61,7 +61,7 @@ class ObjectPool {
   }
 
   template <typename F>
-  T* createWithIdLowerThan(F initialize, u32 id) {
+  inline T* createWithIdLowerThan(F initialize, u32 id) {
     for (auto& it : objects) {
       if (!it->isActive && it->object->id < id) {
         it->isActive = true;
@@ -85,13 +85,13 @@ class ObjectPool {
   }
 
   template <typename F>
-  void forEach(F action) {
+  inline void forEach(F action) {
     for (auto& it : objects)
       action(it->object);
   }
 
   template <typename F>
-  void forEachActive(F action) {
+  inline void forEachActive(F action) {
     for (auto& it : objects)
       if (it->isActive)
         action(it->object);

@@ -7,8 +7,8 @@
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
-#define TEST_MODE true  // TODO: REMOVE
-#define KEYTEST_MODE true
+#define TEST_MODE false
+#define KEYTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
@@ -45,7 +45,7 @@ class Arrow : public IPoolable {
   void setSiblingId(int siblingId);
 
   template <typename F>
-  void forAll(ObjectPool<Arrow>* arrowPool, F func) {
+  inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
     func(this);
 
     if (siblingId < 0)
