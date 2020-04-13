@@ -151,11 +151,10 @@ void SongScene::updateArrowHolders() {
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
     ArrowDirection direction = it->direction;
-    bool isHoldMode = chartReader->holdState[direction];
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
     ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, isHoldMode && isPressing);
+        it->tick(msecs, chartReader->hasStopped, isPressing);
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
@@ -176,7 +175,9 @@ void SongScene::updateFakeHeads() {
         });
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
-    chartReader->holdState[i] = isHoldMode;
+
+    if (i == 2)  // TODO: REMOVE
+      LOG((isHoldMode ? 10 : 0) + (isPressing ? 1 : 0));
 
     bool hidingNow = false;
     if (isHoldMode && isPressing) {
