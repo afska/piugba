@@ -1,7 +1,6 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
-#include <array>
 #include <functional>
 #include <vector>
 
@@ -11,20 +10,22 @@
 #include "utils/pool/ObjectPool.h"
 
 typedef struct {
-  bool isHolding;
+  ArrowDirection direction;
   u32 startTime;
   u32 endTime;
   Arrow* lastFill;
-} HoldState;
+} HoldArrow;
 
 class ChartReader {
  public:
   bool hasStopped = false;
-  std::array<HoldState, ARROWS_TOTAL> holdState;
+  std::vector<std::unique_ptr<HoldArrow>> holdArrows;
 
   ChartReader(Chart* chart, Judge* judge);
 
   bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
+
+  ~ChartReader();
 
  private:
   Chart* chart;

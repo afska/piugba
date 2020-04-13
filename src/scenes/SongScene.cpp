@@ -149,12 +149,12 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    HoldState holdState = chartReader->holdState[it->direction];
-    bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
-                      (holdState.endTime == 0 || msecs < holdState.endTime);
+    // HoldState holdState = chartReader->holdState[it->direction];
+    // bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
+    //                   (holdState.endTime == 0 || msecs < holdState.endTime);
 
     ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, isHoldMode,
+        it->tick(msecs, chartReader->hasStopped, true,
                  arrowHolders[it->direction]->getIsPressed());
 
     if (arrowState == ArrowState::OUT)
@@ -165,15 +165,15 @@ void SongScene::updateArrows() {
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
-    HoldState holdState = chartReader->holdState[direction];
+    /*HoldState holdState = chartReader->holdState[direction];
     bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
-                      (holdState.endTime == 0 || msecs < holdState.endTime);
+                      (holdState.endTime == 0 || msecs < holdState.endTime);*/
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
 
     // if (i == 2)
     //   LOG(isHoldMode ? 10 : 0);
-    if (isHoldMode && isPressing) {
+    if (/*isHoldMode && */ isPressing) {
       if (!isActive)
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
     } else if (isActive)
