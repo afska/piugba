@@ -76,20 +76,10 @@ class ChartReader {
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
-    if (data & EVENT_ARROW_DOWNLEFT)
-      action(ArrowDirection::DOWNLEFT);
-
-    if (data & EVENT_ARROW_UPLEFT)
-      action(ArrowDirection::UPLEFT);
-
-    if (data & EVENT_ARROW_CENTER)
-      action(ArrowDirection::CENTER);
-
-    if (data & EVENT_ARROW_UPRIGHT)
-      action(ArrowDirection::UPRIGHT);
-
-    if (data & EVENT_ARROW_DOWNRIGHT)
-      action(ArrowDirection::DOWNRIGHT);
+    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+      if (data & EVENT_ARROW_MASKS[i])
+        action(static_cast<ArrowDirection>(i));
+    }
   }
 };
 

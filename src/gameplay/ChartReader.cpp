@@ -220,15 +220,20 @@ void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
+    u8 arrows = 0;
+
     for (u32 i = 0; i < ARROWS_TOTAL; i++) {
       auto direction = static_cast<ArrowDirection>(i);
 
-      withNextHoldArrow(direction,
-                        [&msecs, &direction, this](HoldArrow* holdArrow) {
-                          if (msecs >= holdArrow->startTime)
-                            judge->onHoldTick(direction);
-                        });
+      withNextHoldArrow(
+          direction, [&msecs, &arrows, &direction, this](HoldArrow* holdArrow) {
+            if (msecs >= holdArrow->startTime)
+              arrows |= EVENT_ARROW_MASKS[direction];
+          });
     }
+
+    if (arrows > 0)
+      judge->onHoldTick(arrows);
   }
 
   lastTick = tick;

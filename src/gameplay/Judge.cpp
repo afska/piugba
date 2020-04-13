@@ -1,5 +1,7 @@
 #include "Judge.h"
 
+#include "models/Event.h"
+
 const u32 OFFSET_MISS = 9;
 const u32 OFFSET_BAD = 7;
 const u32 OFFSET_GOOD = 5;
@@ -47,10 +49,17 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
-void Judge::onHoldTick(ArrowDirection direction) {
-  updateScore(arrowHolders->at(direction)->getIsPressed()
-                  ? FeedbackType::PERFECT
-                  : FeedbackType::MISS);
+void Judge::onHoldTick(u8 arrows) {
+  bool isPressed = true;
+
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    if (arrows & EVENT_ARROW_MASKS[i] && !arrowHolders->at(i)->getIsPressed()) {
+      isPressed = false;
+      break;
+    }
+  }
+
+  updateScore(isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
