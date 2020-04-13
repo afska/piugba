@@ -169,21 +169,23 @@ void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
 
-    /*HoldState holdState = chartReader->holdState[direction];
-    bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
-                      (holdState.endTime == 0 || msecs < holdState.endTime);*/
+    bool isHoldMode = false;
+    chartReader->withNextHoldArrow(
+        direction, [&isHoldMode, this](HoldArrow* holdArrow) {
+          isHoldMode = msecs >= holdArrow->startTime &&
+                       (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
+        });
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
 
-    // if (i == 2)
-    //   LOG(isHoldMode ? 10 : 0);
-    if (/*isHoldMode && */ isPressing) {
+    if (isHoldMode && isPressing) {
       if (!isActive)
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
     } else if (isActive)
       SPRITE_hide(fakeHeads[i]->get());
 
-    ArrowState arrowState = fakeHeads[i]->tick(msecs, true, false, false);
+    ArrowState arrowState =
+        fakeHeads[i]->tick(msecs, true, false, false);  // TODO: REFACTOR
     if (arrowState == ArrowState::OUT)
       fakeHeads[i]->discard();
   }
