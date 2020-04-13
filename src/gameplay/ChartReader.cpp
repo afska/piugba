@@ -177,19 +177,26 @@ void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
 void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
   forEachDirection(
       event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        withLastHoldArrow(
-            direction, [&event, &arrowPool, &direction](HoldArrow* holdArrow) {
-              Arrow* fill = holdArrow->lastFill;
-              arrowPool->createWithIdGreaterThan(
-                  [&fill, &direction](Arrow* it) {
-                    it->initialize(ArrowType::HOLD_TAIL, direction);
-                    it->get()->moveTo(fill->get()->getX(),
-                                      fill->get()->getY() + ARROW_HEIGHT -
+        withLastHoldArrow(direction, [&event, &arrowPool, &direction,
+                                      this](HoldArrow* holdArrow) {
+          arrowPool->create([&direction, &arrowPool, this](Arrow* fill) {
+            fill->initialize(ArrowType::HOLD_FILL, direction);
+
+            Arrow* tail = arrowPool->createWithIdGreaterThan(
+                [&fill, &direction](Arrow* tail) {
+                  tail->initialize(ArrowType::HOLD_TAIL, direction);
+                  fill->get()->moveTo(tail->get()->getX(),
+                                      tail->get()->getY() - ARROW_HEIGHT +
                                           HOLD_ARROW_END_OFFSETS[direction]);
-                  },
-                  fill->id);
-              holdArrow->endTime = event->timestamp;
-            });
+                },
+                fill->id);
+
+            if (tail == NULL)
+              arrowPool->discard(fill->id);
+          });
+
+          holdArrow->endTime = event->timestamp;
+        });
       });
 }
 
