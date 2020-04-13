@@ -9,7 +9,7 @@
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
 const u32 HOLD_FILL_TILE = 9;
-const u32 HOLD_END_TILE = 4;
+const u32 HOLD_TAIL_TILE = 4;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_MS = 30;
 
@@ -70,7 +70,7 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
                  GBA_SCREEN_HEIGHT);
 
   if (isHoldFill || isHoldTail) {
-    u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_END_TILE;
+    u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_TAIL_TILE;
     SPRITE_goToFrame(sprite.get(), start + tileOffset);
   } else if (isHoldFakeHead)
     animatePress();

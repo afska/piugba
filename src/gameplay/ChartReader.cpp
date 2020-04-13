@@ -14,7 +14,7 @@
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
-const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
+const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 MINUTE = 60000;
 const int AUDIO_LAG = 170;
@@ -186,7 +186,7 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
                   tail->initialize(ArrowType::HOLD_TAIL, direction);
                   fill->get()->moveTo(tail->get()->getX(),
                                       tail->get()->getY() - ARROW_HEIGHT +
-                                          HOLD_ARROW_END_OFFSETS[direction]);
+                                          HOLD_ARROW_TAIL_OFFSETS[direction]);
                 },
                 fill->id);
 
