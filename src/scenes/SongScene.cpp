@@ -14,7 +14,7 @@ extern "C" {
 #include "player/player.h"
 }
 
-const u32 ARROW_POOL_SIZE = 45;
+const u32 ARROW_POOL_SIZE = 50;  // TODO: Find the best pool size
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -95,8 +95,8 @@ void SongScene::tick(u16 keys) {
 
   updateArrowHolders();
   processKeys(keys);
-  updateArrows();
   updateFakeHeads();
+  updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 }
@@ -150,17 +150,16 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    // HoldState holdState = chartReader->holdState[it->direction];
-    // bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
-    //                   (holdState.endTime == 0 || msecs < holdState.endTime);
+    ArrowDirection direction = it->direction;
+    bool isHoldMode = chartReader->holdState[direction];
+    bool isPressing = arrowHolders[direction]->getIsPressed();
 
     ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, true,
-                 arrowHolders[it->direction]->getIsPressed());
+        it->tick(msecs, chartReader->hasStopped, isHoldMode && isPressing);
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
-    else if (arrowHolders[it->direction]->hasBeenPressedNow())
+    else if (arrowHolders[direction]->hasBeenPressedNow())
       judge->onPress(it);
   });
 }
@@ -177,6 +176,7 @@ void SongScene::updateFakeHeads() {
         });
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
+    chartReader->holdState[i] = isHoldMode;
 
     if (isHoldMode && isPressing) {
       if (!isActive)
@@ -184,8 +184,7 @@ void SongScene::updateFakeHeads() {
     } else if (isActive)
       SPRITE_hide(fakeHeads[i]->get());
 
-    ArrowState arrowState =
-        fakeHeads[i]->tick(msecs, true, false, false);  // TODO: REFACTOR
+    ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
     if (arrowState == ArrowState::OUT)
       fakeHeads[i]->discard();
   }

@@ -22,6 +22,8 @@ const int AUDIO_LAG = 170;
 ChartReader::ChartReader(Chart* chart, Judge* judge) {
   this->chart = chart;
   this->judge = judge;
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    holdState[i] = false;
 
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };

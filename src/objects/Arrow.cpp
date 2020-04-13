@@ -132,14 +132,14 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(u32 msecs,
-                       bool hasStopped,
-                       bool isHoldMode,
-                       bool isKeyPressed) {
+ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isHolding) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
-  if (type == ArrowType::HOLD_FAKE_HEAD) {
+  if (SPRITE_isHidden(sprite.get()))
+    return ArrowState::OUT;
+
+  if (type == ArrowType::HOLD_FAKE_HEAD || isShowingPressAnimation()) {
     u32 diff = abs(msecs - endTime);
 
     if (diff > END_ANIMATION_DELAY_MS) {
@@ -149,47 +149,18 @@ ArrowState Arrow::tick(u32 msecs,
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
       else if (diff < END_ANIMATION_DELAY_MS * 4)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      else
+      else if (type == ArrowType::HOLD_FAKE_HEAD)
         animatePress();
-    }
-
-    return ArrowState::ACTIVE;
-  }
-
-  bool isHidden = SPRITE_isHidden(sprite.get());
-  if (isHidden) {
-    return ArrowState::OUT;  // TODO: REFACTOR
-    if (!isHoldMode || type != ArrowType::HOLD_HEAD)
-      return ArrowState::OUT;
-  }
-
-  if (isShowingPressAnimation()) {
-    u32 diff = abs(msecs - endTime);
-
-    if (diff > END_ANIMATION_DELAY_MS) {
-      if (diff < END_ANIMATION_DELAY_MS * 2)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
-      else if (diff < END_ANIMATION_DELAY_MS * 3)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
-      else if (diff < END_ANIMATION_DELAY_MS * 4)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      /*else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed)
-        animatePress();*/
       else
-        end(type == ArrowType::HOLD_HEAD);
+        end();
     }
-  } else if (type != ArrowType::HOLD_HEAD && isAligned(0) && isPressed &&
-             needsAnimation) {
+  } else if (isAligned(0) && isPressed && needsAnimation) {
     animatePress();
-    /*} else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed) {
-      animatePress();
-    }*/
-  } else if ((type == ArrowType::HOLD_FILL || type == ArrowType::HOLD_TAIL) &&
-             isAligned(ARROW_SPEED) && isKeyPressed) {
+  } else if (type != ArrowType::UNIQUE && isAligned(ARROW_SPEED) && isHolding) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
-    end(type == ArrowType::HOLD_HEAD);
-  } else if (!isHidden && !hasStopped)
+    end();
+  } else if (!hasStopped)
     sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
 
   return ArrowState::ACTIVE;
@@ -199,15 +170,9 @@ Sprite* Arrow::get() {
   return sprite.get();
 }
 
-void Arrow::end(bool resetEndTime) {
+void Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
-  if (resetEndTime)
-    endTime = 0;
-}
-
-void Arrow::end() {
-  end(false);
 }
 
 void Arrow::animatePress() {

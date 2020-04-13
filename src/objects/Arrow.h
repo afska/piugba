@@ -50,7 +50,7 @@ class Arrow : public IPoolable {
   bool getIsPressed();
   void markAsPressed();
 
-  ArrowState tick(u32 msecs, bool isHoldMode, bool hasStopped, bool isPressed);
+  ArrowState tick(u32 msecs, bool hasStopped, bool isHolding);
   Sprite* get();
 
  private:
@@ -64,7 +64,6 @@ class Arrow : public IPoolable {
   bool isPressed = false;
   bool needsAnimation = false;
 
-  void end(bool resetEndTime);
   void end();
   void animatePress();
   bool isAligned(int offset);

@@ -1,6 +1,7 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
+#include <array>
 #include <functional>
 #include <vector>
 
@@ -20,6 +21,7 @@ class ChartReader {
  public:
   bool hasStopped = false;
   std::vector<std::unique_ptr<HoldArrow>> holdArrows;
+  std::array<bool, ARROWS_TOTAL> holdState;
 
   ChartReader(Chart* chart, Judge* judge);
 
