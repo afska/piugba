@@ -38,6 +38,18 @@ bool ChartReader::update(u32* msecs, ObjectPool<Arrow>* arrowPool) {
   return hasChanged;
 };
 
+void ChartReader::withNextHoldArrow(ArrowDirection direction,
+                                    std::function<void(HoldArrow*)> action) {
+  for (auto& holdArrow : holdArrows) {
+    if (holdArrow->direction != direction)
+      continue;
+
+    action(holdArrow.get());
+
+    return;
+  }
+}
+
 bool ChartReader::animateBpm(int msecsWithOffset) {
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000
@@ -158,23 +170,19 @@ void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
 void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
   forEachDirection(
       event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        for (auto& holdArrow : holdArrows) {
-          if (holdArrow->direction != direction)
-            continue;
-
-          Arrow* fill = holdArrow->lastFill;
-          arrowPool->createWithIdGreaterThan(
-              [&fill, &direction](Arrow* it) {
-                it->initialize(ArrowType::HOLD_TAIL, direction);
-                it->get()->moveTo(fill->get()->getX(),
-                                  fill->get()->getY() + ARROW_HEIGHT -
-                                      HOLD_ARROW_END_OFFSETS[direction]);
-              },
-              fill->id);
-          holdArrow->endTime = event->timestamp;
-
-          break;
-        }
+        withNextHoldArrow(
+            direction, [&event, &arrowPool, &direction](HoldArrow* holdArrow) {
+              Arrow* fill = holdArrow->lastFill;
+              arrowPool->createWithIdGreaterThan(
+                  [&fill, &direction](Arrow* it) {
+                    it->initialize(ArrowType::HOLD_TAIL, direction);
+                    it->get()->moveTo(fill->get()->getX(),
+                                      fill->get()->getY() + ARROW_HEIGHT -
+                                          HOLD_ARROW_END_OFFSETS[direction]);
+                  },
+                  fill->id);
+              holdArrow->endTime = event->timestamp;
+            });
       });
 }
 
@@ -210,15 +218,13 @@ void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
 
   if (hasChanged) {
     for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-      for (auto& holdArrow : holdArrows) {
-        if (holdArrow->direction != static_cast<ArrowDirection>(i))
-          continue;
+      auto direction = static_cast<ArrowDirection>(i);
 
-        if (msecs >= holdArrow->startTime)
-          judge->onHoldTick(static_cast<ArrowDirection>(i));
-
-        break;
-      }
+      withNextHoldArrow(direction,
+                        [&msecs, &direction, this](HoldArrow* holdArrow) {
+                          if (msecs >= holdArrow->startTime)
+                            judge->onHoldTick(direction);
+                        });
     }
   }
 

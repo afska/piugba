@@ -96,6 +96,7 @@ void SongScene::tick(u16 keys) {
   updateArrowHolders();
   processKeys(keys);
   updateArrows();
+  updateFakeHeads();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 }
@@ -162,9 +163,12 @@ void SongScene::updateArrows() {
     else if (arrowHolders[it->direction]->hasBeenPressedNow())
       judge->onPress(it);
   });
+}
 
+void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
+
     /*HoldState holdState = chartReader->holdState[direction];
     bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
                       (holdState.endTime == 0 || msecs < holdState.endTime);*/
