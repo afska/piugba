@@ -156,13 +156,10 @@ ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isPressing) {
     }
   } else if (isAligned(0) && isPressed && needsAnimation) {
     animatePress();
-  } else if (type == ArrowType::HOLD_HEAD &&
+  } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
              get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_TAIL &&
-             get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
-    end();
-  } else if (type != ArrowType::UNIQUE && isAligned(ARROW_SPEED) &&
+  } else if (type == ArrowType::HOLD_FILL && isAligned(ARROW_SPEED) &&
              isPressing) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
