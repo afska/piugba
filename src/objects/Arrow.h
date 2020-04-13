@@ -29,6 +29,7 @@ const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_CORNER_MARGIN_Y = 15;
 const u32 ARROW_HEIGHT = 16;
 const u32 ARROW_MARGIN = ARROW_HEIGHT + 2;
+const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
 class Arrow : public IPoolable {
  public:

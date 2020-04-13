@@ -22,7 +22,7 @@ Arrow::Arrow(u32 id) {
                .buildPtr();
   sprite->enabled = false;
 
-  if (id > 0)
+  if (id != ARROW_TILEMAP_LOADING_ID)
     SPRITE_reuseTiles(sprite.get());
 
   this->id = id;
@@ -66,16 +66,15 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   sprite->enabled = true;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 isHoldFakeHead ? ARROW_CORNER_MARGIN_Y : GBA_SCREEN_HEIGHT);
+                 GBA_SCREEN_HEIGHT);
 
   if (isHoldFill || isHoldTail) {
     u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_END_TILE;
     SPRITE_goToFrame(sprite.get(), start + tileOffset);
-  } else
-    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
-
-  if (isHoldFakeHead)
+  } else if (isHoldFakeHead)
     animatePress();
+  else
+    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
@@ -159,10 +158,10 @@ ArrowState Arrow::tick(u32 msecs,
 
   bool isHidden = SPRITE_isHidden(sprite.get());
   if (isHidden) {
+    return ArrowState::OUT;  // TODO: REFACTOR
     if (!isHoldMode || type != ArrowType::HOLD_HEAD)
       return ArrowState::OUT;
   }
-  // TODO: Anda una sola vez
 
   if (isShowingPressAnimation()) {
     u32 diff = abs(msecs - endTime);
@@ -174,16 +173,17 @@ ArrowState Arrow::tick(u32 msecs,
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
       else if (diff < END_ANIMATION_DELAY_MS * 4)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed)
-        animatePress();
+      /*else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed)
+        animatePress();*/
       else
         end(type == ArrowType::HOLD_HEAD);
     }
   } else if (type != ArrowType::HOLD_HEAD && isAligned(0) && isPressed &&
              needsAnimation) {
     animatePress();
-  } else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed) {
-    animatePress();
+    /*} else if (type == ArrowType::HOLD_HEAD && isHoldMode && isKeyPressed) {
+      animatePress();
+    }*/
   } else if ((type == ArrowType::HOLD_FILL || type == ArrowType::HOLD_TAIL) &&
              isAligned(ARROW_SPEED) && isKeyPressed) {
     end();

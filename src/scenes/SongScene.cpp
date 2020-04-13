@@ -37,6 +37,9 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(lifeBar->get());
   score->render(&sprites);
 
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    sprites.push_back(fakeHeads[i]->get());
+
   arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
@@ -129,14 +132,13 @@ void SongScene::setUpArrows() {
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-    auto direction = static_cast<ArrowDirection>(i);
+    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
+        new ArrowHolder(static_cast<ArrowDirection>(i))});
 
-    arrowHolders.push_back(
-        std::unique_ptr<ArrowHolder>{new ArrowHolder(direction)});
-
-    fakeHeads.push_back(arrowPool->create([&direction](Arrow* it) {
-      it->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
-    }));
+    auto fakeHead =
+        std::unique_ptr<Arrow>{new Arrow(ARROW_TILEMAP_LOADING_ID + i)};
+    SPRITE_hide(fakeHead->get());
+    fakeHeads.push_back(std::move(fakeHead));
   }
 }
 
@@ -151,14 +153,36 @@ void SongScene::updateArrows() {
     bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
                       (holdState.endTime == 0 || msecs < holdState.endTime);
 
-    auto arrowState = it->tick(msecs, chartReader->hasStopped, isHoldMode,
-                               arrowHolders[it->direction]->getIsPressed());
+    ArrowState arrowState =
+        it->tick(msecs, chartReader->hasStopped, isHoldMode,
+                 arrowHolders[it->direction]->getIsPressed());
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
     else if (arrowHolders[it->direction]->hasBeenPressedNow())
       judge->onPress(it);
   });
+
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+    HoldState holdState = chartReader->holdState[direction];
+    bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
+                      (holdState.endTime == 0 || msecs < holdState.endTime);
+    bool isPressing = arrowHolders[direction]->getIsPressed();
+    bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
+
+    // if (i == 2)
+    //   LOG(isHoldMode ? 10 : 0);
+    if (isHoldMode && isPressing) {
+      if (!isActive)
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
+    } else if (isActive)
+      SPRITE_hide(fakeHeads[i]->get());
+
+    ArrowState arrowState = fakeHeads[i]->tick(msecs, true, false, false);
+    if (arrowState == ArrowState::OUT)
+      fakeHeads[i]->discard();
+  }
 }
 
 void SongScene::processKeys(u16 keys) {

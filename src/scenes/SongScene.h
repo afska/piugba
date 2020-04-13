@@ -39,7 +39,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  std::vector<Arrow*> fakeHeads;
+  std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   u32 msecs = 0;
 
