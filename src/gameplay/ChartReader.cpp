@@ -128,35 +128,50 @@ void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
   std::vector<Arrow*> arrows;
 
   forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
-    arrows.push_back(arrowPool->create([&direction](Arrow* it) {
+    arrowPool->create([&arrows, &direction](Arrow* it) {
       it->initialize(ArrowType::UNIQUE, direction);
-    }));
+      arrows.push_back(it);
+    });
   });
 
   connectArrows(arrows);
 }
 
 void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(event->data, [&event, &arrowPool,
-                                 this](ArrowDirection direction) {
-    holdArrows->create([event, arrowPool, &direction](HoldArrow* holdArrow) {
-      Arrow* head = arrowPool->create([&direction](Arrow* it) {
-        it->initialize(ArrowType::HOLD_HEAD, direction);
-      });
+  forEachDirection(
+      event->data, [&event, &arrowPool, this](ArrowDirection direction) {
+        holdArrows->create(
+            [event, arrowPool, &direction, this](HoldArrow* holdArrow) {
+              Arrow* head = arrowPool->create([&direction](Arrow* it) {
+                it->initialize(ArrowType::HOLD_HEAD, direction);
+              });
 
-      holdArrow->direction = direction;
-      holdArrow->startTime = event->timestamp;
-      holdArrow->endTime = 0;
-      holdArrow->lastFill = arrowPool->createWithIdGreaterThan(
-          [&direction, &head](Arrow* it) {
-            it->initialize(ArrowType::HOLD_FILL, direction);
-            it->get()->moveTo(head->get()->getX(),
-                              head->get()->getY() + ARROW_HEIGHT -
-                                  HOLD_ARROW_FILL_OFFSETS[direction]);
-          },
-          head->id);
-    });
-  });
+              if (head == NULL) {
+                holdArrows->discard(holdArrow->id);
+                return;
+              }
+
+              Arrow* fill = arrowPool->createWithIdGreaterThan(
+                  [&direction, &head](Arrow* it) {
+                    it->initialize(ArrowType::HOLD_FILL, direction);
+                    it->get()->moveTo(head->get()->getX(),
+                                      head->get()->getY() + ARROW_HEIGHT -
+                                          HOLD_ARROW_FILL_OFFSETS[direction]);
+                  },
+                  head->id);
+
+              if (fill == NULL) {
+                arrowPool->discard(head->id);
+                holdArrows->discard(holdArrow->id);
+                return;
+              }
+
+              holdArrow->direction = direction;
+              holdArrow->startTime = event->timestamp;
+              holdArrow->endTime = 0;
+              holdArrow->lastFill = fill;
+            });
+      });
 }
 
 void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
@@ -194,13 +209,13 @@ void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         it->initialize(ArrowType::HOLD_FILL, direction);
       });
 
-      holdArrow->lastFill = fill;
+      if (fill != NULL)
+        holdArrow->lastFill = fill;
     }
   });
 }
 
 void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
-  // TODO: Understand tickCount
   int tick = Div(msecsWithOffset * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 

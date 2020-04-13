@@ -29,6 +29,7 @@ Arrow::Arrow(u32 id) {
 }
 
 void Arrow::discard() {
+  SPRITE_hide(get());
   sprite->enabled = false;
 }
 
