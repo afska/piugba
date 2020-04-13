@@ -17,7 +17,7 @@
   (TextStream::instance().setText(std::to_string(NUM).c_str(), 0, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
 
-enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL };
+enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };
 enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
 

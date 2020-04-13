@@ -128,9 +128,16 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i))});
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+
+    arrowHolders.push_back(
+        std::unique_ptr<ArrowHolder>{new ArrowHolder(direction)});
+
+    fakeHeads.push_back(arrowPool->create([&direction](Arrow* it) {
+      it->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
+    }));
+  }
 }
 
 void SongScene::updateArrowHolders() {
@@ -179,5 +186,6 @@ void SongScene::unload() {
 
 SongScene::~SongScene() {
   arrowHolders.clear();
+  fakeHeads.clear();
   Song_free(song);
 }

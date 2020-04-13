@@ -35,6 +35,7 @@ void Arrow::discard() {
 void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isHoldTail = type == ArrowType::HOLD_TAIL;
+  bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
   u32 start = 0;
   bool flip = false;
@@ -65,13 +66,16 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   sprite->enabled = true;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 GBA_SCREEN_HEIGHT);
+                 isHoldFakeHead ? ARROW_CORNER_MARGIN_Y : GBA_SCREEN_HEIGHT);
 
   if (isHoldFill || isHoldTail) {
     u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_END_TILE;
     SPRITE_goToFrame(sprite.get(), start + tileOffset);
   } else
     sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
+
+  if (isHoldFakeHead)
+    animatePress();
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
@@ -135,6 +139,23 @@ ArrowState Arrow::tick(u32 msecs,
                        bool isKeyPressed) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
+
+  if (type == ArrowType::HOLD_FAKE_HEAD) {
+    u32 diff = abs(msecs - endTime);
+
+    if (diff > END_ANIMATION_DELAY_MS) {
+      if (diff < END_ANIMATION_DELAY_MS * 2)
+        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
+      else if (diff < END_ANIMATION_DELAY_MS * 3)
+        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
+      else if (diff < END_ANIMATION_DELAY_MS * 4)
+        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
+      else
+        animatePress();
+    }
+
+    return ArrowState::ACTIVE;
+  }
 
   bool isHidden = SPRITE_isHidden(sprite.get());
   if (isHidden) {
