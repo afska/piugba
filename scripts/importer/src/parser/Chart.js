@@ -1,7 +1,6 @@
 const Events = require("./Events");
 const _ = require("lodash");
 
-// TODO: Add SET_TEMPO at the beggining
 module.exports = class Chart {
   constructor(header, content) {
     this.header = header;
