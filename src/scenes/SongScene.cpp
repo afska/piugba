@@ -95,8 +95,8 @@ void SongScene::tick(u16 keys) {
 
   updateArrowHolders();
   processKeys(keys);
-  updateArrows();
   updateFakeHeads();
+  updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 }
@@ -152,17 +152,9 @@ void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
-    bool isHoldMode = false;
 
     ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, isPressing, isHoldMode);
-
-    bool isFakeHeadOn = !SPRITE_isHidden(fakeHeads[direction]->get());
-    if (isHoldMode && isPressing) {
-      if (!isFakeHeadOn)
-        fakeHeads[direction]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
-    } else if (isFakeHeadOn)
-      SPRITE_hide(fakeHeads[direction]->get());
+        it->tick(msecs, chartReader->hasStopped, isPressing);
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
@@ -173,8 +165,29 @@ void SongScene::updateArrows() {
 
 void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+
     bool isHoldMode = false;
-    fakeHeads[i]->tick(msecs, false, false, isHoldMode);
+    chartReader->withNextHoldArrow(
+        direction, [&isHoldMode, this](HoldArrow* holdArrow) {
+          isHoldMode = msecs >= holdArrow->startTime &&
+                       (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
+        });
+    bool isPressing = arrowHolders[direction]->getIsPressed();
+    bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
+
+    bool hidingNow = false;
+    if (isHoldMode && isPressing) {
+      if (!isActive)
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
+    } else if (isActive) {
+      hidingNow = true;
+      SPRITE_hide(fakeHeads[i]->get());
+    }
+
+    ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
+    if (arrowState == ArrowState::OUT && !hidingNow)
+      fakeHeads[i]->discard();
   }
 }
 
