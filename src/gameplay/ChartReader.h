@@ -1,6 +1,7 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
+#include <array>
 #include <functional>
 #include <vector>
 
