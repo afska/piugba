@@ -17,7 +17,6 @@ const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 MINUTE = 60000;
-const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
 
 ChartReader::ChartReader(Chart* chart, Judge* judge) {
