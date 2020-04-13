@@ -9,6 +9,10 @@
 
 #include "IPoolable.h"
 
+inline void CRASH() {
+  // *((u32*)NULL) = 1;
+}
+
 template <class T>
 struct PooledObject {
  public:
@@ -36,6 +40,7 @@ class ObjectPool {
       }
     }
 
+    CRASH();
     return NULL;
   }
 
@@ -48,6 +53,7 @@ class ObjectPool {
       }
     }
 
+    CRASH();
     return NULL;
   }
 
@@ -60,6 +66,7 @@ class ObjectPool {
       }
     }
 
+    CRASH();
     return NULL;
   }
 
