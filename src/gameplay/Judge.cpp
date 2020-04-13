@@ -48,18 +48,16 @@ void Judge::onOut(Arrow* arrow) {
 }
 
 void Judge::onHoldTick(ArrowDirection direction) {
-  score->update(arrowHolders->at(direction)->getIsPressed()
-                    ? FeedbackType::PERFECT
-                    : FeedbackType::MISS);
+  updateScore(arrowHolders->at(direction)->getIsPressed()
+                  ? FeedbackType::PERFECT
+                  : FeedbackType::MISS);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
   if (result != FeedbackType::UNKNOWN) {
-    bool isAlive = score->update(result);
-    if (!isAlive)
-      this->onStageBreak();
+    updateScore(result);
 
     switch (result) {
       case FeedbackType::MISS:
@@ -77,4 +75,10 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   }
 
   return result;
+}
+
+void Judge::updateScore(FeedbackType result) {
+  bool isAlive = score->update(result);
+  if (!isAlive)
+    this->onStageBreak();
 }

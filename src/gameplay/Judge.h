@@ -26,6 +26,7 @@ class Judge {
   std::function<void()> onStageBreak;
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
+  void updateScore(FeedbackType result);
 };
 
 #endif  // JUDGE_H

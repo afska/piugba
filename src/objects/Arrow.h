@@ -13,7 +13,8 @@
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
-#define LOG(NUM) (log_text(std::to_string(NUM).c_str()))
+#define LOG(NUM) \
+  (TextStream::instance().setText(std::to_string(NUM).c_str(), 0, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL };
