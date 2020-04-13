@@ -178,14 +178,17 @@ void SongScene::updateFakeHeads() {
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
     chartReader->holdState[i] = isHoldMode;
 
+    bool hidingNow = false;
     if (isHoldMode && isPressing) {
       if (!isActive)
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
-    } else if (isActive)
+    } else if (isActive) {
+      hidingNow = true;
       SPRITE_hide(fakeHeads[i]->get());
+    }
 
     ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
-    if (arrowState == ArrowState::OUT)
+    if (arrowState == ArrowState::OUT && !hidingNow)
       fakeHeads[i]->discard();
   }
 }
