@@ -4,12 +4,14 @@
 #include <functional>
 
 #include "objects/Arrow.h"
+#include "objects/ArrowHolder.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
 class Judge {
  public:
   Judge(ObjectPool<Arrow>* arrowPool,
+        std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
         Score* score,
         std::function<void()> onStageBreak);
 
@@ -19,6 +21,7 @@ class Judge {
 
  private:
   ObjectPool<Arrow>* arrowPool;
+  std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;
   Score* score;
   std::function<void()> onStageBreak;
 

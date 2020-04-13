@@ -6,9 +6,11 @@ const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
+             std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
              Score* score,
              std::function<void()> onStageBreak) {
   this->arrowPool = arrowPool;
+  this->arrowHolders = arrowHolders;
   this->score = score;
   this->onStageBreak = onStageBreak;
 }
@@ -46,7 +48,9 @@ void Judge::onOut(Arrow* arrow) {
 }
 
 void Judge::onHoldTick(ArrowDirection direction) {
-  score->update(FeedbackType::PERFECT);  // TODO: Implement
+  score->update(arrowHolders->at(direction)->getIsPressed()
+                    ? FeedbackType::PERFECT
+                    : FeedbackType::MISS);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {

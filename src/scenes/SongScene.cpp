@@ -58,8 +58,8 @@ void SongScene::load() {
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
-  judge =
-      std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
+  judge = std::unique_ptr<Judge>(
+      new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         IFNOTTEST {
           unload();
           engine->transitionIntoScene(new StageBreakScene(engine),
