@@ -44,15 +44,18 @@ bool ChartReader::update(u32* msecs, ObjectPool<Arrow>* arrowPool) {
 
 void ChartReader::withNextHoldArrow(ArrowDirection direction,
                                     std::function<void(HoldArrow*)> action) {
-  holdArrows->forEachActiveWithBreak(
-      [&direction, &action, this](HoldArrow* holdArrow) {
+  HoldArrow* min = NULL;
+  holdArrows->forEachActive(
+      [&direction, &action, &min, this](HoldArrow* holdArrow) {
         if (holdArrow->direction != direction)
-          return true;
+          return;
 
-        action(holdArrow);
-
-        return false;
+        if (min == NULL || holdArrow->startTime < min->startTime)
+          min = holdArrow;
       });
+
+  if (min != NULL)
+    action(min);
 }
 
 bool ChartReader::animateBpm(int msecsWithOffset) {
@@ -210,8 +213,6 @@ void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
 
       holdArrow->lastFill = fill;
     }
-
-    return;
   });
 }
 

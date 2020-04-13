@@ -91,13 +91,6 @@ class ObjectPool {
         action(it->object);
   }
 
-  void forEachActiveWithBreak(std::function<bool(T*)> action) {
-    for (auto& it : objects)
-      if (it->isActive)
-        if (!action(it->object))
-          break;
-  }
-
   ~ObjectPool() {
     for (auto& it : objects) {
       delete it->object;
