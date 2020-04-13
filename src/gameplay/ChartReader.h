@@ -19,10 +19,11 @@ typedef struct {
 class ChartReader {
  public:
   bool hasStopped = false;
+  std::array<HoldState, ARROWS_TOTAL> holdState;
 
   ChartReader(Chart* chart, Judge* judge);
 
-  bool update(u32 msecs, ObjectPool<Arrow>* arrowPool);
+  bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
 
  private:
   Chart* chart;
@@ -36,15 +37,14 @@ class ChartReader {
   int lastTick = 0;
   u32 stopStart = 0;
   u32 stopEnd = 0;
-  std::array<HoldState, ARROWS_TOTAL> holdState;
 
-  bool animateBpm(u32 msecs);
+  bool animateBpm(int msecsWithOffset);
   void processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool);
   void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
   void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool);
-  void processHoldTicks(u32 msecs);
+  void processHoldTicks(u32 msecs, int msecsWithOffset);
   void connectArrows(std::vector<Arrow*>& arrows);
   void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
 };

@@ -80,8 +80,8 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  msecs = PlaybackState.msecs;
-  bool isNewBeat = chartReader->update(msecs, arrowPool.get());
+  this->msecs = PlaybackState.msecs;
+  bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
@@ -140,7 +140,11 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    auto arrowState = it->tick(msecs, chartReader->hasStopped,
+    HoldState holdState = chartReader->holdState[it->direction];
+    bool isHoldMode = holdState.isHolding && msecs >= holdState.startTime &&
+                      (holdState.endTime == 0 || msecs < holdState.endTime);
+
+    auto arrowState = it->tick(msecs, chartReader->hasStopped, isHoldMode,
                                arrowHolders[it->direction]->getIsPressed());
 
     if (arrowState == ArrowState::OUT)

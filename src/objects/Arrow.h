@@ -7,7 +7,7 @@
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
-#define TEST_MODE false
+#define TEST_MODE true
 #define KEYTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
@@ -49,7 +49,7 @@ class Arrow : public IPoolable {
   bool getIsPressed();
   void markAsPressed();
 
-  ArrowState tick(u32 msecs, bool hasStopped, bool isPressed);
+  ArrowState tick(u32 msecs, bool isHoldMode, bool hasStopped, bool isPressed);
   Sprite* get();
 
  private:
@@ -63,9 +63,10 @@ class Arrow : public IPoolable {
   bool isPressed = false;
   bool needsAnimation = false;
 
+  void end(bool resetEndTime);
   void end();
   void animatePress();
-  bool isAligned();
+  bool isAligned(int offset);
   bool isShowingPressAnimation();
 };
 

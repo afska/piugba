@@ -58,7 +58,7 @@ void ArrowHolder::setIsPressed(bool isPressed) {
   this->isPressed = isPressed;
 
   this->isNewPressEvent = isNewPressEvent;
-  IFTEST this->isNewPressEvent = isPressed;
+  IFKEYTEST this->isNewPressEvent = isPressed;
 }
 
 void ArrowHolder::tick() {
