@@ -43,7 +43,22 @@ class Arrow : public IPoolable {
 
   void initialize(ArrowType type, ArrowDirection direction);
   void setSiblingId(int siblingId);
-  void forAll(ObjectPool<Arrow>* arrowPool, std::function<void(Arrow*)> func);
+
+  template <typename F>
+  void forAll(ObjectPool<Arrow>* arrowPool, F func) {
+    func(this);
+
+    if (siblingId < 0)
+      return;
+
+    u32 currentId = siblingId;
+    do {
+      Arrow* current = arrowPool->getByIndex(currentId);
+      currentId = current->siblingId;
+      func(current);
+    } while (currentId != id);
+  }
+
   FeedbackType getResult(FeedbackType partialResult,
                          ObjectPool<Arrow>* arrowPool);
   void press();

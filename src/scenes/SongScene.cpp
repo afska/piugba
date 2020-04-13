@@ -14,7 +14,7 @@ extern "C" {
 #include "player/player.h"
 }
 
-const u32 ARROW_POOL_SIZE = 45;  // TODO: OPTIMIZE
+const u32 ARROW_POOL_SIZE = 45;
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,

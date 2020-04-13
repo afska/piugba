@@ -19,10 +19,38 @@ class ChartReader {
   ChartReader(Chart* chart, Judge* judge);
 
   bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
-  void withNextHoldArrow(ArrowDirection direction,
-                         std::function<void(HoldArrow*)> action);
-  void withLastHoldArrow(ArrowDirection direction,
-                         std::function<void(HoldArrow*)> action);
+
+  template <typename F>
+  void withNextHoldArrow(ArrowDirection direction, F action) {
+    HoldArrow* min = NULL;
+    holdArrows->forEachActive(
+        [&direction, &action, &min, this](HoldArrow* holdArrow) {
+          if (holdArrow->direction != direction)
+            return;
+
+          if (min == NULL || holdArrow->startTime < min->startTime)
+            min = holdArrow;
+        });
+
+    if (min != NULL)
+      action(min);
+  }
+
+  template <typename F>
+  void withLastHoldArrow(ArrowDirection direction, F action) {
+    HoldArrow* max = NULL;
+    holdArrows->forEachActive(
+        [&direction, &action, &max, this](HoldArrow* holdArrow) {
+          if (holdArrow->direction != direction)
+            return;
+
+          if (max == NULL || holdArrow->startTime > max->startTime)
+            max = holdArrow;
+        });
+
+    if (max != NULL)
+      action(max);
+  }
 
  private:
   Chart* chart;
@@ -45,7 +73,24 @@ class ChartReader {
   void processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool);
   void processHoldTicks(u32 msecs, int msecsWithOffset);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void forEachDirection(u8 data, std::function<void(ArrowDirection)> action);
+
+  template <typename F>
+  void forEachDirection(u8 data, F action) {
+    if (data & EVENT_ARROW_DOWNLEFT)
+      action(ArrowDirection::DOWNLEFT);
+
+    if (data & EVENT_ARROW_UPLEFT)
+      action(ArrowDirection::UPLEFT);
+
+    if (data & EVENT_ARROW_CENTER)
+      action(ArrowDirection::CENTER);
+
+    if (data & EVENT_ARROW_UPRIGHT)
+      action(ArrowDirection::UPRIGHT);
+
+    if (data & EVENT_ARROW_DOWNRIGHT)
+      action(ArrowDirection::DOWNRIGHT);
+  }
 };
 
 #endif  // CHART_READER_H

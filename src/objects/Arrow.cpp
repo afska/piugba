@@ -88,21 +88,6 @@ void Arrow::setSiblingId(int siblingId) {
   this->siblingId = siblingId;
 }
 
-void Arrow::forAll(ObjectPool<Arrow>* arrowPool,
-                   std::function<void(Arrow*)> func) {
-  func(this);
-
-  if (siblingId < 0)
-    return;
-
-  u32 currentId = siblingId;
-  do {
-    Arrow* current = arrowPool->getByIndex(currentId);
-    currentId = current->siblingId;
-    func(current);
-  } while (currentId != id);
-}
-
 FeedbackType Arrow::getResult(FeedbackType partialResult,
                               ObjectPool<Arrow>* arrowPool) {
   this->partialResult = partialResult;

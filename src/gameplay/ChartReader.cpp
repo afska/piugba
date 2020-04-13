@@ -42,38 +42,6 @@ bool ChartReader::update(u32* msecs, ObjectPool<Arrow>* arrowPool) {
   return hasChanged;
 };
 
-void ChartReader::withNextHoldArrow(ArrowDirection direction,
-                                    std::function<void(HoldArrow*)> action) {
-  HoldArrow* min = NULL;
-  holdArrows->forEachActive(
-      [&direction, &action, &min, this](HoldArrow* holdArrow) {
-        if (holdArrow->direction != direction)
-          return;
-
-        if (min == NULL || holdArrow->startTime < min->startTime)
-          min = holdArrow;
-      });
-
-  if (min != NULL)
-    action(min);
-}
-
-void ChartReader::withLastHoldArrow(ArrowDirection direction,
-                                    std::function<void(HoldArrow*)> action) {
-  HoldArrow* max = NULL;
-  holdArrows->forEachActive(
-      [&direction, &action, &max, this](HoldArrow* holdArrow) {
-        if (holdArrow->direction != direction)
-          return;
-
-        if (max == NULL || holdArrow->startTime > max->startTime)
-          max = holdArrow;
-      });
-
-  if (max != NULL)
-    action(max);
-}
-
 bool ChartReader::animateBpm(int msecsWithOffset) {
   // 60000 ms           -> BPM beats
   // msecsWithOffset ms -> x = millis * BPM / 60000
@@ -258,22 +226,4 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   for (u32 i = 0; i < arrows.size(); i++) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
   }
-}
-
-void ChartReader::forEachDirection(u8 data,
-                                   std::function<void(ArrowDirection)> action) {
-  if (data & EVENT_ARROW_DOWNLEFT)
-    action(ArrowDirection::DOWNLEFT);
-
-  if (data & EVENT_ARROW_UPLEFT)
-    action(ArrowDirection::UPLEFT);
-
-  if (data & EVENT_ARROW_CENTER)
-    action(ArrowDirection::CENTER);
-
-  if (data & EVENT_ARROW_UPRIGHT)
-    action(ArrowDirection::UPRIGHT);
-
-  if (data & EVENT_ARROW_DOWNRIGHT)
-    action(ArrowDirection::DOWNRIGHT);
 }

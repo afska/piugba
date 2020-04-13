@@ -23,7 +23,8 @@ struct PooledObject {
 template <class T>
 class ObjectPool {
  public:
-  ObjectPool(u32 size, std::function<T*(u32)> create) {
+  template <typename F>
+  ObjectPool(u32 size, F create) {
     for (u32 i = 0; i < size; i++) {
       PooledObject<T>* pooledObject = new PooledObject<T>;
       pooledObject->object = create(i);
@@ -31,7 +32,8 @@ class ObjectPool {
     }
   }
 
-  T* create(std::function<void(T*)> initialize) {
+  template <typename F>
+  T* create(F initialize) {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
@@ -44,7 +46,8 @@ class ObjectPool {
     return NULL;
   }
 
-  T* createWithIdGreaterThan(std::function<void(T*)> initialize, u32 id) {
+  template <typename F>
+  T* createWithIdGreaterThan(F initialize, u32 id) {
     for (auto& it : objects) {
       if (!it->isActive && it->object->id > id) {
         it->isActive = true;
@@ -57,7 +60,8 @@ class ObjectPool {
     return NULL;
   }
 
-  T* createWithIdLowerThan(std::function<void(T*)> initialize, u32 id) {
+  template <typename F>
+  T* createWithIdLowerThan(F initialize, u32 id) {
     for (auto& it : objects) {
       if (!it->isActive && it->object->id < id) {
         it->isActive = true;
@@ -80,12 +84,14 @@ class ObjectPool {
     objects[index]->isActive = false;
   }
 
-  void forEach(std::function<void(T*)> action) {
+  template <typename F>
+  void forEach(F action) {
     for (auto& it : objects)
       action(it->object);
   }
 
-  void forEachActive(std::function<void(T*)> action) {
+  template <typename F>
+  void forEachActive(F action) {
     for (auto& it : objects)
       if (it->isActive)
         action(it->object);
