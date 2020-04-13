@@ -21,6 +21,8 @@ class ChartReader {
   bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
   void withNextHoldArrow(ArrowDirection direction,
                          std::function<void(HoldArrow*)> action);
+  void withLastHoldArrow(ArrowDirection direction,
+                         std::function<void(HoldArrow*)> action);
 
  private:
   Chart* chart;

@@ -15,7 +15,7 @@
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_END_OFFSETS[] = {7, 8, 8, 8, 7};
-const u32 HOLD_ARROW_POOL_SIZE = 3;
+const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 MINUTE = 60000;
 const u32 BEAT_UNIT = 4;
 const int AUDIO_LAG = 170;
@@ -56,6 +56,22 @@ void ChartReader::withNextHoldArrow(ArrowDirection direction,
 
   if (min != NULL)
     action(min);
+}
+
+void ChartReader::withLastHoldArrow(ArrowDirection direction,
+                                    std::function<void(HoldArrow*)> action) {
+  HoldArrow* max = NULL;
+  holdArrows->forEachActive(
+      [&direction, &action, &max, this](HoldArrow* holdArrow) {
+        if (holdArrow->direction != direction)
+          return;
+
+        if (max == NULL || holdArrow->startTime > max->startTime)
+          max = holdArrow;
+      });
+
+  if (max != NULL)
+    action(max);
 }
 
 bool ChartReader::animateBpm(int msecsWithOffset) {
@@ -178,7 +194,7 @@ void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
 void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
   forEachDirection(
       event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        withNextHoldArrow(
+        withLastHoldArrow(
             direction, [&event, &arrowPool, &direction](HoldArrow* holdArrow) {
               Arrow* fill = holdArrow->lastFill;
               arrowPool->createWithIdGreaterThan(
