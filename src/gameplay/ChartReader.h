@@ -2,7 +2,6 @@
 #define CHART_READER_H
 
 #include <array>
-#include <functional>
 #include <vector>
 
 #include "HoldArrow.h"
