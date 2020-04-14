@@ -87,7 +87,7 @@ module.exports = class Chart {
             return {
               timestamp,
               type,
-              length: Math.round(length),
+              length,
             };
           case Events.STOP_ASYNC:
             const scrollEnabled = data.value > 0;
@@ -100,7 +100,7 @@ module.exports = class Chart {
               return {
                 timestamp,
                 type,
-                length: Math.round(length),
+                length,
               };
             }
 
@@ -117,7 +117,7 @@ module.exports = class Chart {
             return {
               timestamp,
               type,
-              tickcount: Math.round(data.value),
+              tickcount: data.value,
             };
           default:
             throw new Error("unknown_timing_segment");
