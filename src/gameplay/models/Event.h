@@ -3,14 +3,22 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum EventType { NOTE, HOLD_START, HOLD_TAIL, STOP, SET_TEMPO };
-
 #define EVENT_TYPE /*             */ 0b00000111
 #define EVENT_ARROW_DOWNLEFT /*   */ 0b00001000
 #define EVENT_ARROW_UPLEFT /*     */ 0b00010000
 #define EVENT_ARROW_CENTER /*     */ 0b00100000
 #define EVENT_ARROW_UPRIGHT /*    */ 0b01000000
 #define EVENT_ARROW_DOWNRIGHT /*  */ 0b10000000
+
+enum EventType { NOTE, HOLD_START, HOLD_END, SET_TEMPO, SET_TICKCOUNT, STOP };
+const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
+                                EVENT_ARROW_CENTER, EVENT_ARROW_UPRIGHT,
+                                EVENT_ARROW_DOWNRIGHT};
+
+inline bool EVENT_HAS_EXTRA(EventType event) {
+  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+         event == EventType::STOP;
+}
 
 typedef struct {
   u32 timestamp;  // in ms
@@ -20,7 +28,8 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
-  u8 extra;  // not present in note-related events
+  u32 extra;  // not present in note-related events
+  bool handled = false;
 } Event;
 
 #endif  // EVENT_H

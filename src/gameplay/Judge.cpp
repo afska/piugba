@@ -1,20 +1,25 @@
 #include "Judge.h"
 
+#include "models/Event.h"
+
 const u32 OFFSET_MISS = 9;
 const u32 OFFSET_BAD = 7;
 const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
+             std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
              Score* score,
              std::function<void()> onStageBreak) {
   this->arrowPool = arrowPool;
+  this->arrowHolders = arrowHolders;
   this->score = score;
   this->onStageBreak = onStageBreak;
 }
 
 void Judge::onPress(Arrow* arrow) {
-  if (arrow->getIsPressed())
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  if (!isUnique || arrow->getIsPressed())
     return;
 
   int y = arrow->get()->getY();
@@ -33,7 +38,8 @@ void Judge::onPress(Arrow* arrow) {
 }
 
 void Judge::onOut(Arrow* arrow) {
-  if (!arrow->getIsPressed()) {
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  if (isUnique && !arrow->getIsPressed()) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
@@ -43,13 +49,24 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
+void Judge::onHoldTick(u8 arrows) {
+  bool isPressed = true;
+
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    if (arrows & EVENT_ARROW_MASKS[i] && !arrowHolders->at(i)->getIsPressed()) {
+      isPressed = false;
+      break;
+    }
+  }
+
+  updateScore(isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
+}
+
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
   if (result != FeedbackType::UNKNOWN) {
-    bool isAlive = score->update(result);
-    if (!isAlive)
-      this->onStageBreak();
+    updateScore(result);
 
     switch (result) {
       case FeedbackType::MISS:
@@ -67,4 +84,10 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   }
 
   return result;
+}
+
+void Judge::updateScore(FeedbackType result) {
+  bool isAlive = score->update(result);
+  if (!isAlive)
+    this->onStageBreak();
 }

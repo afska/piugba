@@ -1,9 +1,11 @@
 const events = {
   NOTE: 0,
   HOLD_START: 1,
-  HOLD_TAIL: 2,
-  STOP: 3,
-  SET_TEMPO: 4,
+  HOLD_END: 2,
+  SET_TEMPO: 3,
+  SET_TICKCOUNT: 4,
+  STOP: 5,
+  STOP_ASYNC: 15,
 };
 
 module.exports = {
@@ -15,7 +17,7 @@ module.exports = {
       case "2":
         return events.HOLD_START;
       case "3":
-        return events.HOLD_TAIL;
+        return events.HOLD_END;
       default:
         return null;
     }

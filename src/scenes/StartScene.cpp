@@ -4,7 +4,6 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "gameplay/models/Song.h"
-#include "player/PlaybackState.h"
 #include "scenes/SongScene.h"
 
 extern "C" {
@@ -29,8 +28,8 @@ void StartScene::load() {
 
   TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
 
-  TextStream::instance().setText("ARR - Tepris (EASY)", 8, 0);
-  TextStream::instance().setText("B - Tepris (HARD)", 9, 0);
+  TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
+  TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
   TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
 
   TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
@@ -53,11 +52,11 @@ void StartScene::tick(u16 keys) {
       name = (char*)"Don't Bother Me";
       level = 6;
     } else if (keys & KEY_UP) {
-      name = (char*)"Tepris";
-      level = 4;
+      name = (char*)"Witch Doctor";
+      level = 16;
     } else if (keys & KEY_B) {
-      name = (char*)"Tepris";
-      level = 7;
+      name = (char*)"Beat of the War 2";
+      level = 16;
     } else if (keys & KEY_A) {
       name = (char*)"Tepris";
       level = 16;

@@ -4,9 +4,13 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
 
-#include <functional>
+#include <vector>
 
 #include "IPoolable.h"
+
+inline void CRASH() {
+  // *((u32*)NULL) = 1;
+}
 
 template <class T>
 struct PooledObject {
@@ -18,7 +22,8 @@ struct PooledObject {
 template <class T>
 class ObjectPool {
  public:
-  ObjectPool(u32 size, std::function<T*(u32)> create) {
+  template <typename F>
+  ObjectPool(u32 size, F create) {
     for (u32 i = 0; i < size; i++) {
       PooledObject<T>* pooledObject = new PooledObject<T>;
       pooledObject->object = create(i);
@@ -26,7 +31,8 @@ class ObjectPool {
     }
   }
 
-  T* create(std::function<void(T*)> initialize) {
+  template <typename F>
+  inline T* create(F initialize) {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
@@ -35,7 +41,35 @@ class ObjectPool {
       }
     }
 
-    // (*(u8*)NULL) = 1;  // CRASH!
+    CRASH();
+    return NULL;
+  }
+
+  template <typename F>
+  inline T* createWithIdGreaterThan(F initialize, u32 id) {
+    for (auto& it : objects) {
+      if (!it->isActive && it->object->id > id) {
+        it->isActive = true;
+        initialize(it->object);
+        return it->object;
+      }
+    }
+
+    CRASH();
+    return NULL;
+  }
+
+  template <typename F>
+  inline T* createWithIdLowerThan(F initialize, u32 id) {
+    for (auto& it : objects) {
+      if (!it->isActive && it->object->id < id) {
+        it->isActive = true;
+        initialize(it->object);
+        return it->object;
+      }
+    }
+
+    CRASH();
     return NULL;
   }
 
@@ -49,15 +83,17 @@ class ObjectPool {
     objects[index]->isActive = false;
   }
 
-  void forEach(std::function<void(T*)> func) {
+  template <typename F>
+  inline void forEach(F action) {
     for (auto& it : objects)
-      func(it->object);
+      action(it->object);
   }
 
-  void forEachActive(std::function<void(T*)> func) {
+  template <typename F>
+  inline void forEachActive(F action) {
     for (auto& it : objects)
       if (it->isActive)
-        func(it->object);
+        action(it->object);
   }
 
   ~ObjectPool() {

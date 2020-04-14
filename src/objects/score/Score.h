@@ -3,6 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <array>
 #include <vector>
 
 #include "Feedback.h"

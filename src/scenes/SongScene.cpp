@@ -14,7 +14,7 @@ extern "C" {
 #include "player/player.h"
 }
 
-const u32 ARROW_POOL_SIZE = 45;
+const u32 ARROW_POOL_SIZE = 50;
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -27,6 +27,7 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
 }
 
 std::vector<Background*> SongScene::backgrounds() {
+  IFTEST { return {}; }
   return {bg.get()};
 }
 
@@ -35,6 +36,9 @@ std::vector<Sprite*> SongScene::sprites() {
 
   sprites.push_back(lifeBar->get());
   score->render(&sprites);
+
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    sprites.push_back(fakeHeads[i]->get());
 
   arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
 
@@ -51,19 +55,22 @@ void SongScene::load() {
   BACKGROUND3_DISABLE();
 
   setUpPalettes();
-  setUpBackground();
+  IFNOTTEST { setUpBackground(); }
   setUpArrows();
 
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
-  chartReader = std::unique_ptr<ChartReader>(new ChartReader(chart));
-  judge =
-      std::unique_ptr<Judge>(new Judge(arrowPool.get(), score.get(), [this]() {
-        unload();
-        engine->transitionIntoScene(new StageBreakScene(engine),
-                                    new FadeOutScene(2));
+  judge = std::unique_ptr<Judge>(
+      new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
+        IFNOTTEST {
+          unload();
+          engine->transitionIntoScene(new StageBreakScene(engine),
+                                      new FadeOutScene(2));
+        }
       }));
+  chartReader =
+      std::unique_ptr<ChartReader>(new ChartReader(chart, judge.get()));
 }
 
 void SongScene::tick(u16 keys) {
@@ -76,8 +83,8 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  msecs = PlaybackState.msecs;
-  bool isNewBeat = chartReader->update(msecs, arrowPool.get());
+  this->msecs = PlaybackState.msecs;
+  bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
@@ -88,6 +95,7 @@ void SongScene::tick(u16 keys) {
 
   updateArrowHolders();
   processKeys(keys);
+  updateFakeHeads();
   updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
@@ -124,9 +132,15 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowType>(i))});
+        new ArrowHolder(static_cast<ArrowDirection>(i))});
+
+    auto fakeHead =
+        std::unique_ptr<Arrow>{new Arrow(ARROW_TILEMAP_LOADING_ID + i)};
+    SPRITE_hide(fakeHead->get());
+    fakeHeads.push_back(std::move(fakeHead));
+  }
 }
 
 void SongScene::updateArrowHolders() {
@@ -136,13 +150,45 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    auto arrowState = it->tick(msecs);
+    ArrowDirection direction = it->direction;
+    bool isPressing = arrowHolders[direction]->getIsPressed();
+
+    ArrowState arrowState =
+        it->tick(msecs, chartReader->hasStopped, isPressing);
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
-    else if (arrowHolders[it->type]->hasBeenPressedNow())
+    else if (arrowHolders[direction]->hasBeenPressedNow())
       judge->onPress(it);
   });
+}
+
+void SongScene::updateFakeHeads() {
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+
+    bool isHoldMode = false;
+    chartReader->withNextHoldArrow(
+        direction, [&isHoldMode, this](HoldArrow* holdArrow) {
+          isHoldMode = msecs >= holdArrow->startTime &&
+                       (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
+        });
+    bool isPressing = arrowHolders[direction]->getIsPressed();
+    bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
+
+    bool hidingNow = false;
+    if (isHoldMode && isPressing) {
+      if (!isActive)
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
+    } else if (isActive) {
+      hidingNow = true;
+      SPRITE_hide(fakeHeads[i]->get());
+    }
+
+    ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
+    if (arrowState == ArrowState::OUT && !hidingNow)
+      fakeHeads[i]->discard();
+  }
 }
 
 void SongScene::processKeys(u16 keys) {
@@ -152,11 +198,12 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
 
-  IFTEST {
+  IFKEYTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
-        arrowPool->create(
-            [&arrowHolder](Arrow* it) { it->initialize(arrowHolder->type); });
+        arrowPool->create([&arrowHolder](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction);
+        });
   }
 }
 
@@ -169,5 +216,6 @@ void SongScene::unload() {
 
 SongScene::~SongScene() {
   arrowHolders.clear();
+  fakeHeads.clear();
   Song_free(song);
 }

@@ -8,39 +8,35 @@ module.exports = class Chart {
   }
 
   get events() {
-    const bpm = parseFloat(_.first(this.header.bpms).value);
-    const wholeNoteDuration = (MINUTE / bpm) * UNIT;
+    const timingEvents = this._getTimingEvents();
+    const noteEvents = this._getNoteEvents(timingEvents);
 
-    // if (this.header.bpms.length > 1)
-    //   throw new Error("Multiple BPM values are not supported");
-    // TODO: Implement multiple bpm
+    return this._applyOffset(
+      _.sortBy([...timingEvents, ...noteEvents], "timestamp")
+    );
+  }
 
-    const measures = this.content
-      .split(",")
-      .map((it) => it.trim())
-      .filter(_.identity);
-
+  _getNoteEvents(timingEvents) {
+    const measures = this._getMeasures();
     let cursor = 0;
-    const notes = _.flatMap(measures, (measure) => {
+
+    return _.flatMap(measures, (measure) => {
+      // 1 measure = 1 whole note = BEAT_UNIT beats
       const events = measure.split(/\r?\n/);
       const subdivision = 1 / events.length;
-      const duration = subdivision * wholeNoteDuration;
 
-      return _.flatMap(events, (data) => {
-        const timestamp = Math.round(this.header.offset + cursor);
-        cursor += duration;
-
-        const eventsByType = _(data)
-          .split("")
-          .map((eventType, i) => ({ i, eventType }))
-          .groupBy("eventType")
-          .map((events, eventType) => ({
-            type: Events.parse(eventType),
-            arrows: events.map((it) => it.i),
-          }))
-          .values()
-          .filter((it) => it.type != null)
-          .value();
+      return _.flatMap(events, (line) => {
+        const stop = this._getStopByTimestamp(cursor, timingEvents);
+        if (stop && !stop.handled) {
+          stop.handled = true;
+          cursor += stop.length;
+        }
+        const bpm = this._getBpmByTimestamp(cursor, timingEvents);
+        const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
+        const noteDuration = subdivision * wholeNoteLength;
+        const timestamp = cursor;
+        cursor += noteDuration;
+        const eventsByType = this._getEventsByType(line);
 
         return eventsByType.map(({ type, arrows }) => ({
           timestamp,
@@ -49,16 +45,148 @@ module.exports = class Chart {
         }));
       });
     });
+  }
 
-    return [
-      {
-        timestamp: 0,
-        type: Events.SET_TEMPO,
-        bpm: bpm,
-      },
-    ].concat(notes);
+  _getTimingEvents() {
+    const segments = _([
+      [...this.header.stops, ...this.header.delays].map((it) => ({
+        type: Events.STOP,
+        data: it,
+      })),
+      this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.tickcounts.map((it) => ({
+        type: Events.SET_TICKCOUNT,
+        data: it,
+      })),
+      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+    ])
+      .flatten()
+      .sortBy("data.key")
+      .value();
+
+    let currentTimestamp = 0;
+    let currentBeat = 0;
+    let currentBpm = this._getBpmByBeat(0);
+    let currentScrollEnabled = true;
+    let currentScrollTimestamp = 0;
+
+    return _(segments)
+      .map(({ type, data }, i) => {
+        const beat = data.key;
+        const beatLength = this._getBeatLengthByBpm(currentBpm);
+        currentTimestamp += (beat - currentBeat) * beatLength;
+        currentBeat = beat;
+        currentBpm = this._getBpmByBeat(beat);
+        const timestamp = currentTimestamp;
+
+        switch (type) {
+          case Events.STOP:
+            const length = data.value * SECOND;
+            currentTimestamp += length;
+
+            return {
+              timestamp,
+              type,
+              length: Math.round(length),
+            };
+          case Events.STOP_ASYNC:
+            const scrollEnabled = data.value > 0;
+
+            if (scrollEnabled && !currentScrollEnabled) {
+              const length = timestamp - currentScrollTimestamp;
+              currentScrollEnabled = true;
+              currentScrollTimestamp = timestamp;
+
+              return {
+                timestamp,
+                type,
+                length: Math.round(length),
+              };
+            }
+
+            currentScrollEnabled = scrollEnabled;
+            currentScrollTimestamp = timestamp;
+            return null;
+          case Events.SET_TEMPO:
+            return {
+              timestamp,
+              type,
+              bpm: currentBpm,
+            };
+          case Events.SET_TICKCOUNT:
+            return {
+              timestamp,
+              type,
+              tickcount: Math.round(data.value),
+            };
+          default:
+            throw new Error("unknown_timing_segment");
+        }
+      })
+      .compact()
+      .value();
+  }
+
+  _applyOffset(events) {
+    return events.map((it) => ({
+      ...it,
+      timestamp: Math.round(this.header.offset + it.timestamp),
+    }));
+  }
+
+  _getMeasures() {
+    return this.content
+      .split(",")
+      .map((it) => it.trim())
+      .filter(_.identity);
+  }
+
+  _getEventsByType(line) {
+    return _(line)
+      .split("")
+      .map((eventType, i) => ({ i, eventType }))
+      .groupBy("eventType")
+      .map((events, eventType) => ({
+        type: Events.parse(eventType),
+        arrows: events.map((it) => it.i),
+      }))
+      .values()
+      .filter((it) => it.type != null)
+      .value();
+  }
+
+  _getWholeNoteLengthByBpm(bpm) {
+    return this._getBeatLengthByBpm(bpm) * BEAT_UNIT;
+  }
+
+  _getBeatLengthByBpm(bpm) {
+    if (bpm === 0) return 0;
+    return MINUTE / bpm;
+  }
+
+  _getBpmByBeat(beat) {
+    return _.findLast(this.header.bpms, (bpm) => beat >= bpm.key).value;
+  }
+
+  _getBpmByTimestamp(timestamp, timingEvents) {
+    const event = _.findLast(
+      timingEvents,
+      (event) => event.type === Events.SET_TEMPO && timestamp >= event.timestamp
+    );
+
+    return (event && event.bpm) || 0;
+  }
+
+  _getStopByTimestamp(timestamp, timingEvents) {
+    const event = _.findLast(
+      timingEvents,
+      (event) => event.type === Events.STOP && timestamp >= event.timestamp
+    );
+
+    return event && timestamp < event.timestamp + event.length ? event : null;
   }
 };
 
-const MINUTE = 60000;
-const UNIT = 4;
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
+const BEAT_UNIT = 4;

@@ -39,6 +39,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
+  std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   u32 msecs = 0;
 
@@ -47,6 +48,7 @@ class SongScene : public Scene {
   void setUpArrows();
   void updateArrowHolders();
   void updateArrows();
+  void updateFakeHeads();
   void processKeys(u16 keys);
   void unload();
 };

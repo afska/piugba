@@ -31,7 +31,23 @@ module.exports = class Simfile {
       const offset =
         -this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
       const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
-      const header = { name, level, offset, bpms };
+      const tickcounts = this._getSingleMatch(
+        REGEXPS.chart.tickcounts,
+        rawChart
+      );
+      const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
+      const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
+      const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
+      const header = {
+        name,
+        level,
+        offset,
+        bpms,
+        tickcounts,
+        stops,
+        delays,
+        scrolls,
+      };
 
       const notesStart = this.content.indexOf(rawChart) + rawChart.length;
       const rawNotes = this._getSingleMatch(
@@ -77,10 +93,16 @@ const PROPERTY_FLOAT = (name) => ({
 const DICTIONARY = (name) => ({
   exp: PROPERTY(name),
   parse: (content) =>
-    content
+    _(content)
       .split(",")
       .map((it) => it.trim().split("="))
-      .map(([key, value]) => ({ key, value })),
+      .filter((it) => it.length == 2)
+      .map(([key, value]) => ({
+        key: parseFloat(key),
+        value: parseFloat(value),
+      }))
+      .sortBy("key")
+      .value(),
 });
 
 const REGEXPS = {
@@ -98,6 +120,10 @@ const REGEXPS = {
     level: PROPERTY_INT("METER"),
     offset: PROPERTY_FLOAT("OFFSET"),
     bpms: DICTIONARY("BPMS"),
+    tickcounts: DICTIONARY("TICKCOUNTS"),
+    stops: DICTIONARY("STOPS"),
+    delays: DICTIONARY("DELAYS"),
+    scrolls: DICTIONARY("SCROLLS"),
   },
 };
 

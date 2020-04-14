@@ -4,24 +4,24 @@
 
 #include "utils/SpriteUtils.h"
 
-ArrowHolder::ArrowHolder(ArrowType type) {
+ArrowHolder::ArrowHolder(ArrowDirection direction) {
   int start = 0;
   bool flip = false;
-  switch (type) {
-    case ArrowType::DOWNLEFT:
+  switch (direction) {
+    case ArrowDirection::DOWNLEFT:
       start = ARROW_FRAMES * 0;
       break;
-    case ArrowType::UPLEFT:
+    case ArrowDirection::UPLEFT:
       start = ARROW_FRAMES * 1;
       break;
-    case ArrowType::CENTER:
+    case ArrowDirection::CENTER:
       start = ARROW_FRAMES * 2;
       break;
-    case ArrowType::UPRIGHT:
+    case ArrowDirection::UPRIGHT:
       start = ARROW_FRAMES * 1;
       flip = true;
       break;
-    case ArrowType::DOWNRIGHT:
+    case ArrowDirection::DOWNRIGHT:
       start = ARROW_FRAMES * 0;
       flip = true;
       break;
@@ -29,14 +29,14 @@ ArrowHolder::ArrowHolder(ArrowType type) {
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withSize(SIZE_16_16)
-               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * type,
+               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                              ARROW_CORNER_MARGIN_Y)
                .buildPtr();
 
   SPRITE_reuseTiles(sprite.get());
   SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
 
-  this->type = type;
+  this->direction = direction;
   this->start = start;
   this->flip = flip;
 }
@@ -58,7 +58,7 @@ void ArrowHolder::setIsPressed(bool isPressed) {
   this->isPressed = isPressed;
 
   this->isNewPressEvent = isNewPressEvent;
-  IFTEST this->isNewPressEvent = isPressed;
+  IFKEYTEST this->isNewPressEvent = isPressed;
 }
 
 void ArrowHolder::tick() {
