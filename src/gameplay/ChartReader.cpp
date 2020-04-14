@@ -17,6 +17,8 @@ const u32 TIME_NEEDED[] = {0, 2410, 1196, 792, 590};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
+const u32 HOLD_ARROW_TICK_OFFSET_MS = 84;
+//                                  ^ OFFSET_GOOD * msPerFrame = 5 * 16.73322954
 const u32 MINUTE = 60000;
 const int AUDIO_LAG = 180;
 
@@ -234,7 +236,7 @@ void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
 
       withNextHoldArrow(
           direction, [&msecs, &arrows, &direction, this](HoldArrow* holdArrow) {
-            if (msecs >= holdArrow->startTime)
+            if (msecs >= holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
               arrows |= EVENT_ARROW_MASKS[direction];
           });
     }
