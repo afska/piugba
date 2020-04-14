@@ -8,16 +8,17 @@
 /*
   x = x0 + v * t
   ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
-  t = (ARROW_CORNER_MARGIN_Y - GBA_SCREEN_HEIGHT) px / ARROW_SPEED px/frame
-  t = (15 - 160) / 3 = -48.33 frames * 16.73322954 ms/frame = -808,77 frames
+  t = abs(GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y) px / ARROW_SPEED px/frame
+  t = (160 - 15) / 3 = (48.33 frames - 1) * 16.73322954 ms/frame = 792,03 ms
+  (we substract 1 because arrows start moving the same tick they're created)
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
-const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
+const u32 TIME_NEEDED[] = {0, 2410, 1196, 792, 590};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 MINUTE = 60000;
-const int AUDIO_LAG = 170;
+const int AUDIO_LAG = 180;
 
 ChartReader::ChartReader(Chart* chart, Judge* judge) {
   this->chart = chart;
