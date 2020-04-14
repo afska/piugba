@@ -1,7 +1,6 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
-#include <array>
 #include <vector>
 
 #include "HoldArrow.h"
@@ -13,7 +12,6 @@
 class ChartReader {
  public:
   bool hasStopped = false;
-  std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
 
   ChartReader(Chart* chart, Judge* judge);
 
@@ -54,6 +52,7 @@ class ChartReader {
  private:
   Chart* chart;
   Judge* judge;
+  std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 timeNeeded = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
