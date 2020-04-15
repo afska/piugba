@@ -10,6 +10,18 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+static std::vector<std::string> songFileNames;
+
+bool stringEndsWith(const char* str, const char* suffix) {
+  if (!str || !suffix)
+    return false;
+  size_t lenstr = strlen(str);
+  size_t lensuffix = strlen(suffix);
+  if (lensuffix > lenstr)
+    return false;
+  return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 
 std::vector<Background*> StartScene::backgrounds() {
@@ -23,21 +35,35 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
-  TextStream::instance().setText("piuGBA 0.0.2", 0, 0);
+  TextStream::instance().setText("piuGBA 0.0.3", 0, 0);
   TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
 
-  TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
+  // const GBFS_FILE* fs = find_first_gbfs_file(0);
+  // u32 count = gbfs_count_objs(fs);
+  // for (u32 i = 0; i < count; i++) {
+  //   char name[24];
+  //   gbfs_get_nth_obj(fs, i, name, NULL);
+  //   if (stringEndsWith(name, ".pius")) {
+  //     auto fileName = std::string(name);
+  //     fileName = fileName.replace(fileName.length() - 5, 5, "");
+  //     songFileNames.push_back(fileName);
+  //   }
+  // }
 
+  // u32 row = 6;
+  // for (auto& fileName : songFileNames) {
+  //   TextStream::instance().setText(fileName, row, 0);
+  //   row++;
+  // }
+
+  TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
   TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
   TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
   TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
-
   TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
   TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
-
   TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
   TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
-
   TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
 }
 
