@@ -22,10 +22,10 @@ module.exports = class Chart {
 
     return _.flatMap(measures, (measure) => {
       // 1 measure = 1 whole note = BEAT_UNIT beats
-      const events = measure.split(/\r?\n/);
-      const subdivision = 1 / events.length;
+      const lines = this._getMeasureLines(measure);
+      const subdivision = 1 / lines.length;
 
-      return _.flatMap(events, (line) => {
+      return _.flatMap(lines, (line) => {
         const stop = this._getStopByTimestamp(cursor, timingEvents);
         if (stop && !stop.handled) {
           stop.handled = true;
@@ -38,11 +38,14 @@ module.exports = class Chart {
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
-        return eventsByType.map(({ type, arrows }) => ({
-          timestamp,
-          type,
-          arrows: _.range(0, 5).map((id) => arrows.includes(id)),
-        }));
+        return _(eventsByType)
+          .map(({ type, arrows }) => ({
+            timestamp,
+            type,
+            arrows: _.range(0, 5).map((id) => arrows.includes(id)),
+          }))
+          .filter((it) => _.some(it.arrows))
+          .value();
       });
     });
   }
@@ -141,6 +144,14 @@ module.exports = class Chart {
       .filter(_.identity);
   }
 
+  _getMeasureLines(measure) {
+    return measure
+      .split(/\r?\n/)
+      .map((it) => it.replace(/\/\/.*/g, ""))
+      .map((it) => it.trim())
+      .filter((it) => NOTE_DATA.test(it));
+  }
+
   _getEventsByType(line) {
     return _(line)
       .split("")
@@ -190,3 +201,4 @@ module.exports = class Chart {
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
+const NOTE_DATA = /^\d\d\d\d\d$/;
