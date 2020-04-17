@@ -30,7 +30,8 @@ const run = (command, options) =>
   childProcess.execSync(command, { shell: true, ...options });
 
 mkdirp(SONGS_PATH);
-mkdirp(OUTPUT_PATH);
+run(`rm -rf ${OUTPUT_PATH}`);
+mkdirp.sync(OUTPUT_PATH);
 
 fs.readdirSync(SONGS_PATH)
   .map((directory) => {
