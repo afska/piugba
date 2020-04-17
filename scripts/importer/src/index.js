@@ -15,7 +15,7 @@ const COMMAND_AUDIO = (input, output) =>
 const COMMAND_BACKGROUND_1 = (input, output) =>
   `magick "${input}" -resize 240x160\! -colors 255 "${output}"`;
 const COMMAND_BACKGROUND_2 = (input) =>
-  `grit "${input}" -gt -gB8 -mR! -mLs -ftb`;
+  `grit "${input}" -gt -gB8 -mRtpf -mLs -ftb`;
 const COMMAND_BACKGROUND_3 = (tmp1, tmp2) => `rm "${tmp1}" && rm "${tmp2}"`;
 
 const FILE_METADATA = /\.ssc/i;
