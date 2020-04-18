@@ -13,8 +13,8 @@ std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 int main() {
   setUpInterrupts();
   player_init();
-  engine->setScene(new StartScene(engine));
 
+  engine->setScene(new StartScene(engine));
   player_forever([]() { engine->update(); });
 
   return 0;

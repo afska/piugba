@@ -36,8 +36,9 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
-  TextStream::instance().setText("piuGBA 0.0.3", 0, 0);
-  TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
+  engine->disableText();
+  foregroundPalette = NULL;
+  backgroundPalette = NULL;
 
   const GBFS_FILE* fs = find_first_gbfs_file(0);
   u32 backgroundPaletteLength;
@@ -58,7 +59,7 @@ void StartScene::load() {
   bg->useMapScreenBlock(24);
   bg->useCharBlock(0);
 
-  BACKGROUND0_DISABLE();
+  // BACKGROUND0_DISABLE();
   // BACKGROUND1_DISABLE();
   BACKGROUND2_DISABLE();
   BACKGROUND3_DISABLE();
@@ -93,6 +94,34 @@ void StartScene::load() {
 }
 
 void StartScene::tick(u16 keys) {
+  if (i == 0) {
+    i = 1;
+
+    REG_BG0CNT = BG_CBB(3) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
+
+    // Set up palette memory, colors are 15bpp
+    pal_bg_mem[0] = 0x77DF;  // base color (cream)
+    pal_bg_mem[1] = 0x4588;  // blue
+    pal_bg_mem[2] = 127;     // red
+
+    // Set up an 8x8 tile 1
+    for (int line = 0; line < 8; line++) {
+      // update charblock 0, tile 1, line i * 2
+
+      tile8_mem[3][1].data[line * 2] =
+          (1 << 0) + (2 << 8) + (1 << 16) + (2 << 24);
+      //    blue       red        blue        red
+      tile8_mem[3][1].data[line * 2 + 1] =
+          (1 << 0) + (1 << 8) + (2 << 16) + (2 << 24);
+      //    blue       blue        red        red
+    }
+
+    // Set up a map, draw 10 tiles starting from tile 6
+    for (int i = 6; i < 6 + 10; i++)
+      // update screenblock 24, screenblock entry i
+      se_mem[30][i] = 1;  // set tile 1
+  }
+
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     const GBFS_FILE* fs = find_first_gbfs_file(0);
 
