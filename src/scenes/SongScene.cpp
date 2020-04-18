@@ -125,7 +125,7 @@ void SongScene::setUpBackground() {
   bg = std::unique_ptr<Background>(
       new Background(0, backgroundTilesData, backgroundTilesLength,
                      backgroundMapData, backgroundMapLength));
-  bg.get()->useMapScreenBlock(24);
+  bg->useMapScreenBlock(24);
 }
 
 void SongScene::setUpArrows() {

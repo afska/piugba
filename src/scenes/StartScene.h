@@ -19,6 +19,8 @@ class StartScene : public Scene {
   ~StartScene();
 
  private:
+  std::unique_ptr<Background> bg;
+  int i = 0;  // TODO: REMOVE
 };
 
 #endif  // START_SCENE_H

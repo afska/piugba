@@ -5,6 +5,7 @@
 
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
+#include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
@@ -25,7 +26,7 @@ bool stringEndsWith(const char* str, const char* suffix) {
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 
 std::vector<Background*> StartScene::backgrounds() {
-  return {};
+  return {bg.get()};
 }
 
 std::vector<Sprite*> StartScene::sprites() {
@@ -37,6 +38,30 @@ std::vector<Sprite*> StartScene::sprites() {
 void StartScene::load() {
   TextStream::instance().setText("piuGBA 0.0.3", 0, 0);
   TextStream::instance().setText(" con <3 para GameBoyCollectors", 1, 0);
+
+  const GBFS_FILE* fs = find_first_gbfs_file(0);
+  u32 backgroundPaletteLength;
+  auto backgroundPaletteData =
+      (COLOR*)gbfs_get_obj(fs, "test.pal.bin", &backgroundPaletteLength);
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          backgroundPaletteData, backgroundPaletteLength));
+
+  u32 backgroundTilesLength, backgroundMapLength;
+  auto backgroundTilesData =
+      gbfs_get_obj(fs, "test.img.bin", &backgroundTilesLength);
+  auto backgroundMapData =
+      gbfs_get_obj(fs, "test.map.bin", &backgroundMapLength);
+  bg = std::unique_ptr<Background>(
+      new Background(1, backgroundTilesData, backgroundTilesLength,
+                     backgroundMapData, backgroundMapLength));
+  bg->useMapScreenBlock(24);
+  bg->useCharBlock(0);
+
+  BACKGROUND0_DISABLE();
+  // BACKGROUND1_DISABLE();
+  BACKGROUND2_DISABLE();
+  BACKGROUND3_DISABLE();
 
   // const GBFS_FILE* fs = find_first_gbfs_file(0);
   // u32 count = gbfs_count_objs(fs);
@@ -56,15 +81,15 @@ void StartScene::load() {
   //   row++;
   // }
 
-  TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
-  TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
-  TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
-  TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
-  TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
-  TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
-  TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
-  TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
-  TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
+  // TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
+  // TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
+  // TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
+  // TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
+  // TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
+  // TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
+  // TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
+  // TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
+  // TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
 }
 
 void StartScene::tick(u16 keys) {
