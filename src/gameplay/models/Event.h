@@ -21,7 +21,7 @@ inline bool EVENT_HAS_EXTRA(EventType event) {
 }
 
 typedef struct {
-  u32 timestamp;  // in ms
+  int timestamp;  // in ms
   u8 data;
   /* {
         [bits 0-2] type (see EnumType)

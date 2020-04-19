@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-inline u32 as_u32le(u8* data) {
+inline u32 as_le(u8* data) {
   return *data + (*(data + 1) << 8) + (*(data + 2) << 16) + (*(data + 3) << 24);
 }
 
@@ -28,7 +28,14 @@ inline u32 parse_u32le(u8* source, u32* cursor) {
   u8* data = source + *cursor;
   *cursor += sizeof(u32);
 
-  return as_u32le(data);
+  return as_le(data);
+}
+
+inline s32 parse_s32le(u8* source, u32* cursor) {
+  u8* data = source + *cursor;
+  *cursor += sizeof(s32);
+
+  return (s32)as_le(data);
 }
 
 #endif  // PARSE_H

@@ -17,7 +17,7 @@ const u32 TIME_NEEDED[] = {0, 2410, 1196, 792, 590};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
-const u32 HOLD_ARROW_TICK_OFFSET_MS = 84;
+const int HOLD_ARROW_TICK_OFFSET_MS = 84;
 //                                  ^ OFFSET_GOOD * msPerFrame = 5 * 16.73322954
 const u32 MINUTE = 60000;
 const int AUDIO_LAG = 180;
@@ -32,10 +32,10 @@ ChartReader::ChartReader(Chart* chart, Judge* judge) {
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
 
-bool ChartReader::update(u32* msecs, ObjectPool<Arrow>* arrowPool) {
+bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   int msecsWithOffset = (*msecs - lastBpmChange) - chart->offset;
   bool hasChanged = animateBpm(msecsWithOffset);
-  *msecs = max((int)*msecs - AUDIO_LAG, 0);
+  *msecs -= AUDIO_LAG;
 
   processNextEvent(*msecs, arrowPool);
   processHoldArrows(*msecs, arrowPool);
@@ -54,9 +54,9 @@ bool ChartReader::animateBpm(int msecsWithOffset) {
   return hasChanged;
 }
 
-void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   u32 currentIndex = eventIndex;
-  u32 targetMsecs = msecs + timeNeeded;
+  int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
 
   if (hasStopped && msecs >= stopEnd)
@@ -101,7 +101,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
         case EventType::SET_TEMPO:
           if (bpm > 0) {
             lastBeat = -1;
-            lastBpmChange = msecs;
+            lastBpmChange = event->timestamp;
           }
           bpm = event->extra;
           break;
@@ -111,8 +111,7 @@ void ChartReader::processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool) {
           break;
         case EventType::STOP:
           hasStopped = true;
-          stopStart = msecs;
-          stopEnd = msecs + event->extra;
+          stopEnd = msecs + (int)event->extra;
           break;
         default:
           break;
@@ -202,7 +201,7 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
       });
 }
 
-void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
   holdArrows->forEachActive([&msecs, arrowPool, this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
 
@@ -224,7 +223,7 @@ void ChartReader::processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool) {
   });
 }
 
-void ChartReader::processHoldTicks(u32 msecs, int msecsWithOffset) {
+void ChartReader::processHoldTicks(int msecs, int msecsWithOffset) {
   int tick = Div(msecsWithOffset * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 

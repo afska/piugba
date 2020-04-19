@@ -28,8 +28,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
   for (u32 i = 0; i < song->chartCount; i++) {
     auto chart = song->charts + i;
 
-    u8 hasPositiveOffset = parse_u8(data, &cursor);
-    chart->offset = parse_u32le(data, &cursor) * (hasPositiveOffset ? 1 : -1);
+    chart->offset = parse_s32le(data, &cursor);
     chart->difficulty = static_cast<Difficulty>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
 
@@ -39,7 +38,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
     for (u32 j = 0; j < chart->eventCount; j++) {
       auto event = chart->events + j;
 
-      event->timestamp = parse_u32le(data, &cursor);
+      event->timestamp = parse_s32le(data, &cursor);
       event->data = parse_u8(data, &cursor);
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
       if (EVENT_HAS_EXTRA(eventType))

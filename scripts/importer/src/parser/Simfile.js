@@ -25,12 +25,20 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    return this.content.match(REGEXPS.chart.start).map((rawChart) => {
+    const charts = this.content.match(REGEXPS.chart.start).map((rawChart) => {
       const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
-      const offset =
-        -this._getSingleMatch(REGEXPS.chart.offset, rawChart) * SECOND;
-      const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+
+      let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
+      if (!_.isFinite(chartOffset))
+        chartOffset = this._getSingleMatch(REGEXPS.chart.offset);
+      if (!_.isFinite(chartOffset)) chartOffset = 0;
+      const offset = -chartOffset * SECOND;
+
+      let bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+      if (_.isEmpty(bpms)) bpms = this._getSingleMatch(REGEXPS.chart.bpms);
+      if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
+
       const tickcounts = this._getSingleMatch(
         REGEXPS.chart.tickcounts,
         rawChart
@@ -58,6 +66,8 @@ module.exports = class Simfile {
 
       return { header, events };
     });
+
+    return _.sortBy(charts, "header.level");
   }
 
   _getSingleMatch(regexp, content = this.content) {

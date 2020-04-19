@@ -83,7 +83,7 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  this->msecs = PlaybackState.msecs;
+  this->msecs = (int)PlaybackState.msecs;
   bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
 
   if (isNewBeat)

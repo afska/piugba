@@ -139,8 +139,8 @@ void StartScene::tick(u16 keys) {
     u8 level;
 
     if (keys & KEY_SELECT) {
-      name = (char*)"Don't Bother Me";
-      level = 6;
+      name = (char*)"With my Lover";
+      level = 10;
     } else if (keys & KEY_UP) {
       name = (char*)"Witch Doctor";
       level = 16;
