@@ -176,7 +176,10 @@ module.exports = class Chart {
   }
 
   _getBpmByBeat(beat) {
-    return _.findLast(this.header.bpms, (bpm) => beat >= bpm.key).value;
+    const bpm = _.findLast(this.header.bpms, (bpm) => beat >= bpm.key);
+    if (!bpm) return 0;
+
+    return bpm.value;
   }
 
   _getBpmByTimestamp(timestamp, timingEvents) {
