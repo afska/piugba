@@ -98,12 +98,12 @@ void StartScene::tick(u16 keys) {
     REG_BG0CNT = BG_CBB(3) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;
 
     // Set up palette memory, colors are 15bpp
-    pal_bg_mem[0] = 0;      // base color (black)
+    // pal_bg_mem[0] = 0;      // base color (black)
     pal_bg_mem[255] = 127;  // red
 
-    // Set up an 8x8 tile 1
+    // Set up an 8x8 tile 255
     for (int line = 0; line < 8; line++) {
-      // update charblock 0, tile 1, line i * 2
+      // update charblock 3, tile 1, line i * 2
 
       tile8_mem[3][255].data[line * 2] =
           (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
@@ -113,10 +113,10 @@ void StartScene::tick(u16 keys) {
       //    blue       blue        red        red
     }
 
-    // Set up a map, draw 10 tiles starting from tile 6
-    for (int i = 6; i < 6 + 150; i++)
-      // update screenblock 24, screenblock entry i
-      se_mem[31][i] = 255;  // set tile 1
+    // Set up a map, draw 1000 tiles starting from tile 6
+    for (int i = 6; i < 6 + 1000; i++)
+      // update screenblock 31, screenblock entry i
+      se_mem[31][i] = 255;  // set tile 255
 
     REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
     REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight: 1000
