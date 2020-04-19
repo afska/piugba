@@ -7,6 +7,7 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "gameplay/Library.h"
+#include "ui/Highlighter.h"
 
 class SelectionScene : public Scene {
  public:

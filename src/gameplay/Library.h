@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "SongFile.h"
+#include "models/SongFile.h"
 #include "utils/StringUtils.h"
 
 extern "C" {
