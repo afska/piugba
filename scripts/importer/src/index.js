@@ -34,7 +34,7 @@ fs.readdirSync(SONGS_PATH)
     // metadata
     utils.report(
       () => importers.metadata(name, metadataFile, OUTPUT_PATH),
-      "metadata"
+      "charts"
     );
 
     // audio

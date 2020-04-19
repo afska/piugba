@@ -9,8 +9,8 @@ module.exports = {
     }),
   report(action, taskName) {
     try {
-      action();
-      console.log(`  ✔️  ${taskName}`.green);
+      const output = action() || "";
+      console.log(`  ✔️  ${taskName}${output}`.green);
     } catch (e) {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;
