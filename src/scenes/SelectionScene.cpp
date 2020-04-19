@@ -1,4 +1,4 @@
-#include "StartScene.h"
+#include "SelectionScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
@@ -23,19 +23,20 @@ bool stringEndsWith(const char* str, const char* suffix) {
   return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
-StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
+SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
+    : Scene(engine) {}
 
-std::vector<Background*> StartScene::backgrounds() {
+std::vector<Background*> SelectionScene::backgrounds() {
   return {bg.get()};
 }
 
-std::vector<Sprite*> StartScene::sprites() {
+std::vector<Sprite*> SelectionScene::sprites() {
   std::vector<Sprite*> sprites;
 
   return sprites;
 }
 
-void StartScene::load() {
+void SelectionScene::load() {
   engine->disableText();
 
   const GBFS_FILE* fs = find_first_gbfs_file(0);
@@ -91,7 +92,7 @@ void StartScene::load() {
   // TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
 }
 
-void StartScene::tick(u16 keys) {
+void SelectionScene::tick(u16 keys) {
   if (i == 0) {
     i = 1;
 
@@ -177,4 +178,4 @@ void StartScene::tick(u16 keys) {
   }
 }
 
-StartScene::~StartScene() {}
+SelectionScene::~SelectionScene() {}

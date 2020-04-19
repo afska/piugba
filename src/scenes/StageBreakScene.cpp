@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "gameplay/models/Song.h"
-#include "scenes/StartScene.h"
+#include "scenes/SelectionScene.h"
 
 StageBreakScene::StageBreakScene(std::shared_ptr<GBAEngine> engine)
     : Scene(engine) {}
@@ -28,7 +28,8 @@ void StageBreakScene::load() {
 
 void StageBreakScene::tick(u16 keys) {
   if (keys & KEY_ANY && !engine->isTransitioning()) {
-    engine->transitionIntoScene(new StartScene(engine), new FadeOutScene(2));
+    engine->transitionIntoScene(new SelectionScene(engine),
+                                new FadeOutScene(2));
   }
 }
 

@@ -3,8 +3,8 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
+#include "SelectionScene.h"
 #include "StageBreakScene.h"
-#include "StartScene.h"  // TODO: REMOVE
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
@@ -79,7 +79,8 @@ void SongScene::tick(u16 keys) {
 
   if (PlaybackState.hasFinished) {
     unload();
-    engine->transitionIntoScene(new StartScene(engine), new FadeOutScene(2));
+    engine->transitionIntoScene(new SelectionScene(engine),
+                                new FadeOutScene(2));
     return;
   }
 
