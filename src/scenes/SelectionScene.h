@@ -6,7 +6,7 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "gameplay/models/Library.h"
+#include "gameplay/Library.h"
 
 class SelectionScene : public Scene {
  public:
