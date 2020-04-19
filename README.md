@@ -21,6 +21,7 @@ This is a version of PIU for the GBA. It's under development, so don't try to co
   * [node.js >= 10](https://nodejs.org/en): The JS runtime
   * [make](scripts/toolchain/programs/make-3.81.zip): The build automation tool
   * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
+  * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files.
   * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
     * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
 - Add to `~/.bash_profile`:
