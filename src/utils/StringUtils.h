@@ -5,7 +5,7 @@
 
 #include <string>
 
-bool STRING_endsWith(const char* str, const char* suffix) {
+inline bool STRING_endsWith(const char* str, const char* suffix) {
   if (!str || !suffix)
     return false;
   size_t lenstr = strlen(str);
@@ -15,7 +15,7 @@ bool STRING_endsWith(const char* str, const char* suffix) {
   return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
-std::string STRING_removeFromEnd(std::string str, int length) {
+inline std::string STRING_removeFromEnd(std::string str, int length) {
   return str.replace(str.length() - length, length, "");
 }
 

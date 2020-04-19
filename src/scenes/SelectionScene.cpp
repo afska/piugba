@@ -11,7 +11,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-static Library library;
+static const GBFS_FILE* fs = find_first_gbfs_file(0);
+static std::unique_ptr<Library> library{new Library(fs)};
 
 SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
     : Scene(engine) {}
@@ -30,7 +31,6 @@ void SelectionScene::load() {
   // BACKGROUND_enable(true, true, false, false);
   // engine->disableText();
 
-  // const GBFS_FILE* fs = find_first_gbfs_file(0);
   // u32 backgroundPaletteLength;
   // auto backgroundPaletteData =
   //     (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
@@ -49,8 +49,9 @@ void SelectionScene::load() {
   // bg->useMapScreenBlock(24);
   // bg->useCharBlock(0);
 
+  TextStream::instance().setText(std::to_string(library->getCount()), 5, 0);
   u32 row = 6;
-  for (auto& songFile : library.getSongs()) {
+  for (auto& songFile : library->getSongs(0, 0)) {
     TextStream::instance().setText(songFile->getAudioFile(), row, 0);
     row++;
   }
@@ -110,8 +111,6 @@ void SelectionScene::tick(u16 keys) {
   // }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
-    const GBFS_FILE* fs = find_first_gbfs_file(0);
-
     char* name;
     u8 level;
 

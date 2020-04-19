@@ -8,7 +8,7 @@ extern "C" {
 }
 
 void setUpInterrupts();
-std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
 int main() {
   setUpInterrupts();
