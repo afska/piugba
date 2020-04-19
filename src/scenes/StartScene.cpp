@@ -26,7 +26,7 @@ bool stringEndsWith(const char* str, const char* suffix) {
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine) : Scene(engine) {}
 
 std::vector<Background*> StartScene::backgrounds() {
-  return {bg.get()};
+  return {/*bg.get()*/};
 }
 
 std::vector<Sprite*> StartScene::sprites() {
@@ -36,33 +36,33 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
-  engine->disableText();
+  // engine->disableText();
   foregroundPalette = NULL;
   backgroundPalette = NULL;
 
-  const GBFS_FILE* fs = find_first_gbfs_file(0);
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, "test.pal.bin", &backgroundPaletteLength);
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
+  // const GBFS_FILE* fs = find_first_gbfs_file(0);
+  // u32 backgroundPaletteLength;
+  // auto backgroundPaletteData =
+  //     (COLOR*)gbfs_get_obj(fs, "test.pal.bin", &backgroundPaletteLength);
+  // backgroundPalette =
+  //     std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+  //         backgroundPaletteData, backgroundPaletteLength));
 
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData =
-      gbfs_get_obj(fs, "test.img.bin", &backgroundTilesLength);
-  auto backgroundMapData =
-      gbfs_get_obj(fs, "test.map.bin", &backgroundMapLength);
-  bg = std::unique_ptr<Background>(
-      new Background(1, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
-  bg->useMapScreenBlock(24);
-  bg->useCharBlock(0);
+  // u32 backgroundTilesLength, backgroundMapLength;
+  // auto backgroundTilesData =
+  //     gbfs_get_obj(fs, "test.img.bin", &backgroundTilesLength);
+  // auto backgroundMapData =
+  //     gbfs_get_obj(fs, "test.map.bin", &backgroundMapLength);
+  // bg = std::unique_ptr<Background>(
+  //     new Background(1, backgroundTilesData, backgroundTilesLength,
+  //                    backgroundMapData, backgroundMapLength));
+  // bg->useMapScreenBlock(24);
+  // bg->useCharBlock(0);
 
   // BACKGROUND0_DISABLE();
   // BACKGROUND1_DISABLE();
-  BACKGROUND2_DISABLE();
-  BACKGROUND3_DISABLE();
+  // BACKGROUND2_DISABLE();
+  // BACKGROUND3_DISABLE();
 
   // const GBFS_FILE* fs = find_first_gbfs_file(0);
   // u32 count = gbfs_count_objs(fs);
@@ -82,54 +82,55 @@ void StartScene::load() {
   //   row++;
   // }
 
-  // TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
-  // TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
-  // TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
-  // TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
-  // TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
-  // TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
-  // TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
-  // TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
-  // TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
+  TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
+  TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
+  TextStream::instance().setText("B - Beat of the War 2 (16)", 9, 0);
+  TextStream::instance().setText("A - Tepris (CRAZY)", 10, 0);
+  TextStream::instance().setText("L - Beethoven Virus (HARD)", 12, 0);
+  TextStream::instance().setText("R - Beethoven Virus (CRAZY)", 13, 0);
+  TextStream::instance().setText("IZQ - Run to You (HARD)", 15, 0);
+  TextStream::instance().setText("DER - Run to You (CRAZY)", 16, 0);
+  TextStream::instance().setText("START - Extravaganza (CRAZY)", 18, 0);
 }
 
 void StartScene::tick(u16 keys) {
-  if (i == 0) {
-    i = 1;
+  //   if (i == 0) {
+  //     i = 1;
 
-    REG_BG0CNT = BG_CBB(3) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;
+  //     REG_BG0CNT = BG_CBB(3) | BG_SBB(31) | BG_8BPP | BG_REG_32x32;
 
-    // Set up palette memory, colors are 15bpp
-    pal_bg_mem[0] = 0;      // base color (black)
-    pal_bg_mem[255] = 127;  // red
+  //     // Set up palette memory, colors are 15bpp
+  //     pal_bg_mem[0] = 0;      // base color (black)
+  //     pal_bg_mem[255] = 127;  // red
 
-    // Set up an 8x8 tile 1
-    for (int line = 0; line < 8; line++) {
-      // update charblock 0, tile 1, line i * 2
+  //     // Set up an 8x8 tile 1
+  //     for (int line = 0; line < 8; line++) {
+  //       // update charblock 0, tile 1, line i * 2
 
-      tile8_mem[3][255].data[line * 2] =
-          (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-      //    blue       red        blue        red
-      tile8_mem[3][255].data[line * 2 + 1] =
-          (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-      //    blue       blue        red        red
-    }
+  //       tile8_mem[3][255].data[line * 2] =
+  //           (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
+  //       //    blue       red        blue        red
+  //       tile8_mem[3][255].data[line * 2 + 1] =
+  //           (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
+  //       //    blue       blue        red        red
+  //     }
 
-    // Set up a map, draw 10 tiles starting from tile 6
-    for (int i = 6; i < 6 + 150; i++)
-      // update screenblock 24, screenblock entry i
-      se_mem[31][i] = 255;  // set tile 1
+  //     // Set up a map, draw 10 tiles starting from tile 6
+  //     for (int i = 6; i < 6 + 150; i++)
+  //       // update screenblock 24, screenblock entry i
+  //       se_mem[31][i] = 255;  // set tile 1
 
-    REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
-    REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight: 1000
+  //     REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
+  //     REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight:
+  //     1000
 
-    /*
-magick extravaganza.bmp -background black -gravity north -splice 0x70
-extravaganza.bmp extravaganza.bmp -background black -gravity south -splice 0x10
-extravaganza.bmp -append -background black -gravity south -splice 0x30
-extrapend.png
-    */
-  }
+  //     /*
+  // magick extravaganza.bmp -background black -gravity north -splice 0x70
+  // extravaganza.bmp extravaganza.bmp -background black -gravity south -splice
+  // 0x10 extravaganza.bmp -append -background black -gravity south -splice 0x30
+  // extrapend.png
+  //     */
+  //   }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     const GBFS_FILE* fs = find_first_gbfs_file(0);
