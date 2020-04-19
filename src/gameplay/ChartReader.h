@@ -15,7 +15,7 @@ class ChartReader {
 
   ChartReader(Chart* chart, Judge* judge);
 
-  bool update(u32* msecs, ObjectPool<Arrow>* arrowPool);
+  bool update(int* msecs, ObjectPool<Arrow>* arrowPool);
 
   template <typename F>
   inline void withNextHoldArrow(ArrowDirection direction, F action) {
@@ -57,19 +57,18 @@ class ChartReader {
   u32 eventIndex = 0;
   u32 bpm = 0;
   int lastBeat = -1;
-  u32 lastBpmChange = 0;
+  int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;
-  u32 stopStart = 0;
-  u32 stopEnd = 0;
+  int stopEnd = 0;
 
   bool animateBpm(int msecsWithOffset);
-  void processNextEvent(u32 msecs, ObjectPool<Arrow>* arrowPool);
+  void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
   void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
   void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void processHoldArrows(u32 msecs, ObjectPool<Arrow>* arrowPool);
-  void processHoldTicks(u32 msecs, int msecsWithOffset);
+  void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
+  void processHoldTicks(int msecs, int msecsWithOffset);
   void connectArrows(std::vector<Arrow*>& arrows);
 
   template <typename F>

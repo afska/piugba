@@ -8,8 +8,8 @@ class HoldArrow : public IPoolable {
  public:
   u32 id;
   ArrowDirection direction;
-  u32 startTime;
-  u32 endTime;
+  int startTime;
+  int endTime;
   Arrow* lastFill;
 
   HoldArrow(u32 id) { this->id = id; }

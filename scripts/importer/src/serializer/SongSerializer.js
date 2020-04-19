@@ -33,10 +33,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Chart", {
       write: function (chart) {
-        const offset = chart.header.offset;
-
-        this.UInt8(offset >= 0)
-          .UInt32LE(Math.abs(offset))
+        this.Int32LE(chart.header.offset)
           .UInt8(2) // TODO: Unhardcode difficulty
           .UInt8(chart.header.level)
           .EventArray(chart.events);
@@ -45,7 +42,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.UInt32LE(event.timestamp);
+        this.Int32LE(event.timestamp);
 
         if (event.type === Events.SET_TEMPO)
           this.UInt8(event.type).UInt32LE(Math.round(event.bpm));

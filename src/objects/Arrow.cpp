@@ -118,7 +118,7 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(u32 msecs, bool hasStopped, bool isPressing) {
+ArrowState Arrow::tick(int msecs, bool hasStopped, bool isPressing) {
   this->msecs = msecs;
   sprite->flipHorizontally(flip);
 
