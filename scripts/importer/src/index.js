@@ -14,7 +14,7 @@ const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
 
 mkdirp(SONGS_PATH);
-utils.run(`rm -rf ${OUTPUT_PATH}`);
+// utils.run(`rm -rf ${OUTPUT_PATH}`); // TODO: REMOVE
 mkdirp.sync(OUTPUT_PATH);
 
 fs.readdirSync(SONGS_PATH)
