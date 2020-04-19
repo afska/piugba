@@ -50,10 +50,8 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   player_play(song->audioPath.c_str());
-  BACKGROUND1_DISABLE();
-  BACKGROUND2_DISABLE();
-  BACKGROUND3_DISABLE();
 
+  BACKGROUND_enable(true, false, false, false);
   setUpPalettes();
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
@@ -210,9 +208,6 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::unload() {
   player_stop();
-  BACKGROUND1_ENABLE();
-  BACKGROUND2_ENABLE();
-  BACKGROUND3_ENABLE();
 }
 
 SongScene::~SongScene() {

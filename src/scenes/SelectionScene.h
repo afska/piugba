@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "gameplay/models/Library.h"
+
 class SelectionScene : public Scene {
  public:
   SelectionScene(std::shared_ptr<GBAEngine> engine);

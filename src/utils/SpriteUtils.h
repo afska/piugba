@@ -26,36 +26,11 @@ inline void SPRITE_reuseTiles(Sprite* sprite) {
   sprite->setImageSize(0);
 }
 
-inline void BACKGROUND0_DISABLE() {
-  REG_DISPCNT &= ~DCNT_BG0;
-}
-
-inline void BACKGROUND1_DISABLE() {
-  REG_DISPCNT &= ~DCNT_BG1;
-}
-
-inline void BACKGROUND2_DISABLE() {
-  REG_DISPCNT &= ~DCNT_BG2;
-}
-
-inline void BACKGROUND3_DISABLE() {
-  REG_DISPCNT &= ~DCNT_BG3;
-}
-
-inline void BACKGROUND0_ENABLE() {
-  REG_DISPCNT |= DCNT_BG0;
-}
-
-inline void BACKGROUND1_ENABLE() {
-  REG_DISPCNT |= DCNT_BG1;
-}
-
-inline void BACKGROUND2_ENABLE() {
-  REG_DISPCNT |= DCNT_BG2;
-}
-
-inline void BACKGROUND3_ENABLE() {
-  REG_DISPCNT |= DCNT_BG3;
+inline void BACKGROUND_enable(bool bg0, bool bg1, bool bg2, bool bg3) {
+  REG_DISPCNT = bg0 ? REG_DISPCNT | DCNT_BG0 : REG_DISPCNT & ~DCNT_BG0;
+  REG_DISPCNT = bg1 ? REG_DISPCNT | DCNT_BG1 : REG_DISPCNT & ~DCNT_BG1;
+  REG_DISPCNT = bg2 ? REG_DISPCNT | DCNT_BG2 : REG_DISPCNT & ~DCNT_BG2;
+  REG_DISPCNT = bg3 ? REG_DISPCNT | DCNT_BG3 : REG_DISPCNT & ~DCNT_BG3;
 }
 
 #endif  // SPRITE_UTILS_H

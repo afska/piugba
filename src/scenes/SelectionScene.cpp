@@ -11,23 +11,13 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-static std::vector<std::string> songFileNames;
-
-bool stringEndsWith(const char* str, const char* suffix) {
-  if (!str || !suffix)
-    return false;
-  size_t lenstr = strlen(str);
-  size_t lensuffix = strlen(suffix);
-  if (lensuffix > lenstr)
-    return false;
-  return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-}
+static Library library;
 
 SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
     : Scene(engine) {}
 
 std::vector<Background*> SelectionScene::backgrounds() {
-  return {bg.get()};
+  return {/*bg.get()*/};
 }
 
 std::vector<Sprite*> SelectionScene::sprites() {
@@ -37,49 +27,33 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  engine->disableText();
-
-  const GBFS_FILE* fs = find_first_gbfs_file(0);
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
-
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData =
-      gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
-  auto backgroundMapData =
-      gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
-  bg = std::unique_ptr<Background>(
-      new Background(1, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
-  bg->useMapScreenBlock(24);
-  bg->useCharBlock(0);
-
-  // BACKGROUND0_DISABLE();
-  // BACKGROUND1_DISABLE();
-  BACKGROUND2_DISABLE();
-  BACKGROUND3_DISABLE();
+  // BACKGROUND_enable(true, true, false, false);
+  // engine->disableText();
 
   // const GBFS_FILE* fs = find_first_gbfs_file(0);
-  // u32 count = gbfs_count_objs(fs);
-  // for (u32 i = 0; i < count; i++) {
-  //   char name[24];
-  //   gbfs_get_nth_obj(fs, i, name, NULL);
-  //   if (stringEndsWith(name, ".pius")) {
-  //     auto fileName = std::string(name);
-  //     fileName = fileName.replace(fileName.length() - 5, 5, "");
-  //     songFileNames.push_back(fileName);
-  //   }
-  // }
+  // u32 backgroundPaletteLength;
+  // auto backgroundPaletteData =
+  //     (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
+  // backgroundPalette =
+  //     std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+  //         backgroundPaletteData, backgroundPaletteLength));
 
-  // u32 row = 6;
-  // for (auto& fileName : songFileNames) {
-  //   TextStream::instance().setText(fileName, row, 0);
-  //   row++;
-  // }
+  // u32 backgroundTilesLength, backgroundMapLength;
+  // auto backgroundTilesData =
+  //     gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
+  // auto backgroundMapData =
+  //     gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
+  // bg = std::unique_ptr<Background>(
+  //     new Background(1, backgroundTilesData, backgroundTilesLength,
+  //                    backgroundMapData, backgroundMapLength));
+  // bg->useMapScreenBlock(24);
+  // bg->useCharBlock(0);
+
+  u32 row = 6;
+  for (auto& songFile : library.getSongs()) {
+    TextStream::instance().setText(songFile->getAudioFile(), row, 0);
+    row++;
+  }
 
   // TextStream::instance().setText("SEL - Don't Bother Me (HARD)", 6, 0);
   // TextStream::instance().setText("ARR - Witch Doctor (CRAZY)", 8, 0);
@@ -93,45 +67,47 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (i == 0) {
-    i = 1;
+  // if (i == 0) {
+  //   i = 1;
 
-    REG_BG0CNT = BG_CBB(3) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
+  //   REG_BG0CNT = BG_CBB(3) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
 
-    // Set up palette memory, colors are 15bpp
-    // pal_bg_mem[0] = 0;      // base color (black)
-    pal_bg_mem[255] = 127;  // red
+  //   // Set up palette memory, colors are 15bpp
+  //   // pal_bg_mem[0] = 0;      // base color (black)
+  //   pal_bg_mem[255] = 127;  // red
 
-    // Set up an 8x8 tile 254
-    // TRANSPARENT TILE
-    for (int line = 0; line < 8; line++) {
-      // update charblock 3, tile 254, line i * 2
+  //   // Set up an 8x8 tile 254
+  //   // TRANSPARENT TILE
+  //   for (int line = 0; line < 8; line++) {
+  //     // update charblock 3, tile 254, line i * 2
 
-      tile8_mem[3][254].data[line * 2] =
-          (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
-      tile8_mem[3][254].data[line * 2 + 1] =
-          (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
-    }
+  //     tile8_mem[3][254].data[line * 2] =
+  //         (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
+  //     tile8_mem[3][254].data[line * 2 + 1] =
+  //         (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
+  //   }
 
-    // Set up an 8x8 tile 255
-    // RED TILE
-    for (int line = 0; line < 8; line++) {
-      // update charblock 3, tile 255, line i * 2
+  //   // Set up an 8x8 tile 255
+  //   // RED TILE
+  //   for (int line = 0; line < 8; line++) {
+  //     // update charblock 3, tile 255, line i * 2
 
-      tile8_mem[3][255].data[line * 2] =
-          (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-      tile8_mem[3][255].data[line * 2 + 1] =
-          (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-    }
+  //     tile8_mem[3][255].data[line * 2] =
+  //         (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
+  //     tile8_mem[3][255].data[line * 2 + 1] =
+  //         (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
+  //   }
 
-    // Set up a map, draw tiles
-    for (int i = 0; i < 32 * 32; i++)
-      // update screenblock 30, screenblock entry i
-      se_mem[30][i] = i < 7 ? 254 : 255;  // set tile 255 or 254 (transparent)
+  //   // Set up a map, draw tiles
+  //   for (int i = 0; i < 32 * 32; i++)
+  //     // update screenblock 30, screenblock entry i
+  //     se_mem[30][i] = i < 7 ? 254 : 255;  // set tile 255 or 254
+  //     (transparent)
 
-    REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
-    REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight: 1000
-  }
+  //   REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
+  //   REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight:
+  //   1000
+  // }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     const GBFS_FILE* fs = find_first_gbfs_file(0);
