@@ -28,8 +28,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  // BACKGROUND_enable(true, true, false, false);
-  // engine->disableText();
+  engine->disableText();
 
   // u32 backgroundPaletteLength;
   // auto backgroundPaletteData =
@@ -69,6 +68,7 @@ void SelectionScene::load() {
 
 void SelectionScene::tick(u16 keys) {
   // if (i == 0) {
+  //   BACKGROUND_enable(false, true, false, false);
   //   i = 1;
 
   //   REG_BG0CNT = BG_CBB(3) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;
@@ -102,12 +102,12 @@ void SelectionScene::tick(u16 keys) {
   //   // Set up a map, draw tiles
   //   for (int i = 0; i < 32 * 32; i++)
   //     // update screenblock 30, screenblock entry i
-  //     se_mem[30][i] = i < 7 ? 254 : 255;  // set tile 255 or 254
-  //     (transparent)
+  //     // set tile 255 or 254 (transparent)
+  //     se_mem[30][i] = i < 7 ? 254 : 255;
 
-  //   REG_BLDCNT = 0b0000001001000001;    // blend BG0 on top of BG1
-  //   REG_BLDALPHA = 0b0000100000011000;  // BG0 weight: 11000, BG1 weight:
-  //   1000
+  //   REG_BLDCNT = 0b0000001001000001;  // blend BG0 on top of BG1
+  //   REG_BLDALPHA = 0b0000100000011000;
+  //   // BG0 weight: 11000, BG1 weight: 1000
   // }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {

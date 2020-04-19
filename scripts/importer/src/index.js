@@ -9,6 +9,8 @@ require("colors");
 const SONGS_PATH = `${__dirname}/../../../src/data/content/songs`;
 const OUTPUT_PATH = `${SONGS_PATH}/../#compiled_songs`;
 
+const SEPARATOR = " - ";
+const MAX_FILE_LENGTH = 15;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
@@ -18,31 +20,38 @@ mkdirp(SONGS_PATH);
 mkdirp.sync(OUTPUT_PATH);
 
 fs.readdirSync(SONGS_PATH)
-  .map((directory) => {
+  .map((directory, i) => {
+    const parts = directory.split(SEPARATOR);
+
     return {
       path: $path.join(SONGS_PATH, directory),
-      name: _(directory).split(" - ").last(),
+      id: parts.length === 2 ? _.first(parts) : i.toString(),
+      name: _.last(parts),
     };
   })
-  .forEach(({ path, name }) => {
+  .forEach(({ path, id, name }) => {
     const files = fs.readdirSync(path).map((it) => $path.join(path, it));
     const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
     const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
     const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
+    const outputName = (id + "-" + name).substring(0, MAX_FILE_LENGTH);
     console.log(`${"Importing".bold} ${name.cyan}...`);
 
     // metadata
     utils.report(
-      () => importers.metadata(name, metadataFile, OUTPUT_PATH),
+      () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
       "charts"
     );
 
     // audio
-    utils.report(() => importers.audio(name, audioFile, OUTPUT_PATH), "audio");
+    utils.report(
+      () => importers.audio(outputName, audioFile, OUTPUT_PATH),
+      "audio"
+    );
 
     // background
     utils.report(
-      () => importers.background(name, backgroundFile, OUTPUT_PATH),
+      () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
       "background"
     );
   });
