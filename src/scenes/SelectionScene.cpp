@@ -59,7 +59,7 @@ void SelectionScene::load() {
 
 void SelectionScene::tick(u16 keys) {
   if (i == 0) {
-    BACKGROUND_enable(false, true, false, false);
+    BACKGROUND_enable(true, true, false, false);
     i = 1;
 
     REG_BG0CNT = BG_CBB(3) | BG_SBB(30) | BG_8BPP | BG_REG_32x32;

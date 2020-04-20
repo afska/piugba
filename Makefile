@@ -32,6 +32,7 @@ LIBS		:= -ltonc -lgba -lgba-sprite-engine
 
 BUILD		:= build
 SRCDIRS		:= src \
+						 src/data \
 						 src/data/content \
 						 src/data/content/compiled \
 						 src/gameplay \
