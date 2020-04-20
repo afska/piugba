@@ -172,45 +172,37 @@ void SelectionScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, false, false);
     i = 1;
 
-    REG_BG0CNT = BG_CBB(3) | BG_SBB(25) | BG_8BPP | BG_REG_32x32;
+    REG_BG0CNT = BG_CBB(TILE_BANK) | BG_SBB(MAP_BANK) | BG_8BPP | BG_REG_32x32;
 
-    // Set up palette memory, colors are 15bpp
-    // pal_bg_mem[0] = 0;      // base color (black)
-    pal_bg_mem[255] = 127;  // red
+    // palette (palette memory)
+    for (u32 colorIndex = 0; colorIndex < sizeof(MASK_PALETTE); colorIndex++)
+      pal_bg_mem[PALETTE_START_INDEX + colorIndex] = MASK_PALETTE[colorIndex];
 
-    // Set up 8x8 tiles from 224 to 255
-    for (int tile = 224; tile <= 255; tile++) {
-      // RED TILE
-      for (int line = 0; line < 8; line++) {
-        // update charblock 3, tile tile, line i * 2
+    // tiles (charblocks)
+    u32 tileIndex = 0;
+    u32 part = 0;
+    for (u32 i = 0; i < sizeof(MASK_TILES); i++) {
+      tile8_mem[TILE_BANK][TILE_START_INDEX + tileIndex].data[part] =
+          MASK_TILES[i];
 
-        tile8_mem[3][tile].data[line * 2] =
-            (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-        tile8_mem[3][tile].data[line * 2 + 1] =
-            (255 << 0) + (255 << 8) + (255 << 16) + (255 << 24);
-      }
+      if (part == TILE_SIZE) {
+        tileIndex++;
+        part = 0;
+      } else
+        part++;
     }
 
-    // Set up an 8x8 tile 254
-    // TRANSPARENT TILE
-    for (int line = 0; line < 8; line++) {
-      // update charblock 3, tile 254, line i * 2
+    // map (screenblocks)
+    for (u32 mapIndex = 0; mapIndex < MAP_TOTAL_TILES; mapIndex++)
+      se_mem[MAP_BANK][i] =
+          mapIndex >= MAP_START_INDEX && mapIndex < MAP_END_INDEX
+              ? MASK_MAP[i]
+              : TILE_START_INDEX;  // (transparent)
 
-      tile8_mem[3][254].data[line * 2] =
-          (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
-      tile8_mem[3][254].data[line * 2 + 1] =
-          (0 << 0) + (0 << 8) + (0 << 16) + (0 << 24);
-    }
-
-    // Set up a map, draw tiles
-    for (int i = 0; i < 32 * 32; i++)
-      // update screenblock 25, screenblock entry i
-      // set tile 255 or 254 (transparent)
-      se_mem[25][i] = i < 7 ? 254 : 255;
-
-    REG_BLDCNT = 0b0000001001000001;  // blend BG0 on top of BG1
-    REG_BLDALPHA = 0b0000100000011000;
+    // blend BG0 on top of BG1
     // BG0 weight: 11000, BG1 weight: 1000
+    REG_BLDCNT = 0b0000001001000001;
+    REG_BLDALPHA = 0b0000100000011000;
   }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
