@@ -44,27 +44,34 @@ const run = () => {
 
   const groupedTiles = groupArray(TILES, TILE_SIZE).slice(1);
 
+  let newTiles = [];
+  let indexes = [];
   let uniqueTileCount = 0;
-  const newTiles = groupedTiles.map((values, index) => {
-    const originalIndex = _.findIndex(groupedTiles.slice(0, index), (it) =>
-      JSON.stringify(it) === JSON.stringify(values)
+  for (let values of groupedTiles) {
+    let tileIndex = _.findIndex(newTiles, (it) =>
+      JSON.stringify(it.oldValues) === JSON.stringify(values)
     );
-    const isNew = originalIndex === -1;
-    if (isNew) uniqueTileCount++;
+    const isNew = tileIndex === -1;
 
-    return {
-      isNew,
-      index: TILE_START_INDEX + (isNew ? uniqueTileCount : originalIndex),
-      values: values.map(correctColors)
-    };
-  });
+    if (isNew) {
+      tileIndex = uniqueTileCount;
+
+      uniqueTileCount++;
+      newTiles.push({
+        oldValues: values,
+        values: values.map(correctColors)
+      });
+    }
+
+    indexes.push(TILE_START_INDEX + tileIndex);
+  }
 
   const map = _.range(0, MAP_TOTAL_TILES)
-    .map((index) => newTiles[index].index)
+    .map((index) => indexes[index])
     .slice(MAP_START_INDEX, MAP_END_INDEX);
 
   console.log(JSON.stringify({
-    tiles: _(newTiles).filter("isNew").flatMap("values").value(),
+    tiles: _.flatMap(newTiles, "values"),
     map,
     palette: PALETTE.slice(0, -1)
   }, null, 2));
