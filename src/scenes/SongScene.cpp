@@ -15,6 +15,7 @@ extern "C" {
 }
 
 const u32 ARROW_POOL_SIZE = 50;
+const u32 BANK_BACKGROUND_MAP = 24;
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -124,7 +125,7 @@ void SongScene::setUpBackground() {
   bg = std::unique_ptr<Background>(
       new Background(0, backgroundTilesData, backgroundTilesLength,
                      backgroundMapData, backgroundMapLength));
-  bg->useMapScreenBlock(24);
+  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 }
 
 void SongScene::setUpArrows() {

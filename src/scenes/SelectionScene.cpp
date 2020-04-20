@@ -110,18 +110,21 @@ const u32 MASK_MAP[] = {
     609, 609, 248, 249, 616, 616, 616, 616, 616, 250, 251, 252, 624, 624, 624,
     624, 624, 253, 254, 631, 631, 631, 631, 631, 255, 224, 224};
 const u32 MASK_PALETTE[] = {31744, 31, 32767, 992};
-const u32 TILE_BANK = 3;
+const u32 TILES_BANK = 3;
+const u32 TILES_START_INDEX = 224;
+const u32 TILES_END_INDEX = 256;
+const u32 TILES_LENGTH = 496;
 const u32 TILE_SIZE = 16;
-const u32 TILE_START_INDEX = 224;
-const u32 TILE_END_INDEX = 256;
-const u32 TILE_LENGTH = 496;
-const u32 MAP_BANK = 25;
+const u32 MAP_BANK = 18;
 const u32 MAP_START_INDEX = 224;
 const u32 MAP_END_INDEX = 416;
 const u32 MAP_TOTAL_TILES = 1024;
 const u32 PALETTE_START_INDEX = 252;
 const u32 PALETTE_END_INDEX = 256;
 const u32 PALETTE_LENGTH = 4;
+
+const u32 BANK_BACKGROUND_TILES = 0;
+const u32 BANK_BACKGROUND_MAP = 16;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -158,8 +161,8 @@ void SelectionScene::load() {
   bg = std::unique_ptr<Background>(
       new Background(1, backgroundTilesData, backgroundTilesLength,
                      backgroundMapData, backgroundMapLength));
-  bg->useMapScreenBlock(24);
-  bg->useCharBlock(0);
+  bg->useCharBlock(BANK_BACKGROUND_TILES);
+  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 
   // TextStream::instance().setText(std::to_string(library->getCount()), 5, 0);
   // u32 row = 6;
@@ -174,7 +177,7 @@ void SelectionScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, false, false);
     i = 1;
 
-    REG_BG0CNT = BG_CBB(TILE_BANK) | BG_SBB(MAP_BANK) | BG_8BPP | BG_REG_32x32;
+    REG_BG0CNT = BG_CBB(TILES_BANK) | BG_SBB(MAP_BANK) | BG_8BPP | BG_REG_32x32;
 
     // palette (palette memory)
     for (u32 colorIndex = 0; colorIndex < PALETTE_LENGTH; colorIndex++)
@@ -182,24 +185,24 @@ void SelectionScene::tick(u16 keys) {
 
     // tiles (charblocks)
     u32 tileIndex = 0;
-    u32 part = 0;
-    for (u32 i = 0; i < TILE_LENGTH; i++) {
-      tile8_mem[TILE_BANK][TILE_START_INDEX + tileIndex].data[part] =
-          MASK_TILES[i];
-
+    int part = -1;
+    for (u32 i = 0; i < TILES_LENGTH; i++) {
+      part++;
       if (part == TILE_SIZE) {
         tileIndex++;
         part = 0;
-      } else
-        part++;
+      }
+
+      tile8_mem[TILES_BANK][TILES_START_INDEX + tileIndex].data[part] =
+          MASK_TILES[i];
     }
 
     // map (screenblocks)
     for (u32 mapIndex = 0; mapIndex < MAP_TOTAL_TILES; mapIndex++)
-      se_mem[MAP_BANK][i] =
+      se_mem[MAP_BANK][mapIndex] =
           mapIndex >= MAP_START_INDEX && mapIndex < MAP_END_INDEX
-              ? MASK_MAP[i]
-              : TILE_START_INDEX;  // (transparent)
+              ? MASK_MAP[mapIndex - MAP_START_INDEX]
+              : TILES_START_INDEX;  // (transparent)
 
     // blend BG0 on top of BG1
     // BG0 weight: 11000, BG1 weight: 1000
