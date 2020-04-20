@@ -11,6 +11,7 @@ const OUTPUT_PATH = `${SONGS_PATH}/../#compiled_songs`;
 
 const SEPARATOR = " - ";
 const MAX_FILE_LENGTH = 15;
+const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
@@ -19,39 +20,50 @@ mkdirp(SONGS_PATH);
 // utils.run(`rm -rf ${OUTPUT_PATH}`); // TODO: REMOVE
 mkdirp.sync(OUTPUT_PATH);
 
-fs.readdirSync(SONGS_PATH)
-  .map((directory, i) => {
-    const parts = directory.split(SEPARATOR);
+const songs = fs.readdirSync(SONGS_PATH).map((directory, i) => {
+  const parts = directory.split(SEPARATOR);
 
-    return {
-      path: $path.join(SONGS_PATH, directory),
-      id: parts.length === 2 ? _.first(parts) : i.toString(),
-      name: _.last(parts),
-    };
-  })
-  .forEach(({ path, id, name }) => {
-    const files = fs.readdirSync(path).map((it) => $path.join(path, it));
-    const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
-    const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
-    const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
-    const outputName = (id + "-" + name).substring(0, MAX_FILE_LENGTH);
-    console.log(`${"Importing".bold} ${name.cyan}...`);
+  return {
+    path: $path.join(SONGS_PATH, directory),
+    id: parts.length === 2 ? _.first(parts) : i.toString(),
+    name: _.last(parts),
+  };
+});
 
-    // metadata
-    utils.report(
-      () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
-      "charts"
-    );
+let lastSelectorBuilt = -1;
+songs.forEach(({ path, id, name }, i) => {
+  const files = fs.readdirSync(path).map((it) => $path.join(path, it));
+  const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
+  const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
+  const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
+  const outputName = (id + "-" + name).substring(0, MAX_FILE_LENGTH);
+  console.log(`${"Importing".bold} ${name.cyan}...`);
 
-    // audio
-    utils.report(
-      () => importers.audio(outputName, audioFile, OUTPUT_PATH),
-      "audio"
-    );
+  // metadata
+  utils.report(
+    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
+    "charts"
+  );
 
-    // background
-    utils.report(
-      () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
-      "background"
-    );
-  });
+  // audio
+  utils.report(
+    () => importers.audio(outputName, audioFile, OUTPUT_PATH),
+    "audio"
+  );
+
+  // background
+  utils.report(
+    () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
+    "background"
+  );
+
+  // selector
+  let options = [];
+  if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
+    options = _.range(lastSelectorBuilt + 1, i + 1).map((it) => songs[i]);
+    lastSelectorBuilt = i;
+
+    utils.report(() => {}, "selector");
+    // TODO: IMPLEMENT
+  }
+});
