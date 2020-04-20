@@ -110,7 +110,7 @@ const u32 MASK_MAP[] = {
     246, 246, 247, 248, 248, 248, 248, 248, 248, 249, 250, 251, 251, 251, 251,
     251, 251, 252, 253, 253, 253, 253, 253, 253, 254, 224, 224};
 const u32 MASK_PALETTE[] = {31744, 31, 32767, 992};
-const u32 TILES_BANK = 3;
+const u32 TILES_BANK = 2;
 const u32 TILES_START_INDEX = 224;
 const u32 TILES_END_INDEX = 256;
 const u32 TILES_LENGTH = 496;
@@ -123,6 +123,8 @@ const u32 PALETTE_START_INDEX = 252;
 const u32 PALETTE_END_INDEX = 256;
 const u32 PALETTE_LENGTH = 4;
 
+const u32 ID_HIGHLIGHTER = 1;
+const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 
@@ -144,8 +146,6 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  engine->disableText();
-
   u32 backgroundPaletteLength;
   auto backgroundPaletteData =
       (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
@@ -158,26 +158,22 @@ void SelectionScene::load() {
       gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
   auto backgroundMapData =
       gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
-  bg = std::unique_ptr<Background>(
-      new Background(1, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
+  bg = std::unique_ptr<Background>(new Background(
+      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
+      backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 
-  // TextStream::instance().setText(std::to_string(library->getCount()), 5, 0);
-  // u32 row = 6;
-  // for (auto& songFile : library->getSongs(0, 0)) {
-  //   TextStream::instance().setText(songFile->getAudioFile(), row, 0);
-  //   row++;
-  // }
+  TextStream::instance().setText("Run to You", 15, 6);
 }
 
 void SelectionScene::tick(u16 keys) {
   if (i == 0) {
-    BACKGROUND_enable(true, true, false, false);
+    BACKGROUND_enable(true, true, true, false);
     i = 1;
 
-    REG_BG0CNT = BG_CBB(TILES_BANK) | BG_SBB(MAP_BANK) | BG_8BPP | BG_REG_32x32;
+    REG_BGCNT[ID_HIGHLIGHTER] = BG_CBB(TILES_BANK) | BG_SBB(MAP_BANK) |
+                                BG_8BPP | BG_REG_32x32 | ID_HIGHLIGHTER;
 
     // palette (palette memory)
     for (u32 colorIndex = 0; colorIndex < PALETTE_LENGTH; colorIndex++)
@@ -204,9 +200,9 @@ void SelectionScene::tick(u16 keys) {
               ? MASK_MAP[mapIndex - MAP_START_INDEX]
               : TILES_START_INDEX;  // (transparent)
 
-    // blend BG0 on top of BG1
-    // BG0 weight: 11000, BG1 weight: 1000
-    REG_BLDCNT = 0b0000001001000001;
+    // blend BG1 on top of BG2
+    // BG1 weight: 11000, BG2 weight: 1000
+    REG_BLDCNT = 0b0000010001000010;
     REG_BLDALPHA = 0b0000100000011000;
   }
 
