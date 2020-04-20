@@ -179,6 +179,14 @@ void SelectionScene::tick(u16 keys) {
     for (u32 colorIndex = 0; colorIndex < PALETTE_LENGTH; colorIndex++)
       pal_bg_mem[PALETTE_START_INDEX + colorIndex] = MASK_PALETTE[colorIndex];
 
+    // TODO: figure out how to make transparent pixels
+    // ^^^^ generar 4 tilemaps desde el optimizer y cambiarlos?
+    pal_bg_mem[PALETTE_START_INDEX] = 0x0031;
+    pal_bg_mem[PALETTE_START_INDEX + 1] = 0;
+    pal_bg_mem[PALETTE_START_INDEX + 2] = 0;
+    // pal_bg_mem[PALETTE_START_INDEX + 3] = 0;
+    // TODO: use 1 color less to leave 255 reserved for font color
+
     // tiles (charblocks)
     u32 tileIndex = 0;
     int part = -1;
