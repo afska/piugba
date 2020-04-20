@@ -1,6 +1,6 @@
 const _ = require("./importer/node_modules/lodash");
 
-const TILE_START_INDEX = 242;
+const TILE_START_INDEX = 224;
 const TILE_SIZE = 16;
 const MAP_START_INDEX = 224;
 const MAP_END_INDEX = 416;
