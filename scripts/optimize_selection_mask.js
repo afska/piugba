@@ -1,9 +1,11 @@
 const _ = require("./importer/node_modules/lodash");
 
-const START_TILE_INDEX = 242;
-const START_PALETTE_INDEX = 252;
-const MAP_TOTAL_TILES = 1024;
+const TILE_START_INDEX = 242;
 const TILE_SIZE = 16;
+const MAP_START_INDEX = 224;
+const MAP_END_INDEX = 416;
+const MAP_TOTAL_TILES = 1024;
+const PALETTE_START_INDEX = 252;
 const TRANSPARENT_COLOR = 0x7C1F;
 
 function groupArray(data, n) {
@@ -22,7 +24,7 @@ const run = () => {
   const correctColor = (paletteIndex) =>
     paletteIndex === TRANSPARENT_INDEX
       ? 0
-      : START_PALETTE_INDEX + paletteIndex;
+      : PALETTE_START_INDEX + paletteIndex;
 
   const correctColors = (value) => {
     const n1 = (value & (255 << 0)) >> 0;
@@ -30,30 +32,36 @@ const run = () => {
     const n3 = (value & (255 << 16)) >> 16;
     const n4 = (value & (255 << 24)) >> 24;
 
-    return (
+    const buffer = Buffer.alloc(4);
+    buffer.writeInt32LE(
       (correctColor(n1) << 0) +
       (correctColor(n2) << 8) +
       (correctColor(n3) << 16) +
       (correctColor(n4) << 24)
     );
+    return buffer.readUInt32LE(0);
   };
 
   const groupedTiles = groupArray(TILES, TILE_SIZE).slice(1);
 
+  let uniqueTileCount = 0;
   const newTiles = groupedTiles.map((values, index) => {
     const originalIndex = _.findIndex(groupedTiles.slice(0, index), (it) =>
       JSON.stringify(it) === JSON.stringify(values)
     );
     const isNew = originalIndex === -1;
+    if (isNew) uniqueTileCount++;
 
     return {
       isNew,
-      index: isNew ? index : originalIndex,
+      index: TILE_START_INDEX + (isNew ? uniqueTileCount : originalIndex),
       values: values.map(correctColors)
     };
   });
 
-  const map = _.range(0, MAP_TOTAL_TILES).map((index) => newTiles[index].index);
+  const map = _.range(0, MAP_TOTAL_TILES)
+    .map((index) => newTiles[index].index)
+    .slice(MAP_START_INDEX, MAP_END_INDEX);
 
   console.log(JSON.stringify({
     tiles: _(newTiles).filter("isNew").flatMap("values").value(),
