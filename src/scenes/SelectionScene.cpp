@@ -68,8 +68,8 @@ void SelectionScene::tick(u16 keys) {
     // pal_bg_mem[0] = 0;      // base color (black)
     pal_bg_mem[255] = 127;  // red
 
-    // Set up 8x8 tiles from 242 to 255
-    for (int tile = 242; tile <= 255; tile++) {
+    // Set up 8x8 tiles from 224 to 255
+    for (int tile = 224; tile <= 255; tile++) {
       // RED TILE
       for (int line = 0; line < 8; line++) {
         // update charblock 3, tile tile, line i * 2
