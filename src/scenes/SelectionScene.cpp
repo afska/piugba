@@ -114,12 +114,14 @@ const u32 TILE_BANK = 3;
 const u32 TILE_SIZE = 16;
 const u32 TILE_START_INDEX = 224;
 const u32 TILE_END_INDEX = 256;
+const u32 TILE_LENGTH = 496;
 const u32 MAP_BANK = 25;
 const u32 MAP_START_INDEX = 224;
 const u32 MAP_END_INDEX = 416;
 const u32 MAP_TOTAL_TILES = 1024;
 const u32 PALETTE_START_INDEX = 252;
 const u32 PALETTE_END_INDEX = 256;
+const u32 PALETTE_LENGTH = 4;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -175,13 +177,13 @@ void SelectionScene::tick(u16 keys) {
     REG_BG0CNT = BG_CBB(TILE_BANK) | BG_SBB(MAP_BANK) | BG_8BPP | BG_REG_32x32;
 
     // palette (palette memory)
-    for (u32 colorIndex = 0; colorIndex < sizeof(MASK_PALETTE); colorIndex++)
+    for (u32 colorIndex = 0; colorIndex < PALETTE_LENGTH; colorIndex++)
       pal_bg_mem[PALETTE_START_INDEX + colorIndex] = MASK_PALETTE[colorIndex];
 
     // tiles (charblocks)
     u32 tileIndex = 0;
     u32 part = 0;
-    for (u32 i = 0; i < sizeof(MASK_TILES); i++) {
+    for (u32 i = 0; i < TILE_LENGTH; i++) {
       tile8_mem[TILE_BANK][TILE_START_INDEX + tileIndex].data[part] =
           MASK_TILES[i];
 
