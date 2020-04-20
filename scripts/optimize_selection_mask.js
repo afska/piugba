@@ -5,8 +5,10 @@ const TILE_SIZE = 16;
 const MAP_START_INDEX = 224;
 const MAP_END_INDEX = 416;
 const MAP_TOTAL_TILES = 1024;
-const PALETTE_START_INDEX = 252;
+const PALETTE_START_INDEX = 251;
 const TRANSPARENT_COLOR = 0x7C1F;
+
+const SELECTED = 0;
 
 function groupArray(data, n) {
   var group = [];
@@ -21,10 +23,15 @@ function groupArray(data, n) {
 const run = () => {
   const TRANSPARENT_INDEX = PALETTE.indexOf(TRANSPARENT_COLOR);
 
-  const correctColor = (paletteIndex) =>
-    paletteIndex === TRANSPARENT_INDEX
+  const correctColor = (paletteIndex) => {
+    const isTransparent = paletteIndex === TRANSPARENT_INDEX;
+    if (isTransparent) return 0;
+
+    const colorIndex = NEW_PALETTE_INDEXES[paletteIndex];
+    return colorIndex === SELECTED
       ? 0
-      : PALETTE_START_INDEX + NEW_PALETTE_INDEXES[paletteIndex];
+      : PALETTE_START_INDEX + colorIndex;
+  };
 
   const correctColors = (value) => {
     const n1 = (value & (255 << 0)) >> 0;
