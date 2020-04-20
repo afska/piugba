@@ -24,7 +24,7 @@ const run = () => {
   const correctColor = (paletteIndex) =>
     paletteIndex === TRANSPARENT_INDEX
       ? 0
-      : PALETTE_START_INDEX + paletteIndex;
+      : PALETTE_START_INDEX + NEW_PALETTE_INDEXES[paletteIndex];
 
   const correctColors = (value) => {
     const n1 = (value & (255 << 0)) >> 0;
@@ -73,7 +73,7 @@ const run = () => {
   console.log(JSON.stringify({
     tiles: _.flatMap(newTiles, "values"),
     map,
-    palette: PALETTE.slice(0, -1)
+    palette: NEW_PALETTE
   }, null, 2));
 };
 
@@ -3163,6 +3163,14 @@ const TILES = [
 
 const PALETTE = [
   0x7C00, 0x001F, 0x7FFF, 0x03E0, 0x7C1F
+];
+
+const NEW_PALETTE = [
+  0x001F, 0x03E0, 0x7C00, 0x7FFF
+];
+
+const NEW_PALETTE_INDEXES = [
+  2, 0, 3, 1
 ];
 
 run();
