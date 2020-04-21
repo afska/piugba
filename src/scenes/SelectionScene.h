@@ -23,7 +23,10 @@ class SelectionScene : public Scene {
 
  private:
   std::unique_ptr<Background> bg;
-  int i = 0;  // TODO: REMOVE
+  bool hasStarted = false;
+
+  void setUpPalettes();
+  void setUpBackground();
 };
 
 #endif  // SELECTION_SCENE_H

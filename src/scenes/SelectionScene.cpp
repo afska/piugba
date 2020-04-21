@@ -6,6 +6,8 @@
 #include "data/bg_selectionmask.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
+#include "utils/BackgroundUtils.h"
+#include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
@@ -16,7 +18,6 @@ const u32 TILES_BANK = 2;
 const u32 TILES_START_INDEX = 224;
 const u32 TILES_END_INDEX = 256;
 const u32 TILES_LENGTH = 496;
-const u32 TILE_SIZE = 16;
 const u32 MAP_BANK = 18;
 const u32 MAP_START_INDEX = 224;
 const u32 MAP_END_INDEX = 416;
@@ -47,39 +48,25 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
-
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData =
-      gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
-  auto backgroundMapData =
-      gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
-  bg = std::unique_ptr<Background>(new Background(
-      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
-      backgroundMapData, backgroundMapLength));
-  bg->useCharBlock(BANK_BACKGROUND_TILES);
-  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  BACKGROUND_enable(false, false, false, false);
+  setUpPalettes();
+  setUpBackground();
 
   TextStream::instance().setText("Run to You", 15, 6);
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (i == 0) {
+  if (!hasStarted) {
+    hasStarted = true;
     BACKGROUND_enable(true, true, true, false);
-    i = 1;
 
-    REG_BGCNT[ID_HIGHLIGHTER] = BG_CBB(TILES_BANK) | BG_SBB(MAP_BANK) |
-                                BG_8BPP | BG_REG_32x32 | ID_HIGHLIGHTER;
-
-    // palette (palette memory)
-    for (u32 colorIndex = 0; colorIndex < PALETTE_LENGTH; colorIndex++)
-      pal_bg_mem[PALETTE_START_INDEX + colorIndex] =
-          BG_SELECTIONMASK_PALETTE[colorIndex];
+    BACKGROUND_setup(ID_HIGHLIGHTER, TILES_BANK, MAP_BANK);
+    BACKGROUND_loadPalette(BG_SELECTIONMASK_PALETTE, PALETTE_LENGTH,
+                           PALETTE_START_INDEX);
+    BACKGROUND_loadTiles(BG_SELECTIONMASK_TILES, TILES_LENGTH, TILES_BANK,
+                         TILES_START_INDEX);
+    BACKGROUND_loadMap(BG_SELECTIONMASK_MAP, MAP_TOTAL_TILES, MAP_BANK,
+                       MAP_START_INDEX, MAP_END_INDEX, TILES_START_INDEX);
 
     // TODO: figure out how to make transparent pixels
     // ^^^^ generar 4 tilemaps desde el optimizer y cambiarlos? LISTO
@@ -88,31 +75,8 @@ void SelectionScene::tick(u16 keys) {
     pal_bg_mem[PALETTE_START_INDEX + 2] = 0;
     pal_bg_mem[PALETTE_START_INDEX + 3] = 0;
 
-    // tiles (charblocks)
-    u32 tileIndex = 0;
-    int part = -1;
-    for (u32 i = 0; i < TILES_LENGTH; i++) {
-      part++;
-      if (part == TILE_SIZE) {
-        tileIndex++;
-        part = 0;
-      }
-
-      tile8_mem[TILES_BANK][TILES_START_INDEX + tileIndex].data[part] =
-          BG_SELECTIONMASK_TILES[i];
-    }
-
-    // map (screenblocks)
-    for (u32 mapIndex = 0; mapIndex < MAP_TOTAL_TILES; mapIndex++)
-      se_mem[MAP_BANK][mapIndex] =
-          mapIndex >= MAP_START_INDEX && mapIndex < MAP_END_INDEX
-              ? BG_SELECTIONMASK_MAP[mapIndex - MAP_START_INDEX]
-              : TILES_START_INDEX;  // (transparent)
-
-    // blend BG1 on top of BG2
-    // BG1 weight: 11000, BG2 weight: 1000
-    REG_BLDCNT = 0b0000010001000010;
-    REG_BLDALPHA = 0b0000100000011000;
+    EFFECT_setUpBlend(BLD_BG1, BLD_BG2);
+    EFFECT_setBlendAlpha(24);
   }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
@@ -141,7 +105,7 @@ void SelectionScene::tick(u16 keys) {
       name = (char*)"Run to You";
       level = 5;
     } else if (keys & KEY_RIGHT) {
-      name = (char*)"Run to You";
+      name = (char*)"414-Run to You";
       level = 12;
     } else if (keys & KEY_START) {
       name = (char*)"Extravaganza";
@@ -156,6 +120,28 @@ void SelectionScene::tick(u16 keys) {
     engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                                 new FadeOutScene(2));
   }
+}
+
+void SelectionScene::setUpPalettes() {
+  u32 backgroundPaletteLength;
+  auto backgroundPaletteData =
+      (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          backgroundPaletteData, backgroundPaletteLength));
+}
+
+void SelectionScene::setUpBackground() {
+  u32 backgroundTilesLength, backgroundMapLength;
+  auto backgroundTilesData =
+      gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
+  auto backgroundMapData =
+      gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
+  bg = std::unique_ptr<Background>(new Background(
+      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
+      backgroundMapData, backgroundMapLength));
+  bg->useCharBlock(BANK_BACKGROUND_TILES);
+  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 }
 
 SelectionScene::~SelectionScene() {}

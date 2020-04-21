@@ -8,6 +8,7 @@
 #include "data/content/compiled/shared_palette.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
+#include "utils/BackgroundUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
