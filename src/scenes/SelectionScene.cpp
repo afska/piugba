@@ -77,6 +77,12 @@ void SelectionScene::tick(u16 keys) {
     EFFECT_setBlendAlpha(24);
   }
 
+  i += inc;
+  LOG(i);
+  EFFECT_setBlendAlpha(i);
+  if (i == MIN_BLEND || i == MAX_BLEND)
+    inc *= -1;
+
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     char* name;
     u8 level;
