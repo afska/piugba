@@ -63,14 +63,12 @@ void SelectionScene::tick(u16 keys) {
     BACKGROUND_setup(ID_HIGHLIGHTER, TILES_BANK, MAP_BANK);
     BACKGROUND_loadPalette(BG_SELECTIONMASK_PALETTE, PALETTE_LENGTH,
                            PALETTE_START_INDEX);
-    BACKGROUND_loadTiles(BG_SELECTIONMASK_TILES, TILES_LENGTH, TILES_BANK,
+    BACKGROUND_loadTiles(BG_SELECTIONMASK_TILES[1], TILES_LENGTH, TILES_BANK,
                          TILES_START_INDEX);
     BACKGROUND_loadMap(BG_SELECTIONMASK_MAP, MAP_TOTAL_TILES, MAP_BANK,
                        MAP_START_INDEX, MAP_END_INDEX, TILES_START_INDEX);
 
-    // TODO: figure out how to make transparent pixels
-    // ^^^^ generar 4 tilemaps desde el optimizer y cambiarlos? LISTO
-    pal_bg_mem[PALETTE_START_INDEX] = 0x0031;
+    pal_bg_mem[PALETTE_START_INDEX] = 0;
     pal_bg_mem[PALETTE_START_INDEX + 1] = 0;
     pal_bg_mem[PALETTE_START_INDEX + 2] = 0;
     pal_bg_mem[PALETTE_START_INDEX + 3] = 0;

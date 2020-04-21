@@ -3,7 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-const u32 BLEND_LIMIT = 32;
+const u32 MIN_BLEND = 0;
+const u32 MAX_BLEND = 32;
 
 // --- Combine with | ---
 // BLD_BG0, BLD_BG1, BLD_BG2, BLD_BG3, BLD_OBJ, BLD_ALL
@@ -13,7 +14,7 @@ inline void EFFECT_setUpBlend(u8 top, u8 bottom) {
 
 // Opacity is in [0, 32]
 inline void EFFECT_setBlendAlpha(u8 topOpacity) {
-  REG_BLDALPHA = BLDA_BUILD(topOpacity, BLEND_LIMIT - topOpacity);
+  REG_BLDALPHA = BLDA_BUILD(topOpacity, MAX_BLEND - topOpacity);
 }
 
 #endif  // EFFECT_UTILS_H
