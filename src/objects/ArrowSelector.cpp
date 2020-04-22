@@ -1,9 +1,13 @@
 #include "ArrowSelector.h"
 
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/compiled/spr_arrows.h"
 #include "utils/SpriteUtils.h"
+
+const u32 ANIMATION_FRAMES = 5;
+const u32 ANIMATION_DELAY = 2;
 
 ArrowSelector::ArrowSelector(ArrowDirection direction) {
   u32 start = 0;
@@ -22,7 +26,8 @@ ArrowSelector::ArrowSelector(ArrowDirection direction) {
 
   if (direction > 0)
     SPRITE_reuseTiles(sprite.get());
-  SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
+
+  sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
 }
 
 void ArrowSelector::tick() {
@@ -30,10 +35,13 @@ void ArrowSelector::tick() {
   isNewPressEvent = false;
 
   u32 currentFrame = sprite->getCurrentFrame();
+
   if (isPressed && currentFrame < start + ARROW_HOLDER_PRESSED) {
-    SPRITE_goToFrame(sprite.get(), currentFrame + 1);
-  } else if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
-    SPRITE_goToFrame(sprite.get(), currentFrame - 1);
+    SPRITE_goToFrame(sprite.get(),
+                     max(currentFrame + 1, start + ARROW_HOLDER_IDLE + 1));
+  } else if (!isPressed && currentFrame >= start + ARROW_HOLDER_IDLE) {
+    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
+  }
 }
 
 Sprite* ArrowSelector::get() {
