@@ -51,11 +51,14 @@ void SelectionScene::tick(u16 keys) {
     hasStarted = true;
   }
 
-  // TODO: DEBUG CRASH
-  if (KEY_DOWNLEFT(keys))
-    highlighter->select(highlighter->getSelectedItem() - 1);
-  if (KEY_DOWNRIGHT(keys))
-    highlighter->select(highlighter->getSelectedItem() + 1);
+  if (KEY_DOWNLEFT(keys)) {
+    highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
+    return;
+  }
+  if (KEY_DOWNRIGHT(keys)) {
+    highlighter->select(min(highlighter->getSelectedItem() + 1, 3));
+    return;
+  }
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     char* name;
