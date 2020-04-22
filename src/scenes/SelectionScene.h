@@ -24,8 +24,6 @@ class SelectionScene : public Scene {
  private:
   std::unique_ptr<Background> bg;
   bool hasStarted = false;
-  u32 i = 1;
-  s8 inc = 1;
 
   void setUpPalettes();
   void setUpBackground();

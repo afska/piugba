@@ -3,11 +3,10 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
-#include "data/bg_selectionmask.h"
+#include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
 #include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
@@ -21,7 +20,8 @@ const u32 BANK_BACKGROUND_MAP = 16;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
-static std::unique_ptr<Highlighter> highlighter{new Highlighter()};
+static std::unique_ptr<Highlighter> highlighter{
+    new Highlighter(ID_HIGHLIGHTER)};
 
 SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
     : Scene(engine) {}
@@ -46,39 +46,16 @@ void SelectionScene::load() {
 
 void SelectionScene::tick(u16 keys) {
   if (!hasStarted) {
-    hasStarted = true;
     BACKGROUND_enable(true, true, true, false);
-
-    BACKGROUND_setup(ID_HIGHLIGHTER, BG_SELECTIONMASK_METADATA.TILES_BANK,
-                     BG_SELECTIONMASK_METADATA.MAP_BANK);
-    BACKGROUND_loadPalette(BG_SELECTIONMASK_PALETTE,
-                           BG_SELECTIONMASK_METADATA.PALETTE_LENGTH,
-                           BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX);
-    BACKGROUND_loadTiles(BG_SELECTIONMASK_TILES[1],
-                         BG_SELECTIONMASK_METADATA.TILES_LENGTH,
-                         BG_SELECTIONMASK_METADATA.TILES_BANK,
-                         BG_SELECTIONMASK_METADATA.TILES_START_INDEX);
-    BACKGROUND_loadMap(BG_SELECTIONMASK_MAP,
-                       BG_SELECTIONMASK_METADATA.MAP_TOTAL_TILES,
-                       BG_SELECTIONMASK_METADATA.MAP_BANK,
-                       BG_SELECTIONMASK_METADATA.MAP_START_INDEX,
-                       BG_SELECTIONMASK_METADATA.MAP_END_INDEX,
-                       BG_SELECTIONMASK_METADATA.TILES_START_INDEX);
-
-    pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX] = 0;
-    pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 1] = 0;
-    pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 2] = 0;
-    pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 3] = 0;
-
-    EFFECT_setUpBlend(BLD_BG1, BLD_BG2);
-    EFFECT_setBlendAlpha(24);
+    highlighter->initialize();
+    hasStarted = true;
   }
 
-  i += inc;
-  LOG(i);
-  EFFECT_setBlendAlpha(i);
-  if (i == MIN_BLEND || i == MAX_BLEND)
-    inc *= -1;
+  // TODO: DEBUG CRASH
+  if (KEY_DOWNLEFT(keys))
+    highlighter->select(highlighter->getSelectedItem() - 1);
+  if (KEY_DOWNRIGHT(keys))
+    highlighter->select(highlighter->getSelectedItem() + 1);
 
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     char* name;
