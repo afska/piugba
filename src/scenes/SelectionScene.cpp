@@ -41,6 +41,8 @@ std::vector<Sprite*> SelectionScene::sprites() {
   for (u32 i = 0; i < ARROW_SELECTORS; i++)
     sprites.push_back(arrowSelectors[i]->get());
 
+  combo->render(&sprites);
+
   return sprites;
 }
 
@@ -49,6 +51,7 @@ void SelectionScene::load() {
   setUpPalettes();
   setUpBackground();
   setUpArrows();
+  combo = std::unique_ptr<Combo>{new Combo()};
 
   TextStream::instance().setText("Run to You", 15, 6);
 }
@@ -62,11 +65,14 @@ void SelectionScene::tick(u16 keys) {
 
   for (auto& it : arrowSelectors)
     it->tick();
+  combo->tick();
 
   processKeys(keys);
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
     highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
+    combo->setValue(245);
+    combo->show();
     return;
   }
 
@@ -76,47 +82,23 @@ void SelectionScene::tick(u16 keys) {
     return;
   }
 
-  // if (keys & KEY_ANY && !engine->isTransitioning()) {
-  //   char* name;
-  //   u8 level;
+  if (keys & KEY_ANY && !engine->isTransitioning()) {
+    char* name;
+    u8 level;
 
-  //   if (keys & KEY_SELECT) {
-  //     name = (char*)"With my Lover";
-  //     level = 10;
-  //   } else if (keys & KEY_UP) {
-  //     name = (char*)"Witch Doctor";
-  //     level = 16;
-  //   } else if (keys & KEY_B) {
-  //     name = (char*)"Beat of the War 2";
-  //     level = 16;
-  //   } else if (keys & KEY_A) {
-  //     name = (char*)"Tepris";
-  //     level = 16;
-  //   } else if (keys & KEY_L) {
-  //     name = (char*)"Beethoven Virus";
-  //     level = 7;
-  //   } else if (keys & KEY_R) {
-  //     name = (char*)"Beethoven Virus";
-  //     level = 13;
-  //   } else if (keys & KEY_LEFT) {
-  //     name = (char*)"Run to You";
-  //     level = 5;
-  //   } else if (keys & KEY_RIGHT) {
-  //     name = (char*)"414-Run to You";
-  //     level = 12;
-  //   } else if (keys & KEY_START) {
-  //     name = (char*)"Extravaganza";
-  //     level = 11;
-  //   } else {
-  //     return;
-  //   }
+    if (keys & KEY_RIGHT) {
+      name = (char*)"414-Run to You";
+      level = 12;
+    } else {
+      return;
+    }
 
-  //   Song* song = Song_parse(fs, SongFile(name));
-  //   Chart* chart = Song_findChartByLevel(song, level);
+    Song* song = Song_parse(fs, SongFile(name));
+    Chart* chart = Song_findChartByLevel(song, level);
 
-  //   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-  //                               new FadeOutScene(2));
-  // }
+    engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
+                                new FadeOutScene(2));
+  }
 }
 
 void SelectionScene::setUpPalettes() {
