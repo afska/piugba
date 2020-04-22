@@ -42,7 +42,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
   for (u32 i = 0; i < ARROW_SELECTORS; i++)
     sprites.push_back(arrowSelectors[i]->get());
 
-  combo->render(&sprites);
+  progress->render(&sprites);
 
   return sprites;
 }
@@ -52,7 +52,8 @@ void SelectionScene::load() {
   setUpPalettes();
   setUpBackground();
   setUpArrows();
-  combo = std::unique_ptr<Combo>{new Combo()};
+  progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
+  progress->setValue(245, 800);
 
   TextStream::instance().setText("Run to You", 15, 6);
 }
@@ -66,14 +67,11 @@ void SelectionScene::tick(u16 keys) {
 
   for (auto& it : arrowSelectors)
     it->tick();
-  combo->tick();
 
   processKeys(keys);
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
     highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
-    combo->setValue(245);
-    combo->show();
     return;
   }
 

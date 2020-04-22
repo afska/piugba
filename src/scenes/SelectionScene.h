@@ -10,7 +10,7 @@
 
 #include "gameplay/Library.h"
 #include "objects/ArrowSelector.h"
-#include "objects/score/combo/Combo.h"
+#include "objects/NumericProgress.h"
 #include "ui/Highlighter.h"
 
 class SelectionScene : public Scene {
@@ -29,7 +29,7 @@ class SelectionScene : public Scene {
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
-  std::unique_ptr<Combo> combo;
+  std::unique_ptr<NumericProgress> progress;
 
   void setUpPalettes();
   void setUpBackground();
