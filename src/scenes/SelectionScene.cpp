@@ -23,6 +23,8 @@ const u32 ARROW_SELECTORS = 4;
 const u32 SELECTOR_PREVIOUS_SONG = 0;
 const u32 SELECTOR_NEXT_SONG = 3;
 const u32 SELECTOR_MARGIN = 3;
+const u32 TEXT_ROW = 13;
+const u32 TEXT_MIDDLE_COL = 12;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -55,7 +57,8 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   progress->setValue(245, 800);
 
-  TextStream::instance().setText("Run to You", 15, 6);
+  TextStream::instance().setText("Run to You", TEXT_ROW,
+                                 TEXT_MIDDLE_COL - strlen("Run to You") / 2);
 }
 
 void SelectionScene::tick(u16 keys) {
