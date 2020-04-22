@@ -5,7 +5,7 @@
 
 #include "SelectionScene.h"
 #include "StageBreakScene.h"
-#include "data/content/compiled/shared_palette.h"
+#include "data/content/compiled/palette_song.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
 #include "utils/BackgroundUtils.h"
@@ -103,9 +103,8 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::setUpPalettes() {
-  foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          shared_palettePal, sizeof(shared_palettePal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
+      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal)));
 
   u32 backgroundPaletteLength;
   auto backgroundPaletteData = (COLOR*)gbfs_get_obj(

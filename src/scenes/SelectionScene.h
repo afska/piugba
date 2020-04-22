@@ -6,7 +6,10 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <vector>
+
 #include "gameplay/Library.h"
+#include "objects/ArrowHolder.h"
 #include "ui/Highlighter.h"
 
 class SelectionScene : public Scene {
@@ -22,11 +25,13 @@ class SelectionScene : public Scene {
   ~SelectionScene();
 
  private:
-  std::unique_ptr<Background> bg;
   bool hasStarted = false;
+  std::unique_ptr<Background> bg;
+  std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
 
   void setUpPalettes();
   void setUpBackground();
+  void setUpSprites();
 };
 
 #endif  // SELECTION_SCENE_H

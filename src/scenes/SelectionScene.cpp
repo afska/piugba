@@ -3,6 +3,8 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
+#include "data/content/compiled/palette_selection.h"
+#include "data/content/compiled/spr_arrows.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
@@ -17,6 +19,7 @@ const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
+const u32 ARROW_HOLDERS = 4;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -33,6 +36,9 @@ std::vector<Background*> SelectionScene::backgrounds() {
 std::vector<Sprite*> SelectionScene::sprites() {
   std::vector<Sprite*> sprites;
 
+  for (u32 i = 0; i < ARROW_HOLDERS; i++)
+    sprites.push_back(arrowHolders[i]->get());
+
   return sprites;
 }
 
@@ -40,11 +46,15 @@ void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   setUpPalettes();
   setUpBackground();
+  setUpSprites();
 
   TextStream::instance().setText("Run to You", 15, 6);
 }
 
 void SelectionScene::tick(u16 keys) {
+  for (auto& it : arrowHolders)
+    it->tick();
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, true, false);
     highlighter->initialize();
@@ -104,6 +114,10 @@ void SelectionScene::tick(u16 keys) {
 }
 
 void SelectionScene::setUpPalettes() {
+  foregroundPalette =
+      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
+          palette_selectionPal, sizeof(palette_selectionPal)));
+
   u32 backgroundPaletteLength;
   auto backgroundPaletteData =
       (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
@@ -123,6 +137,18 @@ void SelectionScene::setUpBackground() {
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+}
+
+void SelectionScene::setUpSprites() {
+  for (u32 i = 0; i < ARROW_HOLDERS; i++) {
+    auto arrowHolder = std::unique_ptr<ArrowHolder>{
+        new ArrowHolder(static_cast<ArrowDirection>(i))};
+    if (i == 0) {
+      arrowHolder->get()->setData((void*)spr_arrowsTiles);
+      arrowHolder->get()->setImageSize(sizeof(spr_arrowsTiles));
+    }
+    arrowHolders.push_back(std::move(arrowHolder));
+  }
 }
 
 SelectionScene::~SelectionScene() {}

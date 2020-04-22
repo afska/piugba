@@ -1,6 +1,6 @@
 #include "Highlighter.h"
 
-#include "data/bg_selectionmask.h"
+#include "data/custom/bg_selectionmask.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 
