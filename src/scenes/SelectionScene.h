@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "gameplay/Library.h"
-#include "objects/ArrowHolder.h"
+#include "objects/ArrowSelector.h"
 #include "ui/Highlighter.h"
 
 class SelectionScene : public Scene {
@@ -27,11 +27,12 @@ class SelectionScene : public Scene {
  private:
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
-  std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
+  std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
 
   void setUpPalettes();
   void setUpBackground();
-  void setUpSprites();
+  void setUpArrows();
+  void processKeys(u16 keys);
 };
 
 #endif  // SELECTION_SCENE_H

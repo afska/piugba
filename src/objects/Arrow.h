@@ -31,6 +31,28 @@ const u32 ARROW_HEIGHT = 16;
 const u32 ARROW_MARGIN = ARROW_HEIGHT + 2;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
+inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
+  switch (direction) {
+    case ArrowDirection::DOWNLEFT:
+      start = ARROW_FRAMES * 0;
+      break;
+    case ArrowDirection::UPLEFT:
+      start = ARROW_FRAMES * 1;
+      break;
+    case ArrowDirection::CENTER:
+      start = ARROW_FRAMES * 2;
+      break;
+    case ArrowDirection::UPRIGHT:
+      start = ARROW_FRAMES * 1;
+      flip = true;
+      break;
+    case ArrowDirection::DOWNRIGHT:
+      start = ARROW_FRAMES * 0;
+      flip = true;
+      break;
+  }
+}
+
 class Arrow : public IPoolable {
  public:
   u32 id = 0;

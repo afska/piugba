@@ -40,26 +40,7 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   u32 start = 0;
   bool flip = false;
-  switch (direction) {
-    case ArrowDirection::DOWNLEFT:
-      start = ARROW_FRAMES * 0;
-      break;
-    case ArrowDirection::UPLEFT:
-      start = ARROW_FRAMES * 1;
-      break;
-    case ArrowDirection::CENTER:
-      start = ARROW_FRAMES * 2;
-      break;
-    case ArrowDirection::UPRIGHT:
-      start = ARROW_FRAMES * 1;
-      flip = true;
-      break;
-    case ArrowDirection::DOWNRIGHT:
-      start = ARROW_FRAMES * 0;
-      flip = true;
-      break;
-  }
-
+  ARROW_initialize(direction, start, flip);
   this->type = type;
   this->direction = direction;
   this->start = start;

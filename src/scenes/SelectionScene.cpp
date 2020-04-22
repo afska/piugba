@@ -4,7 +4,6 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "data/content/compiled/palette_selection.h"
-#include "data/content/compiled/spr_arrows.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
@@ -19,7 +18,10 @@ const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 ARROW_HOLDERS = 4;
+const u32 SONG_ITEMS = 4;
+const u32 ARROW_SELECTORS = 4;
+const u32 SELECTOR_PREVIOUS_SONG = 0;
+const u32 SELECTOR_NEXT_SONG = 3;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -36,8 +38,8 @@ std::vector<Background*> SelectionScene::backgrounds() {
 std::vector<Sprite*> SelectionScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 i = 0; i < ARROW_HOLDERS; i++)
-    sprites.push_back(arrowHolders[i]->get());
+  for (u32 i = 0; i < ARROW_SELECTORS; i++)
+    sprites.push_back(arrowSelectors[i]->get());
 
   return sprites;
 }
@@ -46,71 +48,75 @@ void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   setUpPalettes();
   setUpBackground();
-  setUpSprites();
+  setUpArrows();
 
   TextStream::instance().setText("Run to You", 15, 6);
 }
 
 void SelectionScene::tick(u16 keys) {
-  for (auto& it : arrowHolders)
-    it->tick();
-
   if (!hasStarted) {
     BACKGROUND_enable(true, true, true, false);
     highlighter->initialize();
     hasStarted = true;
   }
 
-  if (KEY_DOWNLEFT(keys)) {
+  for (auto& it : arrowSelectors)
+    it->tick();
+
+  processKeys(keys);
+
+  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
     highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
     return;
   }
-  if (KEY_DOWNRIGHT(keys)) {
-    highlighter->select(min(highlighter->getSelectedItem() + 1, 3));
+
+  if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+    highlighter->select(
+        min(highlighter->getSelectedItem() + 1, SONG_ITEMS - 1));
     return;
   }
 
-  if (keys & KEY_ANY && !engine->isTransitioning()) {
-    char* name;
-    u8 level;
+  // if (keys & KEY_ANY && !engine->isTransitioning()) {
+  //   char* name;
+  //   u8 level;
 
-    if (keys & KEY_SELECT) {
-      name = (char*)"With my Lover";
-      level = 10;
-    } else if (keys & KEY_UP) {
-      name = (char*)"Witch Doctor";
-      level = 16;
-    } else if (keys & KEY_B) {
-      name = (char*)"Beat of the War 2";
-      level = 16;
-    } else if (keys & KEY_A) {
-      name = (char*)"Tepris";
-      level = 16;
-    } else if (keys & KEY_L) {
-      name = (char*)"Beethoven Virus";
-      level = 7;
-    } else if (keys & KEY_R) {
-      name = (char*)"Beethoven Virus";
-      level = 13;
-    } else if (keys & KEY_LEFT) {
-      name = (char*)"Run to You";
-      level = 5;
-    } else if (keys & KEY_RIGHT) {
-      name = (char*)"414-Run to You";
-      level = 12;
-    } else if (keys & KEY_START) {
-      name = (char*)"Extravaganza";
-      level = 11;
-    } else {
-      return;
-    }
+  //   if (keys & KEY_SELECT) {
+  //     name = (char*)"With my Lover";
+  //     level = 10;
+  //   } else if (keys & KEY_UP) {
+  //     name = (char*)"Witch Doctor";
+  //     level = 16;
+  //   } else if (keys & KEY_B) {
+  //     name = (char*)"Beat of the War 2";
+  //     level = 16;
+  //   } else if (keys & KEY_A) {
+  //     name = (char*)"Tepris";
+  //     level = 16;
+  //   } else if (keys & KEY_L) {
+  //     name = (char*)"Beethoven Virus";
+  //     level = 7;
+  //   } else if (keys & KEY_R) {
+  //     name = (char*)"Beethoven Virus";
+  //     level = 13;
+  //   } else if (keys & KEY_LEFT) {
+  //     name = (char*)"Run to You";
+  //     level = 5;
+  //   } else if (keys & KEY_RIGHT) {
+  //     name = (char*)"414-Run to You";
+  //     level = 12;
+  //   } else if (keys & KEY_START) {
+  //     name = (char*)"Extravaganza";
+  //     level = 11;
+  //   } else {
+  //     return;
+  //   }
 
-    Song* song = Song_parse(fs, SongFile(name));
-    Chart* chart = Song_findChartByLevel(song, level);
+  //   Song* song = Song_parse(fs, SongFile(name));
+  //   Chart* chart = Song_findChartByLevel(song, level);
 
-    engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                                new FadeOutScene(2));
-  }
+  //   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
+  //                               new FadeOutScene(2));
+  // }
 }
 
 void SelectionScene::setUpPalettes() {
@@ -139,16 +145,22 @@ void SelectionScene::setUpBackground() {
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 }
 
-void SelectionScene::setUpSprites() {
-  for (u32 i = 0; i < ARROW_HOLDERS; i++) {
-    auto arrowHolder = std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i))};
-    if (i == 0) {
-      arrowHolder->get()->setData((void*)spr_arrowsTiles);
-      arrowHolder->get()->setImageSize(sizeof(spr_arrowsTiles));
-    }
-    arrowHolders.push_back(std::move(arrowHolder));
-  }
+void SelectionScene::setUpArrows() {
+  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
+      static_cast<ArrowDirection>(ArrowDirection::DOWNLEFT))});
+  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPLEFT))});
+  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPRIGHT))});
+  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
+      static_cast<ArrowDirection>(ArrowDirection::DOWNRIGHT))});
+}
+
+void SelectionScene::processKeys(u16 keys) {
+  arrowSelectors[0]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
+  arrowSelectors[2]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
 }
 
 SelectionScene::~SelectionScene() {}
