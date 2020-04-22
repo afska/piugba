@@ -22,6 +22,7 @@ const u32 SONG_ITEMS = 4;
 const u32 ARROW_SELECTORS = 4;
 const u32 SELECTOR_PREVIOUS_SONG = 0;
 const u32 SELECTOR_NEXT_SONG = 3;
+const u32 SELECTOR_MARGIN = 3;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -136,6 +137,15 @@ void SelectionScene::setUpArrows() {
       new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPRIGHT))});
   arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
       static_cast<ArrowDirection>(ArrowDirection::DOWNRIGHT))});
+
+  arrowSelectors[0]->get()->moveTo(
+      SELECTOR_MARGIN, GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
+  arrowSelectors[1]->get()->moveTo(SELECTOR_MARGIN, SELECTOR_MARGIN);
+  arrowSelectors[2]->get()->moveTo(
+      GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
+  arrowSelectors[3]->get()->moveTo(
+      GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
+      GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
 }
 
 void SelectionScene::processKeys(u16 keys) {

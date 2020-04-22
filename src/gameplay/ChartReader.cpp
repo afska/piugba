@@ -156,7 +156,7 @@ void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
                   [&direction, &head](Arrow* it) {
                     it->initialize(ArrowType::HOLD_FILL, direction);
                     it->get()->moveTo(head->get()->getX(),
-                                      head->get()->getY() + ARROW_HEIGHT -
+                                      head->get()->getY() + ARROW_SIZE -
                                           HOLD_ARROW_FILL_OFFSETS[direction]);
                   },
                   head->id);
@@ -187,7 +187,7 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
                 [&fill, &direction](Arrow* tail) {
                   tail->initialize(ArrowType::HOLD_TAIL, direction);
                   fill->get()->moveTo(tail->get()->getX(),
-                                      tail->get()->getY() - ARROW_HEIGHT +
+                                      tail->get()->getY() - ARROW_SIZE +
                                           HOLD_ARROW_TAIL_OFFSETS[direction]);
                 },
                 fill->id);
@@ -212,7 +212,7 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
 
     if (holdArrow->endTime == 0 &&
         holdArrow->lastFill->get()->getY() <
-            (int)(GBA_SCREEN_HEIGHT - ARROW_HEIGHT + ARROW_SPEED)) {
+            (int)(GBA_SCREEN_HEIGHT - ARROW_SIZE + ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction);
       });
