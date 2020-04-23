@@ -21,6 +21,8 @@ grit \
   spr_of.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
 mv \
+  spr_difficulties.h \
+  spr_difficulties.c \
   spr_of.h \
   spr_of.c \
   palette_selection.* \

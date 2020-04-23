@@ -45,6 +45,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
   for (u32 i = 0; i < ARROW_SELECTORS; i++)
     sprites.push_back(arrowSelectors[i]->get());
 
+  difficulty->render(&sprites);
   progress->render(&sprites);
 
   return sprites;
@@ -55,6 +56,7 @@ void SelectionScene::load() {
   setUpPalettes();
   setUpBackground();
   setUpArrows();
+  difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   progress->setValue(245, 800);
 

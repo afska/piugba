@@ -10,6 +10,7 @@
 
 #include "gameplay/Library.h"
 #include "objects/ArrowSelector.h"
+#include "objects/Difficulty.h"
 #include "objects/NumericProgress.h"
 
 class SelectionScene : public Scene {
@@ -28,6 +29,7 @@ class SelectionScene : public Scene {
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
+  std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
 
   void setUpPalettes();
