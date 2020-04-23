@@ -15,6 +15,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+// TODO: Undo all effects on unload
+
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
@@ -58,6 +60,7 @@ void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   setUpPalettes();
   setUpBackground();
+  setUpBlink();
   setUpArrows();
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
@@ -77,6 +80,7 @@ void SelectionScene::tick(u16 keys) {
     hasStarted = true;
   }
 
+  pixelBlink->tick();
   for (auto& it : arrowSelectors)
     it->tick();
 
@@ -85,23 +89,27 @@ void SelectionScene::tick(u16 keys) {
   if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
     difficulty->setValue(
         static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+    pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
     difficulty->setValue(static_cast<DifficultyLevel>(
         min((int)difficulty->getValue() + 1, MAX_DIFFICULTY)));
+    pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
     highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
+    pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
     highlighter->select(
         min(highlighter->getSelectedItem() + 1, SONG_ITEMS - 1));
+    pixelBlink->blink();
     return;
   }
 
@@ -148,6 +156,11 @@ void SelectionScene::setUpBackground() {
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+}
+
+void SelectionScene::setUpBlink() {
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
+  bg->setMosaic(true);
 }
 
 void SelectionScene::setUpArrows() {

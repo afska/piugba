@@ -12,6 +12,7 @@
 #include "objects/ArrowSelector.h"
 #include "objects/Difficulty.h"
 #include "objects/NumericProgress.h"
+#include "utils/PixelBlink.h"
 
 class SelectionScene : public Scene {
  public:
@@ -28,12 +29,14 @@ class SelectionScene : public Scene {
  private:
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
 
   void setUpPalettes();
   void setUpBackground();
+  void setUpBlink();
   void setUpArrows();
   void processKeys(u16 keys);
 };
