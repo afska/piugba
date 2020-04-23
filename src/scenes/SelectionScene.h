@@ -27,7 +27,7 @@ class SelectionScene : public Scene {
   ~SelectionScene();
 
  private:
-  bool hasStarted = false;
+  u32 init = 0;
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;

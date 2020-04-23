@@ -7,6 +7,14 @@
 #define HIDDEN_WIDTH GBA_SCREEN_WIDTH - 1
 #define HIDDEN_HEIGHT GBA_SCREEN_HEIGHT - 1
 
+inline void SPRITE_enable() {
+  REG_DISPCNT = REG_DISPCNT | DCNT_OBJ;
+}
+
+inline void SPRITE_disable() {
+  REG_DISPCNT = REG_DISPCNT & ~DCNT_OBJ;
+}
+
 inline void SPRITE_hide(Sprite* sprite) {
   sprite->moveTo(HIDDEN_WIDTH, HIDDEN_HEIGHT);
 }

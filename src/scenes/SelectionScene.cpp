@@ -18,6 +18,7 @@ extern "C" {
 
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
+const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 SONG_ITEMS = 4;
@@ -57,6 +58,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
 
 void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
+  SPRITE_disable();
   setUpPalettes();
   setUpBackground();
   setUpBlink();
@@ -73,10 +75,14 @@ void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  if (!hasStarted) {
+  if (init < INIT_FRAME) {
+    init++;
+    return;
+  } else if (init == INIT_FRAME) {
     BACKGROUND_enable(true, true, true, false);
+    SPRITE_enable();
     highlighter->initialize();
-    hasStarted = true;
+    init++;
   }
 
   pixelBlink->tick();
