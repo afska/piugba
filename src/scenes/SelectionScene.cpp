@@ -9,13 +9,12 @@
 #include "scenes/SongScene.h"
 #include "ui/Highlighter.h"
 #include "utils/BackgroundUtils.h"
+#include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
-
-// TODO: Undo all effects on unload
 
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
@@ -190,4 +189,7 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
 }
 
-SelectionScene::~SelectionScene() {}
+SelectionScene::~SelectionScene() {
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
+}

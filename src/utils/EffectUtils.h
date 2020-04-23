@@ -19,8 +19,17 @@ inline void EFFECT_setBlendAlpha(u8 topOpacity) {
   REG_BLDALPHA = BLDA_BUILD(topOpacity, MAX_BLEND - topOpacity);
 }
 
+inline void EFFECT_turnOffBlend() {
+  REG_BLDCNT = BLD_BUILD(0, 0, BLD_MODE_OFF);
+}
+
+// Value is in [0, 15]
 inline void EFFECT_setMosaic(u8 value) {
   REG_MOSAIC = MOS_BUILD(value, value, value, value);
+}
+
+inline void EFFECT_turnOffMosaic() {
+  REG_MOSAIC = MOS_BUILD(0, 0, 0, 0);
 }
 
 #endif  // EFFECT_UTILS_H

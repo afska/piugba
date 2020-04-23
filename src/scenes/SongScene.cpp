@@ -225,6 +225,7 @@ void SongScene::unload() {
 }
 
 SongScene::~SongScene() {
+  EFFECT_turnOffBlend();
   arrowHolders.clear();
   fakeHeads.clear();
   Song_free(song);
