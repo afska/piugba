@@ -17,6 +17,7 @@ grit \
   spr_arrows.bmp \
   spr_combo.bmp \
   spr_numbers.bmp \
+  spr_difficulties.bmp \
   spr_of.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
 mv \

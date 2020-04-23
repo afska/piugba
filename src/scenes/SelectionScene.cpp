@@ -93,8 +93,8 @@ void SelectionScene::tick(u16 keys) {
     u8 level;
 
     if (keys & KEY_RIGHT) {
-      name = (char*)"414-Run to You";
-      level = 12;
+      name = (char*)"404-Solitary";
+      level = 18;
     } else {
       return;
     }
