@@ -17,7 +17,7 @@ void Highlighter::initialize() {
   loadTiles();
   loadMap();
 
-  EFFECT_setUpBlend(BLD_BG[id], BLD_BG[id + 1]);
+  EFFECT_setUpBlend(BLD_BG0 | BLD_BG[id], BLD_BG[id + 1]);
   EFFECT_setBlendAlpha(OPACITY);
 }
 
