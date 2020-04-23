@@ -7,6 +7,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
+#include "ui/Highlighter.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/SpriteUtils.h"
 
@@ -62,6 +63,9 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
+  if (engine->isTransitioning())
+    return;
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, true, false);
     highlighter->initialize();

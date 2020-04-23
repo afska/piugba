@@ -8,15 +8,21 @@
 #include "data/content/compiled/palette_song.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
+#include "ui/Darkener.h"
 #include "utils/BackgroundUtils.h"
+#include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
+const u32 ID_DARKENER = 0;
+const u32 ID_MAIN_BACKGROUND = 1;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_MAP = 24;
+
+static std::unique_ptr<Darkener> darkener{new Darkener(ID_DARKENER)};
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -53,7 +59,7 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   player_play(song->audioPath.c_str());
 
-  BACKGROUND_enable(true, false, false, false);
+  BACKGROUND_enable(false, false, false, false);
   setUpPalettes();
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
@@ -76,6 +82,12 @@ void SongScene::load() {
 void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    darkener->initialize();
+    hasStarted = true;
+  }
 
   if (PlaybackState.hasFinished) {
     unload();
@@ -122,9 +134,10 @@ void SongScene::setUpBackground() {
   auto backgroundMapData =
       gbfs_get_obj(fs, song->backgroundMapPath.c_str(), &backgroundMapLength);
 
-  bg = std::unique_ptr<Background>(
-      new Background(0, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
+  bg = std::unique_ptr<Background>(new Background(
+      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
+      backgroundMapData, backgroundMapLength));
+  bg->useCharBlock(0);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 }
 

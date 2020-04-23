@@ -11,7 +11,6 @@
 #include "gameplay/Library.h"
 #include "objects/ArrowSelector.h"
 #include "objects/NumericProgress.h"
-#include "ui/Highlighter.h"
 
 class SelectionScene : public Scene {
  public:

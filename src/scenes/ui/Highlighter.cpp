@@ -4,7 +4,7 @@
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 
-const u32 OPACITY = 10;  // 0~16
+const u32 OPACITY = 10;
 
 Highlighter::Highlighter(u8 id) {
   this->id = id;
@@ -35,10 +35,10 @@ void Highlighter::loadPalette() {
                          BG_SELECTIONMASK_METADATA.PALETTE_LENGTH,
                          BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX);
 
-  pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX] = 0;
-  pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 1] = 0;
-  pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 2] = 0;
-  pal_bg_mem[BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 3] = 0;
+  BACKGROUND_setColor(BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX, 0);
+  BACKGROUND_setColor(BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 1, 0);
+  BACKGROUND_setColor(BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 2, 0);
+  BACKGROUND_setColor(BG_SELECTIONMASK_METADATA.PALETTE_START_INDEX + 3, 0);
 }
 
 void Highlighter::loadTiles() {

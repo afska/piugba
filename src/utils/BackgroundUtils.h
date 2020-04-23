@@ -53,4 +53,28 @@ inline void BACKGROUND_loadMap(const unsigned int data[],
                                           : transparentColor;
 }
 
+inline void BACKGROUND_setColor(u8 index, u8 value) {
+  pal_bg_mem[index] = value;
+}
+
+inline void BACKGROUND_createSolidTile(u8 charblock, u8 tile, u8 colorIndex) {
+  for (u8 line = 0; line < 8; line++) {
+    tile8_mem[charblock][tile].data[line * 2] =
+        (colorIndex << 0) + (colorIndex << 8) + (colorIndex << 16) +
+        (colorIndex << 24);
+    tile8_mem[charblock][tile].data[line * 2 + 1] =
+        (colorIndex << 0) + (colorIndex << 8) + (colorIndex << 16) +
+        (colorIndex << 24);
+  }
+}
+
+template <typename T>
+inline void BACKGROUND_fillMap(u8 screenblock, T getTile) {
+  for (u32 i = 0; i < 1024; i++) {
+    u8 row = i / 32;
+    u8 col = i % 32;
+    se_mem[screenblock][i] = getTile(row, col);
+  }
+}
+
 #endif  // BACKGROUND_UTILS_H
