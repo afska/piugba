@@ -21,11 +21,14 @@ const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 SONG_ITEMS = 4;
 const u32 ARROW_SELECTORS = 4;
+const u32 SELECTOR_PREVIOUS_DIFFICULTY = 1;
+const u32 SELECTOR_NEXT_DIFFICULTY = 2;
 const u32 SELECTOR_PREVIOUS_SONG = 0;
 const u32 SELECTOR_NEXT_SONG = 3;
 const u32 SELECTOR_MARGIN = 3;
 const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
+const u32 MAX_DIFFICULTY = 2;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -78,6 +81,18 @@ void SelectionScene::tick(u16 keys) {
     it->tick();
 
   processKeys(keys);
+
+  if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
+    difficulty->setValue(
+        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+    return;
+  }
+
+  if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
+    difficulty->setValue(static_cast<DifficultyLevel>(
+        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY)));
+    return;
+  }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
     highlighter->select(max(highlighter->getSelectedItem() - 1, 0));

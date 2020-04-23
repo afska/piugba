@@ -6,7 +6,7 @@
 #include "utils/SpriteUtils.h"
 
 const u32 POSITION_X = 79;
-const u32 POSITION_Y = 15;
+const u32 POSITION_Y = 16;
 const u32 FRAME_NOR = 0;
 const u32 FRAME_MAL = 1;
 const u32 FRAME_HARD = 2;
