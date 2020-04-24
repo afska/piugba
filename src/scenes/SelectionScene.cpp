@@ -166,6 +166,7 @@ void SelectionScene::setUpBackground() {
 void SelectionScene::setUpBlink() {
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
   bg->setMosaic(true);
+  REG_BG1CNT = REG_BG1CNT | 1 << 6;
 }
 
 void SelectionScene::setUpArrows() {

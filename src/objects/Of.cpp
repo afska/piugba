@@ -7,7 +7,7 @@
 Of::Of(u32 x, u32 y) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_ofTiles, sizeof(spr_ofTiles))
-               .withSize(SIZE_64_32)
+               .withSize(SIZE_32_16)
                .withLocation(x, y)
                .buildPtr();
 }
