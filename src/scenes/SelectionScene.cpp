@@ -65,7 +65,7 @@ void SelectionScene::load() {
   setUpArrows();
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  progress->setValue(245, 800);
+  progress->setValue(23, 96);
 
   TextStream::instance().setText("Run to You", TEXT_ROW,
                                  TEXT_MIDDLE_COL - strlen("Run to You") / 2);
