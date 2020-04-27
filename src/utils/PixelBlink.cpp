@@ -13,11 +13,21 @@ void PixelBlink::blink() {
   isBlinking = true;
 }
 
+void PixelBlink::blinkAndThen(std::function<void()> callback) {
+  blink();
+  this->callback = callback;
+}
+
 void PixelBlink::tick() {
   if (isBlinking) {
     step++;
-    if (step == TARGET_VALUE)
+    if (step == TARGET_VALUE) {
       isBlinking = false;
+      if (callback != NULL) {
+        callback();
+        callback = NULL;
+      }
+    }
   } else
     step = max(step - 1, 0);
 

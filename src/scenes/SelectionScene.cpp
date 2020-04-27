@@ -63,6 +63,7 @@ void SelectionScene::load() {
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
   setUpPager();
 
   setUpSpritesPalette();
@@ -144,7 +145,6 @@ void SelectionScene::setUpBackground() {
   bg->persist();
 
   TextStream::instance().setFontColor(TEXT_COLOR);
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
 }
 
 void SelectionScene::setUpArrows() {
@@ -225,10 +225,9 @@ void SelectionScene::processSelectionChange() {
     else {
       selected++;
       updatePage();
+      highlighter->select(selected);
+      pixelBlink->blink();
     }
-
-    highlighter->select(selected);
-    pixelBlink->blink();
 
     return;
   }
@@ -242,10 +241,9 @@ void SelectionScene::processSelectionChange() {
     else {
       selected--;
       updatePage();
+      highlighter->select(selected);
+      pixelBlink->blink();
     }
-
-    highlighter->select(selected);
-    pixelBlink->blink();
 
     return;
   }
@@ -264,9 +262,15 @@ void SelectionScene::setPage(u32 page, int direction) {
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
   songs.clear();
   songs = library->getSongs(0, 0);  // TODO: Use start & count
-  setUpBackground();
 
-  updatePage();
+  highlighter->select(selected);
+  if (direction == 0)
+    setUpBackground();
+  else
+    pixelBlink->blinkAndThen([this]() {
+      setUpBackground();
+      updatePage();
+    });
 }
 
 void SelectionScene::setName(std::string name) {
