@@ -65,10 +65,7 @@ void SelectionScene::load() {
   setUpArrows();
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  progress->setValue(23, 96);
-
-  TextStream::instance().setText("Run to You", TEXT_ROW,
-                                 TEXT_MIDDLE_COL - strlen("Run to You") / 2);
+  setUpPager();
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -92,28 +89,43 @@ void SelectionScene::tick(u16 keys) {
   processKeys(keys);
 
   if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
-    difficulty->setValue(
-        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+    auto newValue =
+        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0));
+    if (newValue == difficulty->getValue())
+      return;
+
+    difficulty->setValue(newValue);
     pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
-    difficulty->setValue(static_cast<DifficultyLevel>(
-        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY)));
+    auto newValue = static_cast<DifficultyLevel>(
+        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY));
+    if (newValue == difficulty->getValue())
+      return;
+
+    difficulty->setValue(newValue);
     pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
-    highlighter->select(max(highlighter->getSelectedItem() - 1, 0));
+    auto newValue = max(highlighter->getSelectedItem() - 1, 0);
+    if (newValue == highlighter->getSelectedItem())
+      return;
+
+    highlighter->select(newValue);
     pixelBlink->blink();
     return;
   }
 
   if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
-    highlighter->select(
-        min(highlighter->getSelectedItem() + 1, SONG_ITEMS - 1));
+    auto newValue = min(highlighter->getSelectedItem() + 1, SONG_ITEMS - 1);
+    if (newValue == highlighter->getSelectedItem())
+      return;
+
+    highlighter->select(newValue);
     pixelBlink->blink();
     return;
   }
@@ -189,11 +201,21 @@ void SelectionScene::setUpArrows() {
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
 }
 
+void SelectionScene::setUpPager() {
+  progress->setValue(23, 96);
+  updateName("Run to You");
+}
+
 void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
   arrowSelectors[2]->setIsPressed(KEY_UPRIGHT(keys));
   arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
+}
+
+void SelectionScene::updateName(std::string name) {
+  TextStream::instance().setText(name, TEXT_ROW,
+                                 TEXT_MIDDLE_COL - name.length() / 2);
 }
 
 SelectionScene::~SelectionScene() {

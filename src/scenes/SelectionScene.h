@@ -33,12 +33,16 @@ class SelectionScene : public Scene {
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
+  u32 page = 0;
+  u32 count = 0;
 
   void setUpPalettes();
   void setUpBackground();
   void setUpBlink();
   void setUpArrows();
+  void setUpPager();
   void processKeys(u16 keys);
+  void updateName(std::string name);
 };
 
 #endif  // SELECTION_SCENE_H
