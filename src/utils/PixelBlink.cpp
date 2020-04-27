@@ -4,7 +4,7 @@
 
 #include "EffectUtils.h"
 
-const u32 TARGET_VALUE = 7;
+const u32 TARGET_VALUE = 6;
 
 PixelBlink::PixelBlink() {}
 
