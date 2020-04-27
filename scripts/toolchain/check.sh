@@ -8,7 +8,10 @@ function try {
 }
 
 try gbfs > /dev/null
+try pngfix > /dev/null
+echo ""
 echo "✔️  gbfs"
+echo "✔️  pngfix"
 
 try ffmpeg -version > /dev/null
 echo "✔️  ffmpeg"
