@@ -29,7 +29,7 @@ class SelectionScene : public Scene {
  private:
   u32 init = 0;
   std::vector<std::unique_ptr<SongFile>> songs;
-  u32 page = 999;  // starts at zero in load(...)
+  u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
   std::unique_ptr<Background> bg;
@@ -42,11 +42,14 @@ class SelectionScene : public Scene {
   void setUpBackground();
   void setUpArrows();
   void setUpPager();
+
   SongFile* getSelectedSong();
   u32 getSelectedSongIndex();
+
   void processKeys(u16 keys);
   void processDifficultyChange();
   void processSelectionChange();
+
   void updatePage();
   void setPage(u32 page, int direction);
   void setName(std::string name);

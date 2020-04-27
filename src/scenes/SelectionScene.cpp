@@ -119,9 +119,9 @@ void SelectionScene::setUpSpritesPalette() {
 void SelectionScene::setUpBackground() {
   auto backgroundFile = "_sel_" + std::to_string(page * PAGE_SIZE) + "-" +
                         std::to_string((page + 1) * PAGE_SIZE - 1);
-  auto backgroundPaletteFile = backgroundFile + ".pal.bin";
-  auto backgroundTilesFile = backgroundFile + ".img.bin";
-  auto backgroundMapFile = backgroundFile + ".map.bin";
+  auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
+  auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
+  auto backgroundMapFile = backgroundFile + BACKGROUND_MAP_EXTENSION;
 
   u32 backgroundPaletteLength;
   auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
@@ -258,8 +258,7 @@ void SelectionScene::setPage(u32 page, int direction) {
   this->page = page;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
   songs.clear();
-  songs = library->getSongs(0, 0);  // TODO: PAGINATION
-  // TODO: Update BG, etc
+  songs = library->getSongs(0, 0);  // TODO: Use start & count
   setUpBackground();
 
   updatePage();
