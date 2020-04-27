@@ -64,7 +64,7 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   setUpPager();
 
-  setUpPalettes();
+  setUpSpritesPalette();
   setUpBackground();
   setUpArrows();
 }
@@ -110,25 +110,31 @@ void SelectionScene::tick(u16 keys) {
   // }
 }
 
-void SelectionScene::setUpPalettes() {
+void SelectionScene::setUpSpritesPalette() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
           palette_selectionPal, sizeof(palette_selectionPal)));
-
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, "_sel_0-3.pal.bin", &backgroundPaletteLength);
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
 }
 
 void SelectionScene::setUpBackground() {
+  auto backgroundFile = "_sel_" + std::to_string(page * PAGE_SIZE) + "-" +
+                        std::to_string((page + 1) * PAGE_SIZE - 1);
+  auto backgroundPaletteFile = backgroundFile + ".pal.bin";
+  auto backgroundTilesFile = backgroundFile + ".img.bin";
+  auto backgroundMapFile = backgroundFile + ".map.bin";
+
+  u32 backgroundPaletteLength;
+  auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
+      fs, backgroundPaletteFile.c_str(), &backgroundPaletteLength);
+  backgroundPalette =
+      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+          backgroundPaletteData, backgroundPaletteLength));
+
   u32 backgroundTilesLength, backgroundMapLength;
   auto backgroundTilesData =
-      gbfs_get_obj(fs, "_sel_0-3.img.bin", &backgroundTilesLength);
+      gbfs_get_obj(fs, backgroundTilesFile.c_str(), &backgroundTilesLength);
   auto backgroundMapData =
-      gbfs_get_obj(fs, "_sel_0-3.map.bin", &backgroundMapLength);
+      gbfs_get_obj(fs, backgroundMapFile.c_str(), &backgroundMapLength);
   bg = std::unique_ptr<Background>(new Background(
       ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
       backgroundMapData, backgroundMapLength));

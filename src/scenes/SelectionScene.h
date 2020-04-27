@@ -38,7 +38,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
 
-  void setUpPalettes();
+  void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
   void setUpPager();
