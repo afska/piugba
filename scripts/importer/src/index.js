@@ -81,7 +81,7 @@ songs.forEach((song, i) => {
     });
     lastSelectorBuilt = i;
 
-    const name = `_sel_${from}-${to}`;
+    const name = `_sel_${from}`;
     utils.report(
       () => importers.selector(name, options, OUTPUT_PATH),
       "selector"

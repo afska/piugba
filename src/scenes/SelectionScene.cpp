@@ -31,6 +31,7 @@ const u32 SELECTOR_MARGIN = 3;
 const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
+const u32 TEXT_COLOR = 0x7FFF;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -116,8 +117,7 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
-  auto backgroundFile = "_sel_" + std::to_string(getPageStart()) + "-" +
-                        std::to_string(getPageEnd());
+  auto backgroundFile = "_sel_" + std::to_string(getPageStart());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
   auto backgroundMapFile = backgroundFile + BACKGROUND_MAP_EXTENSION;
@@ -128,6 +128,7 @@ void SelectionScene::setUpBackground() {
   backgroundPalette =
       std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
           backgroundPaletteData, backgroundPaletteLength));
+  backgroundPalette->persist();
 
   u32 backgroundTilesLength, backgroundMapLength;
   auto backgroundTilesData =
@@ -142,6 +143,7 @@ void SelectionScene::setUpBackground() {
   bg->setMosaic(true);
   bg->persist();
 
+  TextStream::instance().setFontColor(TEXT_COLOR);
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
 }
 
@@ -180,10 +182,6 @@ u32 SelectionScene::getSelectedSongIndex() {
 
 u32 SelectionScene::getPageStart() {
   return page * PAGE_SIZE;
-}
-
-u32 SelectionScene::getPageEnd() {
-  return (page + 1) * PAGE_SIZE - 1;
 }
 
 void SelectionScene::processKeys(u16 keys) {

@@ -46,7 +46,6 @@ class SelectionScene : public Scene {
   SongFile* getSelectedSong();
   u32 getSelectedSongIndex();
   u32 getPageStart();
-  u32 getPageEnd();
 
   void processKeys(u16 keys);
   void processDifficultyChange();
