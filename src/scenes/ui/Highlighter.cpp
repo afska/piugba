@@ -26,10 +26,6 @@ void Highlighter::select(u8 option) {
   loadTiles();
 }
 
-u8 Highlighter::getSelectedItem() {
-  return selectedItem;
-}
-
 void Highlighter::loadPalette() {
   BACKGROUND_loadPalette(BG_SELECTIONMASK_PALETTE,
                          BG_SELECTIONMASK_METADATA.PALETTE_LENGTH,

@@ -21,7 +21,7 @@ const u32 ID_MAIN_BACKGROUND = 2;
 const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 SONG_ITEMS = 4;
+const u32 PAGE_SIZE = 4;
 const u32 ARROW_SELECTORS = 4;
 const u32 SELECTOR_PREVIOUS_DIFFICULTY = 1;
 const u32 SELECTOR_NEXT_DIFFICULTY = 2;
@@ -59,13 +59,14 @@ std::vector<Sprite*> SelectionScene::sprites() {
 void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
-  setUpPalettes();
-  setUpBackground();
-  setUpBlink();
-  setUpArrows();
+
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   setUpPager();
+
+  setUpPalettes();
+  setUpBackground();
+  setUpArrows();
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -87,66 +88,26 @@ void SelectionScene::tick(u16 keys) {
     it->tick();
 
   processKeys(keys);
+  processDifficultyChange();
+  processSelectionChange();
 
-  if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
-    auto newValue =
-        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0));
-    if (newValue == difficulty->getValue())
-      return;
+  // if (keys & KEY_ANY && !engine->isTransitioning()) {
+  //   char* name;
+  //   u8 level;
 
-    difficulty->setValue(newValue);
-    pixelBlink->blink();
-    return;
-  }
+  //   if (keys & KEY_RIGHT) {
+  //     name = (char*)"404-Solitary";
+  //     level = 18;
+  //   } else {
+  //     return;
+  //   }
 
-  if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
-    auto newValue = static_cast<DifficultyLevel>(
-        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY));
-    if (newValue == difficulty->getValue())
-      return;
+  //   Song* song = Song_parse(fs, SongFile(name));
+  //   Chart* chart = Song_findChartByLevel(song, level);
 
-    difficulty->setValue(newValue);
-    pixelBlink->blink();
-    return;
-  }
-
-  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
-    auto newValue = max(highlighter->getSelectedItem() - 1, 0);
-    if (newValue == highlighter->getSelectedItem())
-      return;
-
-    highlighter->select(newValue);
-    pixelBlink->blink();
-    return;
-  }
-
-  if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
-    auto newValue = min(highlighter->getSelectedItem() + 1, SONG_ITEMS - 1);
-    if (newValue == highlighter->getSelectedItem())
-      return;
-
-    highlighter->select(newValue);
-    pixelBlink->blink();
-    return;
-  }
-
-  if (keys & KEY_ANY && !engine->isTransitioning()) {
-    char* name;
-    u8 level;
-
-    if (keys & KEY_RIGHT) {
-      name = (char*)"404-Solitary";
-      level = 18;
-    } else {
-      return;
-    }
-
-    Song* song = Song_parse(fs, SongFile(name));
-    Chart* chart = Song_findChartByLevel(song, level);
-
-    engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                                new FadeOutScene(2));
-  }
+  //   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
+  //                               new FadeOutScene(2));
+  // }
 }
 
 void SelectionScene::setUpPalettes() {
@@ -173,9 +134,7 @@ void SelectionScene::setUpBackground() {
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
-}
 
-void SelectionScene::setUpBlink() {
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
   bg->setMosaic(true);
   REG_BG1CNT = REG_BG1CNT | 1 << 6;
@@ -202,8 +161,16 @@ void SelectionScene::setUpArrows() {
 }
 
 void SelectionScene::setUpPager() {
-  progress->setValue(23, 96);
-  updateName("Run to You");
+  count = library->getCount();
+  setPage(0, 0);
+}
+
+SongFile* SelectionScene::getSelectedSong() {
+  return songs[getSelectedSongIndex()].get();
+}
+
+u32 SelectionScene::getSelectedSongIndex() {
+  return page * PAGE_SIZE + selected;
 }
 
 void SelectionScene::processKeys(u16 keys) {
@@ -213,7 +180,86 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
 }
 
-void SelectionScene::updateName(std::string name) {
+void SelectionScene::processDifficultyChange() {
+  if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
+    auto newValue =
+        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0));
+    if (newValue == difficulty->getValue())
+      return;
+
+    difficulty->setValue(newValue);
+    pixelBlink->blink();
+    return;
+  }
+
+  if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
+    auto newValue = static_cast<DifficultyLevel>(
+        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY));
+    if (newValue == difficulty->getValue())
+      return;
+
+    difficulty->setValue(newValue);
+    pixelBlink->blink();
+    return;
+  }
+}
+
+void SelectionScene::processSelectionChange() {
+  if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+    if (getSelectedSongIndex() == count - 1)
+      return;
+
+    if (selected == PAGE_SIZE - 1)
+      setPage(page + 1, 1);
+    else {
+      selected++;
+      updatePage();
+    }
+
+    highlighter->select(selected);
+    pixelBlink->blink();
+
+    return;
+  }
+
+  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
+    if (page == 0 && selected == 0)
+      return;
+
+    if (selected == 0)
+      setPage(page - 1, -1);
+    else {
+      selected--;
+      updatePage();
+    }
+
+    highlighter->select(selected);
+    pixelBlink->blink();
+
+    return;
+  }
+}
+
+void SelectionScene::updatePage() {
+  auto selectedSong = getSelectedSong();
+
+  setName(selectedSong->name);
+}
+
+void SelectionScene::setPage(u32 page, int direction) {
+  progress->setValue(23, count);  // TODO: Implement progress
+
+  this->page = page;
+  this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
+  songs.clear();
+  songs = library->getSongs(0, 0);  // TODO: PAGINATION
+  // TODO: Update BG, etc
+  setUpBackground();
+
+  updatePage();
+}
+
+void SelectionScene::setName(std::string name) {
   TextStream::instance().setText(name, TEXT_ROW,
                                  TEXT_MIDDLE_COL - name.length() / 2);
 }

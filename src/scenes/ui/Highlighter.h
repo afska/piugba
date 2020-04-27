@@ -9,7 +9,6 @@ class Highlighter {
 
   void initialize();
   void select(u8 option);
-  u8 getSelectedItem();
 
  private:
   u8 id;
