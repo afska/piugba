@@ -5,7 +5,7 @@
 
 #include "SelectionScene.h"
 #include "StageBreakScene.h"
-#include "data/content/compiled/palette_song.h"
+#include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"

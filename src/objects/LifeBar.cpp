@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/compiled/spr_lifebar.h"
+#include "data/content/_compiled_sprites/spr_lifebar.h"
 
 const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;

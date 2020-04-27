@@ -2,7 +2,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/compiled/spr_of.h"
+#include "data/content/_compiled_sprites/spr_of.h"
 
 Of::Of(u32 x, u32 y) {
   SpriteBuilder<Sprite> builder;

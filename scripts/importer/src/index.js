@@ -7,7 +7,7 @@ const _ = require("lodash");
 require("colors");
 
 const SONGS_PATH = `${__dirname}/../../../src/data/content/songs`;
-const OUTPUT_PATH = `${SONGS_PATH}/../#compiled_songs`;
+const OUTPUT_PATH = `${SONGS_PATH}/../_compiled_songs`;
 
 const SEPARATOR = " - ";
 const MAX_FILE_LENGTH = 15;
@@ -60,10 +60,15 @@ songs.forEach(({ path, id, name }, i) => {
   // selector
   let options = [];
   if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
-    options = _.range(lastSelectorBuilt + 1, i + 1).map((it) => songs[i]);
+    const from = lastSelectorBuilt + 1;
+    const to = i;
+    options = _.range(from, to + 1).map((it) => songs[i]);
     lastSelectorBuilt = i;
 
-    utils.report(() => {}, "selector");
+    const name = `s${_.padStart(from, 2, "0")}-`;
+    utils.report(() => {
+      importers.selector(`${_.padStart()}`);
+    }, "selector");
     // TODO: IMPLEMENT
   }
 });

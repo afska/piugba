@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const FILE_PATH = "../src/data/content/compiled/palette_song.c";
+const FILE_PATH = "../src/data/content/_compiled_sprites/palette_song.c";
 const LIFEBAR_COLORS = [
   0x007F, 0x10F9,
   0x019A, 0x1DB6,

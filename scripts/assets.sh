@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SOURCE="src/data"
-DESTINATION="content/compiled"
+DESTINATION="content/_compiled_sprites"
 
 cd "$SOURCE"
 rm $DESTINATION/*.h $DESTINATION/*.c

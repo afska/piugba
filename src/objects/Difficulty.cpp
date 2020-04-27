@@ -2,7 +2,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/compiled/spr_difficulties.h"
+#include "data/content/_compiled_sprites/spr_difficulties.h"
 #include "utils/SpriteUtils.h"
 
 const u32 POSITION_X = 79;

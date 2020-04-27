@@ -3,7 +3,7 @@
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/compiled/spr_arrows.h"
+#include "data/content/_compiled_sprites/spr_arrows.h"
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 5;
