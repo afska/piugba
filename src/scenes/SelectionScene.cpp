@@ -144,7 +144,7 @@ void SelectionScene::setUpPalettes() {
 
   u32 backgroundPaletteLength;
   auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, "output.pal.bin", &backgroundPaletteLength);
+      (COLOR*)gbfs_get_obj(fs, "_sel_0-3.pal.bin", &backgroundPaletteLength);
   backgroundPalette =
       std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
           backgroundPaletteData, backgroundPaletteLength));
@@ -153,9 +153,9 @@ void SelectionScene::setUpPalettes() {
 void SelectionScene::setUpBackground() {
   u32 backgroundTilesLength, backgroundMapLength;
   auto backgroundTilesData =
-      gbfs_get_obj(fs, "output.img.bin", &backgroundTilesLength);
+      gbfs_get_obj(fs, "_sel_0-3.img.bin", &backgroundTilesLength);
   auto backgroundMapData =
-      gbfs_get_obj(fs, "output.map.bin", &backgroundMapLength);
+      gbfs_get_obj(fs, "_sel_0-3.map.bin", &backgroundMapLength);
   bg = std::unique_ptr<Background>(new Background(
       ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
       backgroundMapData, backgroundMapLength));
