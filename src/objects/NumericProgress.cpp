@@ -30,10 +30,10 @@ NumericProgress::NumericProgress() {
 
 void NumericProgress::setValue(u32 completed, u32 total) {
   completedDigits[0]->set(Div(completed, 10), false);
-  completedDigits[1]->set(Div(DivMod(completed, 10), 10), false);
+  completedDigits[1]->set(DivMod(completed, 10), false);
 
   totalDigits[0]->set(Div(total, 10), false);
-  totalDigits[1]->set(Div(DivMod(total, 10), 10), false);
+  totalDigits[1]->set(DivMod(total, 10), false);
 }
 
 void NumericProgress::render(std::vector<Sprite*>* sprites) {

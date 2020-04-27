@@ -1,6 +1,7 @@
 #ifndef BACKGROUND_UTILS_H
 #define BACKGROUND_UTILS_H
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 const u32 TILE_SIZE = 16;
@@ -71,8 +72,8 @@ inline void BACKGROUND_createSolidTile(u8 charblock, u8 tile, u8 colorIndex) {
 template <typename T>
 inline void BACKGROUND_fillMap(u8 screenblock, T getTile) {
   for (u32 i = 0; i < 1024; i++) {
-    u8 row = i / 32;
-    u8 col = i % 32;
+    u8 row = Div(i, 32);
+    u8 col = DivMod(i, 32);
     se_mem[screenblock][i] = getTile(row, col);
   }
 }

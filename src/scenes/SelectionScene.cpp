@@ -41,7 +41,7 @@ SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
     : Scene(engine) {}
 
 std::vector<Background*> SelectionScene::backgrounds() {
-  return {bg.get()};
+  return {};
 }
 
 std::vector<Sprite*> SelectionScene::sprites() {
@@ -65,7 +65,6 @@ void SelectionScene::load() {
   setUpPager();
 
   setUpSpritesPalette();
-  setUpBackground();
   setUpArrows();
 }
 
@@ -117,8 +116,8 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
-  auto backgroundFile = "_sel_" + std::to_string(page * PAGE_SIZE) + "-" +
-                        std::to_string((page + 1) * PAGE_SIZE - 1);
+  auto backgroundFile = "_sel_" + std::to_string(getPageStart()) + "-" +
+                        std::to_string(getPageEnd());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
   auto backgroundMapFile = backgroundFile + BACKGROUND_MAP_EXTENSION;
@@ -140,10 +139,10 @@ void SelectionScene::setUpBackground() {
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
+  bg->persist();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
-  bg->setMosaic(true);
-  REG_BG1CNT = REG_BG1CNT | 1 << 6;
 }
 
 void SelectionScene::setUpArrows() {
@@ -177,6 +176,14 @@ SongFile* SelectionScene::getSelectedSong() {
 
 u32 SelectionScene::getSelectedSongIndex() {
   return page * PAGE_SIZE + selected;
+}
+
+u32 SelectionScene::getPageStart() {
+  return page * PAGE_SIZE;
+}
+
+u32 SelectionScene::getPageEnd() {
+  return (page + 1) * PAGE_SIZE - 1;
 }
 
 void SelectionScene::processKeys(u16 keys) {
