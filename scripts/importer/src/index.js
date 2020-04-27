@@ -76,7 +76,7 @@ songs.forEach((song, i) => {
   if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
     const from = lastSelectorBuilt + 1;
     const to = i;
-    options = _.range(from, to + 1).map((it, j) => {
+    options = _.range(from, to + 1).map((j) => {
       return { song: songs[j], files: GET_SONG_FILES(songs[j]) };
     });
     lastSelectorBuilt = i;
