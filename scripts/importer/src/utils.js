@@ -1,4 +1,5 @@
 const childProcess = require("child_process");
+const readlineSync = require("readline-sync");
 
 module.exports = {
   run: (command, options) =>
@@ -15,5 +16,10 @@ module.exports = {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;
     }
+  },
+  insistentPrompt(text, type = "question") {
+    let response = "";
+    while (response === "") response = readlineSync[type]`${text} `;
+    return response;
   },
 };

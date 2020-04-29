@@ -5,16 +5,15 @@ const _ = require("lodash");
 // (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
-  constructor(content, title) {
+  constructor(content) {
     this.content = content;
-    this.title = title;
   }
 
   get metadata() {
     return {
-      title: this.title || this._getSingleMatch(REGEXPS.metadata.title),
+      id: this._getSingleMatch(REGEXPS.metadata.id),
+      title: this._getSingleMatch(REGEXPS.metadata.title),
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
-      genre: this._getSingleMatch(REGEXPS.metadata.genre),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
       ),
@@ -118,9 +117,9 @@ const DICTIONARY = (name) => ({
 const REGEXPS = {
   limit: /((.|(\r|\n))*?);/,
   metadata: {
-    title: PROPERTY("TITLE"),
+    id: PROPERTY("TITLE"),
+    title: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
-    genre: PROPERTY("GENRE"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
   },
