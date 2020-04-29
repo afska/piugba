@@ -19,7 +19,7 @@ module.exports = class SongSerializer {
     return buffer
       .String(_.padEnd(metadata.title, TITLE_LEN))
       .String(_.padEnd(metadata.artist, ARTIST_LEN))
-      .UInt8(Channels.ORIGINAL)
+      .UInt8(Channels[metadata.channel])
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
       .ChartArray(charts).result;
@@ -36,7 +36,7 @@ module.exports = class SongSerializer {
     this.protocol.define("Chart", {
       write: function (chart) {
         this.Int32LE(chart.header.offset)
-          .UInt8(DifficultyLevels.NUMERIC)
+          .UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
           .EventArray(chart.events);
       },

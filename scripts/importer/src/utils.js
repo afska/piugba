@@ -1,5 +1,6 @@
 const childProcess = require("child_process");
 const readlineSync = require("readline-sync");
+const _ = require("lodash");
 
 module.exports = {
   run: (command, options) =>
@@ -17,9 +18,13 @@ module.exports = {
       throw e;
     }
   },
-  insistentPrompt(text, type = "question") {
+  insistentChoice(text, options) {
+    const stringOptions = options.map((it) => `${it}`.toLowerCase());
+
     let response = "";
-    while (response === "") response = readlineSync[type]`${text} `;
+    while (response === "" || !_.includes(stringOptions, response))
+      response = readlineSync.question(`${text}`.black.bgWhite + " ");
+
     return response;
   },
 };
