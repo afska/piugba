@@ -18,13 +18,13 @@ module.exports = {
       throw e;
     }
   },
-  insistentChoice(text, options) {
+  insistentChoice(text, options, textColor = "black") {
     const stringOptions = options.map((it) => `${it}`.toLowerCase());
 
     let response = "";
     while (response === "" || !_.includes(stringOptions, response))
-      response = readlineSync.question(`${text}`.black.bgWhite + " ");
+      response = readlineSync.question(`${text}`[textColor].bgWhite + " ");
 
-    return response;
+    return response.toLowerCase();
   },
 };
