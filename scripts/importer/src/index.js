@@ -51,7 +51,11 @@ songs.forEach((song, i) => {
     backgroundFile,
     outputName,
   } = GET_SONG_FILES(song);
-  console.log(`${"Importing".bold} ${song.name.cyan}...`);
+  console.log(
+    `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
+      "Importing".bold
+    } ${song.name.cyan}...`
+  );
 
   // metadata
   utils.report(
