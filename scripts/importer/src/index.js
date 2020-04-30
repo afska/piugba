@@ -1,8 +1,10 @@
+const Channels = require("./parser/Channels");
 const importers = require("./importers");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
 const $path = require("path");
 const utils = require("./utils");
+const { printTable } = require("console-table-printer");
 const _ = require("lodash");
 require("colors");
 
@@ -44,7 +46,7 @@ const songs = fs.readdirSync(SONGS_PATH).map((directory, i) => {
 });
 
 let lastSelectorBuilt = -1;
-songs.forEach((song, i) => {
+const simfiles = songs.map((song, i) => {
   const {
     metadataFile,
     audioFile,
@@ -58,7 +60,7 @@ songs.forEach((song, i) => {
   );
 
   // metadata
-  utils.report(
+  const simfile = utils.report(
     () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
     "charts"
   );
@@ -91,6 +93,26 @@ songs.forEach((song, i) => {
       "selector"
     );
   }
+
+  return simfile;
 });
 
-// TODO: SHOW FINAL STATS
+printTable(
+  simfiles.map((it) => ({
+    id: it.metadata.id,
+    title: it.metadata.title,
+    artist: it.metadata.artist,
+    channel: it.metadata.channel,
+    normal: _.find(it.charts, (chart) => chart.header.difficulty === "NORMAL")
+      .header.level,
+    hard: _.find(it.charts, (chart) => chart.header.difficulty === "HARD")
+      .header.level,
+    crazy: _.find(it.charts, (chart) => chart.header.difficulty === "CRAZY")
+      .header.level,
+  }))
+);
+
+_.forEach(Channels, (v, k) => {
+  const count = _.sumBy(simfiles, (it) => (it.metadata.channel === k ? 1 : 0));
+  console.log(`${k}: `.bold + count.toString().cyan);
+});

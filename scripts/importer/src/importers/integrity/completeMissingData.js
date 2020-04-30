@@ -12,7 +12,7 @@ const DIFFICULTY_PROP = "DIFFICULTY";
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
-  if (metadata.channel === "UNKNOWN") {
+  if (metadata.channel == null) {
     const channelOptions = KNOWN_CHANNELS.map(
       (name, i) => `${i} = ${name}`
     ).join(", ");

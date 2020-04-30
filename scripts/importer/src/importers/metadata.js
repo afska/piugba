@@ -17,4 +17,6 @@ module.exports = (name, filePath, outputPath) => {
 
   const output = new SongSerializer(simfile).serialize();
   fs.writeFileSync($path.join(outputPath, `${name}.${EXTENSION}`), output);
+
+  return simfile;
 };

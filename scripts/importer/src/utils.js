@@ -11,8 +11,9 @@ module.exports = {
     }),
   report(action, taskName) {
     try {
-      const output = action() || "";
-      console.log(`  ✔️  ${taskName}${output}`.green);
+      const output = action();
+      console.log(`  ✔️  ${taskName}`.green);
+      return output;
     } catch (e) {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;

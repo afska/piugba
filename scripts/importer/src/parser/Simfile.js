@@ -16,9 +16,7 @@ module.exports = class Simfile {
       id: this._getSingleMatch(REGEXPS.metadata.id),
       title: this._getSingleMatch(REGEXPS.metadata.title),
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
-      channel:
-        this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
-        "UNKNOWN",
+      channel: this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
       ),
