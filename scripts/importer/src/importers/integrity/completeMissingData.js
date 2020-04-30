@@ -64,24 +64,22 @@ module.exports = (metadata, charts, content, filePath) => {
 };
 
 const setDifficulty = (charts, difficultyName) => {
+  const createId = (chart) => `${chart.header.name}/${chart.header.level}`;
   const numericDifficultyCharts = charts.filter(
     (it) => it.header.difficulty === "NUMERIC"
   );
-  const levels = numericDifficultyCharts.map(
-    (it) => `${it.header.name}[${it.header.level}]`
-  );
-  const levelNames = numericDifficultyCharts.map((it) => it.header.name);
+  const levels = numericDifficultyCharts.map(createId);
 
   if (!_.some(charts, (it) => it.header.difficulty === difficultyName)) {
     console.log("-> levels: ".bold + `(${levels.join(", ")})`.cyan);
     const chartName = utils.insistentChoice(
       `Which one is ${difficultyName}?`,
-      levelNames
+      levels
     );
 
     _.find(
       charts,
-      (it) => it.header.name.toLowerCase() === chartName
+      (it) => createId(it).toLowerCase() === chartName
     ).header.difficulty = difficultyName;
 
     return true;
