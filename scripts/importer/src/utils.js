@@ -27,4 +27,11 @@ module.exports = {
 
     return response.toLowerCase();
   },
+  replaceRange(input, search, replace, start, end = input.length) {
+    return (
+      input.slice(0, start) +
+      input.slice(start, end).replace(search, replace) +
+      input.slice(end)
+    );
+  },
 };

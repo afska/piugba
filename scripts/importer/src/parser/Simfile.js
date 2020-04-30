@@ -30,11 +30,14 @@ module.exports = class Simfile {
 
   get charts() {
     const charts = this.content.match(REGEXPS.chart.start).map((rawChart) => {
+      const startIndex = this.content.indexOf(rawChart);
+
       const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
       const difficulty =
         this._getSingleMatchFromEnum(
           REGEXPS.chart.difficulty,
-          DifficultyLevels
+          DifficultyLevels,
+          rawChart
         ) || "NUMERIC";
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
 
@@ -56,6 +59,7 @@ module.exports = class Simfile {
       const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
       const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
       const header = {
+        startIndex,
         name,
         difficulty,
         level,
@@ -67,7 +71,7 @@ module.exports = class Simfile {
         scrolls,
       };
 
-      const notesStart = this.content.indexOf(rawChart) + rawChart.length;
+      const notesStart = startIndex + rawChart.length;
       const rawNotes = this._getSingleMatch(
         REGEXPS.limit,
         this.content.substring(notesStart)
@@ -136,7 +140,7 @@ const REGEXPS = {
     id: PROPERTY("TITLE"),
     title: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
-    channel: PROPERTY("genre"),
+    channel: PROPERTY("GENRE"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
   },
