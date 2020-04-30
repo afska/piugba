@@ -6,7 +6,7 @@ const _ = require("lodash");
 const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["NORMAL", "HARD", "CRAZY"];
 const GLOBAL_PROPERTY = (name) => new RegExp(`#${name}:((.|(\r|\n))*?);`, "g");
-const CHANNEL_PROP = "GENRE";
+const CHANNEL_PROP = "SONGCATEGORY";
 const DIFFICULTY_PROP = "DIFFICULTY";
 
 module.exports = (metadata, charts, content, filePath) => {

@@ -1,6 +1,6 @@
 module.exports = {
   ORIGINAL: 0,
-  KPOP: 1,
-  WORLD: 2,
+  "K-POP": 1,
+  "WORLD MUSIC": 2,
   UNKNOWN: 3,
 };

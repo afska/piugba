@@ -140,7 +140,7 @@ const REGEXPS = {
     id: PROPERTY("TITLE"),
     title: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
-    channel: PROPERTY("GENRE"),
+    channel: PROPERTY("SONGCATEGORY"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
   },

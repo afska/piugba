@@ -92,3 +92,5 @@ songs.forEach((song, i) => {
     );
   }
 });
+
+// TODO: SHOW FINAL STATS
