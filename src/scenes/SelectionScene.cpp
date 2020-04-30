@@ -92,23 +92,14 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChange();
   processSelectionChange();
 
-  // if (keys & KEY_ANY && !engine->isTransitioning()) {
-  //   char* name;
-  //   u8 level;
+  if (KEY_CENTER(keys)) {
+    Song* song = Song_parse(fs, songs[selected].get());
+    Chart* chart =
+        Song_findChartByDifficultyLevel(song, difficulty->getValue());
 
-  //   if (keys & KEY_RIGHT) {
-  //     name = (char*)"404-Solitary";
-  //     level = 18;
-  //   } else {
-  //     return;
-  //   }
-
-  //   Song* song = Song_parse(fs, SongFile(name));
-  //   Chart* chart = Song_findChartByLevel(song, level);
-
-  //   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-  //                               new FadeOutScene(2));
-  // }
+    engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
+                                new FadeOutScene(2));
+  }
 }
 
 void SelectionScene::setUpSpritesPalette() {

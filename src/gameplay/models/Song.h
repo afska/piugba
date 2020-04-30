@@ -31,8 +31,10 @@ typedef struct {
   std::string backgroundMapPath;
 } Song;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile file);
-Chart* Song_findChartByLevel(Song* song, u8 level);
+Song* Song_parse(const GBFS_FILE* fs, SongFile* file);
+Chart* Song_findChartByNumericLevel(Song* song, u8 level);
+Chart* Song_findChartByDifficultyLevel(Song* song,
+                                       DifficultyLevel difficultyLevel);
 void Song_free(Song* song);
 
 #endif  // SONG_H

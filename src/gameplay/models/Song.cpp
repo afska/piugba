@@ -6,9 +6,9 @@
 const u32 TITLE_LEN = 40;
 const u32 ARTIST_LEN = 15;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
+Song* Song_parse(const GBFS_FILE* fs, SongFile* file) {
   u32 length;
-  auto data = (u8*)gbfs_get_obj(fs, file.getMetadataFile().c_str(), &length);
+  auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
   u32 cursor = 0;
   auto song = new Song();
@@ -47,15 +47,25 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile file) {
     }
   }
 
-  song->audioPath = file.getAudioFile();
-  song->backgroundTilesPath = file.getBackgroundTilesFile();
-  song->backgroundPalettePath = file.getBackgroundPaletteFile();
-  song->backgroundMapPath = file.getBackgroundMapFile();
+  song->audioPath = file->getAudioFile();
+  song->backgroundTilesPath = file->getBackgroundTilesFile();
+  song->backgroundPalettePath = file->getBackgroundPaletteFile();
+  song->backgroundMapPath = file->getBackgroundMapFile();
 
   return song;
 }
 
-Chart* Song_findChartByLevel(Song* song, u8 level) {
+Chart* Song_findChartByDifficultyLevel(Song* song,
+                                       DifficultyLevel difficultyLevel) {
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if (song->charts[i].difficulty == difficultyLevel)
+      return song->charts + i;
+  }
+
+  return NULL;
+}
+
+Chart* Song_findChartByNumericLevel(Song* song, u8 level) {
   for (u32 i = 0; i < song->chartCount; i++) {
     if (song->charts[i].level == level)
       return song->charts + i;
