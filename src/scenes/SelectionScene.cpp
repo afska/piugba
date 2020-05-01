@@ -164,7 +164,7 @@ void SelectionScene::setUpPager() {
 }
 
 SongFile* SelectionScene::getSelectedSong() {
-  return songs[getSelectedSongIndex()].get();
+  return songs[selected].get();
 }
 
 u32 SelectionScene::getSelectedSongIndex() {
@@ -247,12 +247,12 @@ void SelectionScene::updatePage() {
 }
 
 void SelectionScene::setPage(u32 page, int direction) {
-  progress->setValue(23, count);  // TODO: Implement progress
+  progress->setValue(0, count);  // TODO: Implement progress
 
   this->page = page;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
   songs.clear();
-  songs = library->getSongs(0, 0);  // TODO: Use start & count
+  songs = library->getSongs(page * PAGE_SIZE, PAGE_SIZE);
 
   highlighter->select(selected);
   if (direction == 0)
