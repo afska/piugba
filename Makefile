@@ -27,6 +27,7 @@ export PATH	:=	$(DEVKITARM)/bin:$(PATH)
 
 export PROJ	?= $(notdir $(CURDIR))
 TITLE		:= $(PROJ)
+PROVIDER ?= manual
 
 LIBS		:= -ltonc -lgba -lgba-sprite-engine
 
@@ -189,7 +190,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js
+	node ./scripts/importer/src/index.js --provider $(PROVIDER)
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)

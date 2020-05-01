@@ -5,6 +5,7 @@ const mkdirp = require("mkdirp");
 const $path = require("path");
 const utils = require("./utils");
 const { printTable } = require("console-table-printer");
+const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
 
@@ -17,6 +18,23 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
+const PROVIDER_OPTIONS = ["auto", "manual", "overwrite"];
+const PROVIDER_DEFAULT = "manual";
+
+const opt = getopt
+  .create([
+    [
+      "",
+      "provider=MODE",
+      "Missing data provider (one of: auto|*manual*|overwrite)",
+    ],
+  ])
+  .bindHelp()
+  .parseSystem();
+
+global.GLOBAL_OPTIONS = opt.options;
+if (!_.includes(PROVIDER_OPTIONS, GLOBAL_OPTIONS.provider))
+  GLOBAL_OPTIONS.provider = PROVIDER_DEFAULT;
 
 const GET_SONG_FILES = ({ path, id, name }) => {
   const files = _.sortBy(fs.readdirSync(path)).map((it) =>
