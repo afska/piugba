@@ -1,5 +1,7 @@
 const Protocol = require("bin-protocol");
 const Events = require("../parser/Events");
+const DifficultyLevels = require("../parser/DifficultyLevels");
+const Channels = require("../parser/Channels");
 const _ = require("lodash");
 
 module.exports = class SongSerializer {
@@ -17,7 +19,7 @@ module.exports = class SongSerializer {
     return buffer
       .String(_.padEnd(metadata.title, TITLE_LEN))
       .String(_.padEnd(metadata.artist, ARTIST_LEN))
-      .UInt8(2) // TODO: Unhardcode channel
+      .UInt8(Channels[metadata.channel])
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
       .ChartArray(charts).result;
@@ -34,7 +36,7 @@ module.exports = class SongSerializer {
     this.protocol.define("Chart", {
       write: function (chart) {
         this.Int32LE(chart.header.offset)
-          .UInt8(2) // TODO: Unhardcode difficulty
+          .UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
           .EventArray(chart.events);
       },

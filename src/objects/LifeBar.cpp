@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/compiled/spr_lifebar.h"
+#include "data/content/_compiled_sprites/spr_lifebar.h"
 
 const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;
@@ -17,8 +17,8 @@ const u32 MIN_ANIMATED_VALUE = 1;
 const u32 UNIT = 2;
 const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
                               894, 988,  923, 1017, 951,  974,  879, 9199, 936};
-const u8 PALETTE_INDEXES[] = {173, 175, 179, 180, 188, 186, 194, 190, 202,
-                              197, 203, 199, 204, 198, 196, 193, 201, 192};
+const u8 PALETTE_INDEXES[] = {201, 203, 207, 208, 216, 214, 222, 218, 230,
+                              225, 231, 227, 232, 226, 224, 221, 229, 220};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;

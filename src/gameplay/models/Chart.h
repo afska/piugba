@@ -5,12 +5,12 @@
 
 #include "Event.h"
 
-enum Difficulty { NORMAL, HARD, CRAZY, NUMERIC };
+enum DifficultyLevel { NORMAL, HARD, CRAZY, NUMERIC };
 
 typedef struct {
   int offset;
-  Difficulty difficulty;  // u8
-  u8 level;               // 0-30
+  DifficultyLevel difficulty;  // u8
+  u8 level;                    // 0-30
 
   u32 eventCount;
   Event* events;  // ("eventCount" times)

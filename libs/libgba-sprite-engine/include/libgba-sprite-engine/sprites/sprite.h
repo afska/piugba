@@ -8,6 +8,7 @@
 #pragma GCC system_header
 
 #include <libgba-sprite-engine/gba/tonc_types.h>
+
 #include <memory>
 #ifdef CODE_COMPILED_AS_PART_OF_TEST
 #include <libgba-sprite-engine/gba/tonc_math_stub.h>
@@ -19,7 +20,7 @@
 #define COLOR_MODE_16 0
 #define COLOR_MODE_256 1
 #define GFX_MODE 0
-#define MOSAIC_MODE 0
+#define MOSAIC_MODE 1
 #define AFFINE_FLAG_NONE_SET_YET 0
 #define HORIZONTAL_FLIP_FLAG 0
 #define VERTICAL_FLIP_FLAG 0

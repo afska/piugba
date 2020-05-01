@@ -5,6 +5,8 @@
 
 #include "objects/base/AnimatedIndicator.h"
 
+const u32 DIGIT_WIDTH = 26;
+
 class ComboDigit : public AnimatedIndicator {
  public:
   ComboDigit(u32 position);

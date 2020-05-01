@@ -1,20 +1,22 @@
 const Chart = require("./Chart");
+const Channels = require("./Channels");
+const DifficultyLevels = require("./DifficultyLevels");
 const _ = require("lodash");
 
 // StepMania 5 format (*.ssc)
 // (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
-  constructor(content, title) {
+  constructor(content) {
     this.content = content;
-    this.title = title;
   }
 
   get metadata() {
     return {
-      title: this.title || this._getSingleMatch(REGEXPS.metadata.title),
+      id: this._getSingleMatch(REGEXPS.metadata.id),
+      title: this._getSingleMatch(REGEXPS.metadata.title),
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
-      genre: this._getSingleMatch(REGEXPS.metadata.genre),
+      channel: this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
       ),
@@ -26,7 +28,15 @@ module.exports = class Simfile {
 
   get charts() {
     const charts = this.content.match(REGEXPS.chart.start).map((rawChart) => {
+      const startIndex = this.content.indexOf(rawChart);
+
       const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
+      const difficulty =
+        this._getSingleMatchFromEnum(
+          REGEXPS.chart.difficulty,
+          DifficultyLevels,
+          rawChart
+        ) || "NUMERIC";
       const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
 
       let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
@@ -47,7 +57,9 @@ module.exports = class Simfile {
       const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
       const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
       const header = {
+        startIndex,
         name,
+        difficulty,
         level,
         offset,
         bpms,
@@ -57,7 +69,7 @@ module.exports = class Simfile {
         scrolls,
       };
 
-      const notesStart = this.content.indexOf(rawChart) + rawChart.length;
+      const notesStart = startIndex + rawChart.length;
       const rawNotes = this._getSingleMatch(
         REGEXPS.limit,
         this.content.substring(notesStart)
@@ -77,6 +89,11 @@ module.exports = class Simfile {
     const match = content && content.match(exp);
     const result = parse((match && match[1]) || null);
     return _.isString(result) ? this._toAsciiOnly(result) : result;
+  }
+
+  _getSingleMatchFromEnum(regexp, options, content = this.content) {
+    const match = this._getSingleMatch(regexp, content);
+    return _(options).keys(options).includes(match) ? match : null;
   }
 
   _toAsciiOnly(string) {
@@ -118,15 +135,17 @@ const DICTIONARY = (name) => ({
 const REGEXPS = {
   limit: /((.|(\r|\n))*?);/,
   metadata: {
-    title: PROPERTY("TITLE"),
+    id: PROPERTY("TITLE"),
+    title: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
-    genre: PROPERTY("GENRE"),
+    channel: PROPERTY("SONGCATEGORY"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
   },
   chart: {
     start: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
+    difficulty: PROPERTY("DIFFICULTY"),
     level: PROPERTY_INT("METER"),
     offset: PROPERTY_FLOAT("OFFSET"),
     bpms: DICTIONARY("BPMS"),

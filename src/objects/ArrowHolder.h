@@ -4,20 +4,18 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "Arrow.h"
+#include "base/InputHandler.h"
 
 const u32 ARROW_HOLDER_IDLE = 5;
 const u32 ARROW_HOLDER_PRESSED = 7;
 
-class ArrowHolder {
+class ArrowHolder : public InputHandler {
  public:
   ArrowDirection direction;
 
   ArrowHolder(ArrowDirection direction);
 
   void blink();
-  bool getIsPressed();
-  bool hasBeenPressedNow();
-  void setIsPressed(bool isPressed);
 
   void tick();
   Sprite* get();
@@ -26,8 +24,6 @@ class ArrowHolder {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
-  bool isPressed = false;
-  bool isNewPressEvent = false;
   bool isBlinking = false;
 };
 

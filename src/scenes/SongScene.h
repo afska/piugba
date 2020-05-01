@@ -30,6 +30,7 @@ class SongScene : public Scene {
   ~SongScene();
 
  private:
+  bool hasStarted = false;
   const GBFS_FILE* fs;
   Song* song;
   Chart* chart;
@@ -42,6 +43,7 @@ class SongScene : public Scene {
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   int msecs = 0;
+  int init = 0;
 
   void setUpPalettes();
   void setUpBackground();

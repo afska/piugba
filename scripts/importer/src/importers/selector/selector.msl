@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<group>
+  <image id="song1">
+    <read filename="song1.png" />
+    <resize geometry="58x44!" />
+  </image>
+  <image id="song2">
+    <read filename="song2.png" />
+    <resize geometry="58x44!" />
+  </image>
+  <image id="song3">
+    <read filename="song3.png" />
+    <resize geometry="58x44!" />
+  </image>
+  <image id="song4">
+    <read filename="song4.png" />
+    <resize geometry="58x44!" />
+  </image>
+
+  <image>
+      <read filename="selector.bmp" />
+      <composite image="song1" geometry="+1+57" />
+      <composite image="song2" geometry="+61+57" />
+      <composite image="song3" geometry="+121+57" />
+      <composite image="song4" geometry="+181+57" />
+      <quantize colors="250" />
+  </image>
+
+  <write filename="output.bmp" />
+</group>

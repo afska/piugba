@@ -3,7 +3,7 @@ const $path = require("path");
 const _ = require("lodash");
 
 const COMMAND_1 = (input, output) =>
-  `magick "${input}" -resize 240x160\! -colors 255 "${output}"`;
+  `magick "${input}" -resize 240x160\! -colors 254 "${output}"`;
 const COMMAND_2 = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
 const COMMAND_3 = (tmp1, tmp2) => `rm "${tmp1}" && rm "${tmp2}"`;
 const COMMAND_FIX = (input) => `pngfix -f "${input}`;

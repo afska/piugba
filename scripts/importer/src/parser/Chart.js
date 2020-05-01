@@ -42,7 +42,7 @@ module.exports = class Chart {
           .map(({ type, arrows }) => ({
             timestamp,
             type,
-            arrows: _.range(0, 5).map((id) => arrows.includes(id)),
+            arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
           }))
           .filter((it) => _.some(it.arrows))
           .value();

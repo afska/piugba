@@ -1,20 +1,20 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
-#include "scenes/StartScene.h"
+#include "scenes/SelectionScene.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
 void setUpInterrupts();
-std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
 int main() {
   setUpInterrupts();
   player_init();
-  engine->setScene(new StartScene(engine));
 
+  engine->setScene(new SelectionScene(engine));
   player_forever([]() { engine->update(); });
 
   return 0;

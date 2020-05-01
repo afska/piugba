@@ -1,4 +1,6 @@
 const childProcess = require("child_process");
+const readlineSync = require("readline-sync");
+const _ = require("lodash");
 
 module.exports = {
   run: (command, options) =>
@@ -9,11 +11,31 @@ module.exports = {
     }),
   report(action, taskName) {
     try {
-      const output = action() || "";
-      console.log(`  ✔️  ${taskName}${output}`.green);
+      const output = action();
+      console.log(`  ✔️  ${taskName}`.green);
+      return output;
     } catch (e) {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;
     }
+  },
+  insistentChoice(text, options, textColor = "black") {
+    const stringOptions = options.map((it) => `${it}`.toLowerCase());
+
+    let response = "";
+    const matches = (option) => _.startsWith(option, response);
+    while (response === "" || _.filter(stringOptions, matches).length !== 1)
+      response = readlineSync
+        .question(`${text}`[textColor].bgWhite + " ")
+        .toLowerCase();
+
+    return _.find(stringOptions, matches);
+  },
+  replaceRange(input, search, replace, start, end = input.length) {
+    return (
+      input.slice(0, start) +
+      input.slice(start, end).replace(search, replace) +
+      input.slice(end)
+    );
   },
 };

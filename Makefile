@@ -33,7 +33,8 @@ LIBS		:= -ltonc -lgba -lgba-sprite-engine
 BUILD		:= build
 SRCDIRS		:= src \
 						 src/data/content \
-						 src/data/content/compiled \
+						 src/data/content/_compiled_sprites \
+						 src/data/custom \
 						 src/gameplay \
 						 src/gameplay/models \
 						 src/objects \
@@ -43,6 +44,7 @@ SRCDIRS		:= src \
 						 src/player \
 						 src/player/core \
 						 src/scenes \
+						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gbfs \
 						 src/utils/pool
@@ -188,7 +190,7 @@ assets:
 
 import:
 	node ./scripts/importer/src/index.js
-	cd src/data/content/#compiled_songs && gbfs ../files.gbfs *
+	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)
 	./scripts/package.sh

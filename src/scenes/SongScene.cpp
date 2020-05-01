@@ -3,18 +3,26 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
+#include "SelectionScene.h"
 #include "StageBreakScene.h"
-#include "StartScene.h"  // TODO: REMOVE
-#include "data/content/compiled/shared_palette.h"
+#include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
+#include "ui/Darkener.h"
+#include "utils/BackgroundUtils.h"
+#include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
+const u32 ID_DARKENER = 0;
+const u32 ID_MAIN_BACKGROUND = 1;
 const u32 ARROW_POOL_SIZE = 50;
+const u32 BANK_BACKGROUND_MAP = 24;
+
+static std::unique_ptr<Darkener> darkener{new Darkener(ID_DARKENER)};
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -50,10 +58,8 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   player_play(song->audioPath.c_str());
-  BACKGROUND1_DISABLE();
-  BACKGROUND2_DISABLE();
-  BACKGROUND3_DISABLE();
 
+  BACKGROUND_enable(false, false, false, false);
   setUpPalettes();
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
@@ -77,9 +83,16 @@ void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    darkener->initialize();
+    hasStarted = true;
+  }
+
   if (PlaybackState.hasFinished) {
     unload();
-    engine->transitionIntoScene(new StartScene(engine), new FadeOutScene(2));
+    engine->transitionIntoScene(new SelectionScene(engine),
+                                new FadeOutScene(2));
     return;
   }
 
@@ -102,9 +115,8 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::setUpPalettes() {
-  foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          shared_palettePal, sizeof(shared_palettePal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
+      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal)));
 
   u32 backgroundPaletteLength;
   auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
@@ -122,10 +134,11 @@ void SongScene::setUpBackground() {
   auto backgroundMapData =
       gbfs_get_obj(fs, song->backgroundMapPath.c_str(), &backgroundMapLength);
 
-  bg = std::unique_ptr<Background>(
-      new Background(0, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
-  bg.get()->useMapScreenBlock(24);
+  bg = std::unique_ptr<Background>(new Background(
+      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
+      backgroundMapData, backgroundMapLength));
+  bg->useCharBlock(0);
+  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
 }
 
 void SongScene::setUpArrows() {
@@ -209,12 +222,10 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::unload() {
   player_stop();
-  BACKGROUND1_ENABLE();
-  BACKGROUND2_ENABLE();
-  BACKGROUND3_ENABLE();
 }
 
 SongScene::~SongScene() {
+  EFFECT_turnOffBlend();
   arrowHolders.clear();
   fakeHeads.clear();
   Song_free(song);
