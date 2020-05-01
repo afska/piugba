@@ -11,21 +11,6 @@ const DIFFICULTY_PROP = "DIFFICULTY";
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
-  if (metadata.channel == null) {
-    const channelOptions = KNOWN_CHANNELS.map(
-      (name, i) => `${i} = ${name}`
-    ).join(", ");
-
-    console.log("-> channels: ".bold + `(${channelOptions})`.cyan);
-    const channel = utils.insistentChoice(
-      "What channel?",
-      _.range(KNOWN_CHANNELS.length)
-    );
-    metadata.channel = _.keys(Channels)[parseInt(channel)];
-
-    isDirty = true;
-  }
-
   NON_NUMERIC_LEVELS.forEach((difficulty) => {
     if (setDifficulty(charts, difficulty)) isDirty = true;
   });
@@ -56,9 +41,11 @@ module.exports = (metadata, charts, content, filePath) => {
 
   return {
     metadata,
-    charts: charts.filter((it) =>
-      _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
-    ),
+    charts: GLOBAL_OPTIONS.all
+      ? charts
+      : charts.filter((it) =>
+          _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
+        ),
   };
 };
 

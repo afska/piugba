@@ -23,11 +23,8 @@ const PROVIDER_DEFAULT = "manual";
 
 const opt = getopt
   .create([
-    [
-      "",
-      "provider=MODE",
-      "Missing data provider (one of: auto|*manual*|overwrite)",
-    ],
+    ["p", "provider=MODE", "data provider (one of: auto|*manual*|overwrite)"],
+    ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()
   .parseSystem();

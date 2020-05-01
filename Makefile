@@ -190,7 +190,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --provider $(PROVIDER)
+	node ./scripts/importer/src/index.js --provider $(PROVIDER) --all
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)
