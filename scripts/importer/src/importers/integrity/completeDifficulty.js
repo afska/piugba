@@ -11,8 +11,21 @@ const DIFFICULTY_PROP = "DIFFICULTY";
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
+  if (
+    GLOBAL_OPTIONS.difficulty === "auto" ||
+    GLOBAL_OPTIONS.difficulty === "overwrite"
+  ) {
+    charts.forEach((it) => {
+      it.header.difficulty = "NUMERIC";
+    });
+  }
+
   NON_NUMERIC_LEVELS.forEach((difficulty) => {
-    if (setDifficulty(charts, difficulty)) isDirty = true;
+    if (GLOBAL_OPTIONS.difficulty === "auto") {
+      autoSetDifficulty(charts, difficulty);
+    } else {
+      if (setDifficulty(charts, difficulty)) isDirty = true;
+    }
   });
 
   if (isDirty) {
@@ -47,6 +60,43 @@ module.exports = (metadata, charts, content, filePath) => {
           _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
         ),
   };
+};
+
+const autoSetDifficulty = (charts, difficultyName) => {
+  const HEURISTICS = {
+    NORMAL: [6, 5, 4, 3, 2, 1],
+    HARD: [11, 10, 9, 8, 7],
+    CRAZY: [16, 15, 14, 13, 12],
+  };
+  const INSANE_LEVEL = 17;
+
+  let chart;
+  for (let level of HEURISTICS[difficultyName]) {
+    const candidate = _.find(
+      charts,
+      (it) => it.header.difficulty === "NUMERIC" && it.header.level === level
+    );
+
+    if (candidate) {
+      chart = candidate;
+      break;
+    }
+  }
+
+  if (!chart && difficultyName === "CRAZY")
+    chart = _.find(
+      charts,
+      (it) =>
+        it.header.difficulty === "NUMERIC" && it.header.level >= INSANE_LEVEL
+    );
+
+  if (!chart)
+    throw new Error(
+      `cannot_autoset_difficulty: ${difficultyName} - (${charts
+        .map((it) => it.header.level)
+        .join("|")})`
+    );
+  chart.header.difficulty = difficultyName;
 };
 
 const setDifficulty = (charts, difficultyName) => {

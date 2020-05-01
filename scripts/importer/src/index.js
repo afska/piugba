@@ -18,20 +18,24 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
-const PROVIDER_OPTIONS = ["auto", "manual", "overwrite"];
-const PROVIDER_DEFAULT = "manual";
+const DIFFICULTY_OPTIONS = ["auto", "manual", "overwrite"];
+const DIFFICULTY_DEFAULT = "manual";
 
 const opt = getopt
   .create([
-    ["p", "provider=MODE", "data provider (one of: auto|*manual*|overwrite)"],
+    [
+      "d",
+      "difficulty=MODE",
+      "difficulty provider (one of: auto|*manual*|overwrite)",
+    ],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()
   .parseSystem();
 
 global.GLOBAL_OPTIONS = opt.options;
-if (!_.includes(PROVIDER_OPTIONS, GLOBAL_OPTIONS.provider))
-  GLOBAL_OPTIONS.provider = PROVIDER_DEFAULT;
+if (!_.includes(DIFFICULTY_OPTIONS, GLOBAL_OPTIONS.difficulty))
+  GLOBAL_OPTIONS.difficulty = DIFFICULTY_DEFAULT;
 
 const GET_SONG_FILES = ({ path, id, name }) => {
   const files = _.sortBy(fs.readdirSync(path)).map((it) =>

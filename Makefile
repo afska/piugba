@@ -27,7 +27,6 @@ export PATH	:=	$(DEVKITARM)/bin:$(PATH)
 
 export PROJ	?= $(notdir $(CURDIR))
 TITLE		:= $(PROJ)
-PROVIDER ?= manual
 
 LIBS		:= -ltonc -lgba -lgba-sprite-engine
 
@@ -182,6 +181,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
+DIFFICULTY ?= manual
 .PHONY: clean
 .PHONY: start
 .PHONY: restart
@@ -190,7 +190,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --provider $(PROVIDER) --all
+	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)
