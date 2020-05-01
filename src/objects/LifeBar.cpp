@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_lifebar.h"
+#include "utils/EffectUtils.h"
 
 const u32 POSITION_X = 15;
 const int POSITION_Y = -11 + 2;
@@ -35,7 +36,11 @@ LifeBar::LifeBar() {
 }
 
 void LifeBar::setLife(int life) {
-  value = Div(life < 0 ? 0 : life, 10);
+  u32 absLife = life < 0 ? 0 : (u32)life;
+  value = Div(absLife, 10);
+
+  if (false)
+    EFFECT_setMosaic((100 - absLife) * 15 / 100);  // TODO: OPTIONAL PIXEL MOD
 }
 
 void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {

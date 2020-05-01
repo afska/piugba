@@ -9,7 +9,9 @@ const u32 ANIMATION_FRAMES = 3;
 const u32 MIN_VISIBLE_COMBO = 4;
 
 Score::Score(LifeBar* lifeBar) {
+  lifeBar->setLife(life);
   this->lifeBar = lifeBar;
+
   feedback = std::unique_ptr<Feedback>{new Feedback()};
   combo = std::unique_ptr<Combo>{new Combo()};
 

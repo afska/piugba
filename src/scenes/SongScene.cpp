@@ -139,6 +139,7 @@ void SongScene::setUpBackground() {
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(0);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
 }
 
 void SongScene::setUpArrows() {
