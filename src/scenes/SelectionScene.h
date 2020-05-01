@@ -43,6 +43,7 @@ class SelectionScene : public Scene {
   void setUpArrows();
   void setUpPager();
 
+  void goToSong();
   SongFile* getSelectedSong();
   u32 getSelectedSongIndex();
   u32 getPageStart();
@@ -53,7 +54,7 @@ class SelectionScene : public Scene {
 
   void updatePage();
   void setPage(u32 page, int direction);
-  void setName(std::string name);
+  void setNames(std::string title, std::string artist);
 };
 
 #endif  // SELECTION_SCENE_H

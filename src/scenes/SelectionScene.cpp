@@ -92,14 +92,8 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChange();
   processSelectionChange();
 
-  if (KEY_CENTER(keys)) {
-    Song* song = Song_parse(fs, songs[selected].get());
-    Chart* chart =
-        Song_findChartByDifficultyLevel(song, difficulty->getValue());
-
-    engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                                new FadeOutScene(2));
-  }
+  if (KEY_CENTER(keys))
+    goToSong();
 }
 
 void SelectionScene::setUpSpritesPalette() {
@@ -162,6 +156,14 @@ void SelectionScene::setUpPager() {
   count = library->getCount();
   setPage(0, 0);
   updatePage();
+}
+
+void SelectionScene::goToSong() {
+  Song* song = Song_parse(fs, getSelectedSong());
+  Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
+
+  engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
+                              new FadeOutScene(2));
 }
 
 SongFile* SelectionScene::getSelectedSong() {
@@ -242,9 +244,9 @@ void SelectionScene::processSelectionChange() {
 }
 
 void SelectionScene::updatePage() {
-  auto selectedSong = getSelectedSong();
-
-  setName(selectedSong->name);
+  Song* song = Song_parse(fs, getSelectedSong());
+  setNames(song->title, song->artist);
+  Song_free(song);
 }
 
 void SelectionScene::setPage(u32 page, int direction) {
@@ -265,9 +267,12 @@ void SelectionScene::setPage(u32 page, int direction) {
     });
 }
 
-void SelectionScene::setName(std::string name) {
-  TextStream::instance().setText(name, TEXT_ROW,
-                                 TEXT_MIDDLE_COL - name.length() / 2);
+void SelectionScene::setNames(std::string title, std::string artist) {
+  TextStream::instance().clear();
+  TextStream::instance().setText(title, TEXT_ROW,
+                                 TEXT_MIDDLE_COL - title.length() / 2);
+  TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
+                                 TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
 
 SelectionScene::~SelectionScene() {

@@ -17,8 +17,8 @@ module.exports = class SongSerializer {
     const { metadata, charts } = this.simfile;
 
     return buffer
-      .String(_.padEnd(metadata.title, TITLE_LEN).substring(0, TITLE_LEN))
-      .String(_.padEnd(metadata.artist, ARTIST_LEN).substring(0, ARTIST_LEN))
+      .String(metadata.title, TITLE_LEN)
+      .String(metadata.artist, ARTIST_LEN)
       .UInt8(Channels[metadata.channel])
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
@@ -27,9 +27,15 @@ module.exports = class SongSerializer {
 
   _defineTypes() {
     this.protocol.define("String", {
-      write: function (string) {
-        const characters = string.split("").map((char) => char.charCodeAt(0));
-        this.loop(characters, this.UInt8).UInt8(0);
+      write: function (string, size) {
+        const characters = string
+          .substring(0, size - 1)
+          .split("")
+          .map((char) => char.charCodeAt(0));
+
+        this.loop(characters, this.UInt8);
+        const padding = size - string.length;
+        for (let i = 0; i < padding; i++) this.UInt8(0);
       },
     });
 
@@ -76,9 +82,8 @@ module.exports = class SongSerializer {
   }
 };
 
-const TITLE_LEN = 31 - 1;
-const ARTIST_LEN = 31 - 1;
-// (-1 for \0)
+const TITLE_LEN = 31;
+const ARTIST_LEN = 27;
 
 const ARROW_MASKS = [
   0b00001000,
