@@ -4,6 +4,8 @@
 
 #include "utils/SpriteUtils.h"
 
+u32 MAX_COMBO = 999;
+
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
@@ -15,7 +17,7 @@ Combo::Combo() {
 
 void Combo::setValue(int value) {
   bool isRed = value < 0;
-  u32 absValue = abs(value);
+  u32 absValue = min(abs(value), MAX_COMBO);
 
   this->value = absValue;
   digits[0]->set(Div(absValue, 100), isRed);
