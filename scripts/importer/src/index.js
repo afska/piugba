@@ -28,6 +28,7 @@ const opt = getopt
       "difficulty=MODE",
       "difficulty provider (one of: auto|*manual*|overwrite)",
     ],
+    ["f", "force", "ignore errors"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()

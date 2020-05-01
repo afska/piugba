@@ -70,10 +70,14 @@ const autoSetDifficulty = (charts, difficultyName) => {
   };
   const INSANE_LEVEL = 17;
 
+  const numericDifficultyCharts = charts.filter(
+    (it) => it.header.difficulty === "NUMERIC"
+  );
+
   let chart;
   for (let level of HEURISTICS[difficultyName]) {
     const candidate = _.find(
-      charts,
+      numericDifficultyCharts,
       (it) => it.header.difficulty === "NUMERIC" && it.header.level === level
     );
 
@@ -85,10 +89,12 @@ const autoSetDifficulty = (charts, difficultyName) => {
 
   if (!chart && difficultyName === "CRAZY")
     chart = _.find(
-      charts,
+      numericDifficultyCharts,
       (it) =>
         it.header.difficulty === "NUMERIC" && it.header.level >= INSANE_LEVEL
     );
+
+  if (!chart && GLOBAL_OPTIONS.force) chart = _.sample(numericDifficultyCharts);
 
   if (!chart)
     throw new Error(
