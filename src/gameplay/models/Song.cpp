@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-const u32 TITLE_LEN = 40;
-const u32 ARTIST_LEN = 15;
+const u32 TITLE_LEN = 31;
+const u32 ARTIST_LEN = 31;
 
 Song* Song_parse(const GBFS_FILE* fs, SongFile* file) {
   u32 length;

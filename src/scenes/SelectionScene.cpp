@@ -161,6 +161,7 @@ void SelectionScene::setUpArrows() {
 void SelectionScene::setUpPager() {
   count = library->getCount();
   setPage(0, 0);
+  updatePage();
 }
 
 SongFile* SelectionScene::getSelectedSong() {

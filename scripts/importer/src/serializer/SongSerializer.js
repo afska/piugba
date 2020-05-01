@@ -76,8 +76,8 @@ module.exports = class SongSerializer {
   }
 };
 
-const TITLE_LEN = 40 - 1;
-const ARTIST_LEN = 15 - 1;
+const TITLE_LEN = 31 - 1;
+const ARTIST_LEN = 31 - 1;
 // (-1 for \0)
 
 const ARROW_MASKS = [
