@@ -17,8 +17,8 @@ module.exports = class SongSerializer {
     const { metadata, charts } = this.simfile;
 
     return buffer
-      .String(_.padEnd(metadata.title, TITLE_LEN))
-      .String(_.padEnd(metadata.artist, ARTIST_LEN))
+      .String(_.padEnd(metadata.title, TITLE_LEN).substring(0, TITLE_LEN))
+      .String(_.padEnd(metadata.artist, ARTIST_LEN).substring(0, ARTIST_LEN))
       .UInt8(Channels[metadata.channel])
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)

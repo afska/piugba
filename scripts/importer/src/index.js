@@ -19,7 +19,9 @@ const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
 
 const GET_SONG_FILES = ({ path, id, name }) => {
-  const files = fs.readdirSync(path).map((it) => $path.join(path, it));
+  const files = _.sortBy(fs.readdirSync(path)).map((it) =>
+    $path.join(path, it)
+  );
 
   return {
     metadataFile: _.find(files, (it) => FILE_METADATA.test(it)),
