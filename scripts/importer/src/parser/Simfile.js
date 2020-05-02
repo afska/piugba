@@ -17,6 +17,9 @@ module.exports = class Simfile {
       title: this._getSingleMatch(REGEXPS.metadata.title),
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
       channel: this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels),
+      lastMillisecond: this._toMilliseconds(
+        this._getSingleMatch(REGEXPS.metadata.lastSecondHint) || 999999
+      ),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
       ),
@@ -139,6 +142,7 @@ const REGEXPS = {
     title: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
     channel: PROPERTY("SONGCATEGORY"),
+    lastSecondHint: PROPERTY_FLOAT("LASTSECONDHINT"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
   },

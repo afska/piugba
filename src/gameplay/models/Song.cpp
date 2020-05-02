@@ -20,6 +20,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile* file) {
   parse_array(data, &cursor, song->artist, ARTIST_LEN);
 
   song->channel = static_cast<Channel>(parse_u8(data, &cursor));
+  song->lastMillisecond = parse_u32le(data, &cursor);
   song->sampleStart = parse_u32le(data, &cursor);
   song->sampleLength = parse_u32le(data, &cursor);
 

@@ -20,6 +20,7 @@ module.exports = class SongSerializer {
       .String(metadata.title, TITLE_LEN)
       .String(metadata.artist, ARTIST_LEN)
       .UInt8(Channels[metadata.channel])
+      .UInt32LE(metadata.lastMillisecond)
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
       .ChartArray(charts).result;

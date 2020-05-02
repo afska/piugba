@@ -94,14 +94,15 @@ void SongScene::tick(u16 keys) {
     hasStarted = true;
   }
 
-  if (PlaybackState.hasFinished) {
+  msecs = (int)PlaybackState.msecs;
+
+  if (PlaybackState.hasFinished || msecs >= (int)song->lastMillisecond) {
     unload();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
     return;
   }
 
-  this->msecs = (int)PlaybackState.msecs;
   bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
 
   if (isNewBeat)
