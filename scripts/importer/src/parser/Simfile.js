@@ -59,6 +59,7 @@ module.exports = class Simfile {
       const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
       const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
       const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
+      const warps = this._getSingleMatch(REGEXPS.chart.warps, rawChart);
       const header = {
         startIndex,
         name,
@@ -70,6 +71,7 @@ module.exports = class Simfile {
         stops,
         delays,
         scrolls,
+        warps,
       };
 
       const notesStart = startIndex + rawChart.length;
@@ -157,6 +159,7 @@ const REGEXPS = {
     stops: DICTIONARY("STOPS"),
     delays: DICTIONARY("DELAYS"),
     scrolls: DICTIONARY("SCROLLS"),
+    warps: DICTIONARY("WARPS"),
   },
 };
 

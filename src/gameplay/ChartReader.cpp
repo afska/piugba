@@ -113,6 +113,9 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           hasStopped = true;
           stopEnd = msecs + (int)event->extra;
           break;
+        case EventType::WARP:
+          // TODO: IMPLEMENT
+          break;
         default:
           break;
       }

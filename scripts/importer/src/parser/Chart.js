@@ -52,6 +52,10 @@ module.exports = class Chart {
 
   _getTimingEvents() {
     const segments = _([
+      this.header.warps.map((it) => ({
+        type: Events.WARP,
+        data: it,
+      })),
       [...this.header.stops, ...this.header.delays].map((it) => ({
         type: Events.STOP,
         data: it,
@@ -83,6 +87,14 @@ module.exports = class Chart {
         const timestamp = currentTimestamp;
 
         switch (type) {
+          case Events.WARP:
+            const length = data.value * beatLength;
+
+            return {
+              timestamp,
+              type,
+              length,
+            };
           case Events.STOP:
             const length = data.value * SECOND;
             currentTimestamp += length;

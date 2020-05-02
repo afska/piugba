@@ -59,6 +59,8 @@ module.exports = class SongSerializer {
           this.UInt8(event.type).UInt32LE(Math.round(event.tickcount));
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
           this.UInt8(Events.STOP).UInt32LE(Math.round(event.length));
+        else if (event.type === Events.WARP)
+          this.UInt8(event.type).UInt32LE(Math.round(event.length));
         else {
           const data = _.range(0, 5).reduce(
             (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
