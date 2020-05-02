@@ -4,7 +4,7 @@
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 
-const u32 OPACITY = 10;
+const u32 OPACITY = 12;
 
 Highlighter::Highlighter(u8 id) {
   this->id = id;
