@@ -61,6 +61,8 @@ void SongScene::load() {
   player_play(song->audioPath.c_str());
 
   BACKGROUND_enable(false, false, false, false);
+  IFTEST { BACKGROUND_enable(true, false, false, false); }
+
   setUpPalettes();
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
@@ -85,8 +87,10 @@ void SongScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    darkener->initialize();
+    IFNOTTEST {
+      BACKGROUND_enable(true, true, false, false);
+      darkener->initialize();
+    }
     hasStarted = true;
   }
 
