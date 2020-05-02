@@ -180,21 +180,39 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
       event->data, [&event, &arrowPool, this](ArrowDirection direction) {
         withLastHoldArrow(direction, [&event, &arrowPool, &direction,
                                       this](HoldArrow* holdArrow) {
-          arrowPool->create([&direction, &arrowPool, this](Arrow* fill) {
-            fill->initialize(ArrowType::HOLD_FILL, direction);
+          int lastfillY = holdArrow->lastFill->get()->getY();
 
-            Arrow* tail = arrowPool->createWithIdGreaterThan(
-                [&fill, &direction](Arrow* tail) {
+          if (lastfillY > GBA_SCREEN_HEIGHT - (int)ARROW_SIZE) {
+            // short (only 1 fill) -> tail's position is approximated
+
+            arrowPool->createWithIdGreaterThan(
+                [&direction, &lastfillY](Arrow* tail) {
                   tail->initialize(ArrowType::HOLD_TAIL, direction);
-                  fill->get()->moveTo(tail->get()->getX(),
-                                      tail->get()->getY() - ARROW_SIZE +
+                  tail->get()->moveTo(tail->get()->getX(),
+                                      lastfillY + ARROW_SIZE -
                                           HOLD_ARROW_TAIL_OFFSETS[direction]);
                 },
-                fill->id);
+                holdArrow->lastFill->id);
+          } else {
+            // long (extra fill) -> tail's position is perfectly accurate
 
-            if (tail == NULL)
-              arrowPool->discard(fill->id);
-          });
+            arrowPool->create([&direction, &arrowPool, this](Arrow* extraFill) {
+              extraFill->initialize(ArrowType::HOLD_FILL, direction);
+
+              Arrow* tail = arrowPool->createWithIdGreaterThan(
+                  [&extraFill, &direction](Arrow* tail) {
+                    tail->initialize(ArrowType::HOLD_TAIL, direction);
+                    extraFill->get()->moveTo(
+                        tail->get()->getX(),
+                        tail->get()->getY() - ARROW_SIZE +
+                            HOLD_ARROW_TAIL_OFFSETS[direction]);
+                  },
+                  extraFill->id);
+
+              if (tail == NULL)
+                arrowPool->discard(extraFill->id);
+            });
+          }
 
           holdArrow->endTime = event->timestamp;
         });
