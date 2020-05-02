@@ -20,6 +20,7 @@ extern "C" {
 const u32 ID_DARKENER = 0;
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 ARROW_POOL_SIZE = 50;
+const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 
 static std::unique_ptr<Darkener> darkener{new Darkener(ID_DARKENER)};
@@ -137,7 +138,7 @@ void SongScene::setUpBackground() {
   bg = std::unique_ptr<Background>(new Background(
       ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
       backgroundMapData, backgroundMapLength));
-  bg->useCharBlock(0);
+  bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
 }
