@@ -47,7 +47,9 @@ const GET_SONG_FILES = ({ path, id, name }) => {
     metadataFile: _.find(files, (it) => FILE_METADATA.test(it)),
     audioFile: _.find(files, (it) => FILE_AUDIO.test(it)),
     backgroundFile: _.find(files, (it) => FILE_BACKGROUND.test(it)),
-    outputName: (id + "-" + name).substring(0, MAX_FILE_LENGTH),
+    outputName: (id + "-" + name)
+      .replace(/[^0-9a-z -]/gi, "")
+      .substring(0, MAX_FILE_LENGTH),
   };
 };
 
