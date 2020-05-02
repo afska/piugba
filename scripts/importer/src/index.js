@@ -39,17 +39,12 @@ if (!_.includes(DIFFICULTY_OPTIONS, GLOBAL_OPTIONS.difficulty))
   GLOBAL_OPTIONS.difficulty = DIFFICULTY_DEFAULT;
 
 const GET_SONG_FILES = ({ path, id, name }) => {
-  const files = _.sortBy(fs.readdirSync(path)).map((it) =>
-    $path.join(path, it)
-  );
+  const files = fs.readdirSync(path).map((it) => $path.join(path, it));
 
   return {
     metadataFile: _.find(files, (it) => FILE_METADATA.test(it)),
     audioFile: _.find(files, (it) => FILE_AUDIO.test(it)),
     backgroundFile: _.find(files, (it) => FILE_BACKGROUND.test(it)),
-    outputName: (id + "-" + name)
-      .replace(/[^0-9a-z -]/gi, "")
-      .substring(0, MAX_FILE_LENGTH),
   };
 };
 
@@ -59,24 +54,32 @@ mkdirp(SONGS_PATH);
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
 
-const songs = fs.readdirSync(SONGS_PATH).map((directory, i) => {
-  const parts = directory.split(SEPARATOR);
+const songs = _(fs.readdirSync(SONGS_PATH))
+  .sortBy()
+  .map((directory, i) => {
+    const parts = directory.split(SEPARATOR);
 
-  return {
-    path: $path.join(SONGS_PATH, directory),
-    id: parts.length === 2 ? _.first(parts) : i.toString(),
-    name: _.last(parts),
-  };
-});
+    const id = parts.length === 2 ? _.first(parts) : i.toString();
+    const name = _.last(parts);
+    const outputName = (id + "-" + name)
+      .replace(/[^0-9a-z -]/gi, "")
+      .substring(0, MAX_FILE_LENGTH);
+
+    return {
+      path: $path.join(SONGS_PATH, directory),
+      id,
+      name,
+      outputName,
+    };
+  })
+  .sortBy("outputName")
+  .value();
 
 let lastSelectorBuilt = -1;
 const simfiles = songs.map((song, i) => {
-  const {
-    metadataFile,
-    audioFile,
-    backgroundFile,
-    outputName,
-  } = GET_SONG_FILES(song);
+  const { outputName } = song;
+  const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
+
   console.log(
     `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
       "Importing".bold
