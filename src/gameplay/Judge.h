@@ -17,7 +17,7 @@ class Judge {
 
   void onPress(Arrow* arrow);
   void onOut(Arrow* arrow);
-  void onHoldTick(u8 arrows);
+  void onHoldTick(u8 arrows, bool canMiss);
 
  private:
   ObjectPool<Arrow>* arrowPool;

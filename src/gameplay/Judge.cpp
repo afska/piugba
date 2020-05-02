@@ -49,7 +49,7 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
-void Judge::onHoldTick(u8 arrows) {
+void Judge::onHoldTick(u8 arrows, bool canMiss) {
   bool isPressed = true;
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
@@ -59,7 +59,10 @@ void Judge::onHoldTick(u8 arrows) {
     }
   }
 
-  updateScore(isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
+  if (isPressed)
+    updateScore(FeedbackType::PERFECT);
+  else if (canMiss)
+    updateScore(FeedbackType::MISS);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {

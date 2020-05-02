@@ -229,19 +229,24 @@ void ChartReader::processHoldTicks(int msecs, int msecsWithOffset) {
 
   if (hasChanged) {
     u8 arrows = 0;
+    bool canMiss = true;
 
     for (u32 i = 0; i < ARROWS_TOTAL; i++) {
       auto direction = static_cast<ArrowDirection>(i);
 
-      withNextHoldArrow(
-          direction, [&msecs, &arrows, &direction, this](HoldArrow* holdArrow) {
-            if (msecs >= holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
-              arrows |= EVENT_ARROW_MASKS[direction];
-          });
+      withNextHoldArrow(direction, [&msecs, &arrows, &canMiss, &direction,
+                                    this](HoldArrow* holdArrow) {
+        if (msecs >= holdArrow->startTime) {
+          arrows |= EVENT_ARROW_MASKS[direction];
+
+          if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
+            canMiss = false;
+        }
+      });
     }
 
     if (arrows > 0)
-      judge->onHoldTick(arrows);
+      judge->onHoldTick(arrows, canMiss);
   }
 
   lastTick = tick;
