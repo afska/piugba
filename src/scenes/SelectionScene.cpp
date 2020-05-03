@@ -160,7 +160,9 @@ void SelectionScene::setUpPager() {
 
 void SelectionScene::goToSong() {
   Song* song = Song_parse(fs, getSelectedSong());
-  Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
+  Chart* chart = Song_findChartByNumericLevel(song, 15);  // TODO: UNHARDCODE
+  // Chart* chart = Song_findChartByDifficultyLevel(song,
+  // difficulty->getValue());
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(2));

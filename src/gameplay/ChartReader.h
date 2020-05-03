@@ -61,10 +61,14 @@ class ChartReader {
   u32 tickCount = 4;
   int lastTick = 0;
   int stopEnd = 0;
+  u32 warpedMs = 0;
 
   bool animateBpm(int msecsWithOffset);
   void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
+  void processUniqueNote(u8 data,
+                         ObjectPool<Arrow>* arrowPool,
+                         int targetMsecs,  // TODO: UNDO
+                         Event* event);
   void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);

@@ -86,9 +86,13 @@ module.exports = class Chart {
         currentBpm = this._getBpmByBeat(beat);
         const timestamp = currentTimestamp;
 
+        let length;
         switch (type) {
           case Events.WARP:
-            const length = data.value * beatLength;
+            length = this._getRangeDuration(
+              currentBeat,
+              currentBeat + data.value
+            );
 
             return {
               timestamp,
@@ -96,7 +100,7 @@ module.exports = class Chart {
               length,
             };
           case Events.STOP:
-            const length = data.value * SECOND;
+            length = data.value * SECOND;
             currentTimestamp += length;
 
             return {
@@ -108,7 +112,7 @@ module.exports = class Chart {
             const scrollEnabled = data.value > 0;
 
             if (scrollEnabled && !currentScrollEnabled) {
-              const length = timestamp - currentScrollTimestamp;
+              length = timestamp - currentScrollTimestamp;
               currentScrollEnabled = true;
               currentScrollTimestamp = timestamp;
 
@@ -203,6 +207,18 @@ module.exports = class Chart {
     return (event && event.bpm) || 0;
   }
 
+  _getRangeDuration(startBeat, endBeat) {
+    let length = 0;
+
+    for (let beat = startBeat; beat < endBeat; beat += FUSE) {
+      const bpm = this._getBpmByBeat(beat);
+      const beatLength = this._getBeatLengthByBpm(bpm) * FUSE;
+      length += beatLength;
+    }
+
+    return length;
+  }
+
   _getStopByTimestamp(timestamp, timingEvents) {
     const event = _.findLast(
       timingEvents,
@@ -217,3 +233,4 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
 const NOTE_DATA = /^\d\d\d\d\d$/;
+const FUSE = 1 / 2 / 2 / 2 / 2;

@@ -55,6 +55,8 @@ bool ChartReader::animateBpm(int msecsWithOffset) {
 }
 
 void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
+  msecs += (int)warpedMs;
+
   u32 currentIndex = eventIndex;
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
@@ -81,7 +83,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
 
       switch (type) {
         case EventType::NOTE:
-          processUniqueNote(event->data, arrowPool);
+          processUniqueNote(event->data, arrowPool, targetMsecs, event);
           break;
         case EventType::HOLD_START:
           startHoldNote(event, arrowPool);
@@ -114,8 +116,17 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopEnd = msecs + (int)event->extra;
           break;
         case EventType::WARP:
-          // TODO: IMPLEMENT
-          break;
+          warpedMs += event->extra;
+          targetMsecs = event->timestamp + (int)event->extra;
+
+          LOG(event->timestamp);
+          while (targetMsecs >= chart->events[currentIndex].timestamp &&
+                 currentIndex < chart->eventCount) {
+            // TODO: Optimize
+            currentIndex++;
+          }
+          eventIndex = currentIndex;
+          return;
         default:
           break;
       }
@@ -128,16 +139,29 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   }
 }
 
-void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processUniqueNote(u8 data,
+                                    ObjectPool<Arrow>* arrowPool,
+                                    int targetMsecs,
+                                    Event* event) {
   std::vector<Arrow*> arrows;
 
-  forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
-    arrowPool->create([&arrows, &direction](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction);
-      arrows.push_back(it);
-    });
-  });
+  forEachDirection(data, [&arrowPool, &arrows, &targetMsecs, this,
+                          &event](ArrowDirection direction) {
+    arrowPool->create(
+        [&arrows, &direction, &targetMsecs, this, &event](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction);
+          u32 diff = targetMsecs - event->timestamp;
+          // timeNeeded ------------ 100
+          // diff ------------------ x% = diff*100/timeNeeded
+          // timeNeeded -------------------GBA_SCREEN_HEIGHT -
+          // ARROW_CORNER_MARGIN_Y diff --------------------- x =
+          u32 offsetY =
+              diff * (GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y) / timeNeeded;
+          it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
 
+          arrows.push_back(it);
+        });  // TODO: DO IT RIGHT
+  });
   connectArrows(arrows);
 }
 
