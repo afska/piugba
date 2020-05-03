@@ -173,8 +173,7 @@ void SongScene::updateArrows() {
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
-    ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, isPressing);
+    ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing);
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
@@ -205,7 +204,7 @@ void SongScene::updateFakeHeads() {
       SPRITE_hide(fakeHeads[i]->get());
     }
 
-    ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
+    ArrowState arrowState = fakeHeads[i]->tick(false, false);
     if (arrowState == ArrowState::OUT && !hidingNow)
       fakeHeads[i]->discard();
   }

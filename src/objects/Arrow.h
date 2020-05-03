@@ -87,7 +87,7 @@ class Arrow : public IPoolable {
   bool getIsPressed();
   void markAsPressed();
 
-  ArrowState tick(int msecs, bool hasStopped, bool isPressing);
+  ArrowState tick(bool hasStopped, bool isPressing);
   Sprite* get();
 
  private:
@@ -96,15 +96,14 @@ class Arrow : public IPoolable {
   bool flip = false;
   int siblingId = -1;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
-  int msecs = 0;
-  int endTime = 0;
+  bool hasEnded = false;
+  u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
 
   void end();
   void animatePress();
   bool isAligned(int offset);
-  bool isShowingPressAnimation();
 };
 
 #endif  // ARROW_H
