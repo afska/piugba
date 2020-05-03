@@ -11,7 +11,7 @@ const u32 ANIMATION_DELAY = 2;
 const u32 HOLD_FILL_TILE = 9;
 const u32 HOLD_TAIL_TILE = 0;
 const u32 END_ANIMATION_START = 5;
-const u32 END_ANIMATION_DELAY_MS = 30;
+const u32 END_ANIMATION_DELAY_FRAMES = 2;
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -60,8 +60,8 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
-  msecs = 0;
-  endTime = 0;
+  hasEnded = false;
+  endAnimationFrame = 0;
   isPressed = false;
   needsAnimation = false;
 }
@@ -99,27 +99,28 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(int msecs, bool hasStopped, bool isPressing) {
-  this->msecs = msecs;
+ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
     return ArrowState::OUT;
 
-  if (type == ArrowType::HOLD_FAKE_HEAD || isShowingPressAnimation()) {
-    u32 diff = abs(msecs - endTime);
+  if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
+    endAnimationFrame++;
 
-    if (diff > END_ANIMATION_DELAY_MS) {
-      if (diff < END_ANIMATION_DELAY_MS * 2)
+    if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES) {
+      if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 1)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
-      else if (diff < END_ANIMATION_DELAY_MS * 3)
+      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 2)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
-      else if (diff < END_ANIMATION_DELAY_MS * 4)
+      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 3)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      else if (type == ArrowType::HOLD_FAKE_HEAD)
-        animatePress();
-      else
-        end();
+      else if (endAnimationFrame > END_ANIMATION_DELAY_FRAMES * 3) {
+        if (type == ArrowType::HOLD_FAKE_HEAD)
+          animatePress();
+        else
+          end();
+      }
     }
   } else if (isAligned(0) && isPressed && needsAnimation) {
     animatePress();
@@ -149,14 +150,11 @@ void Arrow::end() {
 void Arrow::animatePress() {
   markAsPressed();
 
-  endTime = msecs;
+  hasEnded = true;
+  endAnimationFrame = 0;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  ARROW_CORNER_MARGIN_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
-}
-
-bool Arrow::isShowingPressAnimation() {
-  return endTime > 0;
 }
 
 bool Arrow::isAligned(int offset) {

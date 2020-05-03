@@ -119,7 +119,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           warpedMs += event->extra;
           targetMsecs = event->timestamp + (int)event->extra;
 
-          LOG(event->timestamp);
           while (targetMsecs >= chart->events[currentIndex].timestamp &&
                  currentIndex < chart->eventCount) {
             // TODO: Optimize
@@ -147,20 +146,26 @@ void ChartReader::processUniqueNote(u8 data,
 
   forEachDirection(data, [&arrowPool, &arrows, &targetMsecs, this,
                           &event](ArrowDirection direction) {
-    arrowPool->create(
-        [&arrows, &direction, &targetMsecs, this, &event](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, direction);
-          u32 diff = targetMsecs - event->timestamp;
-          // timeNeeded ------------ 100
-          // diff ------------------ x% = diff*100/timeNeeded
-          // timeNeeded -------------------GBA_SCREEN_HEIGHT -
-          // ARROW_CORNER_MARGIN_Y diff --------------------- x =
-          u32 offsetY =
-              diff * (GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y) / timeNeeded;
-          it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
+    arrowPool->create([&arrows, &direction, &targetMsecs, this, &event,
+                       &arrowPool](Arrow* it) {
+      it->initialize(ArrowType::UNIQUE, direction);
+      u32 diff = targetMsecs - event->timestamp;
+      // timeNeeded ------------ 100
+      // diff ------------------ x% = diff*100/timeNeeded
+      // timeNeeded -------------------GBA_SCREEN_HEIGHT -
+      // ARROW_CORNER_MARGIN_Y diff --------------------- x =
+      u32 regularDistance = GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y;
+      u32 offsetY = diff * (regularDistance) / timeNeeded;
 
-          arrows.push_back(it);
-        });  // TODO: DO IT RIGHT
+      if (offsetY > regularDistance) {
+        arrowPool->discard(it->id);
+        return;
+      }
+
+      it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
+
+      arrows.push_back(it);
+    });  // TODO: DO IT RIGHT
   });
   connectArrows(arrows);
 }

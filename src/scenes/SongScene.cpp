@@ -104,6 +104,26 @@ void SongScene::tick(u16 keys) {
   }
 
   bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
+  LOG(msecs);  // THE PROBLEM IS THAT THIS NOTE EVENT AND THE STOP SHOULD MATCH:
+  /*
+      {
+      "timestamp": 8381,
+      "type": 0,
+      "arrows": [
+        true,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "timestamp": 8446, // 8381 + two times the offset (33)
+      "type": 5,
+      "length": 717,
+      "handled": true
+    },
+  */
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
@@ -173,8 +193,9 @@ void SongScene::updateArrows() {
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
-    ArrowState arrowState =
-        it->tick(msecs, chartReader->hasStopped, isPressing);
+    ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing);
+    if (chartReader->hasStopped)  // TODO: Fix hasBeenPressedNow
+      return;
 
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
@@ -205,7 +226,7 @@ void SongScene::updateFakeHeads() {
       SPRITE_hide(fakeHeads[i]->get());
     }
 
-    ArrowState arrowState = fakeHeads[i]->tick(msecs, false, false);
+    ArrowState arrowState = fakeHeads[i]->tick(false, false);
     if (arrowState == ArrowState::OUT && !hidingNow)
       fakeHeads[i]->discard();
   }
