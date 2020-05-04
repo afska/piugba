@@ -75,8 +75,9 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
       continue;
     }
 
-    if (type == EventType::STOP)
-      targetMsecs += event->extra;
+    // if (type == EventType::STOP)
+    //   targetMsecs += event->extra;
+    // TODO: RESTORE
 
     if (msecs < event->timestamp) {
       // events with anticipation
@@ -111,19 +112,20 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           tickCount = event->extra;
           lastTick = -1;
           break;
-        case EventType::STOP:
-          hasStopped = true;
-          stopEnd = msecs + (int)event->extra;
-          break;
+        // case EventType::STOP:
+        //   hasStopped = true;
+        //   stopEnd = msecs + (int)event->extra;
+        //   break;
+        // TODO: RESTORE
         case EventType::WARP:
           warpedMs += event->extra;
           targetMsecs = event->timestamp + (int)event->extra;
 
+          arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+
           while (targetMsecs >= chart->events[currentIndex].timestamp &&
-                 currentIndex < chart->eventCount) {
-            // TODO: Optimize
+                 currentIndex < chart->eventCount)
             currentIndex++;
-          }
           eventIndex = currentIndex;
           return;
         default:

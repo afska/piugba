@@ -62,6 +62,7 @@ class Arrow : public IPoolable {
   Arrow(u32 id);
 
   void discard() override;
+  void scheduleDiscard();
 
   void initialize(ArrowType type, ArrowDirection direction);
   void setSiblingId(int siblingId);
@@ -100,6 +101,7 @@ class Arrow : public IPoolable {
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
+  bool hasJustScheduledDiscard = false;
 
   void end();
   void animatePress();
