@@ -1,14 +1,13 @@
 #include "ChartReader.h"
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
-#include <libgba-sprite-engine/gba_engine.h>
 
 #include <vector>
 
 /*
   x = x0 + v * t
-  ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
-  t = abs(GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y) px / ARROW_SPEED px/frame
+  ARROW_FINAL_Y = ARROW_INITIAL_Y + ARROW_SPEED * t
+  t = abs(ARROW_INITIAL_Y - ARROW_FINAL_Y) px / ARROW_SPEED px/frame
   t = (160 - 15) / 3 = (48.33 frames - 1) * 16.73322954 ms/frame = 792,03 ms
   (we substract 1 because arrows start moving the same tick they're created)
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
@@ -79,22 +78,27 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
     // TODO: RESTORE
 
     if (msecs < event->timestamp) {
-      // events with anticipation
+      // events with anticipation (notes)
 
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event->data, arrowPool, targetMsecs, event);
-          break;
-        case EventType::HOLD_START:
-          startHoldNote(event, arrowPool);
-          break;
-        case EventType::HOLD_END:
-          endHoldNote(event, arrowPool);
-          break;
-        default:
-          handled = false;
-          skipped = true;
-          break;
+      u32 diff = targetMsecs - event->timestamp;
+      u32 offsetY = Div(diff * ARROW_DISTANCE, timeNeeded);
+
+      if (offsetY <= ARROW_DISTANCE) {
+        switch (type) {
+          case EventType::NOTE:
+            processUniqueNote(event->data, offsetY, arrowPool);
+            break;
+          case EventType::HOLD_START:
+            startHoldNote(event, offsetY, arrowPool);
+            break;
+          case EventType::HOLD_END:
+            endHoldNote(event, arrowPool);
+            break;
+          default:
+            handled = false;
+            skipped = true;
+            break;
+        }
       }
     } else {
       // exact events
@@ -141,72 +145,60 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
 }
 
 void ChartReader::processUniqueNote(u8 data,
-                                    ObjectPool<Arrow>* arrowPool,
-                                    int targetMsecs,
-                                    Event* event) {
+                                    u32 offsetY,
+                                    ObjectPool<Arrow>* arrowPool) {
   std::vector<Arrow*> arrows;
 
-  forEachDirection(data, [&arrowPool, &arrows, &targetMsecs, this,
-                          &event](ArrowDirection direction) {
-    arrowPool->create([&arrows, &direction, &targetMsecs, this, &event,
-                       &arrowPool](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction);
-      u32 diff = targetMsecs - event->timestamp;
-      // timeNeeded ------------ 100
-      // diff ------------------ x% = diff*100/timeNeeded
-      // timeNeeded -------------------GBA_SCREEN_HEIGHT -
-      // ARROW_CORNER_MARGIN_Y diff --------------------- x =
-      u32 regularDistance = GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y;
-      u32 offsetY = diff * (regularDistance) / timeNeeded;
+  forEachDirection(
+      data, [&offsetY, &arrowPool, &arrows](ArrowDirection direction) {
+        arrowPool->create([&offsetY, &arrows, &direction](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction);
+          it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
+          arrows.push_back(it);
+        });
+      });
 
-      if (offsetY > regularDistance) {
-        arrowPool->discard(it->id);
-        return;
-      }
-
-      it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
-
-      arrows.push_back(it);
-    });  // TODO: DO IT RIGHT
-  });
   connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(
-      event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        holdArrows->create(
-            [event, arrowPool, &direction, this](HoldArrow* holdArrow) {
-              Arrow* head = arrowPool->create([&direction](Arrow* it) {
-                it->initialize(ArrowType::HOLD_HEAD, direction);
-              });
+void ChartReader::startHoldNote(Event* event,
+                                u32 offsetY,
+                                ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(event->data, [&event, &offsetY, &arrowPool,
+                                 this](ArrowDirection direction) {
+    holdArrows->create(
+        [event, &offsetY, arrowPool, &direction, this](HoldArrow* holdArrow) {
+          Arrow* head = arrowPool->create([&offsetY, &direction](Arrow* it) {
+            it->initialize(ArrowType::HOLD_HEAD, direction);
+            it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
+          });
 
-              if (head == NULL) {
-                holdArrows->discard(holdArrow->id);
-                return;
-              }
+          if (head == NULL) {
+            holdArrows->discard(holdArrow->id);
+            return;
+          }
 
-              Arrow* fill = arrowPool->createWithIdGreaterThan(
-                  [&direction, &head](Arrow* it) {
-                    it->initialize(ArrowType::HOLD_FILL, direction);
-                    it->get()->moveTo(head->get()->getX(),
-                                      head->get()->getY() + ARROW_SIZE -
-                                          HOLD_ARROW_FILL_OFFSETS[direction]);
-                  },
-                  head->id);
+          Arrow* fill = arrowPool->createWithIdGreaterThan(
+              [&direction, &head](Arrow* it) {
+                it->initialize(ArrowType::HOLD_FILL, direction);
+                it->get()->moveTo(head->get()->getX(),
+                                  head->get()->getY() + ARROW_SIZE -
+                                      HOLD_ARROW_FILL_OFFSETS[direction]);
+              },
+              head->id);
 
-              if (fill == NULL) {
-                arrowPool->discard(head->id);
-                holdArrows->discard(holdArrow->id);
-                return;
-              }
+          if (fill == NULL) {
+            arrowPool->discard(head->id);
+            holdArrows->discard(holdArrow->id);
+            return;
+          }
 
-              holdArrow->direction = direction;
-              holdArrow->startTime = event->timestamp;
-              holdArrow->endTime = 0;
-              holdArrow->lastFill = fill;
-            });
-      });
+          holdArrow->direction = direction;
+          holdArrow->startTime = event->timestamp;
+          holdArrow->endTime = 0;
+          holdArrow->lastFill = fill;
+        });
+  });
 }
 
 void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
@@ -216,7 +208,7 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
                                       this](HoldArrow* holdArrow) {
           int lastfillY = holdArrow->lastFill->get()->getY();
 
-          if (lastfillY > GBA_SCREEN_HEIGHT - (int)ARROW_SIZE) {
+          if (lastfillY > (int)(ARROW_INITIAL_Y - ARROW_SIZE)) {
             // short (only 1 fill) -> tail's position is approximated
 
             arrowPool->createWithIdGreaterThan(
@@ -264,7 +256,7 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
 
     if (holdArrow->endTime == 0 &&
         holdArrow->lastFill->get()->getY() <
-            (int)(GBA_SCREEN_HEIGHT - ARROW_SIZE + ARROW_SPEED)) {
+            (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction);
       });

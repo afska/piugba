@@ -53,7 +53,7 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   sprite->enabled = true;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 GBA_SCREEN_HEIGHT);
+                 ARROW_INITIAL_Y);
 
   if (isHoldFill || isHoldTail) {
     u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_TAIL_TILE;

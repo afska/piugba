@@ -190,11 +190,11 @@ void SongScene::updateFakeHeads() {
     auto direction = static_cast<ArrowDirection>(i);
 
     bool isHoldMode = false;
-    chartReader->withNextHoldArrow(
-        direction, [&isHoldMode, this](HoldArrow* holdArrow) {
-          isHoldMode = msecs >= holdArrow->startTime &&
-                       (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
-        });
+    chartReader->withNextHoldArrow(direction, [&isHoldMode,
+                                               this](HoldArrow* holdArrow) {
+      isHoldMode = chartMsecs >= holdArrow->startTime &&
+                   (holdArrow->endTime == 0 || chartMsecs < holdArrow->endTime);
+    });
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
 
