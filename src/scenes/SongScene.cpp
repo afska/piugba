@@ -104,26 +104,7 @@ void SongScene::tick(u16 keys) {
   }
 
   bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
-  LOG(msecs);  // THE PROBLEM IS THAT THIS NOTE EVENT AND THE STOP SHOULD MATCH:
-  /*
-      {
-      "timestamp": 8381,
-      "type": 0,
-      "arrows": [
-        true,
-        false,
-        false,
-        false,
-        true
-      ]
-    },
-    {
-      "timestamp": 8446, // 8381 + two times the offset (33)
-      "type": 5,
-      "length": 717,
-      "handled": true
-    },
-  */
+  LOG(msecs);  // TODO: REMOVE
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
