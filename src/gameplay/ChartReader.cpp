@@ -36,12 +36,11 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   int rythmMsecs = *msecs - lastBpmChange;
   bool hasChanged = animateBpm(rythmMsecs);
 
-  *msecs -= AUDIO_LAG;
-  int chartMsecs = *msecs + (int)warpedMs;
+  *msecs = *msecs - AUDIO_LAG + (int)warpedMs;
 
-  processNextEvent(chartMsecs, arrowPool);
-  processHoldArrows(chartMsecs, arrowPool);
-  processHoldTicks(chartMsecs, rythmMsecs);
+  processNextEvent(*msecs, arrowPool);
+  processHoldArrows(*msecs, arrowPool);
+  processHoldTicks(*msecs, rythmMsecs);
 
   return hasChanged;
 };

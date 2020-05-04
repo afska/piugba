@@ -94,17 +94,17 @@ void SongScene::tick(u16 keys) {
     hasStarted = true;
   }
 
-  msecs = (int)PlaybackState.msecs;
+  songMsecs = (int)PlaybackState.msecs;
 
-  if (PlaybackState.hasFinished || msecs >= (int)song->lastMillisecond) {
+  if (PlaybackState.hasFinished || songMsecs >= (int)song->lastMillisecond) {
     unload();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
     return;
   }
 
-  bool isNewBeat = chartReader->update(&this->msecs, arrowPool.get());
-  LOG(msecs);  // TODO: REMOVE
+  chartMsecs = songMsecs;
+  bool isNewBeat = chartReader->update(&this->chartMsecs, arrowPool.get());
 
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
