@@ -86,6 +86,8 @@ module.exports = class Chart {
         currentBpm = this._getBpmByBeat(beat);
         const timestamp = currentTimestamp;
 
+        if (data.value < 0) throw new Error("invalid_negative_timing_segment");
+
         let length;
         switch (type) {
           case Events.WARP:
