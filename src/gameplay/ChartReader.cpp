@@ -35,11 +35,13 @@ ChartReader::ChartReader(Chart* chart, Judge* judge) {
 bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   int rythmMsecs = *msecs - lastBpmChange;
   bool hasChanged = animateBpm(rythmMsecs);
-  *msecs -= AUDIO_LAG;
 
-  processNextEvent(*msecs, arrowPool);
-  processHoldArrows(*msecs, arrowPool);
-  processHoldTicks(*msecs, rythmMsecs);
+  *msecs -= AUDIO_LAG;
+  int chartMsecs = *msecs + (int)warpedMs;
+
+  processNextEvent(chartMsecs, arrowPool);
+  processHoldArrows(chartMsecs, arrowPool);
+  processHoldTicks(chartMsecs, rythmMsecs);
 
   return hasChanged;
 };
@@ -55,8 +57,6 @@ bool ChartReader::animateBpm(int rythmMsecs) {
 }
 
 void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
-  msecs += (int)warpedMs;
-
   u32 currentIndex = eventIndex;
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
@@ -122,6 +122,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           targetMsecs = event->timestamp + (int)event->extra;
 
           arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+          holdArrows->clear();
 
           while (targetMsecs >= chart->events[currentIndex].timestamp &&
                  currentIndex < chart->eventCount)
