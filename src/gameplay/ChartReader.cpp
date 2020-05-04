@@ -73,12 +73,11 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
       continue;
     }
 
-    // if (type == EventType::STOP)
-    //   targetMsecs += event->extra;
-    // TODO: RESTORE
+    if (type == EventType::STOP)
+      targetMsecs += event->extra;
 
     if (msecs < event->timestamp) {
-      // events with anticipation (notes)
+      // predict events
 
       u32 diff = targetMsecs - event->timestamp;
       u32 offsetY = Div(diff * ARROW_DISTANCE, timeNeeded);
@@ -101,7 +100,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
         }
       }
     } else {
-      // exact events
+      // run events that actually happened
 
       switch (type) {
         case EventType::SET_TEMPO:
@@ -115,11 +114,10 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           tickCount = event->extra;
           lastTick = -1;
           break;
-        // case EventType::STOP:
-        //   hasStopped = true;
-        //   stopEnd = msecs + (int)event->extra;
-        //   break;
-        // TODO: RESTORE
+        case EventType::STOP:
+          hasStopped = true;
+          stopEnd = msecs + (int)event->extra;
+          break;
         case EventType::WARP:
           warpedMs += event->extra;
           targetMsecs = event->timestamp + (int)event->extra;

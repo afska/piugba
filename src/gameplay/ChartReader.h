@@ -65,7 +65,7 @@ class ChartReader {
 
   bool animateBpm(int rythmMsecs);
   void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(u8 data, u32 offsetY, ObjectPool<Arrow>* arrowPoo);
+  void processUniqueNote(u8 data, u32 offsetY, ObjectPool<Arrow>* arrowPool);
   void startHoldNote(Event* event, u32 offsetY, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
