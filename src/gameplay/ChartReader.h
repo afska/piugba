@@ -62,13 +62,13 @@ class ChartReader {
   int lastTick = 0;
   int stopEnd = 0;
 
-  bool animateBpm(int msecsWithOffset);
+  bool animateBpm(int rythmMsecs);
   void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
   void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
   void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processHoldTicks(int msecs, int msecsWithOffset);
+  void processHoldTicks(int msecs, int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
 
   template <typename F>
