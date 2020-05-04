@@ -45,6 +45,7 @@ module.exports = class Chart {
             arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
           }))
           .filter((it) => _.some(it.arrows))
+          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
           .value();
       });
     });
@@ -228,6 +229,16 @@ module.exports = class Chart {
     );
 
     return event && timestamp < event.timestamp + event.length ? event : null;
+  }
+
+  _isInsideWarp(timestamp, timingEvents) {
+    return _.some(
+      timingEvents,
+      (event) =>
+        event.type === Events.WARP &&
+        timestamp >= event.timestamp &&
+        timestamp < event.timestamp + event.length
+    );
   }
 };
 
