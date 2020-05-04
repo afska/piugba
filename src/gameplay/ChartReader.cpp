@@ -33,21 +33,21 @@ ChartReader::ChartReader(Chart* chart, Judge* judge) {
 };
 
 bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
-  int msecsWithOffset = (*msecs - lastBpmChange) - chart->offset;
-  bool hasChanged = animateBpm(msecsWithOffset);
+  int rythmMsecs = *msecs - lastBpmChange;
+  bool hasChanged = animateBpm(rythmMsecs);
   *msecs -= AUDIO_LAG;
 
   processNextEvent(*msecs, arrowPool);
   processHoldArrows(*msecs, arrowPool);
-  processHoldTicks(*msecs, msecsWithOffset);
+  processHoldTicks(*msecs, rythmMsecs);
 
   return hasChanged;
 };
 
-bool ChartReader::animateBpm(int msecsWithOffset) {
+bool ChartReader::animateBpm(int rythmMsecs) {
   // 60000 ms           -> BPM beats
-  // msecsWithOffset ms -> x = millis * BPM / 60000
-  int beat = Div(msecsWithOffset * bpm, MINUTE);
+  // rythmMsecs ms      -> x = millis * BPM / 60000
+  int beat = Div(rythmMsecs * bpm, MINUTE);
   bool hasChanged = beat != lastBeat;
   lastBeat = beat;
 
@@ -273,8 +273,8 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
   });
 }
 
-void ChartReader::processHoldTicks(int msecs, int msecsWithOffset) {
-  int tick = Div(msecsWithOffset * bpm * tickCount, MINUTE);
+void ChartReader::processHoldTicks(int msecs, int rythmMsecs) {
+  int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
