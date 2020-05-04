@@ -60,7 +60,9 @@ class ChartReader {
   int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;
-  int stopEnd = 0;
+  int stopStart = 0;
+  u32 stopLength = 0;
+  u32 stoppedMs = 0;
   u32 warpedMs = 0;
 
   bool animateBpm(int rythmMsecs);

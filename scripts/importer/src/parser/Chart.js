@@ -26,11 +26,6 @@ module.exports = class Chart {
       const subdivision = 1 / lines.length;
 
       return _.flatMap(lines, (line) => {
-        const stop = this._getStopByTimestamp(cursor, timingEvents);
-        if (stop && !stop.handled) {
-          stop.handled = true;
-          cursor += stop.length;
-        }
         const bpm = this._getBpmByTimestamp(cursor, timingEvents);
         const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
         const noteDuration = subdivision * wholeNoteLength;
@@ -38,15 +33,17 @@ module.exports = class Chart {
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
-        return _(eventsByType)
-          .map(({ type, arrows }) => ({
-            timestamp,
-            type,
-            arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
-          }))
-          .filter((it) => _.some(it.arrows))
-          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
-          .value();
+        return (
+          _(eventsByType)
+            .map(({ type, arrows }) => ({
+              timestamp,
+              type,
+              arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
+            }))
+            .filter((it) => _.some(it.arrows))
+            // .reject((it) => this._isInsideWarp(it.timestamp, timingEvents)) // TODO: IS THIS NEEDED?
+            .value()
+        );
       });
     });
   }
@@ -104,7 +101,6 @@ module.exports = class Chart {
             };
           case Events.STOP:
             length = data.value * SECOND;
-            currentTimestamp += length;
 
             return {
               timestamp,
@@ -112,6 +108,7 @@ module.exports = class Chart {
               length,
             };
           case Events.STOP_ASYNC:
+            // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
             const scrollEnabled = data.value > 0;
 
             if (scrollEnabled && !currentScrollEnabled) {
@@ -222,24 +219,15 @@ module.exports = class Chart {
     return length;
   }
 
-  _getStopByTimestamp(timestamp, timingEvents) {
-    const event = _.findLast(
-      timingEvents,
-      (event) => event.type === Events.STOP && timestamp >= event.timestamp
-    );
-
-    return event && timestamp < event.timestamp + event.length ? event : null;
-  }
-
-  _isInsideWarp(timestamp, timingEvents) {
-    return _.some(
-      timingEvents,
-      (event) =>
-        event.type === Events.WARP &&
-        timestamp >= event.timestamp &&
-        timestamp < event.timestamp + event.length
-    );
-  }
+  // _isInsideWarp(timestamp, timingEvents) {
+  //   return _.some(
+  //     timingEvents,
+  //     (event) =>
+  //       event.type === Events.WARP &&
+  //       timestamp >= event.timestamp &&
+  //       timestamp < event.timestamp + event.length
+  //   );
+  // }
 };
 
 const SECOND = 1000;

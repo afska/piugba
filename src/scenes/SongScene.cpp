@@ -186,6 +186,9 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::updateFakeHeads() {
+  if (chartReader->hasStopped)
+    return;
+
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
 

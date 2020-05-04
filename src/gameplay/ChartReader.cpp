@@ -35,7 +35,16 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   int rythmMsecs = *msecs - lastBpmChange;
   bool hasChanged = animateBpm(rythmMsecs);
 
-  *msecs = *msecs - AUDIO_LAG + (int)warpedMs;
+  *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
+
+  if (hasStopped && *msecs >= stopStart + (int)stopLength) {
+    hasStopped = false;
+    stoppedMs += stopLength;
+    *msecs -= (int)stopLength;
+  }
+
+  if (hasStopped)
+    return hasChanged;
 
   processNextEvent(*msecs, arrowPool);
   processHoldArrows(*msecs, arrowPool);
@@ -59,9 +68,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
 
-  if (hasStopped && msecs >= stopEnd)
-    hasStopped = false;
-
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
@@ -72,9 +78,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
       currentIndex++;
       continue;
     }
-
-    if (type == EventType::STOP)
-      targetMsecs += event->extra;
 
     if (msecs < event->timestamp) {
       // predict events
@@ -116,7 +119,9 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           break;
         case EventType::STOP:
           hasStopped = true;
-          stopEnd = msecs + (int)event->extra;
+          stopStart = event->timestamp;
+          stopLength = event->extra;
+          LOG(stopLength);  // TODO: REMOVE
           break;
         case EventType::WARP:
           warpedMs += event->extra;
