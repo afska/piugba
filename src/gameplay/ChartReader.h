@@ -12,6 +12,7 @@
 class ChartReader {
  public:
   bool hasStopped = false;
+  bool hasJustWarped = false;
 
   ChartReader(Chart* chart, Judge* judge);
 

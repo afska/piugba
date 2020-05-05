@@ -70,6 +70,8 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
 
+  hasJustWarped = false;
+
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
@@ -87,7 +89,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
       u32 diff = targetMsecs - event->timestamp;
       u32 offsetY = Div(diff * ARROW_DISTANCE, timeNeeded);
 
-      if (offsetY <= ARROW_DISTANCE) {
+      if (offsetY <= ARROW_FULL_DISTANCE) {
         switch (type) {
           case EventType::NOTE:
             processUniqueNote(event->data, offsetY, arrowPool);
@@ -120,21 +122,20 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           lastTick = -1;
           break;
         case EventType::STOP:
+          LOG(event->timestamp);
           hasStopped = true;
           stopStart = msecs;
           stopEnd = event->timestamp + (int)event->extra;
-          LOG(event->extra);  // TODO: REMOVE
           break;
         case EventType::WARP:
+          hasJustWarped = true;
           warpedMs += event->extra;
           targetMsecs = event->timestamp + (int)event->extra;
 
           arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
           holdArrows->clear();
 
-          while (targetMsecs >= chart->events[currentIndex].timestamp &&
-                 currentIndex < chart->eventCount)
-            currentIndex++;
+          currentIndex++;
           eventIndex = currentIndex;
           return;
         default:
@@ -259,6 +260,7 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
       return;
     }
 
+    // TODO: CONVERT TO WHILE, TO SUPPORT ARROW_SPEED == 4
     if (holdArrow->endTime == 0 &&
         holdArrow->lastFill->get()->getY() <
             (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {

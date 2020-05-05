@@ -33,17 +33,15 @@ module.exports = class Chart {
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
 
-        return (
-          _(eventsByType)
-            .map(({ type, arrows }) => ({
-              timestamp,
-              type,
-              arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
-            }))
-            .filter((it) => _.some(it.arrows))
-            // .reject((it) => this._isInsideWarp(it.timestamp, timingEvents)) // TODO: IS THIS NEEDED?
-            .value()
-        );
+        return _(eventsByType)
+          .map(({ type, arrows }) => ({
+            timestamp,
+            type,
+            arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
+          }))
+          .filter((it) => _.some(it.arrows))
+          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
+          .value();
       });
     });
   }
@@ -219,15 +217,15 @@ module.exports = class Chart {
     return length;
   }
 
-  // _isInsideWarp(timestamp, timingEvents) {
-  //   return _.some(
-  //     timingEvents,
-  //     (event) =>
-  //       event.type === Events.WARP &&
-  //       timestamp >= event.timestamp &&
-  //       timestamp < event.timestamp + event.length
-  //   );
-  // }
+  _isInsideWarp(timestamp, timingEvents) {
+    return _.some(
+      timingEvents,
+      (event) =>
+        event.type === Events.WARP &&
+        timestamp >= event.timestamp &&
+        timestamp < event.timestamp + event.length
+    );
+  }
 };
 
 const SECOND = 1000;

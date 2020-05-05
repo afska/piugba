@@ -35,7 +35,7 @@ void Arrow::discard() {
 
 void Arrow::scheduleDiscard() {
   SPRITE_hide(get());
-  hasJustScheduledDiscard = true;
+  isPressed = true;
 }
 
 void Arrow::initialize(ArrowType type, ArrowDirection direction) {
@@ -69,7 +69,6 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   endAnimationFrame = 0;
   isPressed = false;
   needsAnimation = false;
-  hasJustScheduledDiscard = false;
 }
 
 void Arrow::setSiblingId(int siblingId) {
@@ -108,12 +107,8 @@ void Arrow::markAsPressed() {
 ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
   sprite->flipHorizontally(flip);
 
-  if (SPRITE_isHidden(sprite.get())) {
-    if (hasJustScheduledDiscard)
-      hasJustScheduledDiscard = false;
-    else
-      return ArrowState::OUT;
-  }
+  if (SPRITE_isHidden(sprite.get()))
+    return ArrowState::OUT;
 
   if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
     endAnimationFrame++;

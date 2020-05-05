@@ -34,6 +34,7 @@ const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
 const u32 ARROW_FINAL_Y = ARROW_CORNER_MARGIN_Y;
 const u32 ARROW_DISTANCE = ARROW_INITIAL_Y - ARROW_FINAL_Y;
+const u32 ARROW_FULL_DISTANCE = GBA_SCREEN_HEIGHT;
 
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
   switch (direction) {
@@ -105,7 +106,6 @@ class Arrow : public IPoolable {
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
-  bool hasJustScheduledDiscard = false;
 
   void end();
   void animatePress();

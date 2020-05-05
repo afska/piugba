@@ -171,6 +171,9 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
+    if (chartReader->hasJustWarped)
+      return;
+
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
