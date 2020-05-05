@@ -61,7 +61,8 @@ module.exports = class Chart {
         type: Events.SET_TICKCOUNT,
         data: it,
       })),
-      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+      //this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+      // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
     ])
       .flatten()
       .sortBy("data.key")
@@ -106,7 +107,6 @@ module.exports = class Chart {
               length,
             };
           case Events.STOP_ASYNC:
-            // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
             const scrollEnabled = data.value > 0;
 
             if (scrollEnabled && !currentScrollEnabled) {
