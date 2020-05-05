@@ -91,6 +91,7 @@ void SongScene::tick(u16 keys) {
       BACKGROUND_enable(true, true, false, false);
       darkener->initialize();
     }
+    IFTEST { BACKGROUND_setColor(0, 127); }
     hasStarted = true;
   }
 
@@ -103,22 +104,21 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  chartMsecs = songMsecs;
-  bool isNewBeat = chartReader->update(&this->chartMsecs, arrowPool.get());
-
-  if (isNewBeat)
-    for (auto& arrowHolder : arrowHolders) {
-      lifeBar->blink(foregroundPalette.get());
-      if (!KEY_ANY_PRESSED(keys))
-        arrowHolder->blink();
-    }
-
   updateArrowHolders();
   processKeys(keys);
   updateFakeHeads();
   updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
+
+  chartMsecs = songMsecs;
+  bool isNewBeat = chartReader->update(&this->chartMsecs, arrowPool.get());
+  if (isNewBeat)
+    for (auto& arrowHolder : arrowHolders) {
+      lifeBar->blink(foregroundPalette.get());
+      if (!KEY_ANY_PRESSED(keys))
+        arrowHolder->blink();
+    }
 }
 
 void SongScene::setUpPalettes() {
@@ -171,9 +171,6 @@ void SongScene::updateArrowHolders() {
 
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
-    if (chartReader->hasJustWarped)
-      return;
-
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 

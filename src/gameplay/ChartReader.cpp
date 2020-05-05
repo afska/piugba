@@ -6,11 +6,10 @@
   x = x0 + v * t
   ARROW_FINAL_Y = ARROW_INITIAL_Y + ARROW_SPEED * t
   t = abs(ARROW_INITIAL_Y - ARROW_FINAL_Y) px / ARROW_SPEED px/frame
-  t = (160 - 15) / 3 = (48.33 frames - 1) * 16.73322954 ms/frame = 792,03 ms
-  (we substract 1 because arrows start moving the same tick they're created)
+  t = (160 - 15) / 3 = (48.33 frames) * 16.73322954 ms/frame = 792,03 ms
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
-const u32 TIME_NEEDED[] = {0, 2410, 1196, 792, 590};
+const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
@@ -36,7 +35,7 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
 
   *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  IFTEST { logDebugInfo(*msecs, arrowPool); }
+  IFTIMINGTEST { logDebugInfo(*msecs, arrowPool); }
 
   if (hasStopped) {
     if (*msecs >= stopStart + (int)stopLength) {
@@ -68,8 +67,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   u32 currentIndex = eventIndex;
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
-
-  hasJustWarped = false;
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -128,7 +125,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
 
           break;
         case EventType::WARP:
-          hasJustWarped = true;
           warpedMs += event->extra;
 
           arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
@@ -339,5 +335,5 @@ void ChartReader::logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool) {
   LOGN(bpm, 0);
   LOGN(msecs, 1);
   LOGN(min == NULL ? -1 : chart->events[min->eventIndex].timestamp, 2);
-  LOGN(min == NULL ? -1 : min->get()->getY(), 3);
+  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 3);
 }

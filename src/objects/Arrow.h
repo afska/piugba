@@ -9,10 +9,13 @@
 // TEST MACROS
 #define TEST_MODE true  // TODO: RESTORE
 #define KEYTEST_MODE false
+#define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
+#define IFTIMINGTEST if (TIMINGTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
+#define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
 #define LOG(NUM) LOGN(NUM, 0);
 #define LOGN(NUM, N) \
   (TextStream::instance().setText(std::to_string(NUM).c_str(), N, 15))
@@ -29,7 +32,7 @@ const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_CORNER_MARGIN_Y = 15;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
-const u32 ARROW_SPEED = 4;
+const u32 ARROW_SPEED = 4;  // TODO: RESTORE 3
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
