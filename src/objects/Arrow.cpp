@@ -40,7 +40,7 @@ void Arrow::scheduleDiscard() {
 
 void Arrow::initialize(ArrowType type,
                        ArrowDirection direction,
-                       int timestamp) {
+                       u32 eventIndex) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isHoldTail = type == ArrowType::HOLD_TAIL;
   bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -50,7 +50,7 @@ void Arrow::initialize(ArrowType type,
   ARROW_initialize(direction, start, flip);
   this->type = type;
   this->direction = direction;
-  this->timestamp = timestamp;
+  this->eventIndex = eventIndex;
   this->start = start;
   this->flip = flip;
 

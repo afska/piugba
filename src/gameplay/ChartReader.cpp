@@ -74,6 +74,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
+    event->index = currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
     bool handled = true;
 
@@ -163,7 +164,7 @@ void ChartReader::processUniqueNote(Event* event,
   forEachDirection(event->data, [event, &offsetY, &arrowPool,
                                  &arrows](ArrowDirection direction) {
     arrowPool->create([event, &offsetY, &arrows, &direction](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction, event->timestamp);
+      it->initialize(ArrowType::UNIQUE, direction, event->index);
       it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
       arrows.push_back(it);
     });
@@ -191,7 +192,7 @@ void ChartReader::startHoldNote(Event* event,
 
       Arrow* fill = arrowPool->createWithIdGreaterThan(
           [&direction, &head](Arrow* it) {
-            it->initialize(ArrowType::HOLD_FILL, direction, head->timestamp);
+            it->initialize(ArrowType::HOLD_FILL, direction, head->eventIndex);
             it->get()->moveTo(head->get()->getX(),
                               head->get()->getY() + ARROW_SIZE -
                                   HOLD_ARROW_FILL_OFFSETS[direction]);
@@ -226,7 +227,7 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
             arrowPool->createWithIdGreaterThan(
                 [&direction, &lastFill, &lastfillY](Arrow* tail) {
                   tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                   lastFill->timestamp);
+                                   lastFill->eventIndex);
                   tail->get()->moveTo(tail->get()->getX(),
                                       lastfillY + ARROW_SIZE -
                                           HOLD_ARROW_TAIL_OFFSETS[direction]);
@@ -238,12 +239,12 @@ void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
             arrowPool->create(
                 [&direction, &arrowPool, &lastFill, this](Arrow* extraFill) {
                   extraFill->initialize(ArrowType::HOLD_FILL, direction,
-                                        lastFill->timestamp);
+                                        lastFill->eventIndex);
 
                   Arrow* tail = arrowPool->createWithIdGreaterThan(
                       [&extraFill, &direction](Arrow* tail) {
                         tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                         tail->timestamp);
+                                         tail->eventIndex);
                         extraFill->get()->moveTo(
                             tail->get()->getX(),
                             tail->get()->getY() - ARROW_SIZE +
@@ -275,7 +276,7 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
                (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, holdArrow, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction,
-                       holdArrow->lastFill->timestamp);
+                       holdArrow->lastFill->eventIndex);
       });
 
       if (fill != NULL)
@@ -324,16 +325,19 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
 void ChartReader::logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool) {
   Arrow* min = NULL;
-  int minTimestamp = 0;
+  u32 minIndex = 0;
 
-  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
-    if (min == NULL || it->timestamp < minTimestamp) {
+  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
+    bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y;
+
+    if (isActive && (min == NULL || it->eventIndex < minIndex)) {
       min = it;
-      minTimestamp = it->timestamp;
+      minIndex = it->eventIndex;
     }
   });
 
   LOGN(bpm, 0);
   LOGN(msecs, 1);
-  LOGN(min == NULL ? 0 : min->timestamp, 2);
+  LOGN(min == NULL ? -1 : chart->events[min->eventIndex].timestamp, 2);
+  LOGN(min == NULL ? -1 : min->get()->getY(), 3);
 }

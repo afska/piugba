@@ -37,6 +37,7 @@ typedef struct {
       }
   */
   u32 extra;  // not present in note-related events
+  u32 index = 0;
   bool handled = false;
 } Event;
 
