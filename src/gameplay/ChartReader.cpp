@@ -35,8 +35,6 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
 
   *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  IFTIMINGTEST { logDebugInfo(*msecs, arrowPool); }
-
   if (hasStopped) {
     if (*msecs >= stopStart + (int)stopLength) {
       hasStopped = false;
@@ -49,6 +47,8 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   processNextEvent(*msecs, arrowPool);
   processHoldArrows(*msecs, arrowPool);
   processHoldTicks(*msecs, rythmMsecs);
+
+  IFTIMINGTEST { logDebugInfo(*msecs, arrowPool); }
 
   return hasChanged;
 };
