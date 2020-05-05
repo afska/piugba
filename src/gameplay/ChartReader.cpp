@@ -36,6 +36,8 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
 
   *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
+  IFTEST { logDebugInfo(*msecs, arrowPool); }
+
   if (hasStopped) {
     if (*msecs >= stopStart + (int)stopLength) {
       hasStopped = false;
@@ -68,8 +70,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   bool skipped = false;
 
   hasJustWarped = false;
-  LOG(bpm);  // TODO: REMOVE
-  LOGN(msecs, 1);
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -320,4 +320,20 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   for (u32 i = 0; i < arrows.size(); i++) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
   }
+}
+
+void ChartReader::logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool) {
+  Arrow* min = NULL;
+  int minTimestamp = 0;
+
+  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
+    if (min == NULL || it->timestamp < minTimestamp) {
+      min = it;
+      minTimestamp = it->timestamp;
+    }
+  });
+
+  LOGN(bpm, 0);
+  LOGN(msecs, 1);
+  LOGN(min == NULL ? 0 : min->timestamp, 2);
 }
