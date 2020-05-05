@@ -71,6 +71,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
   bool skipped = false;
 
   hasJustWarped = false;
+  LOG(msecs);  // TODO: REMOVE
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
@@ -122,7 +123,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           lastTick = -1;
           break;
         case EventType::STOP:
-          LOG(event->timestamp);  // TODO: REMOVE
           hasStopped = true;
           stopStart = msecs;
           stopEnd = event->timestamp + (int)event->extra;
@@ -130,7 +130,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
         case EventType::WARP:
           hasJustWarped = true;
           warpedMs += event->extra;
-          targetMsecs = event->timestamp + (int)event->extra;
 
           arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
           holdArrows->clear();
