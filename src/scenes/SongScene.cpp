@@ -104,6 +104,15 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
+  chartMsecs = songMsecs;
+  bool isNewBeat = chartReader->preUpdate(&this->chartMsecs, arrowPool.get());
+  if (isNewBeat)
+    for (auto& arrowHolder : arrowHolders) {
+      lifeBar->blink(foregroundPalette.get());
+      if (!KEY_ANY_PRESSED(keys))
+        arrowHolder->blink();
+    }
+
   updateArrowHolders();
   processKeys(keys);
   updateFakeHeads();
@@ -111,14 +120,7 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  chartMsecs = songMsecs;
-  bool isNewBeat = chartReader->update(&this->chartMsecs, arrowPool.get());
-  if (isNewBeat)
-    for (auto& arrowHolder : arrowHolders) {
-      lifeBar->blink(foregroundPalette.get());
-      if (!KEY_ANY_PRESSED(keys))
-        arrowHolder->blink();
-    }
+  chartReader->postUpdate(chartMsecs, arrowPool.get());
 }
 
 void SongScene::setUpPalettes() {

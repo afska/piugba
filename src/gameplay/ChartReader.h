@@ -15,7 +15,8 @@ class ChartReader {
 
   ChartReader(Chart* chart, Judge* judge);
 
-  bool update(int* msecs, ObjectPool<Arrow>* arrowPool);
+  bool preUpdate(int* msecs, ObjectPool<Arrow>* arrowPool);
+  void postUpdate(int msecs, ObjectPool<Arrow>* arrowPool);
 
   template <typename F>
   inline void withNextHoldArrow(ArrowDirection direction, F action) {
@@ -66,7 +67,8 @@ class ChartReader {
   u32 warpedMs = 0;
 
   bool animateBpm(int rythmMsecs);
-  void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
+  void processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool);
+  void processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool);
   void processUniqueNote(Event* event,
                          u32 offsetY,
                          ObjectPool<Arrow>* arrowPool);

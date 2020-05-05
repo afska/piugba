@@ -29,28 +29,35 @@ ChartReader::ChartReader(Chart* chart, Judge* judge) {
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
 
-bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
+bool ChartReader::preUpdate(int* msecs, ObjectPool<Arrow>* arrowPool) {
   int rythmMsecs = *msecs - lastBpmChange;
   bool hasChanged = animateBpm(rythmMsecs);
 
   *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  if (hasStopped) {
-    if (*msecs >= stopStart + (int)stopLength) {
-      hasStopped = false;
-      stoppedMs += stopLength;
-      *msecs -= (int)stopLength;
-    } else
-      return hasChanged;
-  }
+  if (hasStopped)
+    return hasChanged;
 
-  processNextEvent(*msecs, arrowPool);
-  processHoldArrows(*msecs, arrowPool);
+  processWarpEvents(msecs, arrowPool);
   processHoldTicks(*msecs, rythmMsecs);
 
-  IFTIMINGTEST { logDebugInfo(*msecs, arrowPool); }
-
   return hasChanged;
+}
+
+void ChartReader::postUpdate(int msecs, ObjectPool<Arrow>* arrowPool) {
+  if (hasStopped) {
+    if (msecs >= stopStart + (int)stopLength) {
+      hasStopped = false;
+      stoppedMs += stopLength;
+      msecs -= (int)stopLength;
+    } else
+      return;
+  }
+
+  processNextEvents(msecs, arrowPool);
+  processHoldArrows(msecs, arrowPool);
+
+  IFTIMINGTEST { logDebugInfo(msecs, arrowPool); }
 };
 
 bool ChartReader::animateBpm(int rythmMsecs) {
@@ -63,7 +70,7 @@ bool ChartReader::animateBpm(int rythmMsecs) {
   return hasChanged;
 }
 
-void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
   u32 currentIndex = eventIndex;
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
@@ -125,15 +132,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
 
           snapClosestArrowToHolder(arrowPool);
           break;
-        case EventType::WARP:
-          warpedMs += event->extra;
-
-          arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
-          holdArrows->clear();
-
-          currentIndex++;
-          eventIndex = currentIndex;
-          return;
         // if it's a note and already hapened, there was a WARP involved...
         case EventType::NOTE:
           processUniqueNote(event, ARROW_DISTANCE, arrowPool);
@@ -150,6 +148,31 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
     currentIndex++;
     if (!skipped)
       eventIndex++;
+  }
+}
+
+void ChartReader::processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool) {
+  u32 currentIndex = eventIndex;
+  int targetMsecs = *msecs;
+
+  while (targetMsecs >= chart->events[currentIndex].timestamp &&
+         currentIndex < chart->eventCount) {
+    auto event = chart->events + currentIndex;
+    event->index = currentIndex;
+    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+
+    if (type == EventType::WARP) {
+      warpedMs += event->extra;
+      *msecs += event->extra;
+
+      arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+      holdArrows->clear();
+
+      eventIndex = currentIndex + 1;
+      return;
+    }
+
+    currentIndex++;
   }
 }
 
@@ -326,9 +349,8 @@ void ChartReader::snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool) {
 
   arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
     bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < ARROW_SPEED;
-    bool isSnappable = isAligned && !it->getIsPressed();
 
-    if (isSnappable && (min == NULL || it->eventIndex < minIndex)) {
+    if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
       min = it;
       minIndex = it->eventIndex;
     }
