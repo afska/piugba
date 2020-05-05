@@ -1,6 +1,7 @@
 #include "Combo.h"
 
 #include <libgba-sprite-engine/gba/tonc_bios.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
 
 #include "utils/SpriteUtils.h"
 

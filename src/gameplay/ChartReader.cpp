@@ -1,7 +1,5 @@
 #include "ChartReader.h"
 
-#include <libgba-sprite-engine/gba/tonc_math.h>
-
 #include <vector>
 
 /*
@@ -124,6 +122,8 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           hasStopped = true;
           stopStart = event->timestamp;
           stopLength = event->extra;
+
+          snapClosestArrowToHolder(arrowPool);
           break;
         case EventType::WARP:
           hasJustWarped = true;
@@ -264,10 +264,9 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
       return;
     }
 
-    // TODO: CONVERT TO WHILE, TO SUPPORT ARROW_SPEED == 4
-    if (holdArrow->endTime == 0 &&
-        holdArrow->lastFill->get()->getY() <
-            (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
+    while (holdArrow->endTime == 0 &&
+           holdArrow->lastFill->get()->getY() <
+               (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction);
       });
@@ -313,5 +312,28 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
   for (u32 i = 0; i < arrows.size(); i++) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
+  }
+}
+
+void ChartReader::snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool) {
+  Arrow* min = NULL;
+  int minDistance = 0;
+  arrowPool->forEachActive([&min, &minDistance](Arrow* it) {
+    int distance = it->get()->getY() - ARROW_FINAL_Y;
+    u32 absDistance = abs(distance);
+    u32 absMinDistance = abs(minDistance);
+
+    if (min == NULL ||
+        (absDistance < absMinDistance ||
+         (absDistance == absMinDistance && distance < minDistance))) {
+      min = it;
+      minDistance = distance;
+    }
+  });
+
+  if (min != NULL) {
+    min->forAll(arrowPool, [](Arrow* arrow) {
+      arrow->get()->moveTo(arrow->get()->getX(), ARROW_FINAL_Y);
+    });
   }
 }
