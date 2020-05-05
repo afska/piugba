@@ -75,6 +75,7 @@ class ChartReader {
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
   void processHoldTicks(int msecs, int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
+  void snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool);
   void logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool);
 
   template <typename F>

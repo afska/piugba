@@ -123,6 +123,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopStart = event->timestamp;
           stopLength = event->extra;
 
+          snapClosestArrowToHolder(arrowPool);
           break;
         case EventType::WARP:
           warpedMs += event->extra;
@@ -318,6 +319,29 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
   }
 }
+
+void ChartReader::snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool) {
+  Arrow* min = NULL;
+  u32 minIndex = 0;
+
+  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
+    bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < ARROW_SPEED;
+    bool isSnappable = isAligned && !it->getIsPressed();
+
+    if (isSnappable && (min == NULL || it->eventIndex < minIndex)) {
+      min = it;
+      minIndex = it->eventIndex;
+    }
+  });
+
+  if (min != NULL) {
+    min->forAll(arrowPool, [](Arrow* arrow) {
+      arrow->get()->moveTo(arrow->get()->getX(), ARROW_FINAL_Y);
+    });
+  }
+}
+
+// --------------------------------------------------
 
 void ChartReader::logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool) {
   Arrow* min = NULL;
