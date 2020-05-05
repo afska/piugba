@@ -29,7 +29,7 @@ const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_CORNER_MARGIN_Y = 15;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
-const u32 ARROW_SPEED = 3;
+const u32 ARROW_SPEED = 4;
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
@@ -64,7 +64,7 @@ class Arrow : public IPoolable {
   ArrowType type = ArrowType::UNIQUE;
   ArrowDirection direction = ArrowDirection::DOWNLEFT;
   int timestamp = 0;
-  bool hasBeenSnapped = false;
+  // TODO: REMOVE TIMESTAMP IF IT'S NOT NEEDED
 
   Arrow(u32 id);
 

@@ -125,7 +125,6 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopStart = event->timestamp;
           stopLength = event->extra;
 
-          snapClosestArrowToHolder(arrowPool);
           break;
         case EventType::WARP:
           hasJustWarped = true;
@@ -320,27 +319,5 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
   for (u32 i = 0; i < arrows.size(); i++) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
-  }
-}
-
-void ChartReader::snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool) {
-  Arrow* min = NULL;
-  int minTimestamp = 0;
-
-  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
-    bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < SNAP_VALUE;
-    bool isSnappable = isAligned && !it->getIsPressed() && !it->hasBeenSnapped;
-
-    if (isSnappable && (min == NULL || it->timestamp < minTimestamp)) {
-      min = it;
-      minTimestamp = it->timestamp;
-    }
-  });
-
-  if (min != NULL) {
-    min->forAll(arrowPool, [](Arrow* arrow) {
-      arrow->get()->moveTo(arrow->get()->getX(), ARROW_FINAL_Y);
-      arrow->hasBeenSnapped = true;
-    });
   }
 }

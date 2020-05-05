@@ -68,7 +68,6 @@ void Arrow::initialize(ArrowType type,
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
   timestamp = 0;
-  hasBeenSnapped = false;
   hasEnded = false;
   endAnimationFrame = 0;
   isPressed = false;

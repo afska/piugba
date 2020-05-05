@@ -76,7 +76,6 @@ class ChartReader {
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
   void processHoldTicks(int msecs, int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool);
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
