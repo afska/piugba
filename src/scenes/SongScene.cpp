@@ -189,9 +189,6 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::updateFakeHeads() {
-  if (chartReader->hasStopped)
-    return;
-
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
 
@@ -205,7 +202,7 @@ void SongScene::updateFakeHeads() {
     bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
 
     bool hidingNow = false;
-    if (isHoldMode && isPressing) {
+    if (isHoldMode && isPressing && !chartReader->hasStopped) {
       if (!isActive)
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
     } else if (isActive) {

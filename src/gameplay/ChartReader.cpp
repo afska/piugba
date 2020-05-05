@@ -38,12 +38,10 @@ bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
   *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
   if (hasStopped) {
-    if (*msecs >= stopEnd) {
-      int stopLength = *msecs - stopStart;
-
+    if (*msecs >= stopStart + (int)stopLength) {
       hasStopped = false;
       stoppedMs += stopLength;
-      *msecs -= stopLength;
+      *msecs -= (int)stopLength;
     } else
       return hasChanged;
   }
@@ -124,8 +122,8 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           break;
         case EventType::STOP:
           hasStopped = true;
-          stopStart = msecs;
-          stopEnd = event->timestamp + (int)event->extra;
+          stopStart = event->timestamp;
+          stopLength = event->extra;
           break;
         case EventType::WARP:
           hasJustWarped = true;
