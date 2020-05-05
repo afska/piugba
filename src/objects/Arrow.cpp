@@ -50,6 +50,7 @@ void Arrow::initialize(ArrowType type,
   ARROW_initialize(direction, start, flip);
   this->type = type;
   this->direction = direction;
+  this->timestamp = timestamp;
   this->start = start;
   this->flip = flip;
 
@@ -67,7 +68,6 @@ void Arrow::initialize(ArrowType type,
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
-  timestamp = 0;
   hasEnded = false;
   endAnimationFrame = 0;
   isPressed = false;
