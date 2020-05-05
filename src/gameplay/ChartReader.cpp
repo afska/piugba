@@ -89,7 +89,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
       u32 diff = targetMsecs - event->timestamp;
       u32 offsetY = Div(diff * ARROW_DISTANCE, timeNeeded);
 
-      if (offsetY <= ARROW_FULL_DISTANCE) {
+      if (offsetY <= ARROW_DISTANCE) {
         switch (type) {
           case EventType::NOTE:
             processUniqueNote(event->data, offsetY, arrowPool);
@@ -122,7 +122,7 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           lastTick = -1;
           break;
         case EventType::STOP:
-          LOG(event->timestamp);
+          LOG(event->timestamp);  // TODO: REMOVE
           hasStopped = true;
           stopStart = msecs;
           stopEnd = event->timestamp + (int)event->extra;
@@ -138,6 +138,13 @@ void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
           currentIndex++;
           eventIndex = currentIndex;
           return;
+        // if it's a note and already hapened, there was a WARP involved...
+        case EventType::NOTE:
+          processUniqueNote(event->data, ARROW_DISTANCE, arrowPool);
+          break;
+        case EventType::HOLD_START:
+          startHoldNote(event, ARROW_DISTANCE, arrowPool);
+          break;
         default:
           break;
       }

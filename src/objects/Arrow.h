@@ -13,8 +13,9 @@
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
-#define LOG(NUM) \
-  (TextStream::instance().setText(std::to_string(NUM).c_str(), 0, 15))
+#define LOG(NUM) LOGN(NUM, 0);
+#define LOGN(NUM, N) \
+  (TextStream::instance().setText(std::to_string(NUM).c_str(), N, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };
@@ -34,7 +35,6 @@ const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
 const u32 ARROW_FINAL_Y = ARROW_CORNER_MARGIN_Y;
 const u32 ARROW_DISTANCE = ARROW_INITIAL_Y - ARROW_FINAL_Y;
-const u32 ARROW_FULL_DISTANCE = GBA_SCREEN_HEIGHT;
 
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
   switch (direction) {
