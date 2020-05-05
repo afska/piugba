@@ -63,13 +63,15 @@ class Arrow : public IPoolable {
   u32 id = 0;
   ArrowType type = ArrowType::UNIQUE;
   ArrowDirection direction = ArrowDirection::DOWNLEFT;
+  int timestamp = 0;
+  bool hasBeenSnapped = false;
 
   Arrow(u32 id);
 
   void discard() override;
   void scheduleDiscard();
 
-  void initialize(ArrowType type, ArrowDirection direction);
+  void initialize(ArrowType type, ArrowDirection direction, int timestamp);
   void setSiblingId(int siblingId);
 
   template <typename F>

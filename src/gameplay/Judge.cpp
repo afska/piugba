@@ -2,11 +2,6 @@
 
 #include "models/Event.h"
 
-const u32 OFFSET_MISS = 9;
-const u32 OFFSET_BAD = 7;
-const u32 OFFSET_GOOD = 5;
-const u32 OFFSET_GREAT = 3;
-
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
              std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
              Score* score,

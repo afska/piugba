@@ -38,7 +38,9 @@ void Arrow::scheduleDiscard() {
   isPressed = true;
 }
 
-void Arrow::initialize(ArrowType type, ArrowDirection direction) {
+void Arrow::initialize(ArrowType type,
+                       ArrowDirection direction,
+                       int timestamp) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isHoldTail = type == ArrowType::HOLD_TAIL;
   bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -65,6 +67,8 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
 
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
+  timestamp = 0;
+  hasBeenSnapped = false;
   hasEnded = false;
   endAnimationFrame = 0;
   isPressed = false;

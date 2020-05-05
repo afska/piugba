@@ -204,7 +204,7 @@ void SongScene::updateFakeHeads() {
     bool hidingNow = false;
     if (isHoldMode && isPressing && !chartReader->hasStopped) {
       if (!isActive)
-        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction);
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0);
     } else if (isActive) {
       hidingNow = true;
       SPRITE_hide(fakeHeads[i]->get());
@@ -226,8 +226,8 @@ void SongScene::processKeys(u16 keys) {
   IFKEYTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
-        arrowPool->create([&arrowHolder](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, arrowHolder->direction);
+        arrowPool->create([&arrowHolder, this](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction, chartMsecs);
         });
   }
 }
