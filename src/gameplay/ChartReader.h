@@ -67,8 +67,8 @@ class ChartReader {
   u32 warpedMs = 0;
 
   bool animateBpm(int rythmMsecs);
-  void processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool);
+  void processNextEvents(int* msecs, ObjectPool<Arrow>* arrowPool);
+  void predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool);
   void processUniqueNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);

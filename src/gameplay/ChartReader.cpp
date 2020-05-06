@@ -38,7 +38,7 @@ bool ChartReader::preUpdate(int* msecs, ObjectPool<Arrow>* arrowPool) {
   if (hasStopped)
     return hasChanged;
 
-  processWarpEvents(msecs, arrowPool);
+  processNextEvents(msecs, arrowPool);
   processHoldTicks(*msecs, rythmMsecs);
 
   return hasChanged;
@@ -54,7 +54,7 @@ void ChartReader::postUpdate(int msecs, ObjectPool<Arrow>* arrowPool) {
       return;
   }
 
-  processNextEvents(msecs, arrowPool);
+  predictNoteEvents(msecs, arrowPool);
   processHoldArrows(msecs, arrowPool);
 
   IFTIMINGTEST { logDebugInfo(msecs, arrowPool); }
@@ -70,7 +70,32 @@ bool ChartReader::animateBpm(int rythmMsecs) {
   return hasChanged;
 }
 
-void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
+void ChartReader::processNextEvents(int* msecs, ObjectPool<Arrow>* arrowPool) {
+  u32 currentIndex = eventIndex;
+  int targetMsecs = *msecs;
+
+  while (targetMsecs >= chart->events[currentIndex].timestamp &&
+         currentIndex < chart->eventCount) {
+    auto event = chart->events + currentIndex;
+    event->index = currentIndex;
+    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+
+    if (type == EventType::WARP) {
+      warpedMs += event->extra;
+      *msecs += event->extra;
+
+      arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+      holdArrows->clear();
+
+      eventIndex = currentIndex + 1;
+      return;
+    }
+
+    currentIndex++;
+  }
+}
+
+void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
   u32 currentIndex = eventIndex;
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
@@ -144,31 +169,6 @@ void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
     currentIndex++;
     if (!skipped)
       eventIndex++;
-  }
-}
-
-void ChartReader::processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool) {
-  u32 currentIndex = eventIndex;
-  int targetMsecs = *msecs;
-
-  while (targetMsecs >= chart->events[currentIndex].timestamp &&
-         currentIndex < chart->eventCount) {
-    auto event = chart->events + currentIndex;
-    event->index = currentIndex;
-    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-
-    if (type == EventType::WARP) {
-      warpedMs += event->extra;
-      *msecs += event->extra;
-
-      arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
-      holdArrows->clear();
-
-      eventIndex = currentIndex + 1;
-      return;
-    }
-
-    currentIndex++;
   }
 }
 
