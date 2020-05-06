@@ -11,6 +11,7 @@
 
 class ChartReader {
  public:
+  u32 timeNeeded = 0;
   bool hasStopped = false;
 
   ChartReader(Chart* chart, Judge* judge);
@@ -54,7 +55,6 @@ class ChartReader {
   Chart* chart;
   Judge* judge;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  u32 timeNeeded = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
   int lastBeat = -1;
@@ -69,10 +69,8 @@ class ChartReader {
   bool animateBpm(int rythmMsecs);
   void processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool);
   void processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(Event* event,
-                         u32 offsetY,
-                         ObjectPool<Arrow>* arrowPool);
-  void startHoldNote(Event* event, u32 offsetY, ObjectPool<Arrow>* arrowPool);
+  void processUniqueNote(Event* event, ObjectPool<Arrow>* arrowPool);
+  void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
   void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
   void processHoldTicks(int msecs, int rythmMsecs);

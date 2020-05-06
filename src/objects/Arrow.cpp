@@ -107,7 +107,7 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
+ArrowState Arrow::tick(bool hasStopped, bool isPressing, int newY) {
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
@@ -141,7 +141,7 @@ ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else if (!hasStopped)
-    sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
+    sprite->moveTo(sprite->getX(), newY);
 
   return ArrowState::ACTIVE;
 }

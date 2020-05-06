@@ -90,25 +90,21 @@ void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
     if (msecs < event->timestamp) {
       // predict events
 
-      u32 diff = targetMsecs - event->timestamp;
-      u32 offsetY = Div(diff * ARROW_DISTANCE, timeNeeded);
-
-      if (offsetY <= ARROW_DISTANCE) {
-        switch (type) {
-          case EventType::NOTE:
-            processUniqueNote(event, offsetY, arrowPool);
-            break;
-          case EventType::HOLD_START:
-            startHoldNote(event, offsetY, arrowPool);
-            break;
-          case EventType::HOLD_END:
-            endHoldNote(event, arrowPool);
-            break;
-          default:
-            handled = false;
-            skipped = true;
-            break;
-        }
+      switch (type) {
+        case EventType::NOTE:
+          processUniqueNote(event, arrowPool);
+          break;
+          // TODO: FIX HOLD NOTES
+        // case EventType::HOLD_START:
+        //   startHoldNote(event, arrowPool);
+        //   break;
+        // case EventType::HOLD_END:
+        //   endHoldNote(event, arrowPool);
+        //   break;
+        default:
+          handled = false;
+          skipped = true;
+          break;
       }
     } else {
       // run events that actually happened
@@ -130,15 +126,15 @@ void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopStart = event->timestamp;
           stopLength = event->extra;
 
-          snapClosestArrowToHolder(msecs, arrowPool);
+          // snapClosestArrowToHolder(msecs, arrowPool);
           break;
         // if it's a note and already hapened, there was a WARP involved...
         case EventType::NOTE:
-          processUniqueNote(event, ARROW_DISTANCE, arrowPool);
+          processUniqueNote(event, arrowPool);
           break;
-        case EventType::HOLD_START:
-          startHoldNote(event, ARROW_DISTANCE, arrowPool);
-          break;
+        // case EventType::HOLD_START:
+        //   startHoldNote(event, arrowPool);
+        //   break;
         default:
           break;
       }
@@ -177,32 +173,27 @@ void ChartReader::processWarpEvents(int* msecs, ObjectPool<Arrow>* arrowPool) {
 }
 
 void ChartReader::processUniqueNote(Event* event,
-                                    u32 offsetY,
                                     ObjectPool<Arrow>* arrowPool) {
   std::vector<Arrow*> arrows;
 
-  forEachDirection(event->data, [event, &offsetY, &arrowPool,
-                                 &arrows](ArrowDirection direction) {
-    arrowPool->create([event, &offsetY, &arrows, &direction](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction, event->index);
-      it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
-      arrows.push_back(it);
-    });
-  });
+  forEachDirection(
+      event->data, [event, &arrowPool, &arrows](ArrowDirection direction) {
+        arrowPool->create([event, &arrows, &direction](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction, event->index);
+          arrows.push_back(it);
+        });
+      });
 
   connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(Event* event,
-                                u32 offsetY,
-                                ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(event->data, [&event, &offsetY, &arrowPool,
+void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
+  forEachDirection(event->data, [&event, &arrowPool,
                                  this](ArrowDirection direction) {
-    holdArrows->create([event, &offsetY, arrowPool, &direction,
+    holdArrows->create([event, arrowPool, &direction,
                         this](HoldArrow* holdArrow) {
-      Arrow* head = arrowPool->create([event, &offsetY, &direction](Arrow* it) {
+      Arrow* head = arrowPool->create([event, &direction](Arrow* it) {
         it->initialize(ArrowType::HOLD_HEAD, direction, event->timestamp);
-        it->get()->moveTo(it->get()->getX(), it->get()->getY() - offsetY);
       });
 
       if (head == NULL) {
@@ -349,7 +340,8 @@ void ChartReader::snapClosestArrowToHolder(int msecs,
   u32 minIndex = 0;
 
   arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* it) {
-    bool isAligned = msecs - chart->events[it->eventIndex].timestamp < FRAME_MS;
+    bool isAligned =
+        abs(msecs - chart->events[it->eventIndex].timestamp) < FRAME_MS;
 
     if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
       min = it;
