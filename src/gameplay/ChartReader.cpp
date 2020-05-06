@@ -10,12 +10,12 @@
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
+const u32 FRAME_MS = 17;
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const int HOLD_ARROW_TICK_OFFSET_MS = 84;
 //                                  ^ OFFSET_GOOD * msPerFrame = 5 * 16.73322954
-const int SNAP_VALUE = 5;
 const u32 MINUTE = 60000;
 const int AUDIO_LAG = 180;
 
@@ -130,7 +130,7 @@ void ChartReader::processNextEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopStart = event->timestamp;
           stopLength = event->extra;
 
-          snapClosestArrowToHolder(arrowPool);
+          snapClosestArrowToHolder(msecs, arrowPool);
           break;
         // if it's a note and already hapened, there was a WARP involved...
         case EventType::NOTE:
@@ -343,12 +343,13 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   }
 }
 
-void ChartReader::snapClosestArrowToHolder(ObjectPool<Arrow>* arrowPool) {
+void ChartReader::snapClosestArrowToHolder(int msecs,
+                                           ObjectPool<Arrow>* arrowPool) {
   Arrow* min = NULL;
   u32 minIndex = 0;
 
-  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
-    bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < ARROW_SPEED;
+  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* it) {
+    bool isAligned = msecs - chart->events[it->eventIndex].timestamp < FRAME_MS;
 
     if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
       min = it;
