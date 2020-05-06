@@ -177,7 +177,8 @@ void SongScene::updateArrows() {
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
     int timeLeft = (int)chart->events[it->eventIndex].timestamp - chartMsecs;
-    int newY = Div(timeLeft * ARROW_INITIAL_Y, chartReader->timeNeeded);
+    int newY =
+        ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, chartReader->timeNeeded);
     ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing, newY);
     if (chartReader->hasStopped)  // TODO: Fix hasBeenPressedNow
       return;
