@@ -10,6 +10,7 @@
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
+const u32 FRAME_MS = 17;
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
@@ -348,12 +349,13 @@ void ChartReader::snapClosestArrowToHolder(int msecs,
   Arrow* min = NULL;
   u32 minIndex = 0;
 
-  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
-    bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < ARROW_SPEED;
+  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* itata) {
+    bool isAligned =
+        abs(msecs - chart->events[itata->eventIndex].timestamp) < FRAME_MS;
 
-    if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
-      min = it;
-      minIndex = it->eventIndex;
+    if (isAligned && (min == NULL || itata->eventIndex < minIndex)) {
+      min = itata;
+      minIndex = itata->eventIndex;
     }
   });
 
