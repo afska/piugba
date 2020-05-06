@@ -73,25 +73,46 @@ bool ChartReader::animateBpm(int rythmMsecs) {
 void ChartReader::processNextEvents(int* msecs, ObjectPool<Arrow>* arrowPool) {
   u32 currentIndex = eventIndex;
   int targetMsecs = *msecs;
+  bool skipped = false;
 
   while (targetMsecs >= chart->events[currentIndex].timestamp &&
          currentIndex < chart->eventCount) {
     auto event = chart->events + currentIndex;
     event->index = currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+    bool handled = true;
 
-    if (type == EventType::WARP) {
-      warpedMs += event->extra;
-      *msecs += event->extra;
+    switch (type) {
+      case EventType::SET_TEMPO:
+        if (bpm > 0) {
+          lastBeat = -1;
+          lastBpmChange = event->timestamp;
+        }
+        bpm = event->extra;
+        break;
+      case EventType::SET_TICKCOUNT:
+        tickCount = event->extra;
+        lastTick = -1;
+        break;
+      case EventType::WARP:
+        warpedMs += event->extra;
+        *msecs += event->extra;
 
-      arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
-      holdArrows->clear();
+        arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+        holdArrows->clear();
 
-      eventIndex = currentIndex + 1;
-      return;
+        eventIndex = currentIndex + 1;
+        return;
+      default:
+        handled = false;
+        skipped = true;
+        break;
     }
 
+    event->handled = handled;
     currentIndex++;
+    if (!skipped)
+      eventIndex++;
   }
 }
 
@@ -113,8 +134,6 @@ void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
     }
 
     if (msecs < event->timestamp) {
-      // predict events
-
       switch (type) {
         case EventType::NOTE:
           processUniqueNote(event, arrowPool);
@@ -132,34 +151,25 @@ void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
           break;
       }
     } else {
-      // run events that actually happened
-
       switch (type) {
-        case EventType::SET_TEMPO:
-          if (bpm > 0) {
-            lastBeat = -1;
-            lastBpmChange = event->timestamp;
-          }
-          bpm = event->extra;
-          break;
-        case EventType::SET_TICKCOUNT:
-          tickCount = event->extra;
-          lastTick = -1;
-          break;
         case EventType::STOP:
           hasStopped = true;
           stopStart = event->timestamp;
           stopLength = event->extra;
 
           // snapClosestArrowToHolder(msecs, arrowPool);
-          break;
-        // if it's a note and already hapened, there was a WARP involved...
+          event->handled = true;
+          eventIndex = currentIndex + 1;
+          return;
         case EventType::NOTE:
           processUniqueNote(event, arrowPool);
           break;
-        // case EventType::HOLD_START:
-        //   startHoldNote(event, arrowPool);
-        //   break;
+        case EventType::HOLD_START:
+          //   startHoldNote(event, arrowPool);
+          break;
+        case EventType::HOLD_END:
+          //   endHoldeNote(event, arrowPool);
+          break;
         default:
           break;
       }
