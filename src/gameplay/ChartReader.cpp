@@ -10,7 +10,6 @@
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
-const u32 FRAME_MS = 17;
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
@@ -157,7 +156,7 @@ void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
           stopStart = event->timestamp;
           stopLength = event->extra;
 
-          // snapClosestArrowToHolder(msecs, arrowPool);
+          snapClosestArrowToHolder(msecs, arrowPool);
           event->handled = true;
           eventIndex = currentIndex + 1;
           return;
@@ -349,9 +348,8 @@ void ChartReader::snapClosestArrowToHolder(int msecs,
   Arrow* min = NULL;
   u32 minIndex = 0;
 
-  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* it) {
-    bool isAligned =
-        abs(msecs - chart->events[it->eventIndex].timestamp) < FRAME_MS;
+  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
+    bool isAligned = abs(it->get()->getY() - (int)ARROW_FINAL_Y) < ARROW_SPEED;
 
     if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
       min = it;
