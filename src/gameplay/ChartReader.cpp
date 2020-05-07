@@ -66,7 +66,10 @@ int ChartReader::getYFor(int timestamp) {
   // timeNeeded ms           -> ARROW_DISTANCE px
   // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
   int timeLeft = timestamp - msecs;
-  return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
+  return ARROW_FINAL_Y +
+         Div(timeLeft * ARROW_DISTANCE,
+             timeNeeded);  // TODO: Precalculate (using Math.round(...)) and use
+                           // a look-up table to avoid non-smooth scrolling
 }
 
 int ChartReader::getTimestampFor(int y) {
@@ -212,6 +215,7 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->direction = direction;
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
+      holdArrow->fillCount = 1;
       holdArrow->lastFill = fill;
     });
   });
@@ -221,14 +225,15 @@ void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     withLastHoldArrow(
         direction, [&event, &direction, this](HoldArrow* holdArrow) {
-          int lastfillY = holdArrow->lastFill->get()->getY();
+          int lastFillY = holdArrow->lastFill->get()->getY();
+          bool isShort = holdArrow->fillCount == 1;
 
-          if (lastfillY > (int)(ARROW_INITIAL_Y - ARROW_SIZE)) {
+          if (isShort) {
             // short (only 1 fill) -> tail's position is approximated
 
             arrowPool->createWithIdGreaterThan(
-                [&direction, &lastfillY, this](Arrow* tail) {
-                  int y = lastfillY + ARROW_SIZE -
+                [&direction, &lastFillY, this](Arrow* tail) {
+                  int y = lastFillY + ARROW_SIZE -
                           HOLD_ARROW_TAIL_OFFSETS[direction];
                   tail->initialize(ArrowType::HOLD_TAIL, direction,
                                    getTimestampFor(y));
@@ -279,8 +284,10 @@ void ChartReader::processHoldArrows() {
         it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
       });
 
-      if (fill != NULL)
+      if (fill != NULL) {
         holdArrow->lastFill = fill;
+        holdArrow->fillCount++;
+      }
     }
   });
 }
