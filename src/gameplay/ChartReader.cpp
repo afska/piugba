@@ -274,8 +274,7 @@ void ChartReader::processHoldArrows() {
 
     while (holdArrow->endTime == 0 &&
            holdArrow->lastFill->get()->getY() <
-               (int)(ARROW_INITIAL_Y - ARROW_SIZE +
-                     ARROW_SPEED)) {  // TODO: Decouple from ARROW_SPEED
+               (int)(ARROW_INITIAL_Y - ARROW_SIZE + MAX_ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
       });
