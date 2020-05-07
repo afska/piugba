@@ -46,8 +46,10 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(lifeBar->get());
   score->render(&sprites);
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    fakeHeads[i]->index = sprites.size();
     sprites.push_back(fakeHeads[i]->get());
+  }
 
   arrowPool->forEach([&sprites](Arrow* it) {
     it->index = sprites.size();
@@ -204,20 +206,20 @@ void SongScene::updateFakeHeads() {
                    (holdArrow->endTime == 0 || chartMsecs < holdArrow->endTime);
     });
     bool isPressing = arrowHolders[direction]->getIsPressed();
-    bool isActive = !SPRITE_isHidden(fakeHeads[i]->get());
+    bool isEnabled = fakeHeads[i]->get()->enabled;
 
-    bool hidingNow = false;
     if (isHoldMode && isPressing && !chartReader->hasStopped) {
-      if (!isActive)
+      if (!isEnabled) {
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0);
-    } else if (isActive) {
-      hidingNow = true;
-      SPRITE_hide(fakeHeads[i]->get());
+        isEnabled = true;
+      }
+    } else if (isEnabled) {
+      fakeHeads[i]->discard();
+      isEnabled = false;
     }
 
-    ArrowState arrowState = fakeHeads[i]->tick(false, false, 0);
-    if (arrowState == ArrowState::OUT && !hidingNow)
-      fakeHeads[i]->discard();
+    if (isEnabled)
+      fakeHeads[i]->tick(false, false, 0);
   }
 }
 
