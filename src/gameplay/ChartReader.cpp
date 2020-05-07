@@ -115,7 +115,7 @@ void ChartReader::processNextEvents(int* msecs) {
     event->handled = handled;
     currentIndex++;
     if (!skipped)
-      eventIndex++;
+      eventIndex = currentIndex;
   }
 }
 
@@ -166,12 +166,12 @@ void ChartReader::predictNoteEvents(int msecs) {
         case EventType::NOTE:
           processUniqueNote(event);
           break;
-        // case EventType::HOLD_START:
+        // case EventType::HOLD_START: // TODO: MAKE IT USE newY
         //   startHoldNote(event);
         //   break;
-        // case EventType::HOLD_END:
+        // case EventType::HOLD_END: // TODO: MAKE IT USE newY
         //   endHoldNote(event);
-        //   break; // TODO: REVISE
+        //   break;
         default:
           break;
       }
@@ -180,7 +180,7 @@ void ChartReader::predictNoteEvents(int msecs) {
     event->handled = handled;
     currentIndex++;
     if (!skipped)
-      eventIndex++;
+      eventIndex = currentIndex;
   }
 }
 
