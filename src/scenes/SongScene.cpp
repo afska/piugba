@@ -78,8 +78,8 @@ void SongScene::load() {
                                       new FadeOutScene(2));
         }
       }));
-  chartReader =
-      std::unique_ptr<ChartReader>(new ChartReader(chart, judge.get()));
+  chartReader = std::unique_ptr<ChartReader>(
+      new ChartReader(chart, arrowPool.get(), judge.get()));
 }
 
 void SongScene::tick(u16 keys) {
@@ -105,7 +105,7 @@ void SongScene::tick(u16 keys) {
   }
 
   chartMsecs = songMsecs;
-  bool isNewBeat = chartReader->preUpdate(&this->chartMsecs, arrowPool.get());
+  bool isNewBeat = chartReader->preUpdate(&this->chartMsecs);
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -120,7 +120,7 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  chartReader->postUpdate(chartMsecs, arrowPool.get());
+  chartReader->postUpdate(chartMsecs);
 }
 
 void SongScene::setUpPalettes() {

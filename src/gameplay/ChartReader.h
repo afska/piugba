@@ -14,10 +14,10 @@ class ChartReader {
   u32 timeNeeded = 0;
   bool hasStopped = false;
 
-  ChartReader(Chart* chart, Judge* judge);
+  ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
-  bool preUpdate(int* msecs, ObjectPool<Arrow>* arrowPool);
-  void postUpdate(int msecs, ObjectPool<Arrow>* arrowPool);
+  bool preUpdate(int* msecs);
+  void postUpdate(int msecs);
 
   template <typename F>
   inline void withNextHoldArrow(ArrowDirection direction, F action) {
@@ -53,6 +53,7 @@ class ChartReader {
 
  private:
   Chart* chart;
+  ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
@@ -67,16 +68,16 @@ class ChartReader {
   u32 warpedMs = 0;
 
   bool animateBpm(int rythmMsecs);
-  void processNextEvents(int* msecs, ObjectPool<Arrow>* arrowPool);
-  void predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
+  void processNextEvents(int* msecs);
+  void predictNoteEvents(int msecs);
+  void processUniqueNote(Event* event);
+  void startHoldNote(Event* event);
+  void endHoldNote(Event* event);
+  void processHoldArrows(int msecs);
   void processHoldTicks(int msecs, int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void snapClosestArrowToHolder(int msecs, ObjectPool<Arrow>* arrowPool);
-  void logDebugInfo(int msecs, ObjectPool<Arrow>* arrowPool);
+  void snapClosestArrowToHolder(int msecs);
+  void logDebugInfo(int msecs);
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
