@@ -189,7 +189,7 @@ void SongScene::updateArrows() {
     if (arrowState == ArrowState::OUT)
       judge->onOut(it);
     else if (arrowHolders[direction]->hasBeenPressedNow())
-      judge->onPress(it);
+      judge->onPress(it, chartReader.get());
   });
 }
 

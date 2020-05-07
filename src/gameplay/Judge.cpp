@@ -12,20 +12,21 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
   this->onStageBreak = onStageBreak;
 }
 
-void Judge::onPress(Arrow* arrow) {
+void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider) {
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   if (!isUnique || arrow->getIsPressed())
     return;
 
-  int y = arrow->get()->getY();
-  u32 diff = (u32)abs(y - ARROW_FINAL_Y);
+  int actualMsecs = timingProvider->getMsecs();
+  int expectedMsecs = arrow->timestamp;
+  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
 
-  if (diff < ARROW_SPEED * OFFSET_MISS) {
-    if (diff >= ARROW_SPEED * OFFSET_BAD)
+  if (diff < FRAME_MS * OFFSET_MISS) {
+    if (diff >= FRAME_MS * OFFSET_BAD)
       onResult(arrow, FeedbackType::BAD);
-    else if (diff >= ARROW_SPEED * OFFSET_GOOD)
+    else if (diff >= FRAME_MS * OFFSET_GOOD)
       onResult(arrow, FeedbackType::GOOD);
-    else if (diff >= ARROW_SPEED * OFFSET_GREAT)
+    else if (diff >= FRAME_MS * OFFSET_GREAT)
       onResult(arrow, FeedbackType::GREAT);
     else
       onResult(arrow, FeedbackType::PERFECT);
