@@ -154,6 +154,15 @@ void ChartReader::predictNoteEvents(int msecs) {
       }
     } else {
       switch (type) {
+        case EventType::NOTE:
+          processUniqueNote(event);
+          break;
+        case EventType::HOLD_START:
+          startHoldNote(event);
+          break;
+        case EventType::HOLD_END:
+          endHoldNote(event);
+          break;
         case EventType::STOP:
           hasStopped = true;
           stopStart = event->timestamp;
@@ -163,15 +172,6 @@ void ChartReader::predictNoteEvents(int msecs) {
           event->handled = true;
           eventIndex = currentIndex + 1;
           return;
-        case EventType::NOTE:
-          processUniqueNote(event);
-          break;
-        // case EventType::HOLD_START: // TODO: MAKE IT USE newY
-        //   startHoldNote(event);
-        //   break;
-        // case EventType::HOLD_END: // TODO: MAKE IT USE newY
-        //   endHoldNote(event);
-        //   break;
         default:
           break;
       }
