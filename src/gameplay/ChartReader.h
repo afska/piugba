@@ -19,7 +19,9 @@ class ChartReader {
   bool preUpdate(int msecs);
   void postUpdate();
 
-  int getYFor(Arrow* arrow);
+  int getYFor(int timestamp);
+  int getTimestampFor(int y);
+
   bool isStopped();
   bool isHoldActive(ArrowDirection direction);
 

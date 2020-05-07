@@ -63,11 +63,18 @@ void ChartReader::postUpdate() {
   IFTIMINGTEST { logDebugInfo(); }
 };
 
-int ChartReader::getYFor(Arrow* arrow) {
-  int timeLeft = (int)chart->events[arrow->eventIndex].timestamp - msecs;
+int ChartReader::getYFor(int timestamp) {
   // timeNeeded ms           -> ARROW_DISTANCE px
-  // timeLeft ms             -> y = timeLeft * ARROW_DISTANCE / timeNeeded
+  // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
+  int timeLeft = timestamp - msecs;
   return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
+}
+
+int ChartReader::getTimestampFor(int y) {
+  // ARROW_DISTANCE px           -> timeNeeded ms
+  // distance px                 -> x = distance * timeNeeded / ARROW_DISTANCE
+  int distance = y - (int)ARROW_FINAL_Y;
+  return msecs + Div(distance * timeNeeded, ARROW_DISTANCE);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
@@ -168,7 +175,7 @@ void ChartReader::processUniqueNote(Event* event) {
   forEachDirection(
       event->data, [event, &arrows, this](ArrowDirection direction) {
         arrowPool->create([event, &arrows, &direction](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, direction, event->index);
+          it->initialize(ArrowType::UNIQUE, direction, event->timestamp);
           arrows.push_back(it);
         });
       });
@@ -189,11 +196,11 @@ void ChartReader::startHoldNote(Event* event) {
       }
 
       Arrow* fill = arrowPool->createWithIdGreaterThan(
-          [&direction, &head](Arrow* it) {
-            it->initialize(ArrowType::HOLD_FILL, direction, head->eventIndex);
-            it->get()->moveTo(head->get()->getX(),
-                              head->get()->getY() + ARROW_SIZE -
-                                  HOLD_ARROW_FILL_OFFSETS[direction]);
+          [&direction, &head, this](Arrow* it) {
+            int y = head->get()->getY() + ARROW_SIZE -
+                    HOLD_ARROW_FILL_OFFSETS[direction];
+            it->initialize(ArrowType::HOLD_FILL, direction, getTimestampFor(y));
+            it->get()->moveTo(head->get()->getX(), y);
           },
           head->id);
 
@@ -215,36 +222,35 @@ void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     withLastHoldArrow(
         direction, [&event, &direction, this](HoldArrow* holdArrow) {
-          auto lastFill = holdArrow->lastFill;
           int lastfillY = holdArrow->lastFill->get()->getY();
 
           if (lastfillY > (int)(ARROW_INITIAL_Y - ARROW_SIZE)) {
             // short (only 1 fill) -> tail's position is approximated
 
             arrowPool->createWithIdGreaterThan(
-                [&direction, &lastFill, &lastfillY](Arrow* tail) {
+                [&direction, &lastfillY, this](Arrow* tail) {
+                  int y = lastfillY + ARROW_SIZE -
+                          HOLD_ARROW_TAIL_OFFSETS[direction];
                   tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                   lastFill->eventIndex);
-                  tail->get()->moveTo(tail->get()->getX(),
-                                      lastfillY + ARROW_SIZE -
-                                          HOLD_ARROW_TAIL_OFFSETS[direction]);
+                                   getTimestampFor(y));
+                  tail->get()->moveTo(tail->get()->getX(), y);
                 },
                 holdArrow->lastFill->id);
           } else {
             // long (extra fill) -> tail's position is perfectly accurate
 
-            arrowPool->create([&direction, &lastFill, this](Arrow* extraFill) {
-              extraFill->initialize(ArrowType::HOLD_FILL, direction,
-                                    lastFill->eventIndex);
+            arrowPool->create([&event, &direction, this](Arrow* extraFill) {
+              extraFill->initialize(ArrowType::HOLD_FILL, direction, -1);
 
               Arrow* tail = arrowPool->createWithIdGreaterThan(
-                  [&extraFill, &direction](Arrow* tail) {
+                  [&event, &extraFill, &direction, this](Arrow* tail) {
                     tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                     tail->eventIndex);
-                    extraFill->get()->moveTo(
-                        tail->get()->getX(),
-                        tail->get()->getY() - ARROW_SIZE +
-                            HOLD_ARROW_TAIL_OFFSETS[direction]);
+                                     event->timestamp);
+
+                    int y = tail->get()->getY() - ARROW_SIZE +
+                            HOLD_ARROW_TAIL_OFFSETS[direction];
+                    extraFill->get()->moveTo(tail->get()->getX(), y);
+                    extraFill->timestamp = getTimestampFor(y);
                   },
                   extraFill->id);
 
@@ -270,9 +276,8 @@ void ChartReader::processHoldArrows() {
     while (holdArrow->endTime == 0 &&
            holdArrow->lastFill->get()->getY() <
                (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
-      Arrow* fill = arrowPool->create([&direction, holdArrow, this](Arrow* it) {
-        it->initialize(ArrowType::HOLD_FILL, direction,
-                       holdArrow->lastFill->eventIndex);
+      Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
+        it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
       });
 
       if (fill != NULL)
@@ -321,15 +326,14 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
 void ChartReader::snapClosestArrowToHolder() {
   Arrow* min = NULL;
-  u32 minIndex = 0;
+  u32 minTimestamp = 0;
 
-  arrowPool->forEachActive([&min, &minIndex, this](Arrow* it) {
-    bool isAligned = abs(msecs - chart->events[it->eventIndex].timestamp) <
-                     SNAP_THRESHOLD_MS;
+  arrowPool->forEachActive([&min, &minTimestamp, this](Arrow* it) {
+    bool isAligned = abs(msecs - (int)it->timestamp) < SNAP_THRESHOLD_MS;
 
-    if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
+    if (isAligned && (min == NULL || it->timestamp < minTimestamp)) {
       min = it;
-      minIndex = it->eventIndex;
+      minTimestamp = it->timestamp;
     }
   });
 
@@ -344,19 +348,19 @@ void ChartReader::snapClosestArrowToHolder() {
 
 void ChartReader::logDebugInfo() {
   Arrow* min = NULL;
-  u32 minIndex = 0;
+  u32 minTimestamp = 0;
 
-  arrowPool->forEachActive([&min, &minIndex](Arrow* it) {
+  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
     bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y;
 
-    if (isActive && (min == NULL || it->eventIndex < minIndex)) {
+    if (isActive && (min == NULL || it->timestamp < minTimestamp)) {
       min = it;
-      minIndex = it->eventIndex;
+      minTimestamp = it->timestamp;
     }
   });
 
   LOGN(bpm, 0);
   LOGN(msecs, 1);
-  LOGN(min == NULL ? -1 : chart->events[min->eventIndex].timestamp, 2);
+  LOGN(min == NULL ? -1 : min->timestamp, 2);
   LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 3);
 }

@@ -44,7 +44,7 @@ void Arrow::scheduleDiscard() {
 
 void Arrow::initialize(ArrowType type,
                        ArrowDirection direction,
-                       u32 eventIndex) {
+                       u32 timestamp) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isHoldTail = type == ArrowType::HOLD_TAIL;
   bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -54,7 +54,7 @@ void Arrow::initialize(ArrowType type,
   ARROW_initialize(direction, start, flip);
   this->type = type;
   this->direction = direction;
-  this->eventIndex = eventIndex;
+  this->timestamp = timestamp;
   this->start = start;
   this->flip = flip;
 
@@ -145,9 +145,7 @@ ArrowState Arrow::tick(bool hasStopped, bool isPressing, int newY) {
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else if (!hasStopped)
-    sprite->moveTo(sprite->getX(), type == ArrowType::UNIQUE
-                                       ? newY
-                                       : sprite->getY() - ARROW_SPEED);
+    sprite->moveTo(sprite->getX(), newY);
 
   return ArrowState::ACTIVE;
 }

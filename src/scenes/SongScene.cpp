@@ -180,7 +180,7 @@ void SongScene::updateArrows() {
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
-    int newY = chartReader->getYFor(it);
+    int newY = chartReader->getYFor((int)it->timestamp);
     ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing, newY);
 
     if (chartReader->hasStopped)  // TODO: Fix hasBeenPressedNow
