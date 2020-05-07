@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "utils/MathUtils.h"
+
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
@@ -56,16 +58,14 @@ int ChartReader::getYFor(int timestamp) {
   int timeLeft = timestamp - msecs;
 
   return ARROW_FINAL_Y +
-         Div(timeLeft * ARROW_DISTANCE,
-             timeNeeded);  // TODO: Precalculate (using Math.round(...)) and use
-                           // a look-up table to avoid non-smooth scrolling
+         MATH_roundingDiv(timeLeft * ARROW_DISTANCE, timeNeeded);
 }
 
 int ChartReader::getTimestampFor(int y) {
   // ARROW_DISTANCE px           -> timeNeeded ms
   // distance px                 -> x = distance * timeNeeded / ARROW_DISTANCE
   int distance = y - (int)ARROW_FINAL_Y;
-  return msecs + Div(distance * timeNeeded, ARROW_DISTANCE);
+  return msecs + MATH_roundingDiv(distance * timeNeeded, ARROW_DISTANCE);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
@@ -356,6 +356,6 @@ void ChartReader::logDebugInfo() {
 
   LOGN(bpm, 0);
   LOGN(msecs, 1);
-  LOGN(min == NULL ? -1 : min->timestamp, 2);
+  LOGN(min == NULL ? -1 : (int)min->timestamp, 2);
   LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 3);
 }
