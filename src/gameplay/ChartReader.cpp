@@ -32,22 +32,22 @@ ChartReader::ChartReader(Chart* chart,
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
 
-bool ChartReader::preUpdate(int* msecs) {
-  int rythmMsecs = *msecs - lastBpmChange;
+bool ChartReader::preUpdate(int songMsecs) {
+  int rythmMsecs = songMsecs - lastBpmChange;
   bool hasChanged = animateBpm(rythmMsecs);
 
-  *msecs = *msecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
+  msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
   if (hasStopped)
     return hasChanged;
 
-  processNextEvents(msecs);
-  processHoldTicks(*msecs, rythmMsecs);
+  processNextEvents();
+  processHoldTicks(rythmMsecs);
 
   return hasChanged;
 }
 
-void ChartReader::postUpdate(int msecs) {
+void ChartReader::postUpdate() {
   if (hasStopped) {
     if (msecs >= stopStart + (int)stopLength) {
       hasStopped = false;
@@ -57,11 +57,28 @@ void ChartReader::postUpdate(int msecs) {
       return;
   }
 
-  predictNoteEvents(msecs);
-  processHoldArrows(msecs);
+  predictNoteEvents();
+  processHoldArrows();
 
-  IFTIMINGTEST { logDebugInfo(msecs); }
+  IFTIMINGTEST { logDebugInfo(); }
 };
+
+int ChartReader::getYFor(Arrow* arrow) {
+  int timeLeft = (int)chart->events[arrow->eventIndex].timestamp - msecs;
+  // timeNeeded ms           -> ARROW_DISTANCE px
+  // timeLeft ms             -> y = timeLeft * ARROW_DISTANCE / timeNeeded
+  return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
+}
+
+bool ChartReader::isHoldActive(ArrowDirection direction) {
+  bool isHoldActive = false;
+  withNextHoldArrow(direction, [&isHoldActive, this](HoldArrow* holdArrow) {
+    isHoldActive = msecs >= holdArrow->startTime &&
+                   (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
+  });
+
+  return isHoldActive;
+}
 
 bool ChartReader::animateBpm(int rythmMsecs) {
   // 60000 ms           -> BPM beats
@@ -73,43 +90,38 @@ bool ChartReader::animateBpm(int rythmMsecs) {
   return hasChanged;
 }
 
-void ChartReader::processNextEvents(int* msecs) {
-  processEvents(
-      *msecs, [msecs, this](EventType type, Event* event, bool* stop) {
-        switch (type) {
-          case EventType::SET_TEMPO:
-            if (bpm > 0) {
-              lastBeat = -1;
-              lastBpmChange = event->timestamp;
-            }
-            bpm = event->extra;
-            return true;
-          case EventType::SET_TICKCOUNT:
-            tickCount = event->extra;
-            lastTick = -1;
-            return true;
-          case EventType::WARP:
-            warpedMs += event->extra;
-            *msecs += event->extra;
-
-            arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
-            holdArrows->clear();
-
-            *stop = true;
-            return true;
-          default:
-            return false;
+void ChartReader::processNextEvents() {
+  processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
+    switch (type) {
+      case EventType::SET_TEMPO:
+        if (bpm > 0) {
+          lastBeat = -1;
+          lastBpmChange = event->timestamp;
         }
-      });
+        bpm = event->extra;
+        return true;
+      case EventType::SET_TICKCOUNT:
+        tickCount = event->extra;
+        lastTick = -1;
+        return true;
+      case EventType::WARP:
+        warpedMs += event->extra;
+        msecs += event->extra;
+
+        arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+        holdArrows->clear();
+
+        *stop = true;
+        return true;
+      default:
+        return false;
+    }
+  });
 }
 
-void ChartReader::predictNoteEvents(int msecs) {
-  u32 currentIndex = eventIndex;
-  int targetMsecs = msecs + timeNeeded;
-  bool skipped = false;
-
+void ChartReader::predictNoteEvents() {
   processEvents(msecs + timeNeeded,
-                [&msecs, this](EventType type, Event* event, bool* stop) {
+                [this](EventType type, Event* event, bool* stop) {
                   if (msecs < event->timestamp) {
                     switch (type) {
                       case EventType::NOTE:
@@ -140,7 +152,7 @@ void ChartReader::predictNoteEvents(int msecs) {
                         stopStart = event->timestamp;
                         stopLength = event->extra;
 
-                        snapClosestArrowToHolder(msecs);
+                        snapClosestArrowToHolder();
                         *stop = true;
                         return true;
                       default:
@@ -246,8 +258,8 @@ void ChartReader::endHoldNote(Event* event) {
   });
 }
 
-void ChartReader::processHoldArrows(int msecs) {
-  holdArrows->forEachActive([&msecs, this](HoldArrow* holdArrow) {
+void ChartReader::processHoldArrows() {
+  holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
 
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
@@ -269,7 +281,7 @@ void ChartReader::processHoldArrows(int msecs) {
   });
 }
 
-void ChartReader::processHoldTicks(int msecs, int rythmMsecs) {
+void ChartReader::processHoldTicks(int rythmMsecs) {
   int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 
@@ -280,7 +292,7 @@ void ChartReader::processHoldTicks(int msecs, int rythmMsecs) {
     for (u32 i = 0; i < ARROWS_TOTAL; i++) {
       auto direction = static_cast<ArrowDirection>(i);
 
-      withNextHoldArrow(direction, [&msecs, &arrows, &canMiss, &direction,
+      withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
                                     this](HoldArrow* holdArrow) {
         if (msecs >= holdArrow->startTime) {
           arrows |= EVENT_ARROW_MASKS[direction];
@@ -307,11 +319,11 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   }
 }
 
-void ChartReader::snapClosestArrowToHolder(int msecs) {
+void ChartReader::snapClosestArrowToHolder() {
   Arrow* min = NULL;
   u32 minIndex = 0;
 
-  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* it) {
+  arrowPool->forEachActive([&min, &minIndex, this](Arrow* it) {
     bool isAligned = abs(msecs - chart->events[it->eventIndex].timestamp) <
                      SNAP_THRESHOLD_MS;
 
@@ -330,7 +342,7 @@ void ChartReader::snapClosestArrowToHolder(int msecs) {
 
 // --------------------------------------------------
 
-void ChartReader::logDebugInfo(int msecs) {
+void ChartReader::logDebugInfo() {
   Arrow* min = NULL;
   u32 minIndex = 0;
 

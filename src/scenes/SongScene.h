@@ -42,8 +42,6 @@ class SongScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
-  int songMsecs = 0;
-  int chartMsecs = 0;
   int init = 0;
 
   void setUpPalettes();

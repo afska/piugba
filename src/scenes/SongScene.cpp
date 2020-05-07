@@ -100,17 +100,16 @@ void SongScene::tick(u16 keys) {
     hasStarted = true;
   }
 
-  songMsecs = (int)PlaybackState.msecs;
+  u32 songMsecs = PlaybackState.msecs;
 
-  if (PlaybackState.hasFinished || songMsecs >= (int)song->lastMillisecond) {
+  if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
     unload();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
     return;
   }
 
-  chartMsecs = songMsecs;
-  bool isNewBeat = chartReader->preUpdate(&this->chartMsecs);
+  bool isNewBeat = chartReader->preUpdate((int)songMsecs);
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -125,7 +124,7 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  chartReader->postUpdate(chartMsecs);
+  chartReader->postUpdate();
 }
 
 void SongScene::setUpPalettes() {
@@ -181,11 +180,7 @@ void SongScene::updateArrows() {
     ArrowDirection direction = it->direction;
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
-    int timeLeft = (int)chart->events[it->eventIndex].timestamp - chartMsecs;
-    // timeNeeded ms           -> ARROW_DISTANCE px
-    // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
-    int newY =
-        ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, chartReader->timeNeeded);
+    int newY = chartReader->getYFor(it);
     ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing, newY);
 
     if (chartReader->hasStopped)  // TODO: Fix hasBeenPressedNow
@@ -202,26 +197,21 @@ void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
 
-    bool isHoldMode = false;
-    chartReader->withNextHoldArrow(direction, [&isHoldMode,
-                                               this](HoldArrow* holdArrow) {
-      isHoldMode = chartMsecs >= holdArrow->startTime &&
-                   (holdArrow->endTime == 0 || chartMsecs < holdArrow->endTime);
-    });
+    bool isHoldMode = chartReader->isHoldActive(direction);
     bool isPressing = arrowHolders[direction]->getIsPressed();
-    bool isEnabled = fakeHeads[i]->get()->enabled;
+    bool isVisible = fakeHeads[i]->get()->enabled;
 
     if (isHoldMode && isPressing && !chartReader->hasStopped) {
-      if (!isEnabled) {
+      if (!isVisible) {
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0);
-        isEnabled = true;
+        isVisible = true;
       }
-    } else if (isEnabled) {
+    } else if (isVisible) {
       fakeHeads[i]->discard();
-      isEnabled = false;
+      isVisible = false;
     }
 
-    if (isEnabled)
+    if (isVisible)
       fakeHeads[i]->tick(false, false, 0);
   }
 }
