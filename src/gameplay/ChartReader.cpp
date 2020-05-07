@@ -10,7 +10,6 @@
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
-const u32 SNAP_THRESHOLD_MS = 20;
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
@@ -275,7 +274,8 @@ void ChartReader::processHoldArrows() {
 
     while (holdArrow->endTime == 0 &&
            holdArrow->lastFill->get()->getY() <
-               (int)(ARROW_INITIAL_Y - ARROW_SIZE + ARROW_SPEED)) {
+               (int)(ARROW_INITIAL_Y - ARROW_SIZE +
+                     ARROW_SPEED)) {  // TODO: Decouple from ARROW_SPEED
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
         it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
       });
@@ -329,7 +329,7 @@ void ChartReader::snapClosestArrowToHolder() {
   u32 minTimestamp = 0;
 
   arrowPool->forEachActive([&min, &minTimestamp, this](Arrow* it) {
-    bool isAligned = abs(msecs - (int)it->timestamp) < SNAP_THRESHOLD_MS;
+    bool isAligned = it->isAligned(this);
 
     if (isAligned && (min == NULL || it->timestamp < minTimestamp)) {
       min = it;

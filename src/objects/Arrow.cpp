@@ -12,6 +12,7 @@ const u32 HOLD_FILL_TILE = 9;
 const u32 HOLD_TAIL_TILE = 0;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
+const u32 SNAP_THRESHOLD_MS = 20;
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -111,6 +112,10 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
+bool Arrow::isAligned(TimingProvider* timingProvider) {
+  return abs(timingProvider->getMsecs() - (int)timestamp) < SNAP_THRESHOLD_MS;
+}
+
 ArrowState Arrow::tick(TimingProvider* timingProvider,
                        int newY,
                        bool isPressing) {
@@ -136,12 +141,12 @@ ArrowState Arrow::tick(TimingProvider* timingProvider,
           end();
       }
     }
-  } else if (isAligned(0) && isPressed && needsAnimation) {
+  } else if (isAligned(timingProvider) && isPressed && needsAnimation) {
     animatePress();
   } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
              get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL && isAligned(ARROW_SPEED) &&
+  } else if (type == ArrowType::HOLD_FILL && isAligned(timingProvider) &&
              isPressing) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
@@ -169,8 +174,4 @@ void Arrow::animatePress() {
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  ARROW_FINAL_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
-}
-
-bool Arrow::isAligned(int offset) {
-  return abs(sprite->getY() - (ARROW_FINAL_Y + offset)) < ARROW_SPEED;
 }

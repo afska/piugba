@@ -97,6 +97,7 @@ class Arrow : public IPoolable {
   void press();
   bool getIsPressed();
   void markAsPressed();
+  bool isAligned(TimingProvider* timingProvider);
 
   ArrowState tick(TimingProvider* timingProvider, int newY, bool isPressing);
   Sprite* get();
@@ -114,7 +115,6 @@ class Arrow : public IPoolable {
 
   void end();
   void animatePress();
-  bool isAligned(int offset);
 };
 
 #endif  // ARROW_H
