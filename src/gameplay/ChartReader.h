@@ -12,7 +12,6 @@
 class ChartReader {
  public:
   int msecs = 0;
-  u32 timeNeeded = 0;
   bool hasStopped = false;
 
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
@@ -21,12 +20,14 @@ class ChartReader {
   void postUpdate();
 
   int getYFor(Arrow* arrow);
+  bool isStopped();
   bool isHoldActive(ArrowDirection direction);
 
  private:
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
+  u32 timeNeeded = 0;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
   u32 bpm = 0;
