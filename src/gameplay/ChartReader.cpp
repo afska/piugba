@@ -345,13 +345,13 @@ void ChartReader::snapClosestArrowToHolder(int msecs) {
   Arrow* min = NULL;
   u32 minIndex = 0;
 
-  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* itata) {
-    bool isAligned = abs(msecs - chart->events[itata->eventIndex].timestamp) <
+  arrowPool->forEachActive([&msecs, &min, &minIndex, this](Arrow* it) {
+    bool isAligned = abs(msecs - chart->events[it->eventIndex].timestamp) <
                      SNAP_THRESHOLD_MS;
 
-    if (isAligned && (min == NULL || itata->eventIndex < minIndex)) {
-      min = itata;
-      minIndex = itata->eventIndex;
+    if (isAligned && (min == NULL || it->eventIndex < minIndex)) {
+      min = it;
+      minIndex = it->eventIndex;
     }
   });
 
