@@ -18,7 +18,7 @@ void Judge::onPress(Arrow* arrow) {
     return;
 
   int y = arrow->get()->getY();
-  u32 diff = (u32)abs(y - ARROW_CORNER_MARGIN_Y);
+  u32 diff = (u32)abs(y - ARROW_FINAL_Y);
 
   if (diff < ARROW_SPEED * OFFSET_MISS) {
     if (diff >= ARROW_SPEED * OFFSET_BAD)

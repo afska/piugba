@@ -22,7 +22,7 @@ ArrowSelector::ArrowSelector(ArrowDirection direction) {
                .withSize(SIZE_16_16)
                .withAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY)
                .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                             ARROW_CORNER_MARGIN_Y)
+                             ARROW_FINAL_Y)
                .buildPtr();
 
   if (direction > 0)

@@ -29,14 +29,13 @@ const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
-const u32 ARROW_CORNER_MARGIN_Y = 15;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
 const u32 ARROW_SPEED = 4;  // TODO: RESTORE 3
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
-const u32 ARROW_FINAL_Y = ARROW_CORNER_MARGIN_Y;
+const u32 ARROW_FINAL_Y = 15;
 const u32 ARROW_DISTANCE = ARROW_INITIAL_Y - ARROW_FINAL_Y;
 
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {

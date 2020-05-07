@@ -91,7 +91,7 @@ FeedbackType Arrow::getResult(FeedbackType partialResult,
 }
 
 void Arrow::press() {
-  if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
+  if (sprite->getY() <= (int)ARROW_FINAL_Y)
     animatePress();
   else {
     markAsPressed();
@@ -133,7 +133,7 @@ ArrowState Arrow::tick(bool hasStopped, bool isPressing, int newY) {
   } else if (isAligned(0) && isPressed && needsAnimation) {
     animatePress();
   } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
-             get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
+             get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
   } else if (type == ArrowType::HOLD_FILL && isAligned(ARROW_SPEED) &&
              isPressing) {
@@ -161,10 +161,10 @@ void Arrow::animatePress() {
   hasEnded = true;
   endAnimationFrame = 0;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 ARROW_CORNER_MARGIN_Y);
+                 ARROW_FINAL_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }
 
 bool Arrow::isAligned(int offset) {
-  return abs(sprite->getY() - (ARROW_CORNER_MARGIN_Y + offset)) < ARROW_SPEED;
+  return abs(sprite->getY() - (ARROW_FINAL_Y + offset)) < ARROW_SPEED;
 }
