@@ -54,6 +54,7 @@ int ChartReader::getYFor(int timestamp) {
   // timeNeeded ms           -> ARROW_DISTANCE px
   // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
   int timeLeft = timestamp - msecs;
+
   return ARROW_FINAL_Y +
          Div(timeLeft * ARROW_DISTANCE,
              timeNeeded);  // TODO: Precalculate (using Math.round(...)) and use
