@@ -166,12 +166,12 @@ void ChartReader::predictNoteEvents(int msecs) {
         case EventType::NOTE:
           processUniqueNote(event);
           break;
-        case EventType::HOLD_START:
-          startHoldNote(event);
-          break;
-        case EventType::HOLD_END:
-          endHoldNote(event);
-          break;
+        // case EventType::HOLD_START:
+        //   startHoldNote(event);
+        //   break;
+        // case EventType::HOLD_END:
+        //   endHoldNote(event);
+        //   break; // TODO: REVISE
         default:
           break;
       }
