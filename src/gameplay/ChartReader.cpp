@@ -74,49 +74,33 @@ bool ChartReader::animateBpm(int rythmMsecs) {
 }
 
 void ChartReader::processNextEvents(int* msecs) {
-  u32 currentIndex = eventIndex;
-  int targetMsecs = *msecs;
-  bool skipped = false;
+  processEvents(
+      *msecs, [msecs, this](EventType type, Event* event, bool* stop) {
+        switch (type) {
+          case EventType::SET_TEMPO:
+            if (bpm > 0) {
+              lastBeat = -1;
+              lastBpmChange = event->timestamp;
+            }
+            bpm = event->extra;
+            return true;
+          case EventType::SET_TICKCOUNT:
+            tickCount = event->extra;
+            lastTick = -1;
+            return true;
+          case EventType::WARP:
+            warpedMs += event->extra;
+            *msecs += event->extra;
 
-  while (targetMsecs >= chart->events[currentIndex].timestamp &&
-         currentIndex < chart->eventCount) {
-    auto event = chart->events + currentIndex;
-    event->index = currentIndex;
-    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    bool handled = true;
+            arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+            holdArrows->clear();
 
-    switch (type) {
-      case EventType::SET_TEMPO:
-        if (bpm > 0) {
-          lastBeat = -1;
-          lastBpmChange = event->timestamp;
+            *stop = true;
+            return true;
+          default:
+            return false;
         }
-        bpm = event->extra;
-        break;
-      case EventType::SET_TICKCOUNT:
-        tickCount = event->extra;
-        lastTick = -1;
-        break;
-      case EventType::WARP:
-        warpedMs += event->extra;
-        *msecs += event->extra;
-
-        arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
-        holdArrows->clear();
-
-        eventIndex = currentIndex + 1;
-        return;
-      default:
-        handled = false;
-        skipped = true;
-        break;
-    }
-
-    event->handled = handled;
-    currentIndex++;
-    if (!skipped)
-      eventIndex = currentIndex;
-  }
+      });
 }
 
 void ChartReader::predictNoteEvents(int msecs) {
@@ -124,64 +108,46 @@ void ChartReader::predictNoteEvents(int msecs) {
   int targetMsecs = msecs + timeNeeded;
   bool skipped = false;
 
-  while (targetMsecs >= chart->events[currentIndex].timestamp &&
-         currentIndex < chart->eventCount) {
-    auto event = chart->events + currentIndex;
-    event->index = currentIndex;
-    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    bool handled = true;
+  processEvents(msecs + timeNeeded,
+                [&msecs, this](EventType type, Event* event, bool* stop) {
+                  if (msecs < event->timestamp) {
+                    switch (type) {
+                      case EventType::NOTE:
+                        processUniqueNote(event);
+                        return true;
+                      case EventType::HOLD_START:
+                        startHoldNote(event);
+                        return true;
+                      case EventType::HOLD_END:
+                        endHoldNote(event);
+                        return true;
+                      default:
+                        return false;
+                    }
+                  } else {
+                    switch (type) {
+                      case EventType::NOTE:
+                        processUniqueNote(event);
+                        return true;
+                      case EventType::HOLD_START:
+                        startHoldNote(event);
+                        return true;
+                      case EventType::HOLD_END:
+                        endHoldNote(event);
+                        return true;
+                      case EventType::STOP:
+                        hasStopped = true;
+                        stopStart = event->timestamp;
+                        stopLength = event->extra;
 
-    if (event->handled) {
-      currentIndex++;
-      continue;
-    }
-
-    if (msecs < event->timestamp) {
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event);
-          break;
-        case EventType::HOLD_START:
-          startHoldNote(event);
-          break;
-        case EventType::HOLD_END:
-          endHoldNote(event);
-          break;
-        default:
-          handled = false;
-          skipped = true;
-          break;
-      }
-    } else {
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event);
-          break;
-        case EventType::HOLD_START:
-          startHoldNote(event);
-          break;
-        case EventType::HOLD_END:
-          endHoldNote(event);
-          break;
-        case EventType::STOP:
-          hasStopped = true;
-          stopStart = event->timestamp;
-          stopLength = event->extra;
-
-          snapClosestArrowToHolder(msecs);
-          event->handled = true;
-          eventIndex = currentIndex + 1;
-          return;
-        default:
-          break;
-      }
-    }
-
-    event->handled = handled;
-    currentIndex++;
-    if (!skipped)
-      eventIndex = currentIndex;
-  }
+                        snapClosestArrowToHolder(msecs);
+                        *stop = true;
+                        return true;
+                      default:
+                        return true;
+                    }
+                  }
+                });
 }
 
 void ChartReader::processUniqueNote(Event* event) {

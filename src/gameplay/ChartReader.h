@@ -67,6 +67,38 @@ class ChartReader {
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
 
+  template <typename F>
+  inline void processEvents(int targetMsecs, F action) {
+    u32 currentIndex = eventIndex;
+    bool skipped = false;
+
+    while (targetMsecs >= chart->events[currentIndex].timestamp &&
+           currentIndex < chart->eventCount) {
+      auto event = chart->events + currentIndex;
+      event->index = currentIndex;
+      EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+      bool handled = true;
+
+      if (event->handled) {
+        currentIndex++;
+        continue;
+      }
+
+      bool stop = false;
+      event->handled = action(type, event, &stop);
+      currentIndex++;
+
+      if (!event->handled)
+        skipped = true;
+
+      if (!skipped || stop) {
+        eventIndex = currentIndex;
+        if (stop)
+          return;
+      }
+    }
+  }
+
   bool animateBpm(int rythmMsecs);
   void processNextEvents(int* msecs);
   void predictNoteEvents(int msecs);
