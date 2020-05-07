@@ -141,7 +141,9 @@ ArrowState Arrow::tick(bool hasStopped, bool isPressing, int newY) {
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else if (!hasStopped)
-    sprite->moveTo(sprite->getX(), newY);
+    sprite->moveTo(sprite->getX(), type == ArrowType::UNIQUE
+                                       ? newY
+                                       : sprite->getY() - ARROW_SPEED);
 
   return ArrowState::ACTIVE;
 }

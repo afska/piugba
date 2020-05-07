@@ -138,13 +138,12 @@ void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
         case EventType::NOTE:
           processUniqueNote(event, arrowPool);
           break;
-          // TODO: FIX HOLD NOTES
-        // case EventType::HOLD_START:
-        //   startHoldNote(event, arrowPool);
-        //   break;
-        // case EventType::HOLD_END:
-        //   endHoldNote(event, arrowPool);
-        //   break;
+        case EventType::HOLD_START:
+          startHoldNote(event, arrowPool);
+          break;
+        case EventType::HOLD_END:
+          endHoldNote(event, arrowPool);
+          break;
         default:
           handled = false;
           skipped = true;
@@ -165,10 +164,10 @@ void ChartReader::predictNoteEvents(int msecs, ObjectPool<Arrow>* arrowPool) {
           processUniqueNote(event, arrowPool);
           break;
         case EventType::HOLD_START:
-          //   startHoldNote(event, arrowPool);
+          startHoldNote(event, arrowPool);
           break;
         case EventType::HOLD_END:
-          //   endHoldeNote(event, arrowPool);
+          endHoldNote(event, arrowPool);
           break;
         default:
           break;
