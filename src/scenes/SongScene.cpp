@@ -49,7 +49,10 @@ std::vector<Sprite*> SongScene::sprites() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(fakeHeads[i]->get());
 
-  arrowPool->forEach([&sprites](Arrow* it) { sprites.push_back(it->get()); });
+  arrowPool->forEach([&sprites](Arrow* it) {
+    it->index = sprites.size();
+    sprites.push_back(it->get());
+  });
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(arrowHolders[i]->get());

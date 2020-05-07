@@ -66,6 +66,7 @@ class Arrow : public IPoolable {
   ArrowType type = ArrowType::UNIQUE;
   ArrowDirection direction = ArrowDirection::DOWNLEFT;
   u32 eventIndex = 0;
+  u32 index = 0;
 
   Arrow(u32 id);
 

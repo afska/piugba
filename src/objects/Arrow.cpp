@@ -30,11 +30,15 @@ Arrow::Arrow(u32 id) {
 
 void Arrow::discard() {
   SPRITE_hide(get());
+
   sprite->enabled = false;
+  sprite->update();
+  oam_mem[index] = sprite->oam;
 }
 
 void Arrow::scheduleDiscard() {
   SPRITE_hide(get());
+
   isPressed = true;
 }
 

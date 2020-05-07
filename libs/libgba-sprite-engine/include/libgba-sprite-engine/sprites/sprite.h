@@ -64,7 +64,6 @@ class Sprite {
   u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
       animationCounter;
   bool animating;
-  OBJ_ATTR oam;
 
   void syncAnimation();
   virtual void syncOam();
@@ -72,6 +71,7 @@ class Sprite {
   void setAttributesBasedOnSize(SpriteSize size);
 
  public:
+  OBJ_ATTR oam;
   bool enabled = true;
   explicit Sprite(const Sprite& other);
   explicit Sprite(const void* imageData,
