@@ -5,16 +5,17 @@
 
 #include "HoldArrow.h"
 #include "Judge.h"
+#include "TimingProvider.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
 #include "utils/pool/ObjectPool.h"
 
-class ChartReader {
+class ChartReader : public TimingProvider {
  public:
-  int msecs = 0;
-  bool hasStopped = false;
-
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
+
+  int getMsecs() override { return msecs; }
+  bool isStopped() override { return hasStopped; }
 
   bool preUpdate(int msecs);
   void postUpdate();
@@ -22,10 +23,11 @@ class ChartReader {
   int getYFor(int timestamp);
   int getTimestampFor(int y);
 
-  bool isStopped();
   bool isHoldActive(ArrowDirection direction);
 
  private:
+  int msecs = 0;
+  bool hasStopped = false;
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;

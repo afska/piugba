@@ -3,6 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "gameplay/TimingProvider.h"
 #include "score/Feedback.h"
 #include "utils/pool/ObjectPool.h"
 
@@ -97,7 +98,7 @@ class Arrow : public IPoolable {
   bool getIsPressed();
   void markAsPressed();
 
-  ArrowState tick(bool hasStopped, bool isPressing, int newY);
+  ArrowState tick(TimingProvider* timingProvider, int newY, bool isPressing);
   Sprite* get();
 
  private:

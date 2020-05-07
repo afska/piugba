@@ -181,9 +181,9 @@ void SongScene::updateArrows() {
     bool isPressing = arrowHolders[direction]->getIsPressed();
 
     int newY = chartReader->getYFor((int)it->timestamp);
-    ArrowState arrowState = it->tick(chartReader->hasStopped, isPressing, newY);
+    ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
 
-    if (chartReader->hasStopped)  // TODO: Fix hasBeenPressedNow
+    if (chartReader->isStopped())  // TODO: Fix hasBeenPressedNow
       return;
 
     if (arrowState == ArrowState::OUT)
@@ -201,7 +201,7 @@ void SongScene::updateFakeHeads() {
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isVisible = fakeHeads[i]->get()->enabled;
 
-    if (isHoldMode && isPressing && !chartReader->hasStopped) {
+    if (isHoldMode && isPressing && !chartReader->isStopped()) {
       if (!isVisible) {
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0);
         isVisible = true;
@@ -212,7 +212,7 @@ void SongScene::updateFakeHeads() {
     }
 
     if (isVisible)
-      fakeHeads[i]->tick(false, false, 0);
+      fakeHeads[i]->tick(chartReader.get(), 0, false);
   }
 }
 
