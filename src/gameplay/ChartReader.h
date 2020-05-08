@@ -66,12 +66,10 @@ class ChartReader : public TimingProvider {
 
       if (!event->handled)
         skipped = true;
-
-      if (!skipped || stop) {
+      if (!skipped)
         eventIndex = currentIndex;
-        if (stop)
-          return;
-      }
+      if (stop)
+        return;
     }
   }
 

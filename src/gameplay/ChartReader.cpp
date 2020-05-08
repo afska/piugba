@@ -28,8 +28,14 @@ bool ChartReader::preUpdate(int songMsecs) {
 
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  if (hasStopped)
-    return hasChanged;
+  if (hasStopped) {
+    if (msecs >= stopStart + (int)stopLength) {
+      hasStopped = false;
+      stoppedMs += stopLength;
+      msecs -= (int)stopLength;
+    } else
+      return hasChanged;
+  }
 
   processNextEvents();
   processHoldTicks(rythmMsecs);
@@ -38,14 +44,8 @@ bool ChartReader::preUpdate(int songMsecs) {
 }
 
 void ChartReader::postUpdate() {
-  if (hasStopped) {
-    if (msecs >= stopStart + (int)stopLength) {
-      hasStopped = false;
-      stoppedMs += stopLength;
-      msecs -= (int)stopLength;
-    } else
-      return;
-  }
+  if (hasStopped)
+    return;
 
   predictNoteEvents();
   processHoldArrows();
