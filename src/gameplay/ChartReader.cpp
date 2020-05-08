@@ -155,7 +155,7 @@ void ChartReader::predictNoteEvents() {
                         *stop = true;
                         return true;
                       default:
-                        return true;
+                        return false;
                     }
                   }
                 });

@@ -10,14 +10,14 @@
 // TEST MACROS
 #define TEST_MODE true  // TODO: RESTORE
 #define KEYTEST_MODE false
-#define TIMINGTEST_MODE true
+#define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
 #define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
-#define DEBULOG(NUM) LOGN(NUM, 0);
+#define DEBULOG(NUM) LOGN(NUM, -1);
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
