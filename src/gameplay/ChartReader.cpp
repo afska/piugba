@@ -277,7 +277,8 @@ void ChartReader::processHoldArrows() {
       if (fill != NULL) {
         holdArrow->lastFill = fill;
         holdArrow->fillCount++;
-      }
+      } else
+        break;
     }
   });
 }
