@@ -12,7 +12,7 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      _.sortBy([...timingEvents, ...noteEvents], "timestamp")
+      _.sortBy([...timingEvents, ...noteEvents], ["timestamp", "type"])
     );
   }
 
