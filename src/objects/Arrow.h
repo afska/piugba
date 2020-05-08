@@ -10,16 +10,16 @@
 // TEST MACROS
 #define TEST_MODE true  // TODO: RESTORE
 #define KEYTEST_MODE false
-#define TIMINGTEST_MODE false
+#define TIMINGTEST_MODE true
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
 #define IFKEYTEST if (KEYTEST_MODE)
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
 #define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
-#define LOG(NUM) LOGN(NUM, 0);
-#define LOGN(NUM, N) \
-  (TextStream::instance().setText(std::to_string(NUM).c_str(), N, 15))
+#define DEBULOG(NUM) LOGN(NUM, 0);
+#define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
+#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };

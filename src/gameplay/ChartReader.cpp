@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "debug/logDebugInfo.h"
 #include "utils/MathUtils.h"
 
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
@@ -49,7 +50,7 @@ void ChartReader::postUpdate() {
   predictNoteEvents();
   processHoldArrows();
 
-  IFTIMINGTEST { logDebugInfo(); }
+  IFTIMINGTEST { logDebugInfo<CHART_DEBUG>(); }
 };
 
 int ChartReader::getYFor(int timestamp) {
@@ -337,25 +338,4 @@ void ChartReader::snapClosestArrowToHolder() {
       arrow->get()->moveTo(arrow->get()->getX(), ARROW_FINAL_Y);
     });
   }
-}
-
-// --------------------------------------------------
-
-void ChartReader::logDebugInfo() {
-  Arrow* min = NULL;
-  u32 minTimestamp = 0;
-
-  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
-    bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y;
-
-    if (isActive && (min == NULL || it->timestamp < minTimestamp)) {
-      min = it;
-      minTimestamp = it->timestamp;
-    }
-  });
-
-  LOGN(bpm, 0);
-  LOGN(msecs, 1);
-  LOGN(min == NULL ? -1 : (int)min->timestamp, 2);
-  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 3);
 }

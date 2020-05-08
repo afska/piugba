@@ -117,6 +117,8 @@ class ChartReader : public TimingProvider {
   void processHoldTicks(int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
   void snapClosestArrowToHolder();
+
+  template <typename DEBUG>
   void logDebugInfo();
 
   template <typename F>
@@ -127,5 +129,7 @@ class ChartReader : public TimingProvider {
     }
   }
 };
+
+class CHART_DEBUG;
 
 #endif  // CHART_READER_H
