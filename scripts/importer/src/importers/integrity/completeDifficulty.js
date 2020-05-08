@@ -4,8 +4,7 @@ const fs = require("fs");
 const _ = require("lodash");
 
 const NON_NUMERIC_LEVELS = ["NORMAL", "HARD", "CRAZY"];
-const GLOBAL_PROPERTY = (name) => new RegExp(`#${name}:((.|(\r|\n))*?);`, "g");
-const CHANNEL_PROP = "SONGCATEGORY";
+const PROPERTY = (name) => new RegExp(`#${name}:((.|(\r|\n))*?);`);
 const DIFFICULTY_PROP = "DIFFICULTY";
 
 module.exports = (metadata, charts, content, filePath) => {
@@ -35,14 +34,12 @@ module.exports = (metadata, charts, content, filePath) => {
       "red"
     );
     if (writeChanges === "y") {
-      let newContent = content.replace(
-        GLOBAL_PROPERTY(CHANNEL_PROP),
-        `#${CHANNEL_PROP}:${metadata.channel};`
-      );
+      let newContent = content;
+
       charts.forEach(({ header }) => {
         newContent = utils.replaceRange(
           newContent,
-          GLOBAL_PROPERTY(DIFFICULTY_PROP),
+          PROPERTY(DIFFICULTY_PROP),
           `#${DIFFICULTY_PROP}:${header.difficulty};`,
           header.startIndex
         );
