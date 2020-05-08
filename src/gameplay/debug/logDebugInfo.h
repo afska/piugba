@@ -3,12 +3,17 @@
 
 #include "gameplay/ChartReader.h"
 
+static u32 maxSprites = 0;
+
 template <>
 void ChartReader::logDebugInfo<CHART_DEBUG>() {
   Arrow* min = NULL;
   u32 minTimestamp = 0;
-
-  arrowPool->forEachActive([&min, &minTimestamp](Arrow* it) {
+  u32 activeSprites = 0;
+  arrowPool->forEachActive([&min, &minTimestamp, &activeSprites](Arrow* it) {
+    activeSprites++;
+    if (activeSprites > maxSprites)
+      maxSprites = activeSprites;
     bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y;
 
     if (isActive && (min == NULL || it->timestamp < minTimestamp)) {
@@ -62,6 +67,10 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
     LOGN(nextEvent->timestamp, 12);
     LOGSTR("-> " + std::to_string(nextEvent->extra), 13);
   }
+
+  LOGSTR("SPRITES:", 15);
+  LOGN(activeSprites, 16);
+  LOGSTR("-> " + std::to_string(maxSprites), 17);
 }
 
 #endif  // LOG_DEBUG_INFO_H

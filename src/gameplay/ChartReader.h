@@ -15,6 +15,7 @@ class ChartReader : public TimingProvider {
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
   int getMsecs() override { return msecs; }
+  u32 getTimeNeeded() override { return timeNeeded; }
   bool isStopped() override { return hasStopped; }
 
   bool preUpdate(int msecs);

@@ -20,6 +20,7 @@ const u32 MINUTE = 60000;
 class TimingProvider {
  public:
   virtual int getMsecs() = 0;
+  virtual u32 getTimeNeeded() = 0;
   virtual bool isStopped() = 0;
 };
 
