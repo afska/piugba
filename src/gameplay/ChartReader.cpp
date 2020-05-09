@@ -25,8 +25,6 @@ ChartReader::ChartReader(Chart* chart,
 
 bool ChartReader::preUpdate(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
-  bool hasChanged = animateBpm(rythmMsecs);
-
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
   if (hasStopped) {
@@ -35,13 +33,13 @@ bool ChartReader::preUpdate(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
     } else
-      return hasChanged;
+      return false;
   }
 
   processNextEvents();
-  processHoldTicks(rythmMsecs);
+  processTicks(rythmMsecs);
 
-  return hasChanged;
+  return subtick == 0 && bpm > 0;
 }
 
 void ChartReader::postUpdate() {
@@ -79,29 +77,20 @@ bool ChartReader::isHoldActive(ArrowDirection direction) {
   return isHoldActive;
 }
 
-bool ChartReader::animateBpm(int rythmMsecs) {
-  // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> x = millis * BPM / 60000
-  int beat = Div(rythmMsecs * bpm, MINUTE);
-  bool hasChanged = beat != lastBeat;
-  lastBeat = beat;
-
-  return hasChanged;
-}
-
 void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
       case EventType::SET_TEMPO:
         if (bpm > 0) {
-          lastBeat = -1;
           lastBpmChange = event->timestamp;
+          subtick = 0;
         }
         bpm = event->extra;
         return true;
       case EventType::SET_TICKCOUNT:
         tickCount = event->extra;
         lastTick = -1;
+        subtick = 0;
         return true;
       case EventType::WARP:
         warpedMs += event->extra;
@@ -283,11 +272,17 @@ void ChartReader::processHoldArrows() {
   });
 }
 
-void ChartReader::processHoldTicks(int rythmMsecs) {
+void ChartReader::processTicks(int rythmMsecs) {
+  // 60000 ms           -> BPM beats
+  // rythmMsecs ms      -> beat = millis * BPM / 60000
   int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
+    subtick++;
+    if (subtick == tickCount)
+      subtick = 0;
+
     u8 arrows = 0;
     bool canMiss = true;
 

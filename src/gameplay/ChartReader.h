@@ -35,8 +35,8 @@ class ChartReader : public TimingProvider {
   u32 timeNeeded = 0;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
+  u32 subtick = 0;
   u32 bpm = 0;
-  int lastBeat = -1;
   int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;
@@ -106,14 +106,13 @@ class ChartReader : public TimingProvider {
       action(max);
   }
 
-  bool animateBpm(int rythmMsecs);
   void processNextEvents();
   void predictNoteEvents();
   void processUniqueNote(Event* event);
   void startHoldNote(Event* event);
   void endHoldNote(Event* event);
   void processHoldArrows();
-  void processHoldTicks(int rythmMsecs);
+  void processTicks(int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
   void snapClosestArrowToHolder();
 
