@@ -33,8 +33,7 @@ void Arrow::discard() {
   SPRITE_hide(get());
 
   sprite->enabled = false;
-  sprite->update();
-  oam_mem[index] = sprite->oam;
+  refresh();
 }
 
 void Arrow::scheduleDiscard() {
@@ -77,6 +76,8 @@ void Arrow::initialize(ArrowType type,
   endAnimationFrame = 0;
   isPressed = false;
   needsAnimation = false;
+
+  refresh();
 }
 
 void Arrow::setSiblingId(int siblingId) {

@@ -116,6 +116,11 @@ class Arrow : public IPoolable {
 
   void end();
   void animatePress();
+
+  inline void refresh() {
+    sprite->update();
+    oam_mem[index] = sprite->oam;
+  }
 };
 
 #endif  // ARROW_H
