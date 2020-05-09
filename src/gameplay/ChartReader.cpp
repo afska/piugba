@@ -228,7 +228,7 @@ void ChartReader::endHoldNote(Event* event) {
               Arrow* tail = arrowPool->createWithIdGreaterThan(
                   [&event, &extraFill, &direction, this](Arrow* tail) {
                     tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                     event->timestamp);
+                                     msecs + timeNeeded);
 
                     int y = tail->get()->getY() - ARROW_SIZE +
                             HOLD_ARROW_TAIL_OFFSETS[direction];
