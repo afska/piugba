@@ -1,9 +1,10 @@
 #include "ChartReader.h"
 
+#include <libgba-sprite-engine/gba/tonc_math.h>
+
 #include <vector>
 
 #include "debug/logDebugInfo.h"
-#include "utils/MathUtils.h"
 
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
@@ -58,15 +59,14 @@ int ChartReader::getYFor(int timestamp) {
   // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
   int timeLeft = timestamp - msecs;
 
-  return ARROW_FINAL_Y +
-         MATH_roundingDiv(timeLeft * ARROW_DISTANCE, timeNeeded);
+  return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
 }
 
 int ChartReader::getTimestampFor(int y) {
   // ARROW_DISTANCE px           -> timeNeeded ms
   // distance px                 -> x = distance * timeNeeded / ARROW_DISTANCE
   int distance = y - (int)ARROW_FINAL_Y;
-  return msecs + MATH_roundingDiv(distance * timeNeeded, ARROW_DISTANCE);
+  return msecs + Div(distance * timeNeeded, ARROW_DISTANCE);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
