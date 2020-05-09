@@ -9,9 +9,9 @@
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
-const u32 OFFSET_MISS = 10;
-const u32 OFFSET_BAD = 8;
-const u32 OFFSET_GOOD = 6;
+const u32 OFFSET_MISS = 9;
+const u32 OFFSET_BAD = 7;
+const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
 const int HOLD_ARROW_TICK_OFFSET_MS = 84;
 //                                    ^ OFFSET_GOOD * FRAME_MS = 5 * 16.73322954
