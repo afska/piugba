@@ -112,7 +112,7 @@ class ChartReader : public TimingProvider {
   void startHoldNote(Event* event);
   void endHoldNote(Event* event);
   void processHoldArrows();
-  void processTicks(int rythmMsecs);
+  bool processTicks(int rythmMsecs);
   void connectArrows(std::vector<Arrow*>& arrows);
   void snapClosestArrowToHolder();
 

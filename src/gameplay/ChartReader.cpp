@@ -37,9 +37,7 @@ bool ChartReader::preUpdate(int songMsecs) {
   }
 
   processNextEvents();
-  processTicks(rythmMsecs);
-
-  return subtick == 0 && bpm > 0;
+  return processTicks(rythmMsecs);
 }
 
 void ChartReader::postUpdate() {
@@ -273,7 +271,7 @@ void ChartReader::processHoldArrows() {
   });
 }
 
-void ChartReader::processTicks(int rythmMsecs) {
+bool ChartReader::processTicks(int rythmMsecs) {
   // 60000 ms           -> BPM beats
   // rythmMsecs ms      -> beat = millis * BPM / 60000
   int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
@@ -306,6 +304,8 @@ void ChartReader::processTicks(int rythmMsecs) {
   }
 
   lastTick = tick;
+
+  return hasChanged && subtick == 0 && bpm > 0;
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
