@@ -348,7 +348,7 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
 void ChartReader::snapClosestArrowToHolder() {
   Arrow* min = NULL;
-  u32 minTimestamp = 0;
+  int minTimestamp = 0;
 
   arrowPool->forEachActive([&min, &minTimestamp, this](Arrow* it) {
     bool isAligned = it->isAligned(this);

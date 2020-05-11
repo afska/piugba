@@ -67,7 +67,7 @@ class Arrow : public IPoolable {
   u32 id = 0;
   ArrowType type = ArrowType::UNIQUE;
   ArrowDirection direction = ArrowDirection::DOWNLEFT;
-  u32 timestamp = 0;
+  int timestamp = 0;
   u32 index = 0;
 
   Arrow(u32 id);
@@ -75,7 +75,7 @@ class Arrow : public IPoolable {
   void discard() override;
   void scheduleDiscard();
 
-  void initialize(ArrowType type, ArrowDirection direction, u32 timestamp);
+  void initialize(ArrowType type, ArrowDirection direction, int timestamp);
   void setSiblingId(int siblingId);
 
   template <typename F>

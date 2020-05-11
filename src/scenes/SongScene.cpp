@@ -182,7 +182,7 @@ void SongScene::updateArrows() {
     bool isOut = false;
 
     if (!isStopped || it->getIsPressed()) {
-      int newY = chartReader->getYFor((int)it->timestamp);
+      int newY = chartReader->getYFor(it->timestamp);
       bool isPressing = arrowHolders[direction]->getIsPressed();
       ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
       if (arrowState == ArrowState::OUT) {
@@ -197,15 +197,13 @@ void SongScene::updateArrows() {
       bool hasJustStopped = chartReader->hasJustStopped();
       bool isAboutToResume = chartReader->isAboutToResume();
 
-      canBeJudged = (int)it->timestamp >= chartReader->getStopStart() &&
+      canBeJudged = it->timestamp >= chartReader->getStopStart() &&
                     (hasJustStopped || isAboutToResume);
       judgementOffset = isAboutToResume ? -chartReader->getStopLength() : 0;
-
-      // TODO: MAKE it->timestamp an int
     } else {
       int nextStopStart = 0;
       canBeJudged = chartReader->isAboutToStop(&nextStopStart)
-                        ? (int)it->timestamp < nextStopStart
+                        ? it->timestamp < nextStopStart
                         : true;
     }
 

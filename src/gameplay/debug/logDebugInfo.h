@@ -8,7 +8,7 @@ static u32 maxSprites = 0;
 template <>
 void ChartReader::logDebugInfo<CHART_DEBUG>() {
   Arrow* min = NULL;
-  u32 minTimestamp = 0;
+  int minTimestamp = 0;
   u32 activeSprites = 0;
   arrowPool->forEachActive([&min, &minTimestamp, &activeSprites](Arrow* it) {
     activeSprites++;
@@ -28,7 +28,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
   LOGN(msecs, 3);
 
   LOGSTR("NEXT -> MS:", 5);
-  LOGN(min == NULL ? -1 : (int)min->timestamp, 6);
+  LOGN(min == NULL ? -1 : min->timestamp, 6);
   LOGSTR("NEXT -> Y:", 7);
   LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 8);
 
