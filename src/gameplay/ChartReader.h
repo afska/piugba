@@ -17,6 +17,8 @@ class ChartReader : public TimingProvider {
   int getMsecs() override { return msecs; }
   u32 getTimeNeeded() override { return timeNeeded; }
   bool isStopped() override { return hasStopped; }
+  int getStopStart() override { return stopStart; }
+  u32 getStopLength() override { return stopLength; }
 
   bool preUpdate(int msecs);
   void postUpdate();
@@ -25,6 +27,7 @@ class ChartReader : public TimingProvider {
   int getTimestampFor(int y);
 
   bool isHoldActive(ArrowDirection direction);
+  u32 getTimeToResume();
 
  private:
   int msecs = 0;

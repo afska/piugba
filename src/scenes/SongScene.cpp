@@ -178,18 +178,29 @@ void SongScene::updateArrowHolders() {
 void SongScene::updateArrows() {
   arrowPool->forEachActive([this](Arrow* it) {
     ArrowDirection direction = it->direction;
-    bool isPressing = arrowHolders[direction]->getIsPressed();
+    bool isStopped = chartReader->isStopped();
+    bool isOut = false;
 
-    int newY = chartReader->getYFor((int)it->timestamp);
-    ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
+    if (!isStopped || it->getIsPressed()) {
+      int newY = chartReader->getYFor((int)it->timestamp);
+      bool isPressing = arrowHolders[direction]->getIsPressed();
+      ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
+      if (arrowState == ArrowState::OUT) {
+        isOut = true;
+        judge->onOut(it);
+      }
+    }
 
-    if (chartReader->isStopped())  // TODO: Fix hasBeenPressedNow
-      return;
+    bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();
+    bool canBeJudged =
+        !isStopped ||
+        (judge->isInsideTimingWindow(chartReader->getTimeToResume()) &&
+         (int)it->timestamp >= chartReader->getStopStart());
 
-    if (arrowState == ArrowState::OUT)
-      judge->onOut(it);
-    else if (arrowHolders[direction]->hasBeenPressedNow())
-      judge->onPress(it, chartReader.get());
+    if (!isOut && canBeJudged && hasBeenPressedNow) {
+      judge->onPress(it, chartReader.get(),
+                     isStopped ? -chartReader->getStopLength() : 0);
+    }
   });
 }
 

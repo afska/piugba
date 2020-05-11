@@ -22,6 +22,8 @@ class TimingProvider {
   virtual int getMsecs() = 0;
   virtual u32 getTimeNeeded() = 0;
   virtual bool isStopped() = 0;
+  virtual int getStopStart() = 0;
+  virtual u32 getStopLength() = 0;
 };
 
 #endif  // TIMING_PROVIDER_H

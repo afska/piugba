@@ -75,6 +75,10 @@ bool ChartReader::isHoldActive(ArrowDirection direction) {
   return isHoldActive;
 }
 
+u32 ChartReader::getTimeToResume() {
+  return hasStopped ? (stopStart + (int)stopLength) - msecs : 0;
+}
+
 void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {

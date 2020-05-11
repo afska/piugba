@@ -9,7 +9,7 @@
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
-const u32 OFFSET_MISS = 9;
+const u32 TIMING_WINDOW = 9;
 const u32 OFFSET_BAD = 7;
 const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
@@ -24,9 +24,13 @@ class Judge {
         Score* score,
         std::function<void()> onStageBreak);
 
-  void onPress(Arrow* arrow, TimingProvider* timingProvider);
+  void onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onOut(Arrow* arrow);
   void onHoldTick(u8 arrows, bool canMiss);
+
+  inline bool isInsideTimingWindow(u32 diff) {
+    return diff < FRAME_MS * TIMING_WINDOW;
+  }
 
  private:
   ObjectPool<Arrow>* arrowPool;
