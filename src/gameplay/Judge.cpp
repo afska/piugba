@@ -2,11 +2,6 @@
 
 #include "models/Event.h"
 
-const u32 OFFSET_MISS = 9;
-const u32 OFFSET_BAD = 7;
-const u32 OFFSET_GOOD = 5;
-const u32 OFFSET_GREAT = 3;
-
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
              std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
              Score* score,
@@ -17,20 +12,21 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
   this->onStageBreak = onStageBreak;
 }
 
-void Judge::onPress(Arrow* arrow) {
+void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   if (!isUnique || arrow->getIsPressed())
     return;
 
-  int y = arrow->get()->getY();
-  u32 diff = (u32)abs(y - ARROW_CORNER_MARGIN_Y);
+  int actualMsecs = timingProvider->getMsecs() + offset;
+  int expectedMsecs = arrow->timestamp;
+  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
 
-  if (diff < ARROW_SPEED * OFFSET_MISS) {
-    if (diff >= ARROW_SPEED * OFFSET_BAD)
+  if (isInsideTimingWindow(diff)) {
+    if (diff >= FRAME_MS * OFFSET_BAD)
       onResult(arrow, FeedbackType::BAD);
-    else if (diff >= ARROW_SPEED * OFFSET_GOOD)
+    else if (diff >= FRAME_MS * OFFSET_GOOD)
       onResult(arrow, FeedbackType::GOOD);
-    else if (diff >= ARROW_SPEED * OFFSET_GREAT)
+    else if (diff >= FRAME_MS * OFFSET_GREAT)
       onResult(arrow, FeedbackType::GREAT);
     else
       onResult(arrow, FeedbackType::PERFECT);

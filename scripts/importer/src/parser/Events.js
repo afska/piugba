@@ -5,6 +5,7 @@ const events = {
   SET_TEMPO: 3,
   SET_TICKCOUNT: 4,
   STOP: 5,
+  WARP: 6,
   STOP_ASYNC: 15,
 };
 

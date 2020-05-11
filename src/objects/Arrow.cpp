@@ -12,6 +12,7 @@ const u32 HOLD_FILL_TILE = 9;
 const u32 HOLD_TAIL_TILE = 0;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
+const u32 SNAP_THRESHOLD_MS = 20;
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -30,10 +31,20 @@ Arrow::Arrow(u32 id) {
 
 void Arrow::discard() {
   SPRITE_hide(get());
+
   sprite->enabled = false;
+  refresh();
 }
 
-void Arrow::initialize(ArrowType type, ArrowDirection direction) {
+void Arrow::scheduleDiscard() {
+  SPRITE_hide(get());
+
+  isPressed = true;
+}
+
+void Arrow::initialize(ArrowType type,
+                       ArrowDirection direction,
+                       int timestamp) {
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isHoldTail = type == ArrowType::HOLD_TAIL;
   bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -43,12 +54,13 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   ARROW_initialize(direction, start, flip);
   this->type = type;
   this->direction = direction;
+  this->timestamp = timestamp;
   this->start = start;
   this->flip = flip;
 
   sprite->enabled = true;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 GBA_SCREEN_HEIGHT);
+                 ARROW_INITIAL_Y);
 
   if (isHoldFill || isHoldTail) {
     u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_TAIL_TILE;
@@ -64,6 +76,8 @@ void Arrow::initialize(ArrowType type, ArrowDirection direction) {
   endAnimationFrame = 0;
   isPressed = false;
   needsAnimation = false;
+
+  refresh();
 }
 
 void Arrow::setSiblingId(int siblingId) {
@@ -83,7 +97,7 @@ FeedbackType Arrow::getResult(FeedbackType partialResult,
 }
 
 void Arrow::press() {
-  if (sprite->getY() <= (int)ARROW_CORNER_MARGIN_Y)
+  if (sprite->getY() <= (int)ARROW_FINAL_Y)
     animatePress();
   else {
     markAsPressed();
@@ -99,7 +113,13 @@ void Arrow::markAsPressed() {
   isPressed = true;
 }
 
-ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
+bool Arrow::isAligned(TimingProvider* timingProvider) {
+  return abs(timingProvider->getMsecs() - (int)timestamp) < SNAP_THRESHOLD_MS;
+}
+
+ArrowState Arrow::tick(TimingProvider* timingProvider,
+                       int newY,
+                       bool isPressing) {
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
@@ -122,18 +142,18 @@ ArrowState Arrow::tick(bool hasStopped, bool isPressing) {
           end();
       }
     }
-  } else if (isAligned(0) && isPressed && needsAnimation) {
+  } else if (isAligned(timingProvider) && isPressed && needsAnimation) {
     animatePress();
   } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
-             get()->getY() <= (int)ARROW_CORNER_MARGIN_Y && isPressing) {
+             get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL && isAligned(ARROW_SPEED) &&
+  } else if (type == ArrowType::HOLD_FILL && isAligned(timingProvider) &&
              isPressing) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
-  } else if (!hasStopped)
-    sprite->moveTo(sprite->getX(), sprite->getY() - ARROW_SPEED);
+  } else if (!timingProvider->isStopped())
+    sprite->moveTo(sprite->getX(), newY);
 
   return ArrowState::ACTIVE;
 }
@@ -153,10 +173,6 @@ void Arrow::animatePress() {
   hasEnded = true;
   endAnimationFrame = 0;
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 ARROW_CORNER_MARGIN_Y);
+                 ARROW_FINAL_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
-}
-
-bool Arrow::isAligned(int offset) {
-  return abs(sprite->getY() - (ARROW_CORNER_MARGIN_Y + offset)) < ARROW_SPEED;
 }

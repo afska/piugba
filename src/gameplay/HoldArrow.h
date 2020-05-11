@@ -10,6 +10,7 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
+  int fillCount;
   Arrow* lastFill;
 
   HoldArrow(u32 id) { this->id = id; }

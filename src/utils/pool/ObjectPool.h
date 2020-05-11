@@ -83,6 +83,11 @@ class ObjectPool {
     objects[index]->isActive = false;
   }
 
+  void clear() {
+    for (u32 i = 0; i < objects.size(); i++)
+      discard(i);
+  }
+
   template <typename F>
   inline void forEach(F action) {
     for (auto& it : objects)

@@ -36,6 +36,7 @@ SRCDIRS		:= src \
 						 src/data/content/_compiled_sprites \
 						 src/data/custom \
 						 src/gameplay \
+						 src/gameplay/debug \
 						 src/gameplay/models \
 						 src/objects \
 						 src/objects/base \

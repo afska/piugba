@@ -12,7 +12,7 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      _.sortBy([...timingEvents, ...noteEvents], "timestamp")
+      _.sortBy([...timingEvents, ...noteEvents], ["timestamp", "type"])
     );
   }
 
@@ -26,11 +26,6 @@ module.exports = class Chart {
       const subdivision = 1 / lines.length;
 
       return _.flatMap(lines, (line) => {
-        const stop = this._getStopByTimestamp(cursor, timingEvents);
-        if (stop && !stop.handled) {
-          stop.handled = true;
-          cursor += stop.length;
-        }
         const bpm = this._getBpmByTimestamp(cursor, timingEvents);
         const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
         const noteDuration = subdivision * wholeNoteLength;
@@ -45,6 +40,7 @@ module.exports = class Chart {
             arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
           }))
           .filter((it) => _.some(it.arrows))
+          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
           .value();
       });
     });
@@ -52,6 +48,10 @@ module.exports = class Chart {
 
   _getTimingEvents() {
     const segments = _([
+      this.header.warps.map((it) => ({
+        type: Events.WARP,
+        data: it,
+      })),
       [...this.header.stops, ...this.header.delays].map((it) => ({
         type: Events.STOP,
         data: it,
@@ -61,7 +61,8 @@ module.exports = class Chart {
         type: Events.SET_TICKCOUNT,
         data: it,
       })),
-      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+      //this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+      // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
     ])
       .flatten()
       .sortBy("data.key")
@@ -82,10 +83,23 @@ module.exports = class Chart {
         currentBpm = this._getBpmByBeat(beat);
         const timestamp = currentTimestamp;
 
+        if (data.value < 0) throw new Error("invalid_negative_timing_segment");
+
+        let length;
         switch (type) {
+          case Events.WARP:
+            length = this._getRangeDuration(
+              currentBeat,
+              currentBeat + data.value
+            );
+
+            return {
+              timestamp,
+              type,
+              length,
+            };
           case Events.STOP:
-            const length = data.value * SECOND;
-            currentTimestamp += length;
+            length = data.value * SECOND;
 
             return {
               timestamp,
@@ -96,7 +110,7 @@ module.exports = class Chart {
             const scrollEnabled = data.value > 0;
 
             if (scrollEnabled && !currentScrollEnabled) {
-              const length = timestamp - currentScrollTimestamp;
+              length = timestamp - currentScrollTimestamp;
               currentScrollEnabled = true;
               currentScrollTimestamp = timestamp;
 
@@ -191,13 +205,26 @@ module.exports = class Chart {
     return (event && event.bpm) || 0;
   }
 
-  _getStopByTimestamp(timestamp, timingEvents) {
-    const event = _.findLast(
-      timingEvents,
-      (event) => event.type === Events.STOP && timestamp >= event.timestamp
-    );
+  _getRangeDuration(startBeat, endBeat) {
+    let length = 0;
 
-    return event && timestamp < event.timestamp + event.length ? event : null;
+    for (let beat = startBeat; beat < endBeat; beat += FUSE) {
+      const bpm = this._getBpmByBeat(beat);
+      const beatLength = this._getBeatLengthByBpm(bpm) * FUSE;
+      length += beatLength;
+    }
+
+    return length;
+  }
+
+  _isInsideWarp(timestamp, timingEvents) {
+    return _.some(
+      timingEvents,
+      (event) =>
+        event.type === Events.WARP &&
+        timestamp >= event.timestamp &&
+        timestamp < event.timestamp + event.length
+    );
   }
 };
 
@@ -205,3 +232,4 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
 const NOTE_DATA = /^\d\d\d\d\d$/;
+const FUSE = 1 / 2 / 2 / 2 / 2;

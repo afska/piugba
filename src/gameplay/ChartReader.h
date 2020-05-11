@@ -5,17 +5,79 @@
 
 #include "HoldArrow.h"
 #include "Judge.h"
+#include "TimingProvider.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
 #include "utils/pool/ObjectPool.h"
 
-class ChartReader {
+class ChartReader : public TimingProvider {
  public:
+  ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
+
+  int getMsecs() override { return msecs; }
+  u32 getTimeNeeded() override { return timeNeeded; }
+  bool isStopped() override { return hasStopped; }
+  int getStopStart() override { return stopStart; }
+  u32 getStopLength() override { return stopLength; }
+
+  bool preUpdate(int msecs);
+  void postUpdate();
+
+  int getYFor(int timestamp);
+  int getTimestampFor(int y);
+
+  bool isHoldActive(ArrowDirection direction);
+  bool hasJustStopped();
+  bool isAboutToStop(int* nextStopStart);
+  bool isAboutToResume();
+
+ private:
+  int msecs = 0;
   bool hasStopped = false;
+  Chart* chart;
+  ObjectPool<Arrow>* arrowPool;
+  Judge* judge;
+  u32 timeNeeded = 0;
+  std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
+  u32 eventIndex = 0;
+  u32 subtick = 0;
+  u32 bpm = 0;
+  int lastBpmChange = 0;
+  u32 tickCount = 4;
+  int lastTick = 0;
+  int stopStart = 0;
+  u32 stopLength = 0;
+  u32 stoppedMs = 0;
+  u32 warpedMs = 0;
 
-  ChartReader(Chart* chart, Judge* judge);
+  template <typename F>
+  inline void processEvents(int targetMsecs, F action) {
+    u32 currentIndex = eventIndex;
+    bool skipped = false;
 
-  bool update(int* msecs, ObjectPool<Arrow>* arrowPool);
+    while (targetMsecs >= chart->events[currentIndex].timestamp &&
+           currentIndex < chart->eventCount) {
+      auto event = chart->events + currentIndex;
+      event->index = currentIndex;
+      EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+
+      if (event->handled) {
+        currentIndex++;
+        continue;
+      }
+
+      bool stop = false;
+      event->handled = action(type, event, &stop);
+      currentIndex++;
+
+      if (!event->handled)
+        skipped = true;
+      if (!skipped)
+        eventIndex = currentIndex;
+      if (stop)
+        return;
+    }
+  }
 
   template <typename F>
   inline void withNextHoldArrow(ArrowDirection direction, F action) {
@@ -49,27 +111,18 @@ class ChartReader {
       action(max);
   }
 
- private:
-  Chart* chart;
-  Judge* judge;
-  std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  u32 timeNeeded = 0;
-  u32 eventIndex = 0;
-  u32 bpm = 0;
-  int lastBeat = -1;
-  int lastBpmChange = 0;
-  u32 tickCount = 4;
-  int lastTick = 0;
-  int stopEnd = 0;
-
-  bool animateBpm(int rythmMsecs);
-  void processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool);
-  void startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool);
-  void processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool);
-  void processHoldTicks(int msecs, int rythmMsecs);
+  void processNextEvents();
+  void predictNoteEvents();
+  void processUniqueNote(Event* event);
+  void startHoldNote(Event* event);
+  void endHoldNote(Event* event);
+  void processHoldArrows();
+  bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
+  void snapClosestArrowToHolder();
+
+  template <typename DEBUG>
+  void logDebugInfo();
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
@@ -79,5 +132,7 @@ class ChartReader {
     }
   }
 };
+
+class CHART_DEBUG;
 
 #endif  // CHART_READER_H

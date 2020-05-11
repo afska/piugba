@@ -20,6 +20,12 @@ const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
                               894, 988,  923, 1017, 951,  974,  879, 9199, 936};
 const u8 PALETTE_INDEXES[] = {201, 203, 207, 208, 216, 214, 222, 218, 230,
                               225, 231, 227, 232, 226, 224, 221, 229, 220};
+const u8 LIFE_TO_VALUE_LUT[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6,
+    6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;
@@ -37,10 +43,11 @@ LifeBar::LifeBar() {
 
 void LifeBar::setLife(int life) {
   u32 absLife = life < 0 ? 0 : (u32)life;
-  value = Div(absLife, 10);
+  value = LIFE_TO_VALUE_LUT[absLife];
 
   if (false)
-    EFFECT_setMosaic((100 - absLife) * 15 / 100);  // TODO: OPTIONAL PIXEL MOD
+    EFFECT_setMosaic((100 - absLife) * 15 /
+                     100);  // TODO: OPTIONAL PIXEL MOD --- AVOID DIVISION
 }
 
 void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {

@@ -10,14 +10,22 @@
 #define EVENT_ARROW_UPRIGHT /*    */ 0b01000000
 #define EVENT_ARROW_DOWNRIGHT /*  */ 0b10000000
 
-enum EventType { NOTE, HOLD_START, HOLD_END, SET_TEMPO, SET_TICKCOUNT, STOP };
+enum EventType {
+  NOTE,
+  HOLD_START,
+  HOLD_END,
+  SET_TEMPO,
+  SET_TICKCOUNT,
+  STOP,
+  WARP
+};
 const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
                                 EVENT_ARROW_CENTER, EVENT_ARROW_UPRIGHT,
                                 EVENT_ARROW_DOWNRIGHT};
 
 inline bool EVENT_HAS_EXTRA(EventType event) {
   return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
-         event == EventType::STOP;
+         event == EventType::STOP || event == EventType::WARP;
 }
 
 typedef struct {
@@ -29,6 +37,7 @@ typedef struct {
       }
   */
   u32 extra;  // not present in note-related events
+  u32 index = 0;
   bool handled = false;
 } Event;
 

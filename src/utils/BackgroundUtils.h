@@ -54,7 +54,7 @@ inline void BACKGROUND_loadMap(const unsigned int data[],
                                           : transparentColor;
 }
 
-inline void BACKGROUND_setColor(u8 index, u8 value) {
+inline void BACKGROUND_setColor(u8 index, u32 value) {
   pal_bg_mem[index] = value;
 }
 

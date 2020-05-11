@@ -1,29 +1,20 @@
 #include "ChartReader.h"
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
-#include <libgba-sprite-engine/gba_engine.h>
 
 #include <vector>
 
-/*
-  x = x0 + v * t
-  ARROW_CORNER_MARGIN_Y = GBA_SCREEN_HEIGHT + ARROW_SPEED * t
-  t = abs(GBA_SCREEN_HEIGHT - ARROW_CORNER_MARGIN_Y) px / ARROW_SPEED px/frame
-  t = (160 - 15) / 3 = (48.33 frames - 1) * 16.73322954 ms/frame = 792,03 ms
-  (we substract 1 because arrows start moving the same tick they're created)
-  => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
-*/
-const u32 TIME_NEEDED[] = {0, 2410, 1196, 792, 590};
+#include "debug/logDebugInfo.h"
+
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
 const u32 HOLD_ARROW_POOL_SIZE = 10;
-const int HOLD_ARROW_TICK_OFFSET_MS = 84;
-//                                  ^ OFFSET_GOOD * msPerFrame = 5 * 16.73322954
-const u32 MINUTE = 60000;
-const int AUDIO_LAG = 180;
 
-ChartReader::ChartReader(Chart* chart, Judge* judge) {
+ChartReader::ChartReader(Chart* chart,
+                         ObjectPool<Arrow>* arrowPool,
+                         Judge* judge) {
   this->chart = chart;
+  this->arrowPool = arrowPool;
   this->judge = judge;
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
@@ -32,195 +23,260 @@ ChartReader::ChartReader(Chart* chart, Judge* judge) {
   timeNeeded = TIME_NEEDED[ARROW_SPEED];
 };
 
-bool ChartReader::update(int* msecs, ObjectPool<Arrow>* arrowPool) {
-  int rythmMsecs = *msecs - lastBpmChange;
-  bool hasChanged = animateBpm(rythmMsecs);
-  *msecs -= AUDIO_LAG;
+bool ChartReader::preUpdate(int songMsecs) {
+  int rythmMsecs = songMsecs - lastBpmChange;
+  msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  processNextEvent(*msecs, arrowPool);
-  processHoldArrows(*msecs, arrowPool);
-  processHoldTicks(*msecs, rythmMsecs);
+  if (hasStopped) {
+    if (msecs >= stopStart + (int)stopLength) {
+      hasStopped = false;
+      stoppedMs += stopLength;
+      msecs -= (int)stopLength;
+    } else
+      return processTicks(rythmMsecs, false);
+  }
 
-  return hasChanged;
+  processNextEvents();
+  return processTicks(rythmMsecs, true);
+}
+
+void ChartReader::postUpdate() {
+  if (hasStopped)
+    return;
+
+  predictNoteEvents();
+  processHoldArrows();
+
+  IFTIMINGTEST { logDebugInfo<CHART_DEBUG>(); }
 };
 
-bool ChartReader::animateBpm(int rythmMsecs) {
-  // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> x = millis * BPM / 60000
-  int beat = Div(rythmMsecs * bpm, MINUTE);
-  bool hasChanged = beat != lastBeat;
-  lastBeat = beat;
+int ChartReader::getYFor(int timestamp) {
+  // timeNeeded ms           -> ARROW_DISTANCE px
+  // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
+  int timeLeft = timestamp - msecs;
 
-  return hasChanged;
+  return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
 }
 
-void ChartReader::processNextEvent(int msecs, ObjectPool<Arrow>* arrowPool) {
-  u32 currentIndex = eventIndex;
-  int targetMsecs = msecs + timeNeeded;
-  bool skipped = false;
-
-  if (hasStopped && msecs >= stopEnd)
-    hasStopped = false;
-
-  while (targetMsecs >= chart->events[currentIndex].timestamp &&
-         currentIndex < chart->eventCount) {
-    auto event = chart->events + currentIndex;
-    EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    bool handled = true;
-
-    if (event->handled) {
-      currentIndex++;
-      continue;
-    }
-
-    if (type == EventType::STOP)
-      targetMsecs += event->extra;
-
-    if (msecs < event->timestamp) {
-      // events with anticipation
-
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event->data, arrowPool);
-          break;
-        case EventType::HOLD_START:
-          startHoldNote(event, arrowPool);
-          break;
-        case EventType::HOLD_END:
-          endHoldNote(event, arrowPool);
-          break;
-        default:
-          handled = false;
-          skipped = true;
-          break;
-      }
-    } else {
-      // exact events
-
-      switch (type) {
-        case EventType::SET_TEMPO:
-          if (bpm > 0) {
-            lastBeat = -1;
-            lastBpmChange = event->timestamp;
-          }
-          bpm = event->extra;
-          break;
-        case EventType::SET_TICKCOUNT:
-          tickCount = event->extra;
-          lastTick = -1;
-          break;
-        case EventType::STOP:
-          hasStopped = true;
-          stopEnd = msecs + (int)event->extra;
-          break;
-        default:
-          break;
-      }
-    }
-
-    event->handled = handled;
-    currentIndex++;
-    if (!skipped)
-      eventIndex++;
-  }
+int ChartReader::getTimestampFor(int y) {
+  // ARROW_DISTANCE px           -> timeNeeded ms
+  // distance px                 -> x = distance * timeNeeded / ARROW_DISTANCE
+  int distance = y - (int)ARROW_FINAL_Y;
+  return msecs + Div(distance * timeNeeded, ARROW_DISTANCE);
 }
 
-void ChartReader::processUniqueNote(u8 data, ObjectPool<Arrow>* arrowPool) {
+bool ChartReader::isHoldActive(ArrowDirection direction) {
+  bool isHoldActive = false;
+  withNextHoldArrow(direction, [&isHoldActive, this](HoldArrow* holdArrow) {
+    isHoldActive = msecs >= holdArrow->startTime &&
+                   (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
+  });
+
+  return isHoldActive;
+}
+
+bool ChartReader::hasJustStopped() {
+  return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
+}
+
+bool ChartReader::isAboutToStop(int* nextStopStart) {
+  bool isAboutToStop = false;
+
+  processEvents(msecs + FRAME_MS * TIMING_WINDOW,
+                [&isAboutToStop, nextStopStart](EventType type, Event* event,
+                                                bool* stop) {
+                  if (type == EventType::STOP) {
+                    isAboutToStop = true;
+                    *nextStopStart = event->timestamp;
+                    *stop = true;
+                  }
+
+                  return false;
+                });
+
+  return isAboutToStop;
+}
+
+bool ChartReader::isAboutToResume() {
+  if (!hasStopped)
+    return false;
+
+  return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
+}
+
+void ChartReader::processNextEvents() {
+  processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
+    switch (type) {
+      case EventType::SET_TEMPO:
+        if (bpm > 0) {
+          lastBpmChange = event->timestamp;
+          subtick = 0;
+        }
+        bpm = event->extra;
+        return true;
+      case EventType::SET_TICKCOUNT:
+        tickCount = event->extra;
+        lastTick = -1;
+        subtick = 0;
+        return true;
+      case EventType::WARP:
+        warpedMs += event->extra;
+        msecs += event->extra;
+
+        arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+        holdArrows->clear();
+
+        *stop = true;
+        return true;
+      default:
+        return false;
+    }
+  });
+}
+
+void ChartReader::predictNoteEvents() {
+  processEvents(msecs + timeNeeded,
+                [this](EventType type, Event* event, bool* stop) {
+                  if (msecs < event->timestamp) {
+                    switch (type) {
+                      case EventType::NOTE:
+                        processUniqueNote(event);
+                        return true;
+                      case EventType::HOLD_START:
+                        startHoldNote(event);
+                        return true;
+                      case EventType::HOLD_END:
+                        endHoldNote(event);
+                        return true;
+                      default:
+                        return false;
+                    }
+                  } else {
+                    switch (type) {
+                      case EventType::NOTE:
+                        processUniqueNote(event);
+                        return true;
+                      case EventType::HOLD_START:
+                        startHoldNote(event);
+                        return true;
+                      case EventType::HOLD_END:
+                        endHoldNote(event);
+                        return true;
+                      case EventType::STOP:
+                        hasStopped = true;
+                        stopStart = event->timestamp;
+                        stopLength = event->extra;
+
+                        snapClosestArrowToHolder();
+                        *stop = true;
+                        return true;
+                      default:
+                        return false;
+                    }
+                  }
+                });
+}
+
+void ChartReader::processUniqueNote(Event* event) {
   std::vector<Arrow*> arrows;
 
-  forEachDirection(data, [&arrowPool, &arrows](ArrowDirection direction) {
-    arrowPool->create([&arrows, &direction](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction);
-      arrows.push_back(it);
-    });
-  });
+  forEachDirection(
+      event->data, [event, &arrows, this](ArrowDirection direction) {
+        arrowPool->create([event, &arrows, &direction](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction, event->timestamp);
+          arrows.push_back(it);
+        });
+      });
 
   connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(
-      event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        holdArrows->create(
-            [event, arrowPool, &direction, this](HoldArrow* holdArrow) {
-              Arrow* head = arrowPool->create([&direction](Arrow* it) {
-                it->initialize(ArrowType::HOLD_HEAD, direction);
-              });
-
-              if (head == NULL) {
-                holdArrows->discard(holdArrow->id);
-                return;
-              }
-
-              Arrow* fill = arrowPool->createWithIdGreaterThan(
-                  [&direction, &head](Arrow* it) {
-                    it->initialize(ArrowType::HOLD_FILL, direction);
-                    it->get()->moveTo(head->get()->getX(),
-                                      head->get()->getY() + ARROW_SIZE -
-                                          HOLD_ARROW_FILL_OFFSETS[direction]);
-                  },
-                  head->id);
-
-              if (fill == NULL) {
-                arrowPool->discard(head->id);
-                holdArrows->discard(holdArrow->id);
-                return;
-              }
-
-              holdArrow->direction = direction;
-              holdArrow->startTime = event->timestamp;
-              holdArrow->endTime = 0;
-              holdArrow->lastFill = fill;
-            });
+void ChartReader::startHoldNote(Event* event) {
+  forEachDirection(event->data, [&event, this](ArrowDirection direction) {
+    holdArrows->create([event, &direction, this](HoldArrow* holdArrow) {
+      Arrow* head = arrowPool->create([event, &direction](Arrow* it) {
+        it->initialize(ArrowType::HOLD_HEAD, direction, event->timestamp);
       });
+
+      if (head == NULL) {
+        holdArrows->discard(holdArrow->id);
+        return;
+      }
+
+      Arrow* fill = arrowPool->createWithIdGreaterThan(
+          [&direction, &head, this](Arrow* it) {
+            int y = head->get()->getY() + ARROW_SIZE -
+                    HOLD_ARROW_FILL_OFFSETS[direction];
+            it->initialize(ArrowType::HOLD_FILL, direction, getTimestampFor(y));
+            it->get()->moveTo(head->get()->getX(), y);
+          },
+          head->id);
+
+      if (fill == NULL) {
+        arrowPool->discard(head->id);
+        holdArrows->discard(holdArrow->id);
+        return;
+      }
+
+      holdArrow->direction = direction;
+      holdArrow->startTime = event->timestamp;
+      holdArrow->endTime = 0;
+      holdArrow->fillCount = 1;
+      holdArrow->lastFill = fill;
+    });
+  });
 }
 
-void ChartReader::endHoldNote(Event* event, ObjectPool<Arrow>* arrowPool) {
-  forEachDirection(
-      event->data, [&event, &arrowPool, this](ArrowDirection direction) {
-        withLastHoldArrow(direction, [&event, &arrowPool, &direction,
-                                      this](HoldArrow* holdArrow) {
-          int lastfillY = holdArrow->lastFill->get()->getY();
+void ChartReader::endHoldNote(Event* event) {
+  forEachDirection(event->data, [&event, this](ArrowDirection direction) {
+    withLastHoldArrow(direction, [&event, &direction,
+                                  this](HoldArrow* holdArrow) {
+      int lastFillY = holdArrow->lastFill->get()->getY();
+      bool isShort = holdArrow->fillCount == 1;
 
-          if (lastfillY > GBA_SCREEN_HEIGHT - (int)ARROW_SIZE) {
-            // short (only 1 fill) -> tail's position is approximated
+      if (isShort) {
+        // short (only 1 fill) -> tail's position is approximated
 
-            arrowPool->createWithIdGreaterThan(
-                [&direction, &lastfillY](Arrow* tail) {
-                  tail->initialize(ArrowType::HOLD_TAIL, direction);
-                  tail->get()->moveTo(tail->get()->getX(),
-                                      lastfillY + ARROW_SIZE -
-                                          HOLD_ARROW_TAIL_OFFSETS[direction]);
-                },
-                holdArrow->lastFill->id);
-          } else {
-            // long (extra fill) -> tail's position is perfectly accurate
+        arrowPool->createWithIdGreaterThan(
+            [&direction, &lastFillY, this](Arrow* tail) {
+              int y =
+                  lastFillY + ARROW_SIZE - HOLD_ARROW_TAIL_OFFSETS[direction];
+              tail->initialize(ArrowType::HOLD_TAIL, direction,
+                               getTimestampFor(y));
+            },
+            holdArrow->lastFill->id);
+      } else {
+        // long (extra fill) -> tail's position is perfectly accurate
 
-            arrowPool->create([&direction, &arrowPool, this](Arrow* extraFill) {
-              extraFill->initialize(ArrowType::HOLD_FILL, direction);
+        arrowPool->create([&holdArrow, &event, &direction,
+                           this](Arrow* extraFill) {
+          extraFill->initialize(ArrowType::HOLD_FILL, direction, -1);
 
-              Arrow* tail = arrowPool->createWithIdGreaterThan(
-                  [&extraFill, &direction](Arrow* tail) {
-                    tail->initialize(ArrowType::HOLD_TAIL, direction);
-                    extraFill->get()->moveTo(
-                        tail->get()->getX(),
-                        tail->get()->getY() - ARROW_SIZE +
-                            HOLD_ARROW_TAIL_OFFSETS[direction]);
-                  },
-                  extraFill->id);
+          Arrow* tail = arrowPool->createWithIdGreaterThan(
+              [&holdArrow, &event, &extraFill, &direction, this](Arrow* tail) {
+                tail->initialize(ArrowType::HOLD_TAIL, direction,
+                                 event->timestamp);
 
-              if (tail == NULL)
-                arrowPool->discard(extraFill->id);
-            });
-          }
+                int tailY = getYFor(event->timestamp);
+                int y = tailY - ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[direction];
+                extraFill->timestamp = getTimestampFor(y);
+                // move last fill a little up:
+                holdArrow->lastFill->timestamp -= FRAME_MS;
+              },
+              extraFill->id);
 
-          holdArrow->endTime = event->timestamp;
+          if (tail == NULL)
+            arrowPool->discard(extraFill->id);
         });
-      });
+      }
+
+      holdArrow->endTime = event->timestamp;
+    });
+  });
 }
 
-void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
-  holdArrows->forEachActive([&msecs, arrowPool, this](HoldArrow* holdArrow) {
+void ChartReader::processHoldArrows() {
+  holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
 
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
@@ -228,46 +284,59 @@ void ChartReader::processHoldArrows(int msecs, ObjectPool<Arrow>* arrowPool) {
       return;
     }
 
-    if (holdArrow->endTime == 0 &&
-        holdArrow->lastFill->get()->getY() <
-            (int)(GBA_SCREEN_HEIGHT - ARROW_SIZE + ARROW_SPEED)) {
+    while (holdArrow->endTime == 0 &&
+           holdArrow->lastFill->get()->getY() <
+               (int)(ARROW_INITIAL_Y - ARROW_SIZE + MAX_ARROW_SPEED)) {
       Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
-        it->initialize(ArrowType::HOLD_FILL, direction);
+        it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
       });
 
-      if (fill != NULL)
+      if (fill != NULL) {
         holdArrow->lastFill = fill;
+        holdArrow->fillCount++;
+      } else
+        break;
     }
   });
 }
 
-void ChartReader::processHoldTicks(int msecs, int rythmMsecs) {
+bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
+  // 60000 ms           -> BPM beats
+  // rythmMsecs ms      -> beat = millis * BPM / 60000
   int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
-    u8 arrows = 0;
-    bool canMiss = true;
+    subtick++;
+    if (subtick == tickCount)
+      subtick = 0;
 
-    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-      auto direction = static_cast<ArrowDirection>(i);
+    if (checkHoldArrows) {
+      u8 arrows = 0;
+      bool canMiss = true;
 
-      withNextHoldArrow(direction, [&msecs, &arrows, &canMiss, &direction,
-                                    this](HoldArrow* holdArrow) {
-        if (msecs >= holdArrow->startTime) {
-          arrows |= EVENT_ARROW_MASKS[direction];
+      for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+        auto direction = static_cast<ArrowDirection>(i);
 
-          if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
-            canMiss = false;
-        }
-      });
+        withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
+                                      this](HoldArrow* holdArrow) {
+          if (msecs >= holdArrow->startTime) {
+            arrows |= EVENT_ARROW_MASKS[direction];
+
+            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
+              canMiss = false;
+          }
+        });
+      }
+
+      if (arrows > 0)
+        judge->onHoldTick(arrows, canMiss);
     }
-
-    if (arrows > 0)
-      judge->onHoldTick(arrows, canMiss);
   }
 
   lastTick = tick;
+
+  return hasChanged && subtick == 0 && bpm > 0;
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
@@ -276,5 +345,25 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
   for (u32 i = 0; i < arrows.size(); i++) {
     arrows[i]->setSiblingId(arrows[i == arrows.size() - 1 ? 0 : i + 1]->id);
+  }
+}
+
+void ChartReader::snapClosestArrowToHolder() {
+  Arrow* min = NULL;
+  int minTimestamp = 0;
+
+  arrowPool->forEachActive([&min, &minTimestamp, this](Arrow* it) {
+    bool isAligned = it->isAligned(this);
+
+    if (isAligned && (min == NULL || it->timestamp < minTimestamp)) {
+      min = it;
+      minTimestamp = it->timestamp;
+    }
+  });
+
+  if (min != NULL) {
+    min->forAll(arrowPool, [](Arrow* arrow) {
+      arrow->get()->moveTo(arrow->get()->getX(), ARROW_FINAL_Y);
+    });
   }
 }
