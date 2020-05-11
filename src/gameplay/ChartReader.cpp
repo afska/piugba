@@ -33,11 +33,11 @@ bool ChartReader::preUpdate(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
     } else
-      return false;
+      return processTicks(rythmMsecs, false);
   }
 
   processNextEvents();
-  return processTicks(rythmMsecs);
+  return processTicks(rythmMsecs, true);
 }
 
 void ChartReader::postUpdate() {
@@ -300,7 +300,7 @@ void ChartReader::processHoldArrows() {
   });
 }
 
-bool ChartReader::processTicks(int rythmMsecs) {
+bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
   // 60000 ms           -> BPM beats
   // rythmMsecs ms      -> beat = millis * BPM / 60000
   int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
@@ -311,25 +311,27 @@ bool ChartReader::processTicks(int rythmMsecs) {
     if (subtick == tickCount)
       subtick = 0;
 
-    u8 arrows = 0;
-    bool canMiss = true;
+    if (checkHoldArrows) {
+      u8 arrows = 0;
+      bool canMiss = true;
 
-    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-      auto direction = static_cast<ArrowDirection>(i);
+      for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+        auto direction = static_cast<ArrowDirection>(i);
 
-      withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
-                                    this](HoldArrow* holdArrow) {
-        if (msecs >= holdArrow->startTime) {
-          arrows |= EVENT_ARROW_MASKS[direction];
+        withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
+                                      this](HoldArrow* holdArrow) {
+          if (msecs >= holdArrow->startTime) {
+            arrows |= EVENT_ARROW_MASKS[direction];
 
-          if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
-            canMiss = false;
-        }
-      });
+            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
+              canMiss = false;
+          }
+        });
+      }
+
+      if (arrows > 0)
+        judge->onHoldTick(arrows, canMiss);
     }
-
-    if (arrows > 0)
-      judge->onHoldTick(arrows, canMiss);
   }
 
   lastTick = tick;
