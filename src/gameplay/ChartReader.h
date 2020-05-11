@@ -27,7 +27,9 @@ class ChartReader : public TimingProvider {
   int getTimestampFor(int y);
 
   bool isHoldActive(ArrowDirection direction);
-  u32 getTimeToResume();
+  bool hasJustStopped();
+  bool isAboutToStop(int* nextStopStart);
+  bool isAboutToResume();
 
  private:
   int msecs = 0;

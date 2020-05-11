@@ -75,8 +75,33 @@ bool ChartReader::isHoldActive(ArrowDirection direction) {
   return isHoldActive;
 }
 
-u32 ChartReader::getTimeToResume() {
-  return hasStopped ? (stopStart + (int)stopLength) - msecs : 0;
+bool ChartReader::hasJustStopped() {
+  return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
+}
+
+bool ChartReader::isAboutToStop(int* nextStopStart) {
+  bool isAboutToStop = false;
+
+  processEvents(msecs + FRAME_MS * TIMING_WINDOW,
+                [&isAboutToStop, nextStopStart](EventType type, Event* event,
+                                                bool* stop) {
+                  if (type == EventType::STOP) {
+                    isAboutToStop = true;
+                    *nextStopStart = event->timestamp;
+                    *stop = true;
+                  }
+
+                  return false;
+                });
+
+  return isAboutToStop;
+}
+
+bool ChartReader::isAboutToResume() {
+  if (!hasStopped)
+    return false;
+
+  return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
 }
 
 void ChartReader::processNextEvents() {
