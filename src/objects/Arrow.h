@@ -8,7 +8,7 @@
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
-#define TEST_MODE true  // TODO: RESTORE
+#define TEST_MODE false
 #define KEYTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
@@ -32,7 +32,7 @@ const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 
-const u32 ARROW_SPEED = 3;
+const u32 ARROW_SPEED = 4;
 const u32 MAX_ARROW_SPEED = 4;
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
