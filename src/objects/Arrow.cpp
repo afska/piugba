@@ -135,7 +135,11 @@ ArrowState Arrow::tick(TimingProvider* timingProvider,
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
       else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 3)
         SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
-      else if (endAnimationFrame > END_ANIMATION_DELAY_FRAMES * 3) {
+      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 4)
+        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
+      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 5)
+        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
+      else if (endAnimationFrame > END_ANIMATION_DELAY_FRAMES * 5) {
         if (type == ArrowType::HOLD_FAKE_HEAD)
           animatePress();
         else
