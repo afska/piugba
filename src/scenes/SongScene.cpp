@@ -110,12 +110,18 @@ void SongScene::tick(u16 keys) {
   }
 
   bool isNewBeat = chartReader->preUpdate((int)songMsecs);
-  if (isNewBeat)
+  if (isNewBeat) {
+    blinkFrame += 6;
+
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
       if (!KEY_ANY_PRESSED(keys))
         arrowHolder->blink();
     }
+  }
+
+  blinkFrame = max(blinkFrame - 1, 0);  // TODO: tonc_math
+  EFFECT_setBlendAlpha(10 - blinkFrame);
 
   updateArrowHolders();
   processKeys(keys);

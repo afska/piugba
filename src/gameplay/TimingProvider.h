@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 // Emulator's audio lag
-const int AUDIO_LAG = 180;
+const int AUDIO_LAG = 180;  // 180;
 
 /*
   x = x0 + v * t
