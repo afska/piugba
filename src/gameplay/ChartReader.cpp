@@ -277,19 +277,17 @@ void ChartReader::endHoldNote(Event* event) {
 
 void ChartReader::processHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
-    ArrowDirection direction = holdArrow->direction;
-
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
       holdArrows->discard(holdArrow->id);
       return;
     }
 
-    while (holdArrow->endTime == 0 &&
-           holdArrow->lastFill->get()->getY() <
-               (int)(ARROW_INITIAL_Y - ARROW_SIZE +
-                     getCurrentSpeedInPxPerFrame())) {
-      Arrow* fill = arrowPool->create([&direction, this](Arrow* it) {
-        it->initialize(ArrowType::HOLD_FILL, direction, msecs + timeNeeded);
+    while (holdArrow->endTime == 0 && holdArrow->lastFill->get()->getY() <
+                                          (int)(ARROW_INITIAL_Y - ARROW_SIZE)) {
+      Arrow* fill = arrowPool->create([&holdArrow, this](Arrow* it) {
+        it->initialize(
+            ArrowType::HOLD_FILL, holdArrow->direction,
+            getTimestampFor(holdArrow->lastFill->get()->getY() + ARROW_SIZE));
       });
 
       if (fill != NULL) {

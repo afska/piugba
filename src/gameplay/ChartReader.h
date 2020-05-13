@@ -111,15 +111,6 @@ class ChartReader : public TimingProvider {
       action(max);
   }
 
-  inline u32 getCurrentSpeedInPxPerFrame() {
-    for (u32 i = MIN_ARROW_SPEED; i <= MAX_ARROW_SPEED; i++) {
-      if (timeNeeded >= TIME_NEEDED[i])
-        return i;
-    }
-
-    return MAX_ARROW_SPEED;
-  }
-
   void processNextEvents();
   void predictNoteEvents();
   void processUniqueNote(Event* event);
