@@ -8,7 +8,7 @@
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
-#define TEST_MODE false
+#define TEST_MODE true
 #define KEYTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
@@ -35,7 +35,7 @@ const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 const u32 ARROW_SPEED = 4;
 const u32 MIN_ARROW_SPEED = 1;
 const u32 MAX_ARROW_SPEED = 4;
-const u32 MAX_ARROW_PER_FRAME_DISTANCE = 10;
+const u32 MAX_ARROW_PER_FRAME_DISTANCE = 5;
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
