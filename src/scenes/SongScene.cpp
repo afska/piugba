@@ -1,6 +1,7 @@
 #include "SongScene.h"
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
 #include "SelectionScene.h"
@@ -182,9 +183,15 @@ void SongScene::updateArrows() {
     bool isOut = false;
 
     if (!isStopped || it->getIsPressed()) {
+      int currentY = it->get()->getY();
       int newY = chartReader->getYFor(it->timestamp);
+      int diff = newY - currentY;
+      int finalDiff = SGN(diff) * min(abs(diff), MAX_ARROW_PER_FRAME_DISTANCE);
+      int finalNewY = currentY + finalDiff;
+
       bool isPressing = arrowHolders[direction]->getIsPressed();
-      ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
+      ArrowState arrowState =
+          it->tick(chartReader.get(), finalNewY, isPressing);
       if (arrowState == ArrowState::OUT) {
         isOut = true;
         judge->onOut(it);

@@ -113,6 +113,7 @@ void ChartReader::processNextEvents() {
           subtick = 0;
         }
         bpm = event->extra;
+        timeNeeded = Div(MINUTE, bpm) * (MAX_ARROW_SPEED + 1 - ARROW_SPEED) * 2;
         return true;
       case EventType::SET_TICKCOUNT:
         tickCount = event->extra;
