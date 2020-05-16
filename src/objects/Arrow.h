@@ -8,7 +8,7 @@
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
-#define TEST_MODE true
+#define TEST_MODE false
 #define KEYTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)

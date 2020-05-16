@@ -112,6 +112,16 @@ class ChartReader : public TimingProvider {
       action(max);
   }
 
+  template <typename F>
+  inline void forEachDirection(u8 data, F action) {
+    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+      if (data & EVENT_ARROW_MASKS[i])
+        action(static_cast<ArrowDirection>(i));
+    }
+  }
+
+  inline void syncArrowTime() { arrowTime = targetArrowTime; }
+
   void processNextEvents();
   void predictNoteEvents();
   void processUniqueNote(Event* event);
@@ -124,14 +134,6 @@ class ChartReader : public TimingProvider {
 
   template <typename DEBUG>
   void logDebugInfo();
-
-  template <typename F>
-  inline void forEachDirection(u8 data, F action) {
-    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-      if (data & EVENT_ARROW_MASKS[i])
-        action(static_cast<ArrowDirection>(i));
-    }
-  }
 };
 
 class CHART_DEBUG;

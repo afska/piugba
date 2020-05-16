@@ -21,7 +21,7 @@ ChartReader::ChartReader(Chart* chart,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
 
   targetArrowTime = ARROW_TIME[ARROW_SPEED];
-  arrowTime = targetArrowTime;
+  syncArrowTime();
 };
 
 bool ChartReader::preUpdate(int songMsecs) {
@@ -59,7 +59,8 @@ void ChartReader::postUpdate() {
 int ChartReader::getYFor(int timestamp) {
   // arrowTime ms           -> ARROW_DISTANCE px
   // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / arrowTime
-  int timeLeft = timestamp - msecs;
+  int now = hasStopped ? stopStart : msecs;
+  int timeLeft = timestamp - now;
 
   return min(ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, arrowTime),
              ARROW_INITIAL_Y);
@@ -122,7 +123,7 @@ void ChartReader::processNextEvents() {
           lastBpmChange = event->timestamp;
           subtick = 0;
         } else
-          arrowTime = targetArrowTime;
+          syncArrowTime();
 
         bpm = event->extra;
         return true;
@@ -134,7 +135,7 @@ void ChartReader::processNextEvents() {
       case EventType::WARP:
         warpedMs += event->extra;
         msecs += event->extra;
-        arrowTime = targetArrowTime;
+        syncArrowTime();
 
         arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
         holdArrows->clear();
@@ -148,7 +149,7 @@ void ChartReader::processNextEvents() {
 }
 
 void ChartReader::predictNoteEvents() {
-  processEvents(msecs + arrowTime,
+  processEvents(msecs + targetArrowTime,
                 [this](EventType type, Event* event, bool* stop) {
                   if (msecs < event->timestamp) {
                     switch (type) {
@@ -179,7 +180,7 @@ void ChartReader::predictNoteEvents() {
                         hasStopped = true;
                         stopStart = event->timestamp;
                         stopLength = event->extra;
-                        arrowTime = targetArrowTime;
+                        syncArrowTime();
 
                         snapClosestArrowToHolder();
                         *stop = true;

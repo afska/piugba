@@ -182,15 +182,14 @@ void SongScene::updateArrows() {
     bool isStopped = chartReader->isStopped();
     bool isOut = false;
 
-    if (!isStopped || it->getIsPressed()) {
-      int newY = chartReader->getYFor(it->timestamp);
-      bool isPressing = arrowHolders[direction]->getIsPressed();
+    int newY = chartReader->getYFor(it->timestamp);
+    bool isPressing = arrowHolders[direction]->getIsPressed() &&
+                      (!isStopped || it->getIsPressed());
+    ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
 
-      ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
-      if (arrowState == ArrowState::OUT) {
-        isOut = true;
-        judge->onOut(it);
-      }
+    if (arrowState == ArrowState::OUT) {
+      isOut = true;
+      judge->onOut(it);
     }
 
     bool canBeJudged = false;

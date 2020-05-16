@@ -156,7 +156,7 @@ ArrowState Arrow::tick(TimingProvider* timingProvider,
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
-  } else if (!timingProvider->isStopped())
+  } else
     sprite->moveTo(sprite->getX(), newY);
 
   return ArrowState::ACTIVE;
