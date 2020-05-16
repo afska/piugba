@@ -249,9 +249,8 @@ void SongScene::processKeys(u16 keys) {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
-          it->initialize(
-              ArrowType::UNIQUE, arrowHolder->direction,
-              chartReader->getMsecs() + chartReader->getTimeNeeded());
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
+                         chartReader->getMsecs() + chartReader->getArrowTime());
         });
   }
 }

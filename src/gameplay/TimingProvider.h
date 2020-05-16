@@ -13,14 +13,14 @@ const int AUDIO_LAG = 180;
   t = (160 - 15) / 3 = (48.33 frames) * 16.73322954 ms/frame = 792,03 ms
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
-const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
-const u32 MAX_TIME_NEEDED_JUMP = 30;
+const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607};
+const u32 MAX_ARROW_TIME_JUMP = 30;
 const u32 MINUTE = 60000;
 
 class TimingProvider {
  public:
   virtual int getMsecs() = 0;
-  virtual u32 getTimeNeeded() = 0;
+  virtual u32 getArrowTime() = 0;
   virtual bool isStopped() = 0;
   virtual int getStopStart() = 0;
   virtual u32 getStopLength() = 0;

@@ -15,7 +15,7 @@ class ChartReader : public TimingProvider {
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
   int getMsecs() override { return msecs; }
-  u32 getTimeNeeded() override { return timeNeeded; }
+  u32 getArrowTime() override { return arrowTime; }
   bool isStopped() override { return hasStopped; }
   int getStopStart() override { return stopStart; }
   u32 getStopLength() override { return stopLength; }
@@ -37,8 +37,8 @@ class ChartReader : public TimingProvider {
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
-  u32 timeNeeded;
-  u32 targetTimeNeeded;
+  u32 arrowTime;
+  u32 targetArrowTime;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
   u32 subtick = 0;

@@ -20,18 +20,18 @@ ChartReader::ChartReader(Chart* chart,
       HOLD_ARROW_POOL_SIZE,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
 
-  targetTimeNeeded = TIME_NEEDED[ARROW_SPEED];
-  timeNeeded = targetTimeNeeded;
+  targetArrowTime = ARROW_TIME[ARROW_SPEED];
+  arrowTime = targetArrowTime;
 };
 
 bool ChartReader::preUpdate(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  if (targetTimeNeeded > timeNeeded)
-    timeNeeded += min(targetTimeNeeded - timeNeeded, MAX_TIME_NEEDED_JUMP);
+  if (targetArrowTime > arrowTime)
+    arrowTime += min(targetArrowTime - arrowTime, MAX_ARROW_TIME_JUMP);
   else
-    timeNeeded -= min(timeNeeded - targetTimeNeeded, MAX_TIME_NEEDED_JUMP);
+    arrowTime -= min(arrowTime - targetArrowTime, MAX_ARROW_TIME_JUMP);
 
   if (hasStopped) {
     if (msecs >= stopStart + (int)stopLength) {
@@ -57,19 +57,19 @@ void ChartReader::postUpdate() {
 };
 
 int ChartReader::getYFor(int timestamp) {
-  // timeNeeded ms           -> ARROW_DISTANCE px
-  // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
+  // arrowTime ms           -> ARROW_DISTANCE px
+  // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / arrowTime
   int timeLeft = timestamp - msecs;
 
-  return min(ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded),
+  return min(ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, arrowTime),
              ARROW_INITIAL_Y);
 }
 
 int ChartReader::getTimestampFor(int y) {
-  // ARROW_DISTANCE px           -> timeNeeded ms
-  // distance px                 -> x = distance * timeNeeded / ARROW_DISTANCE
+  // ARROW_DISTANCE px           -> arrowTime ms
+  // distance px                 -> x = distance * arrowTime / ARROW_DISTANCE
   int distance = y - (int)ARROW_FINAL_Y;
-  return msecs + Div(distance * timeNeeded, ARROW_DISTANCE);
+  return msecs + Div(distance * arrowTime, ARROW_DISTANCE);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
@@ -115,14 +115,14 @@ void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
       case EventType::SET_TEMPO:
-        targetTimeNeeded =
+        targetArrowTime =
             Div(MINUTE, event->extra) * (MAX_ARROW_SPEED + 1 - ARROW_SPEED) * 2;
 
         if (bpm > 0) {
           lastBpmChange = event->timestamp;
           subtick = 0;
         } else
-          timeNeeded = targetTimeNeeded;
+          arrowTime = targetArrowTime;
 
         bpm = event->extra;
         return true;
@@ -147,7 +147,7 @@ void ChartReader::processNextEvents() {
 }
 
 void ChartReader::predictNoteEvents() {
-  processEvents(msecs + timeNeeded,
+  processEvents(msecs + arrowTime,
                 [this](EventType type, Event* event, bool* stop) {
                   if (msecs < event->timestamp) {
                     switch (type) {
