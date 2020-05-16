@@ -183,8 +183,7 @@ void SongScene::updateArrows() {
     bool isOut = false;
 
     int newY = chartReader->getYFor(it->timestamp);
-    bool isPressing = arrowHolders[direction]->getIsPressed() &&
-                      (!isStopped || it->getIsPressed());
+    bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
     ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
 
     if (arrowState == ArrowState::OUT) {
