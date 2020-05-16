@@ -20,12 +20,18 @@ ChartReader::ChartReader(Chart* chart,
       HOLD_ARROW_POOL_SIZE,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
 
-  timeNeeded = TIME_NEEDED[ARROW_SPEED];
+  targetTimeNeeded = TIME_NEEDED[ARROW_SPEED];
+  timeNeeded = targetTimeNeeded;
 };
 
 bool ChartReader::preUpdate(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
+
+  if (targetTimeNeeded > timeNeeded)
+    timeNeeded += min(targetTimeNeeded - timeNeeded, MAX_TIME_NEEDED_JUMP);
+  else
+    timeNeeded -= min(timeNeeded - targetTimeNeeded, MAX_TIME_NEEDED_JUMP);
 
   if (hasStopped) {
     if (msecs >= stopStart + (int)stopLength) {
@@ -55,7 +61,8 @@ int ChartReader::getYFor(int timestamp) {
   // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / timeNeeded
   int timeLeft = timestamp - msecs;
 
-  return ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded);
+  return min(ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, timeNeeded),
+             ARROW_INITIAL_Y);
 }
 
 int ChartReader::getTimestampFor(int y) {
@@ -108,12 +115,16 @@ void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
       case EventType::SET_TEMPO:
+        targetTimeNeeded =
+            Div(MINUTE, event->extra) * (MAX_ARROW_SPEED + 1 - ARROW_SPEED) * 2;
+
         if (bpm > 0) {
           lastBpmChange = event->timestamp;
           subtick = 0;
-        }
+        } else
+          timeNeeded = targetTimeNeeded;
+
         bpm = event->extra;
-        timeNeeded = Div(MINUTE, bpm) * (MAX_ARROW_SPEED + 1 - ARROW_SPEED) * 2;
         return true;
       case EventType::SET_TICKCOUNT:
         tickCount = event->extra;

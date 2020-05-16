@@ -37,7 +37,8 @@ class ChartReader : public TimingProvider {
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
-  u32 timeNeeded = 0;
+  u32 timeNeeded;
+  u32 targetTimeNeeded;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
   u32 subtick = 0;

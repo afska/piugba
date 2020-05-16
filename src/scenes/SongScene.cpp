@@ -183,15 +183,10 @@ void SongScene::updateArrows() {
     bool isOut = false;
 
     if (!isStopped || it->getIsPressed()) {
-      int currentY = it->get()->getY();
       int newY = chartReader->getYFor(it->timestamp);
-      int diff = newY - currentY;
-      int finalDiff = SGN(diff) * min(abs(diff), MAX_ARROW_PER_FRAME_DISTANCE);
-      int finalNewY = currentY + finalDiff;
-
       bool isPressing = arrowHolders[direction]->getIsPressed();
-      ArrowState arrowState =
-          it->tick(chartReader.get(), finalNewY, isPressing);
+
+      ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
       if (arrowState == ArrowState::OUT) {
         isOut = true;
         judge->onOut(it);

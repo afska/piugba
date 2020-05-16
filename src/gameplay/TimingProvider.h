@@ -14,7 +14,7 @@ const int AUDIO_LAG = 180;
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 TIME_NEEDED[] = {0, 2426, 1213, 809, 607};
-
+const u32 MAX_TIME_NEEDED_JUMP = 30;
 const u32 MINUTE = 60000;
 
 class TimingProvider {
