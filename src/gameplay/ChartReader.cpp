@@ -134,6 +134,7 @@ void ChartReader::processNextEvents() {
       case EventType::WARP:
         warpedMs += event->extra;
         msecs += event->extra;
+        arrowTime = targetArrowTime;
 
         arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
         holdArrows->clear();
@@ -178,6 +179,7 @@ void ChartReader::predictNoteEvents() {
                         hasStopped = true;
                         stopStart = event->timestamp;
                         stopLength = event->extra;
+                        arrowTime = targetArrowTime;
 
                         snapClosestArrowToHolder();
                         *stop = true;
