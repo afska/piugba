@@ -55,9 +55,11 @@ void ChartReader::postUpdate() {
 };
 
 int ChartReader::getYFor(Arrow* arrow) {
-  return arrow->getParentTimestamp() != 0
-             ? getYFor(arrow->getParentTimestamp()) + arrow->getParentOffsetY()
-             : getYFor(arrow->timestamp);
+  return min(
+      arrow->getParentTimestamp() != 0
+          ? getYFor(arrow->getParentTimestamp()) + arrow->getParentOffsetY()
+          : getYFor(arrow->timestamp),
+      ARROW_INITIAL_Y);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
