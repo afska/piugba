@@ -15,7 +15,7 @@ class ChartReader : public TimingProvider {
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
   int getMsecs() override { return msecs; }
-  u32 getTimeNeeded() override { return timeNeeded; }
+  u32 getArrowTime() override { return arrowTime; }
   bool isStopped() override { return hasStopped; }
   int getStopStart() override { return stopStart; }
   u32 getStopLength() override { return stopLength; }
@@ -23,8 +23,7 @@ class ChartReader : public TimingProvider {
   bool preUpdate(int msecs);
   void postUpdate();
 
-  int getYFor(int timestamp);
-  int getTimestampFor(int y);
+  int getYFor(Arrow* arrow);
 
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
@@ -37,7 +36,8 @@ class ChartReader : public TimingProvider {
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
-  u32 timeNeeded = 0;
+  u32 arrowTime;
+  u32 targetArrowTime;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   u32 eventIndex = 0;
   u32 subtick = 0;
@@ -111,6 +111,17 @@ class ChartReader : public TimingProvider {
       action(max);
   }
 
+  template <typename F>
+  inline void forEachDirection(u8 data, F action) {
+    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+      if (data & EVENT_ARROW_MASKS[i])
+        action(static_cast<ArrowDirection>(i));
+    }
+  }
+
+  inline void syncArrowTime() { arrowTime = targetArrowTime; }
+
+  int getYFor(int timestamp);
   void processNextEvents();
   void predictNoteEvents();
   void processUniqueNote(Event* event);
@@ -119,18 +130,10 @@ class ChartReader : public TimingProvider {
   void processHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void snapClosestArrowToHolder();
+  void refresh(Arrow* arrow);
 
   template <typename DEBUG>
   void logDebugInfo();
-
-  template <typename F>
-  inline void forEachDirection(u8 data, F action) {
-    for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-      if (data & EVENT_ARROW_MASKS[i])
-        action(static_cast<ArrowDirection>(i));
-    }
-  }
 };
 
 class CHART_DEBUG;

@@ -1,6 +1,7 @@
 #include "SongScene.h"
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
 #include "SelectionScene.h"
@@ -181,14 +182,13 @@ void SongScene::updateArrows() {
     bool isStopped = chartReader->isStopped();
     bool isOut = false;
 
-    if (!isStopped || it->getIsPressed()) {
-      int newY = chartReader->getYFor(it->timestamp);
-      bool isPressing = arrowHolders[direction]->getIsPressed();
-      ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
-      if (arrowState == ArrowState::OUT) {
-        isOut = true;
-        judge->onOut(it);
-      }
+    int newY = chartReader->getYFor(it);
+    bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
+    ArrowState arrowState = it->tick(newY, isPressing);
+
+    if (arrowState == ArrowState::OUT) {
+      isOut = true;
+      judge->onOut(it);
     }
 
     bool canBeJudged = false;
@@ -232,7 +232,7 @@ void SongScene::updateFakeHeads() {
     }
 
     if (isVisible)
-      fakeHeads[i]->tick(chartReader.get(), 0, false);
+      fakeHeads[i]->tick(0, false);
   }
 }
 
@@ -247,9 +247,8 @@ void SongScene::processKeys(u16 keys) {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
-          it->initialize(
-              ArrowType::UNIQUE, arrowHolder->direction,
-              chartReader->getMsecs() + chartReader->getTimeNeeded());
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
+                         chartReader->getMsecs() + chartReader->getArrowTime());
         });
   }
 }
