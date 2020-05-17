@@ -182,9 +182,9 @@ void SongScene::updateArrows() {
     bool isStopped = chartReader->isStopped();
     bool isOut = false;
 
-    int newY = chartReader->getYFor(it->timestamp);
+    int newY = chartReader->getYFor(it);
     bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
-    ArrowState arrowState = it->tick(chartReader.get(), newY, isPressing);
+    ArrowState arrowState = it->tick(newY, isPressing);
 
     if (arrowState == ArrowState::OUT) {
       isOut = true;
@@ -232,7 +232,7 @@ void SongScene::updateFakeHeads() {
     }
 
     if (isVisible)
-      fakeHeads[i]->tick(chartReader.get(), 0, false);
+      fakeHeads[i]->tick(0, false);
   }
 }
 

@@ -22,6 +22,8 @@
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
 
+class HoldArrow;
+
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };
 enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
@@ -36,6 +38,7 @@ const u32 ARROW_SPEED = 4;
 const u32 MIN_ARROW_SPEED = 1;
 const u32 MAX_ARROW_SPEED = 4;
 const u32 ARROW_SIZE = 16;
+const u32 ARROW_QUARTER_SIZE = 4;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
 const u32 ARROW_FINAL_Y = 15;
@@ -76,12 +79,15 @@ class Arrow : public IPoolable {
   void initialize(ArrowType type, ArrowDirection direction, int timestamp);
   void initialize(ArrowType type,
                   ArrowDirection direction,
+                  HoldArrow* holdArrow,
                   int parentTimestamp,
                   int parentOffsetY);
   void discard() override;
   void scheduleDiscard();
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
+  inline int getParentTimestamp() { return parentTimestamp; }
+  inline int getParentOffsetY() { return parentOffsetY; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -103,15 +109,15 @@ class Arrow : public IPoolable {
   void press();
   inline bool getIsPressed() { return isPressed; }
   inline void markAsPressed() { isPressed = true; }
-  bool isAligned(TimingProvider* timingProvider);
 
-  ArrowState tick(TimingProvider* timingProvider, int newY, bool isPressing);
+  ArrowState tick(int newY, bool isPressing);
   Sprite* get();
 
  private:
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
+  HoldArrow* holdArrow = NULL;
   int parentTimestamp = 0;
   int parentOffsetY = 0;
   int siblingId = -1;
@@ -123,6 +129,8 @@ class Arrow : public IPoolable {
 
   void end();
   void animatePress();
+  bool isAligned();
+  bool isNearEnd();
 
   inline void refresh() {
     sprite->update();

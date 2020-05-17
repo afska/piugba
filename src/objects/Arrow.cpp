@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_arrows.h"
+#include "gameplay/HoldArrow.h"
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 5;
@@ -12,7 +13,7 @@ const u32 HOLD_FILL_TILE = 9;
 const u32 HOLD_TAIL_TILE = 0;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
-const u32 SNAP_THRESHOLD_MS = 20;
+const u32 ALIGNED_THRESHOLD = 10;
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -57,6 +58,7 @@ void Arrow::initialize(ArrowType type,
   else
     sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
 
+  holdArrow = NULL;
   parentTimestamp = 0;
   parentOffsetY = 0;
   siblingId = -1;
@@ -71,12 +73,14 @@ void Arrow::initialize(ArrowType type,
 
 void Arrow::initialize(ArrowType type,
                        ArrowDirection direction,
+                       HoldArrow* holdArrow,
                        int parentTimestamp,
                        int parentOffsetY) {
   initialize(type, direction, 0);
 
-  parentTimestamp = parentTimestamp;
-  parentOffsetY = parentOffsetY;
+  this->holdArrow = holdArrow;
+  this->parentTimestamp = parentTimestamp;
+  this->parentOffsetY = parentOffsetY;
 }
 
 void Arrow::discard() {
@@ -113,13 +117,7 @@ void Arrow::press() {
   }
 }
 
-bool Arrow::isAligned(TimingProvider* timingProvider) {
-  return abs(timingProvider->getMsecs() - (int)timestamp) < SNAP_THRESHOLD_MS;
-}
-
-ArrowState Arrow::tick(TimingProvider* timingProvider,
-                       int newY,
-                       bool isPressing) {
+ArrowState Arrow::tick(int newY, bool isPressing) {
   sprite->flipHorizontally(flip);
 
   if (SPRITE_isHidden(sprite.get()))
@@ -146,13 +144,13 @@ ArrowState Arrow::tick(TimingProvider* timingProvider,
           end();
       }
     }
-  } else if (isAligned(timingProvider) && isPressed && needsAnimation) {
+  } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
   } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
              get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL && isAligned(timingProvider) &&
-             isPressing) {
+  } else if (type == ArrowType::HOLD_FILL &&
+             (holdArrow->isLeftover(this) || (isNearEnd() && isPressing))) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
@@ -179,4 +177,12 @@ void Arrow::animatePress() {
   sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
                  ARROW_FINAL_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
+}
+
+bool Arrow::isAligned() {
+  return abs(sprite->getY() - ARROW_FINAL_Y) < ALIGNED_THRESHOLD;
+}
+
+bool Arrow::isNearEnd() {
+  return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
 }

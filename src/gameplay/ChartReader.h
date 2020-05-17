@@ -23,8 +23,7 @@ class ChartReader : public TimingProvider {
   bool preUpdate(int msecs);
   void postUpdate();
 
-  int getYFor(int timestamp);
-  int getTimestampFor(int y);
+  int getYFor(Arrow* arrow);
 
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
@@ -122,6 +121,7 @@ class ChartReader : public TimingProvider {
 
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 
+  int getYFor(int timestamp);
   void processNextEvents();
   void predictNoteEvents();
   void processUniqueNote(Event* event);
@@ -130,7 +130,7 @@ class ChartReader : public TimingProvider {
   void processHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void snapClosestArrowToHolder();
+  void refresh(Arrow* arrow);
 
   template <typename DEBUG>
   void logDebugInfo();
