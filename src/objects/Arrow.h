@@ -73,11 +73,15 @@ class Arrow : public IPoolable {
 
   Arrow(u32 id);
 
+  void initialize(ArrowType type, ArrowDirection direction, int timestamp);
+  void initialize(ArrowType type,
+                  ArrowDirection direction,
+                  int parentTimestamp,
+                  int parentOffsetY);
   void discard() override;
   void scheduleDiscard();
 
-  void initialize(ArrowType type, ArrowDirection direction, int timestamp);
-  void setSiblingId(int siblingId);
+  inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -97,8 +101,8 @@ class Arrow : public IPoolable {
   FeedbackType getResult(FeedbackType partialResult,
                          ObjectPool<Arrow>* arrowPool);
   void press();
-  bool getIsPressed();
-  void markAsPressed();
+  inline bool getIsPressed() { return isPressed; }
+  inline void markAsPressed() { isPressed = true; }
   bool isAligned(TimingProvider* timingProvider);
 
   ArrowState tick(TimingProvider* timingProvider, int newY, bool isPressing);
@@ -108,6 +112,8 @@ class Arrow : public IPoolable {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
+  int parentTimestamp = 0;
+  int parentOffsetY = 0;
   int siblingId = -1;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;

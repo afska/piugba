@@ -306,12 +306,12 @@ void ChartReader::processHoldArrows() {
         it->initialize(
             ArrowType::HOLD_FILL, holdArrow->direction,
             getTimestampFor(holdArrow->lastFill->get()->getY() + ARROW_SIZE));
+
+        holdArrow->lastFill = it;
+        holdArrow->fillCount++;
       });
 
-      if (fill != NULL) {
-        holdArrow->lastFill = fill;
-        holdArrow->fillCount++;
-      } else
+      if (fill == NULL)
         break;
     }
   });

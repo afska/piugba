@@ -29,19 +29,6 @@ Arrow::Arrow(u32 id) {
   this->id = id;
 }
 
-void Arrow::discard() {
-  SPRITE_hide(get());
-
-  sprite->enabled = false;
-  refresh();
-}
-
-void Arrow::scheduleDiscard() {
-  SPRITE_hide(get());
-
-  isPressed = true;
-}
-
 void Arrow::initialize(ArrowType type,
                        ArrowDirection direction,
                        int timestamp) {
@@ -70,6 +57,8 @@ void Arrow::initialize(ArrowType type,
   else
     sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
 
+  parentTimestamp = 0;
+  parentOffsetY = 0;
   siblingId = -1;
   partialResult = FeedbackType::UNKNOWN;
   hasEnded = false;
@@ -80,8 +69,27 @@ void Arrow::initialize(ArrowType type,
   refresh();
 }
 
-void Arrow::setSiblingId(int siblingId) {
-  this->siblingId = siblingId;
+void Arrow::initialize(ArrowType type,
+                       ArrowDirection direction,
+                       int parentTimestamp,
+                       int parentOffsetY) {
+  initialize(type, direction, 0);
+
+  parentTimestamp = parentTimestamp;
+  parentOffsetY = parentOffsetY;
+}
+
+void Arrow::discard() {
+  SPRITE_hide(get());
+
+  sprite->enabled = false;
+  refresh();
+}
+
+void Arrow::scheduleDiscard() {
+  SPRITE_hide(get());
+
+  isPressed = true;
 }
 
 FeedbackType Arrow::getResult(FeedbackType partialResult,
@@ -103,14 +111,6 @@ void Arrow::press() {
     markAsPressed();
     needsAnimation = true;
   }
-}
-
-bool Arrow::getIsPressed() {
-  return isPressed;
-}
-
-void Arrow::markAsPressed() {
-  isPressed = true;
 }
 
 bool Arrow::isAligned(TimingProvider* timingProvider) {
