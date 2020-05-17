@@ -34,6 +34,9 @@ void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
 }
 
 void Judge::onOut(Arrow* arrow) {
+  if (arrow->type == ArrowType::HOLD_TAIL)
+    return;
+
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   if (isUnique && !arrow->getIsPressed()) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);

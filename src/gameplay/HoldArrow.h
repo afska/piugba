@@ -30,7 +30,7 @@ class HoldArrow : public IPoolable {
   }
 
   inline bool needsFillsInTheMiddle() {
-    return tail != NULL &&
+    return tail != NULL && !SPRITE_isHidden(tail->get()) &&
            tail->get()->getY() - lastFill->get()->getY() > (int)ARROW_SIZE;
   }
 };

@@ -290,6 +290,8 @@ void ChartReader::endHoldNote(Event* event) {
 void ChartReader::processHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
+      if (holdArrow->tail != NULL)
+        arrowPool->discard(holdArrow->tail->id);
       holdArrows->discard(holdArrow->id);
       return;
     }
