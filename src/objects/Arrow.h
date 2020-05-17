@@ -5,6 +5,7 @@
 
 #include "gameplay/TimingProvider.h"
 #include "score/Feedback.h"
+#include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
 
 // TEST MACROS
@@ -33,6 +34,10 @@ const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
+const u32 ARROW_ANIMATION_FRAMES = 5;
+const u32 ARROW_ANIMATION_DELAY = 2;
+const u32 ARROW_HOLD_FILL_TILE = 9;
+const u32 ARROW_HOLD_TAIL_TILE = 0;
 
 const u32 ARROW_SPEED = 4;
 const u32 MIN_ARROW_SPEED = 1;
@@ -76,12 +81,60 @@ class Arrow : public IPoolable {
 
   Arrow(u32 id);
 
-  void initialize(ArrowType type, ArrowDirection direction, int timestamp);
-  void initialize(ArrowType type,
-                  ArrowDirection direction,
-                  HoldArrow* holdArrow,
-                  int parentTimestamp,
-                  int parentOffsetY);
+  inline void initialize(ArrowType type,
+                         ArrowDirection direction,
+                         int timestamp) {
+    bool isHoldFill = type == ArrowType::HOLD_FILL;
+    bool isHoldTail = type == ArrowType::HOLD_TAIL;
+    bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
+
+    u32 start = 0;
+    bool flip = false;
+    ARROW_initialize(direction, start, flip);
+    this->type = type;
+    this->direction = direction;
+    this->timestamp = timestamp;
+    this->start = start;
+    this->flip = flip;
+
+    sprite->enabled = true;
+    sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
+                   ARROW_INITIAL_Y);
+
+    if (isHoldFill || isHoldTail) {
+      u32 tileOffset = isHoldFill ? ARROW_HOLD_FILL_TILE : ARROW_HOLD_TAIL_TILE;
+      SPRITE_goToFrame(sprite.get(), start + tileOffset);
+    } else if (isHoldFakeHead)
+      animatePress();
+    else
+      sprite->makeAnimated(this->start, ARROW_ANIMATION_FRAMES,
+                           ARROW_ANIMATION_DELAY);
+
+    holdArrow = NULL;
+    parentTimestamp = 0;
+    parentOffsetY = 0;
+    siblingId = -1;
+    partialResult = FeedbackType::UNKNOWN;
+    hasEnded = false;
+    endAnimationFrame = 0;
+    isPressed = false;
+    needsAnimation = false;
+
+    refresh();
+  }
+
+  inline void initialize(ArrowType type,
+                         ArrowDirection direction,
+                         HoldArrow* holdArrow,
+                         int parentTimestamp,
+                         int parentOffsetY) {
+    initialize(type, direction, 0);
+
+    this->holdArrow = holdArrow;
+    this->parentTimestamp = parentTimestamp;
+    this->parentOffsetY = parentOffsetY;
+  }
+
   void discard() override;
   void scheduleDiscard();
 

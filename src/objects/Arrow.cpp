@@ -7,10 +7,6 @@
 #include "gameplay/HoldArrow.h"
 #include "utils/SpriteUtils.h"
 
-const u32 ANIMATION_FRAMES = 5;
-const u32 ANIMATION_DELAY = 2;
-const u32 HOLD_FILL_TILE = 9;
-const u32 HOLD_TAIL_TILE = 0;
 const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
 const u32 ALIGNED_THRESHOLD = 10;
@@ -19,7 +15,7 @@ Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
-               .withAnimated(ANIMATION_FRAMES, ANIMATION_DELAY)
+               .withAnimated(ARROW_ANIMATION_FRAMES, ARROW_ANIMATION_DELAY)
                .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
   sprite->enabled = false;
@@ -28,59 +24,6 @@ Arrow::Arrow(u32 id) {
     SPRITE_reuseTiles(sprite.get());
 
   this->id = id;
-}
-
-void Arrow::initialize(ArrowType type,
-                       ArrowDirection direction,
-                       int timestamp) {
-  bool isHoldFill = type == ArrowType::HOLD_FILL;
-  bool isHoldTail = type == ArrowType::HOLD_TAIL;
-  bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
-
-  u32 start = 0;
-  bool flip = false;
-  ARROW_initialize(direction, start, flip);
-  this->type = type;
-  this->direction = direction;
-  this->timestamp = timestamp;
-  this->start = start;
-  this->flip = flip;
-
-  sprite->enabled = true;
-  sprite->moveTo(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                 ARROW_INITIAL_Y);
-
-  if (isHoldFill || isHoldTail) {
-    u32 tileOffset = isHoldFill ? HOLD_FILL_TILE : HOLD_TAIL_TILE;
-    SPRITE_goToFrame(sprite.get(), start + tileOffset);
-  } else if (isHoldFakeHead)
-    animatePress();
-  else
-    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
-
-  holdArrow = NULL;
-  parentTimestamp = 0;
-  parentOffsetY = 0;
-  siblingId = -1;
-  partialResult = FeedbackType::UNKNOWN;
-  hasEnded = false;
-  endAnimationFrame = 0;
-  isPressed = false;
-  needsAnimation = false;
-
-  refresh();
-}
-
-void Arrow::initialize(ArrowType type,
-                       ArrowDirection direction,
-                       HoldArrow* holdArrow,
-                       int parentTimestamp,
-                       int parentOffsetY) {
-  initialize(type, direction, 0);
-
-  this->holdArrow = holdArrow;
-  this->parentTimestamp = parentTimestamp;
-  this->parentOffsetY = parentOffsetY;
 }
 
 void Arrow::discard() {
