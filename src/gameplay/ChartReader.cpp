@@ -234,6 +234,7 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->endTime = 0;
       holdArrow->fillCount = 1;
       holdArrow->lastFill = fill;
+      holdArrow->tail = NULL;
     });
   });
 }
@@ -249,11 +250,12 @@ void ChartReader::endHoldNote(Event* event) {
         // short (only 1 fill) -> tail's position is approximated
 
         arrowPool->createWithIdGreaterThan(
-            [&direction, &lastFillY, this](Arrow* tail) {
+            [&direction, &holdArrow, &lastFillY, this](Arrow* tail) {
               int y =
                   lastFillY + ARROW_SIZE - HOLD_ARROW_TAIL_OFFSETS[direction];
               tail->initialize(ArrowType::HOLD_TAIL, direction,
                                getTimestampFor(y));
+              holdArrow->tail = tail;
             },
             holdArrow->lastFill->id);
       } else {
@@ -267,6 +269,7 @@ void ChartReader::endHoldNote(Event* event) {
               [&holdArrow, &event, &extraFill, &direction, this](Arrow* tail) {
                 tail->initialize(ArrowType::HOLD_TAIL, direction,
                                  event->timestamp);
+                holdArrow->tail = tail;
 
                 int tailY = getYFor(event->timestamp);
                 int y = tailY - ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[direction];
@@ -293,8 +296,12 @@ void ChartReader::processHoldArrows() {
       return;
     }
 
-    while (holdArrow->endTime == 0 && holdArrow->lastFill->get()->getY() <
-                                          (int)(ARROW_INITIAL_Y - ARROW_SIZE)) {
+    while (
+        (holdArrow->endTime == 0 && holdArrow->lastFill->get()->getY() <
+                                        (int)(ARROW_INITIAL_Y - ARROW_SIZE)) ||
+        (holdArrow->tail != NULL &&
+         holdArrow->lastFill->get()->getY() + (int)ARROW_SIZE <
+             holdArrow->tail->get()->getY())) {
       Arrow* fill = arrowPool->create([&holdArrow, this](Arrow* it) {
         it->initialize(
             ArrowType::HOLD_FILL, holdArrow->direction,

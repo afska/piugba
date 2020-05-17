@@ -12,6 +12,7 @@ class HoldArrow : public IPoolable {
   int endTime;
   int fillCount;
   Arrow* lastFill;
+  Arrow* tail;
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
