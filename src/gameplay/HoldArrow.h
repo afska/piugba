@@ -16,6 +16,16 @@ class HoldArrow : public IPoolable {
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
+
+  inline bool needsFillsAtTheEnd() {
+    return endTime == 0 &&
+           lastFill->get()->getY() < (int)(ARROW_INITIAL_Y - ARROW_SIZE);
+  }
+
+  inline bool needsFillsInTheMiddle() {
+    return tail != NULL &&
+           lastFill->get()->getY() + (int)ARROW_SIZE < tail->get()->getY();
+  }
 };
 
 #endif  // HOLD_ARROW_H
