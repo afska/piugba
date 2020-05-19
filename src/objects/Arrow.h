@@ -10,7 +10,7 @@
 
 // TEST MACROS
 #define TEST_MODE true
-#define KEYTEST_MODE false
+#define KEYTEST_MODE true
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
