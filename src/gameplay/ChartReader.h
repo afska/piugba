@@ -29,7 +29,7 @@ class ChartReader : public TimingProvider {
   Judge* judge;
   u32 targetArrowTime;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  std::array<u32, ARROWS_TOTAL> holdArrowsCount;
+  std::array<bool, ARROWS_TOTAL> holdArrowFlags;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
