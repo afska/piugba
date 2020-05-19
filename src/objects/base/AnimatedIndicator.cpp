@@ -3,8 +3,7 @@
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 4;
-const u32 TOTAL_DURATION_MS = 750;
-const u32 TOTAL_FRAMES = TOTAL_DURATION_MS * 60 / 1000;
+const u32 TOTAL_FRAMES = 45;  // 750 ms * 60 / 1000;
 
 void AnimatedIndicator::show() {
   currentFrame = 0;

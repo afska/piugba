@@ -14,9 +14,12 @@ ChartReader::ChartReader(Chart* chart,
   this->chart = chart;
   this->arrowPool = arrowPool;
   this->judge = judge;
+
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    holdArrowsCount[i] = 0;
 
   targetArrowTime = ARROW_TIME[ARROW_SPEED];
   syncArrowTime();
@@ -63,13 +66,7 @@ int ChartReader::getYFor(Arrow* arrow) {
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
-  bool isHoldActive = false;
-  withNextHoldArrow(direction, [&isHoldActive, this](HoldArrow* holdArrow) {
-    isHoldActive = msecs >= holdArrow->startTime &&
-                   (holdArrow->endTime == 0 || msecs < holdArrow->endTime);
-  });
-
-  return isHoldActive;
+  return holdArrowsCount[direction] > 0;
 }
 
 bool ChartReader::hasJustStopped() {
@@ -209,6 +206,7 @@ void ChartReader::startHoldNote(Event* event) {
         return;
       }
 
+      holdArrowsCount[direction]++;
       holdArrow->direction = direction;
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
@@ -275,6 +273,7 @@ void ChartReader::processHoldArrows() {
       if (holdArrow->tail != NULL)
         arrowPool->discard(holdArrow->tail->id);
       holdArrows->discard(holdArrow->id);
+      holdArrowsCount[holdArrow->direction]--;
       return;
     }
 
