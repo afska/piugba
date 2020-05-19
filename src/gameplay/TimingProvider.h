@@ -19,11 +19,18 @@ const u32 MINUTE = 60000;
 
 class TimingProvider {
  public:
-  virtual int getMsecs() = 0;
-  virtual u32 getArrowTime() = 0;
-  virtual bool isStopped() = 0;
-  virtual int getStopStart() = 0;
-  virtual u32 getStopLength() = 0;
+  inline int getMsecs() { return msecs; }
+  inline u32 getArrowTime() { return arrowTime; }
+  inline bool isStopped() { return hasStopped; }
+  inline int getStopStart() { return stopStart; }
+  inline u32 getStopLength() { return stopLength; }
+
+ protected:
+  int msecs = 0;
+  bool hasStopped = false;
+  u32 arrowTime;
+  int stopStart = 0;
+  u32 stopLength = 0;
 };
 
 #endif  // TIMING_PROVIDER_H

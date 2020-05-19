@@ -14,12 +14,6 @@ class ChartReader : public TimingProvider {
  public:
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
-  int getMsecs() override { return msecs; }
-  u32 getArrowTime() override { return arrowTime; }
-  bool isStopped() override { return hasStopped; }
-  int getStopStart() override { return stopStart; }
-  u32 getStopLength() override { return stopLength; }
-
   bool preUpdate(int msecs);
   void postUpdate();
 
@@ -30,12 +24,9 @@ class ChartReader : public TimingProvider {
   bool isAboutToResume();
 
  private:
-  int msecs = 0;
-  bool hasStopped = false;
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
-  u32 arrowTime;
   u32 targetArrowTime;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<u32, ARROWS_TOTAL> holdArrowsCount;
@@ -45,8 +36,6 @@ class ChartReader : public TimingProvider {
   int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;
-  int stopStart = 0;
-  u32 stopLength = 0;
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
 
