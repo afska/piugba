@@ -1,5 +1,7 @@
 #include "InputHandler.h"
 
+#include "objects/Arrow.h"
+
 bool InputHandler::getIsPressed() {
   return isPressed;
 }
@@ -13,4 +15,5 @@ void InputHandler::setIsPressed(bool isPressed) {
   this->isPressed = isPressed;
 
   this->isNewPressEvent = isNewPressEvent;
+  IFKEYTEST { this->isNewPressEvent = isPressed; }
 }
