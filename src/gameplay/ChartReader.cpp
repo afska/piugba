@@ -94,8 +94,7 @@ void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
       case EventType::SET_TEMPO:
-        targetArrowTime =
-            Div(MINUTE, event->extra) * (MAX_ARROW_SPEED + 1 - ARROW_SPEED) * 2;
+        targetArrowTime = Div(event->extra * MAGIC_BPM_CONSTANT, ARROW_SPEED);
 
         if (bpm > 0) {
           lastBpmChange = event->timestamp;
