@@ -27,7 +27,6 @@ class ChartReader : public TimingProvider {
 
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
-  bool isAboutToStop(int* nextStopStart);
   bool isAboutToResume();
 
  private:

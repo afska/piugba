@@ -191,7 +191,7 @@ void SongScene::updateArrows() {
       judge->onOut(it);
     }
 
-    bool canBeJudged = false;
+    bool canBeJudged = true;
     int judgementOffset = 0;
     if (isStopped) {
       bool hasJustStopped = chartReader->hasJustStopped();
@@ -200,11 +200,6 @@ void SongScene::updateArrows() {
       canBeJudged = it->timestamp >= chartReader->getStopStart() &&
                     (hasJustStopped || isAboutToResume);
       judgementOffset = isAboutToResume ? -chartReader->getStopLength() : 0;
-    } else {
-      int nextStopStart = 0;
-      canBeJudged = chartReader->isAboutToStop(&nextStopStart)
-                        ? it->timestamp < nextStopStart
-                        : true;
     }
 
     bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();
