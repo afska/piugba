@@ -39,7 +39,7 @@ const u32 ARROW_ANIMATION_DELAY = 2;
 const u32 ARROW_HOLD_FILL_TILE = 9;
 const u32 ARROW_HOLD_TAIL_TILE = 0;
 
-const u32 ARROW_SPEED = 3;
+const u32 ARROW_SPEED = 4;
 const u32 MIN_ARROW_SPEED = 3;
 const u32 MAX_ARROW_SPEED = 4;
 const u32 ARROW_SIZE = 16;
@@ -141,6 +141,9 @@ class Arrow : public IPoolable {
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
   inline int getParentTimestamp() { return parentTimestamp; }
   inline int getParentOffsetY() { return parentOffsetY; }
+  inline void setParentOffsetY(int parentOffsetY) {
+    this->parentOffsetY = parentOffsetY;
+  }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
