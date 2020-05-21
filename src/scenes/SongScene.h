@@ -11,6 +11,7 @@
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
+#include "objects/base/InputHandler.h"
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
@@ -42,6 +43,8 @@ class SongScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
+  std::unique_ptr<InputHandler> speedUpInput;
+  std::unique_ptr<InputHandler> speedDownInput;
   int init = 0;
 
   void setUpPalettes();

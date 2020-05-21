@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <tonc_input.h>
 
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
@@ -64,6 +65,7 @@ void SelectionScene::load() {
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
+  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
   setUpPager();
 
   setUpSpritesPalette();
@@ -92,7 +94,7 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChange();
   processSelectionChange();
 
-  if (KEY_CENTER(keys))
+  if (selectInput->hasBeenPressedNow())
     goToSong();
 }
 
@@ -183,6 +185,7 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
   arrowSelectors[2]->setIsPressed(KEY_UPRIGHT(keys));
   arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
+  selectInput->setIsPressed(KEY_CENTER(keys));
 }
 
 void SelectionScene::processDifficultyChange() {

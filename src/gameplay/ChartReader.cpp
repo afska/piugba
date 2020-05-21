@@ -21,7 +21,8 @@ ChartReader::ChartReader(Chart* chart,
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     holdArrowFlags[i] = false;
 
-  targetArrowTime = ARROW_TIME[ARROW_SPEED];
+  multiplier = ARROW_DEFAULT_MULTIPLIER;
+  targetArrowTime = ARROW_TIME[multiplier];
   syncArrowTime();
 };
 
@@ -94,7 +95,7 @@ void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
       case EventType::SET_TEMPO:
-        targetArrowTime = Div(event->extra * MAGIC_BPM_CONSTANT, ARROW_SPEED);
+        setScrollSpeed(event->extra);
 
         if (bpm > 0) {
           lastBpmChange = event->timestamp;

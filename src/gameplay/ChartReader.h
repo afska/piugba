@@ -1,6 +1,8 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
+#include <libgba-sprite-engine/gba/tonc_math.h>
+
 #include <vector>
 
 #include "HoldArrow.h"
@@ -19,6 +21,13 @@ class ChartReader : public TimingProvider {
 
   int getYFor(Arrow* arrow);
 
+  inline u32 getMultiplier() { return multiplier; }
+  inline void setMultiplier(u32 multiplier) {
+    this->multiplier =
+        max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
+    setScrollSpeed(bpm);
+  }
+
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();
@@ -28,6 +37,7 @@ class ChartReader : public TimingProvider {
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   u32 targetArrowTime;
+  u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<bool, ARROWS_TOTAL> holdArrowFlags;
   u32 eventIndex = 0;
@@ -108,6 +118,9 @@ class ChartReader : public TimingProvider {
     }
   }
 
+  inline void setScrollSpeed(u32 bpm) {
+    targetArrowTime = Div(MINUTE * BEAT_UNIT, bpm * multiplier);
+  }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 
   int getYFor(int timestamp);

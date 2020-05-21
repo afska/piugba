@@ -16,11 +16,11 @@ inline bool KEY_CENTER(u16 keys) {
 }
 
 inline bool KEY_UPRIGHT(u16 keys) {
-  return (keys & KEY_R) | (keys & KEY_START);
+  return keys & KEY_R;
 }
 
 inline bool KEY_DOWNRIGHT(u16 keys) {
-  return (keys & KEY_A) | (keys & KEY_SELECT);
+  return keys & KEY_A;
 }
 
 inline bool KEY_ANY_PRESSED(u16 keys) {

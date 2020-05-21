@@ -86,6 +86,9 @@ void SongScene::load() {
       }));
   chartReader = std::unique_ptr<ChartReader>(
       new ChartReader(chart, arrowPool.get(), judge.get()));
+
+  speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
+  speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
 }
 
 void SongScene::tick(u16 keys) {
@@ -237,6 +240,14 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[2]->setIsPressed(KEY_CENTER(keys));
   arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
+  speedUpInput->setIsPressed(keys & KEY_START);
+  speedDownInput->setIsPressed(keys & KEY_SELECT);
+
+  if (speedUpInput->hasBeenPressedNow())
+    chartReader->setMultiplier(chartReader->getMultiplier() + 1);
+
+  if (speedDownInput->hasBeenPressedNow())
+    chartReader->setMultiplier(chartReader->getMultiplier() - 1);
 
   IFKEYTEST {
     for (auto& arrowHolder : arrowHolders)
