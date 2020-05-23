@@ -206,50 +206,27 @@ void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     withLastHoldArrow(direction, [&event, &direction,
                                   this](HoldArrow* holdArrow) {
-      bool isShort = holdArrow->fillCount <= 1;
-
-      if (isShort) {
-        // short (only 0 or 1 fills) ->
-        // head's position is approximated if there are 0 fills
-
-        arrowPool->createWithIdGreaterThan(
-            [&event, &direction, &holdArrow, this](Arrow* tail) {
+      arrowPool->create([&holdArrow, &event, &direction,
+                         this](Arrow* extraFill) {
+        Arrow* tail = arrowPool->createWithIdGreaterThan(
+            [&holdArrow, &event, &extraFill, &direction, this](Arrow* tail) {
               tail->initialize(ArrowType::HOLD_TAIL, direction,
                                event->timestamp);
               holdArrow->tail = tail;
 
-              holdArrow->lastFill->setHoldArrow(
-                  holdArrow, event->timestamp,
+              extraFill->initialize(
+                  ArrowType::HOLD_FILL, direction, holdArrow, event->timestamp,
                   -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[direction]);
+
+              holdArrow->lastFill->setParentOffsetY(
+                  holdArrow->lastFill->getParentOffsetY() -
+                  HOLD_ARROW_TAIL_OFFSETS[direction]);
             },
-            holdArrow->lastFill->id);
-      } else {
-        // long (extra fill) ->
-        // tail's position is perfectly accurate
+            extraFill->id);
 
-        arrowPool->create([&holdArrow, &event, &direction,
-                           this](Arrow* extraFill) {
-          Arrow* tail = arrowPool->createWithIdGreaterThan(
-              [&holdArrow, &event, &extraFill, &direction, this](Arrow* tail) {
-                tail->initialize(ArrowType::HOLD_TAIL, direction,
-                                 event->timestamp);
-                holdArrow->tail = tail;
-
-                extraFill->initialize(
-                    ArrowType::HOLD_FILL, direction, holdArrow,
-                    event->timestamp,
-                    -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[direction]);
-
-                holdArrow->lastFill->setParentOffsetY(
-                    holdArrow->lastFill->getParentOffsetY() -
-                    HOLD_ARROW_TAIL_OFFSETS[direction]);
-              },
-              extraFill->id);
-
-          if (tail == NULL)
-            arrowPool->discard(extraFill->id);
-        });
-      }
+        if (tail == NULL)
+          arrowPool->discard(extraFill->id);
+      });
 
       holdArrow->endTime = event->timestamp;
     });

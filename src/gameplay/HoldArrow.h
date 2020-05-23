@@ -13,7 +13,7 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  int fillCount;
+  u32 fillCount;
   Arrow* lastFill;
   Arrow* tail;
 
