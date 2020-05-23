@@ -129,7 +129,12 @@ class Arrow : public IPoolable {
                          int parentTimestamp,
                          int parentOffsetY) {
     initialize(type, direction, 0);
+    setHoldArrow(holdArrow, parentTimestamp, parentOffsetY);
+  }
 
+  inline void setHoldArrow(HoldArrow* holdArrow,
+                           int parentTimestamp,
+                           int parentOffsetY) {
     this->holdArrow = holdArrow;
     this->parentTimestamp = parentTimestamp;
     this->parentOffsetY = parentOffsetY;

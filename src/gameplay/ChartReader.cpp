@@ -218,9 +218,8 @@ void ChartReader::endHoldNote(Event* event) {
                                event->timestamp);
               holdArrow->tail = tail;
 
-              holdArrow->lastFill->initialize(
-                  holdArrow->lastFill->type, direction, holdArrow,
-                  event->timestamp,
+              holdArrow->lastFill->setHoldArrow(
+                  holdArrow, event->timestamp,
                   -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[direction]);
             },
             holdArrow->lastFill->id);
