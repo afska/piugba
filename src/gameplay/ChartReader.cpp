@@ -59,8 +59,6 @@ void ChartReader::postUpdate() {
 };
 
 int ChartReader::getYFor(Arrow* arrow) {
-  HoldArrow* holdArrow = arrow->getHoldArrow();
-
   int y;
   switch (arrow->type) {
     {
@@ -74,9 +72,6 @@ int ChartReader::getYFor(Arrow* arrow) {
         int fillIndex = arrow->getFillIndex();
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = offset0Y + ARROW_SIZE * fillIndex;
-        if (arrow->isHoldArrowAlive() && holdArrow->tail != NULL &&
-            fillIndex == (int)holdArrow->fillCount - 1)
-          offsetY -= HOLD_ARROW_TAIL_OFFSETS[arrow->direction];
         y = max(headY + offsetY, headY + offset0Y);
         break;
     }

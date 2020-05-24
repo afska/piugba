@@ -38,10 +38,6 @@ void Arrow::scheduleDiscard() {
   isPressed = true;
 }
 
-bool Arrow::isHoldArrowAlive() {
-  return holdArrow->startTime == holdStartTime;
-};
-
 FeedbackType Arrow::getResult(FeedbackType partialResult,
                               ObjectPool<Arrow>* arrowPool) {
   this->partialResult = partialResult;
@@ -99,12 +95,16 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   } else if (type == ArrowType::HOLD_TAIL_EXTRA_FILL && isNearEnd() &&
              isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL &&
-             ((isHoldArrowAlive() && holdArrow->isLeftover(this)) ||
-              (isNearEnd() && isPressing))) {
+  } else if (type == ArrowType::HOLD_FILL && isNearEnd() && isPressing) {
     end();
-    // TODO: If there are leftovers, decrement fillCount as that determines the
-    // position of new fills
+  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
+             holdArrow->isLeftover(this)) {
+    end();
+    u32 newFillCount = previousFill->fillIndex + 1;
+    if (newFillCount < holdArrow->fillCount) {
+      holdArrow->fillCount = newFillCount;
+      holdArrow->lastFill = previousFill;
+    }
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
@@ -144,4 +144,9 @@ void Arrow::setHoldArrow(HoldArrow* holdArrow) {
   this->holdArrow = holdArrow;
   holdStartTime = holdArrow->startTime;
   holdEndTime = holdArrow->endTime;
+  previousFill = holdArrow->lastFill;
 }
+
+bool Arrow::isHoldArrowAlive() {
+  return holdArrow->startTime == holdStartTime;
+};

@@ -118,11 +118,12 @@ class Arrow : public IPoolable {
       sprite->makeAnimated(this->start, ARROW_ANIMATION_FRAMES,
                            ARROW_ANIMATION_DELAY);
 
+    siblingId = -1;
     holdArrow = NULL;
     holdStartTime = 0;
     holdEndTime = 0;
-    siblingId = -1;
     fillIndex = -1;
+    previousFill = NULL;
     partialResult = FeedbackType::UNKNOWN;
     hasEnded = false;
     endAnimationFrame = 0;
@@ -153,8 +154,6 @@ class Arrow : public IPoolable {
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
 
-  bool isHoldArrowAlive();
-  inline HoldArrow* getHoldArrow() { return holdArrow; }
   inline int getHoldStartTime() { return holdStartTime; }
   inline int getHoldEndTime() { return holdEndTime; }
   inline int getFillIndex() { return fillIndex; }
@@ -192,6 +191,7 @@ class Arrow : public IPoolable {
   int holdEndTime = 0;
   int siblingId = -1;
   int fillIndex = -1;
+  Arrow* previousFill = NULL;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
   u32 endAnimationFrame = 0;
@@ -204,6 +204,7 @@ class Arrow : public IPoolable {
   bool isNearEnd();
 
   void setHoldArrow(HoldArrow* holdArrow);
+  bool isHoldArrowAlive();
 
   inline void refresh() {
     sprite->update();

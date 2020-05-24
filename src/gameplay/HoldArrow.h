@@ -22,7 +22,8 @@ class HoldArrow : public IPoolable {
 
   inline bool isLeftover(Arrow* arrow) {
     return endTime > 0 &&
-           (tail == NULL || arrow->get()->getY() > tail->get()->getY());
+           (tail == NULL || arrow->get()->getY() > tail->get()->getY() ||
+            arrow->getFillIndex() > (int)fillCount - 1);
   }
 
   inline bool needsFillsAtTheEnd() {
