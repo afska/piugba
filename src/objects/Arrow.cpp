@@ -38,6 +38,10 @@ void Arrow::scheduleDiscard() {
   isPressed = true;
 }
 
+bool Arrow::isHoldArrowAlive() {
+  return holdArrow->startTime == holdStartTime;
+};
+
 FeedbackType Arrow::getResult(FeedbackType partialResult,
                               ObjectPool<Arrow>* arrowPool) {
   this->partialResult = partialResult;
@@ -96,7 +100,8 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
              isPressing) {
     end();
   } else if (type == ArrowType::HOLD_FILL &&
-             (holdArrow->isLeftover(this) || (isNearEnd() && isPressing))) {
+             ((isHoldArrowAlive() && holdArrow->isLeftover(this)) ||
+              (isNearEnd() && isPressing))) {
     end();
     // TODO: If there are leftovers, decrement fillCount as that determines the
     // position of new fills
@@ -133,4 +138,10 @@ bool Arrow::isAligned() {
 
 bool Arrow::isNearEnd() {
   return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
+}
+
+void Arrow::setHoldArrow(HoldArrow* holdArrow) {
+  this->holdArrow = holdArrow;
+  holdStartTime = holdArrow->startTime;
+  holdEndTime = holdArrow->endTime;
 }

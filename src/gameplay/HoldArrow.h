@@ -21,7 +21,8 @@ class HoldArrow : public IPoolable {
   void discard() override {}
 
   inline bool isLeftover(Arrow* arrow) {
-    return tail != NULL && arrow->get()->getY() > tail->get()->getY();
+    return endTime > 0 &&
+           (tail == NULL || arrow->get()->getY() > tail->get()->getY());
   }
 
   inline bool needsFillsAtTheEnd() {

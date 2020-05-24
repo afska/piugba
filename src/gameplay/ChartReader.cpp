@@ -65,16 +65,16 @@ int ChartReader::getYFor(Arrow* arrow) {
   switch (arrow->type) {
     {
       case ArrowType::HOLD_HEAD:
-        y = getYFor(holdArrow->startTime);
+        y = getYFor(arrow->getHoldStartTime());
         break;
     }
     {
       case ArrowType::HOLD_FILL:
-        int headY = getYFor(holdArrow->startTime);
+        int headY = getYFor(arrow->getHoldStartTime());
         int fillIndex = arrow->getFillIndex();
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = offset0Y + ARROW_SIZE * fillIndex;
-        if (holdArrow->tail != NULL &&
+        if (arrow->isHoldArrowAlive() && holdArrow->tail != NULL &&
             fillIndex == (int)holdArrow->fillCount - 1)
           offsetY -= HOLD_ARROW_TAIL_OFFSETS[arrow->direction];
         y = max(headY + offsetY, headY + offset0Y);
@@ -83,10 +83,10 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_TAIL_EXTRA_FILL:
       case ArrowType::HOLD_TAIL_ARROW:
-        int headY = getYFor(holdArrow->startTime);
+        int headY = getYFor(arrow->getHoldStartTime());
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[arrow->direction];
-        y = max(getYFor(holdArrow->endTime) + offsetY, headY + offset0Y);
+        y = max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
         if (arrow->type == ArrowType::HOLD_TAIL_ARROW)
           y -= offsetY;
         break;
@@ -215,6 +215,9 @@ void ChartReader::processUniqueNote(Event* event) {
 void ChartReader::startHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     holdArrows->create([event, &direction, this](HoldArrow* holdArrow) {
+      holdArrow->startTime = event->timestamp;
+      holdArrow->endTime = 0;
+
       Arrow* head =
           arrowPool->create([event, &direction, &holdArrow](Arrow* it) {
             it->initializeHoldBorder(ArrowType::HOLD_HEAD, direction,
@@ -227,8 +230,6 @@ void ChartReader::startHoldNote(Event* event) {
       }
 
       holdArrow->direction = direction;
-      holdArrow->startTime = event->timestamp;
-      holdArrow->endTime = 0;
       holdArrow->fillCount = 0;
       holdArrow->lastFill = head;
       holdArrow->tail = NULL;
@@ -240,6 +241,8 @@ void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     withLastHoldArrow(direction, [&event, &direction,
                                   this](HoldArrow* holdArrow) {
+      holdArrow->endTime = event->timestamp;
+
       arrowPool->create([&holdArrow, &event, &direction,
                          this](Arrow* extraFill) {
         Arrow* tail = arrowPool->createWithIdGreaterThan(
@@ -256,8 +259,6 @@ void ChartReader::endHoldNote(Event* event) {
         if (tail == NULL)
           arrowPool->discard(extraFill->id);
       });
-
-      holdArrow->endTime = event->timestamp;
     });
   });
 }
@@ -268,7 +269,6 @@ void ChartReader::processHoldArrows() {
       holdArrowFlags[holdArrow->direction] = true;
 
     if (holdArrow->endTime > 0 && msecs >= holdArrow->endTime) {
-      // TODO: Arrows have a pointer and it will be broken after discard(...)
       holdArrows->discard(holdArrow->id);
       holdArrowFlags[holdArrow->direction] = false;
       return;

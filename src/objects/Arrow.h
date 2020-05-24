@@ -119,6 +119,8 @@ class Arrow : public IPoolable {
                            ARROW_ANIMATION_DELAY);
 
     holdArrow = NULL;
+    holdStartTime = 0;
+    holdEndTime = 0;
     siblingId = -1;
     fillIndex = -1;
     partialResult = FeedbackType::UNKNOWN;
@@ -135,14 +137,14 @@ class Arrow : public IPoolable {
                                    int timestamp,
                                    HoldArrow* holdArrow) {
     initialize(type, direction, timestamp);
-    this->holdArrow = holdArrow;
+    setHoldArrow(holdArrow);
   }
 
   inline void initializeHoldFill(ArrowDirection direction,
                                  HoldArrow* holdArrow,
                                  int fillIndex) {
     initialize(ArrowType::HOLD_FILL, direction, timestamp);
-    this->holdArrow = holdArrow;
+    setHoldArrow(holdArrow);
     this->fillIndex = fillIndex;
   }
 
@@ -150,7 +152,11 @@ class Arrow : public IPoolable {
   void scheduleDiscard();
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
+
+  bool isHoldArrowAlive();
   inline HoldArrow* getHoldArrow() { return holdArrow; }
+  inline int getHoldStartTime() { return holdStartTime; }
+  inline int getHoldEndTime() { return holdEndTime; }
   inline int getFillIndex() { return fillIndex; }
 
   template <typename F>
@@ -182,6 +188,8 @@ class Arrow : public IPoolable {
   u32 start = 0;
   bool flip = false;
   HoldArrow* holdArrow = NULL;
+  int holdStartTime = 0;
+  int holdEndTime = 0;
   int siblingId = -1;
   int fillIndex = -1;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
@@ -194,6 +202,8 @@ class Arrow : public IPoolable {
   void animatePress();
   bool isAligned();
   bool isNearEnd();
+
+  void setHoldArrow(HoldArrow* holdArrow);
 
   inline void refresh() {
     sprite->update();
