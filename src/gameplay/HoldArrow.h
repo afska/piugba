@@ -13,7 +13,7 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  int fillCount;
+  u32 fillCount;
   Arrow* lastFill;
   Arrow* tail;
 
@@ -21,7 +21,9 @@ class HoldArrow : public IPoolable {
   void discard() override {}
 
   inline bool isLeftover(Arrow* arrow) {
-    return tail != NULL && arrow->get()->getY() > tail->get()->getY();
+    return endTime > 0 &&
+           (tail == NULL || arrow->get()->getY() > tail->get()->getY() ||
+            arrow->getFillIndex() > (int)fillCount - 1);
   }
 
   inline bool needsFillsAtTheEnd() {

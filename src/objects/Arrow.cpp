@@ -88,12 +88,23 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
-  } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
+  } else if ((type == ArrowType::HOLD_HEAD ||
+              type == ArrowType::HOLD_TAIL_ARROW) &&
              get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL &&
-             (holdArrow->isLeftover(this) || (isNearEnd() && isPressing))) {
+  } else if (type == ArrowType::HOLD_TAIL_EXTRA_FILL && isNearEnd() &&
+             isPressing) {
     end();
+  } else if (type == ArrowType::HOLD_FILL && isNearEnd() && isPressing) {
+    end();
+  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
+             holdArrow->isLeftover(this)) {
+    end();
+    u32 newFillCount = previousFill->fillIndex + 1;
+    if (newFillCount < holdArrow->fillCount) {
+      holdArrow->fillCount = newFillCount;
+      holdArrow->lastFill = previousFill;
+    }
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
@@ -128,3 +139,14 @@ bool Arrow::isAligned() {
 bool Arrow::isNearEnd() {
   return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
 }
+
+void Arrow::setHoldArrow(HoldArrow* holdArrow) {
+  this->holdArrow = holdArrow;
+  holdStartTime = holdArrow->startTime;
+  holdEndTime = holdArrow->endTime;
+  previousFill = holdArrow->lastFill;
+}
+
+bool Arrow::isHoldArrowAlive() {
+  return holdArrow->startTime == holdStartTime;
+};

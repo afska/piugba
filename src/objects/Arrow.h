@@ -25,7 +25,14 @@
 
 class HoldArrow;
 
-enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };
+enum ArrowType {
+  UNIQUE,
+  HOLD_HEAD,
+  HOLD_FILL,
+  HOLD_TAIL_EXTRA_FILL,
+  HOLD_TAIL_ARROW,
+  HOLD_FAKE_HEAD
+};
 enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
 enum ArrowState { ACTIVE, OUT };
 
@@ -84,8 +91,9 @@ class Arrow : public IPoolable {
   inline void initialize(ArrowType type,
                          ArrowDirection direction,
                          int timestamp) {
-    bool isHoldFill = type == ArrowType::HOLD_FILL;
-    bool isHoldTail = type == ArrowType::HOLD_TAIL;
+    bool isHoldFill =
+        type == ArrowType::HOLD_FILL || type == ArrowType::HOLD_TAIL_EXTRA_FILL;
+    bool isHoldTail = type == ArrowType::HOLD_TAIL_ARROW;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
     u32 start = 0;
@@ -110,10 +118,12 @@ class Arrow : public IPoolable {
       sprite->makeAnimated(this->start, ARROW_ANIMATION_FRAMES,
                            ARROW_ANIMATION_DELAY);
 
-    holdArrow = NULL;
-    parentTimestamp = 0;
-    parentOffsetY = 0;
     siblingId = -1;
+    holdArrow = NULL;
+    holdStartTime = 0;
+    holdEndTime = 0;
+    fillIndex = -1;
+    previousFill = NULL;
     partialResult = FeedbackType::UNKNOWN;
     hasEnded = false;
     endAnimationFrame = 0;
@@ -123,32 +133,30 @@ class Arrow : public IPoolable {
     refresh();
   }
 
-  inline void initialize(ArrowType type,
-                         ArrowDirection direction,
-                         HoldArrow* holdArrow,
-                         int parentTimestamp,
-                         int parentOffsetY) {
-    initialize(type, direction, 0);
-    setHoldArrow(holdArrow, parentTimestamp, parentOffsetY);
+  inline void initializeHoldBorder(ArrowType type,
+                                   ArrowDirection direction,
+                                   int timestamp,
+                                   HoldArrow* holdArrow) {
+    initialize(type, direction, timestamp);
+    setHoldArrow(holdArrow);
   }
 
-  inline void setHoldArrow(HoldArrow* holdArrow,
-                           int parentTimestamp,
-                           int parentOffsetY) {
-    this->holdArrow = holdArrow;
-    this->parentTimestamp = parentTimestamp;
-    this->parentOffsetY = parentOffsetY;
+  inline void initializeHoldFill(ArrowDirection direction,
+                                 HoldArrow* holdArrow,
+                                 int fillIndex) {
+    initialize(ArrowType::HOLD_FILL, direction, timestamp);
+    setHoldArrow(holdArrow);
+    this->fillIndex = fillIndex;
   }
 
   void discard() override;
   void scheduleDiscard();
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
-  inline int getParentTimestamp() { return parentTimestamp; }
-  inline int getParentOffsetY() { return parentOffsetY; }
-  inline void setParentOffsetY(int parentOffsetY) {
-    this->parentOffsetY = parentOffsetY;
-  }
+
+  inline int getHoldStartTime() { return holdStartTime; }
+  inline int getHoldEndTime() { return holdEndTime; }
+  inline int getFillIndex() { return fillIndex; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -179,9 +187,11 @@ class Arrow : public IPoolable {
   u32 start = 0;
   bool flip = false;
   HoldArrow* holdArrow = NULL;
-  int parentTimestamp = 0;
-  int parentOffsetY = 0;
+  int holdStartTime = 0;
+  int holdEndTime = 0;
   int siblingId = -1;
+  int fillIndex = -1;
+  Arrow* previousFill = NULL;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
   u32 endAnimationFrame = 0;
@@ -192,6 +202,9 @@ class Arrow : public IPoolable {
   void animatePress();
   bool isAligned();
   bool isNearEnd();
+
+  void setHoldArrow(HoldArrow* holdArrow);
+  bool isHoldArrowAlive();
 
   inline void refresh() {
     sprite->update();
