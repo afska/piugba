@@ -88,12 +88,18 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
-  } else if ((type == ArrowType::HOLD_HEAD || type == ArrowType::HOLD_TAIL) &&
+  } else if ((type == ArrowType::HOLD_HEAD ||
+              type == ArrowType::HOLD_TAIL_ARROW) &&
              get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
+    end();
+  } else if (type == ArrowType::HOLD_TAIL_EXTRA_FILL && isNearEnd() &&
+             isPressing) {
     end();
   } else if (type == ArrowType::HOLD_FILL &&
              (holdArrow->isLeftover(this) || (isNearEnd() && isPressing))) {
     end();
+    // TODO: If there are leftovers, decrement fillCount as that determines the
+    // position of new fills
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
