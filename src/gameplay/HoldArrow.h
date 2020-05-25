@@ -14,7 +14,6 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  u32 headId;
   u32 fillSkip;
   u32 fillCount;
   u32 activeFillCount;

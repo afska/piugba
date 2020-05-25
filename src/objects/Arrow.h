@@ -80,8 +80,9 @@ class Arrow : public IPoolable {
   inline void initialize(ArrowType type,
                          ArrowDirection direction,
                          int timestamp) {
-    bool isHoldFill =
-        type == ArrowType::HOLD_FILL || type == ArrowType::HOLD_TAIL_EXTRA_FILL;
+    bool isHoldFill = type == ArrowType::HOLD_FILL ||
+                      type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
+                      type == ArrowType::HOLD_TAIL_EXTRA_FILL;
     bool isHoldTail = type == ArrowType::HOLD_TAIL_ARROW;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
