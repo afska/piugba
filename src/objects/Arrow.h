@@ -160,6 +160,7 @@ class Arrow : public IPoolable {
   inline int getHoldStartTime() { return holdStartTime; }
   inline int getHoldEndTime() { return holdEndTime; }
   inline int getFillIndex() { return fillIndex; }
+  inline Arrow* getPreviousFill() { return previousFill; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {

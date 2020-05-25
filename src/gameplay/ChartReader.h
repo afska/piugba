@@ -1,6 +1,7 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
 #include <vector>
@@ -132,8 +133,8 @@ class ChartReader : public TimingProvider {
   void processHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  void refresh(Arrow* arrow);
   int getHeadY(Arrow* arrow);
+  int getTailY(Arrow* arrow, int headY, int offset0Y, int offsetY);
 
   template <typename DEBUG>
   void logDebugInfo();

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "debug/logDebugInfo.h"
+#include "utils/MathUtils.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 
@@ -82,7 +83,7 @@ int ChartReader::getYFor(Arrow* arrow) {
         int headY = getHeadY(arrow);
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[arrow->direction];
-        y = max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
+        y = getTailY(arrow, headY, offset0Y, offsetY);
         if (arrow->type == ArrowType::HOLD_TAIL_ARROW)
           y -= offsetY;
         break;
@@ -270,11 +271,22 @@ void ChartReader::processHoldArrows() {
       return;
     }
 
-    // TODO: Calculate needed fillCount based on current speed and remove/add to
-    // match it
+    int startY = holdArrow->cachedStartY;
+    int endY = holdArrow->cachedEndY != HOLD_CACHE_MISS ? holdArrow->cachedEndY
+                                                        : ARROW_INITIAL_Y;
+    int distance = endY - startY;
+    int minimumDistance =
+        ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
+    u32 targetFillCount =
+        1 + max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
 
-    while (holdArrow->needsFillsAtTheEnd() ||
-           holdArrow->needsFillsInTheMiddle()) {
+    while (holdArrow->fillCount > targetFillCount) {
+      holdArrow->fillCount--;
+      holdArrow->lastFill->scheduleDiscard();
+      holdArrow->lastFill = holdArrow->lastFill->getPreviousFill();
+    }
+
+    while (holdArrow->fillCount < targetFillCount) {
       Arrow* fill = holdArrow->fillCount == 0
                         ? arrowPool->createWithIdGreaterThan(
                               [](Arrow* it) {}, holdArrow->lastFill->id)
@@ -286,7 +298,6 @@ void ChartReader::processHoldArrows() {
       else
         break;
 
-      refresh(fill);
       holdArrow->fillCount++;
       holdArrow->lastFill = fill;
     }
@@ -341,17 +352,23 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   }
 }
 
-void ChartReader::refresh(Arrow* arrow) {
-  arrow->get()->moveTo(arrow->get()->getX(), getYFor(arrow));
-}
-
 int ChartReader::getHeadY(Arrow* arrow) {
   HoldArrow* holdArrow = arrow->getHoldArrow();
 
-  if (holdArrow != NULL) {
+  if (holdArrow != NULL)
     return holdArrow->getStartY(
         [arrow, this]() { return getYFor(arrow->getHoldStartTime()); });
-  } else {
+  else
     return getYFor(arrow->getHoldStartTime());
-  }
+}
+
+int ChartReader::getTailY(Arrow* arrow, int headY, int offset0Y, int offsetY) {
+  HoldArrow* holdArrow = arrow->getHoldArrow();
+
+  if (holdArrow != NULL)
+    return holdArrow->getEndY([arrow, headY, offset0Y, offsetY, this]() {
+      return max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
+    });
+  else
+    return max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
 }

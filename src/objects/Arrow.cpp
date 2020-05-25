@@ -33,8 +33,7 @@ void Arrow::discard() {
 }
 
 void Arrow::scheduleDiscard() {
-  SPRITE_hide(get());
-
+  end();
   isPressed = true;
 }
 
@@ -92,19 +91,10 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
               type == ArrowType::HOLD_TAIL_ARROW) &&
              get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_TAIL_EXTRA_FILL && isNearEnd() &&
-             isPressing) {
+  } else if ((type == ArrowType::HOLD_FILL ||
+              type == ArrowType::HOLD_TAIL_EXTRA_FILL) &&
+             isNearEnd() && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL && isNearEnd() && isPressing) {
-    end();
-  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
-             holdArrow->isLeftover(this)) {
-    end();
-    u32 newFillCount = previousFill->fillIndex + 1;
-    if (newFillCount < holdArrow->fillCount) {
-      holdArrow->fillCount = newFillCount;
-      holdArrow->lastFill = previousFill;
-    }
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
