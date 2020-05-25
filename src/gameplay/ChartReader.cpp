@@ -45,8 +45,8 @@ bool ChartReader::preUpdate(int songMsecs) {
       return processTicks(rythmMsecs, false);
   }
 
-  holdArrows->forEach([](HoldArrow* it) { it->resetCache(); });
   processNextEvents();
+  processHoldArrows();
   return processTicks(rythmMsecs, true);
 }
 
@@ -55,12 +55,12 @@ void ChartReader::postUpdate() {
     return;
 
   predictNoteEvents();
-  processHoldArrows();
-
   IFTIMINGTEST { logDebugInfo<CHART_DEBUG>(); }
 };
 
 int ChartReader::getYFor(Arrow* arrow) {
+  HoldArrow* holdArrow = arrow->getHoldArrow();
+
   int y;
   switch (arrow->type) {
     {
@@ -71,10 +71,15 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_FILL:
         int headY = getHeadY(arrow);
-        int fillIndex = arrow->getFillIndex();
+        int fillIndex = holdArrow != NULL
+                            ? holdArrow->currentFillIndex + holdArrow->fillSkip
+                            : 0;  // TODO: Check zero
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = offset0Y + ARROW_SIZE * fillIndex;
         y = max(headY + offsetY, headY + offset0Y);
+        if (holdArrow != NULL)
+          holdArrow->currentFillIndex++;
+        // TODO: Only use 0 with higher id
         break;
     }
     {
@@ -228,7 +233,9 @@ void ChartReader::startHoldNote(Event* event) {
 
       holdArrow->direction = direction;
       holdArrow->headId = head->id;
+      holdArrow->fillSkip = 0;
       holdArrow->fillCount = 0;
+      holdArrow->activeFillCount = 0;
     });
   });
 }
@@ -260,6 +267,8 @@ void ChartReader::endHoldNote(Event* event) {
 
 void ChartReader::processHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
+    holdArrow->resetState();
+
     if (msecs >= holdArrow->startTime)
       holdArrowFlags[holdArrow->direction] = true;
 
@@ -269,46 +278,31 @@ void ChartReader::processHoldArrows() {
       return;
     }
 
-    int startY = holdArrow->cachedStartY != HOLD_CACHE_MISS
-                     ? holdArrow->cachedStartY
-                     : getYFor(holdArrow->startTime);
-    // int startY = holdArrow->cachedStartY;
-    // if (startY == HOLD_CACHE_MISS) {
-    //   LOGSTR("WHY!", 6);  // TODO: FIX
-    // }
-
-    int endY = holdArrow->cachedEndY != HOLD_CACHE_MISS ? holdArrow->cachedEndY
-                                                        : ARROW_INITIAL_Y;
-    int distance = endY - startY;
-    int minimumDistance =
-        ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
-    u32 targetFillCount =
-        1 + max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
-    DEBULOG(targetFillCount);
-    LOGN(startY, 0);
-    LOGN(holdArrow->cachedEndY, 1);
-    LOGN(endY, 2);
-    LOGN(distance, 3);
-    u32 activeSprites = 0;
-    arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++; });
-    LOGN(activeSprites, 4);
-    // TODO: REMOVE^
-
-    while (holdArrow->fillCount < targetFillCount) {
+    holdArrow->fillSkip = calculateFills(holdArrow, -ARROW_SIZE);
+    holdArrow->fillCount =
+        1 + calculateFills(holdArrow, holdArrow->cachedEndY != HOLD_CACHE_MISS
+                                          ? holdArrow->cachedEndY
+                                          : ARROW_INITIAL_Y);
+    while (holdArrow->activeFillCount < holdArrow->getTargetFills()) {
       Arrow* fill = holdArrow->fillCount == 0
                         ? arrowPool->createWithIdGreaterThan([](Arrow* it) {},
                                                              holdArrow->headId)
                         : arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
-        fill->initializeHoldFill(holdArrow->direction, holdArrow,
-                                 holdArrow->fillCount);
+        fill->initializeHoldFill(holdArrow->direction, holdArrow);
       else
         break;
 
-      holdArrow->fillCount++;
+      holdArrow->activeFillCount++;
     }
-    holdArrow->fillCount = targetFillCount;
+
+    LOGSTR("skip: " + std::to_string(holdArrow->fillSkip), 0);
+    LOGSTR("count: " + std::to_string(holdArrow->fillCount), 1);
+    u32 activeSprites = 0;
+    arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++; });
+    LOGSTR("sprites: " + std::to_string(activeSprites), 2);
+    // TODO: REMOVE
   });
 }
 
@@ -379,4 +373,15 @@ int ChartReader::getTailY(Arrow* arrow, int headY, int offset0Y, int offsetY) {
     });
   else
     return max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
+}
+
+int ChartReader::calculateFills(HoldArrow* holdArrow, int endY) {
+  int minimumDistance =
+      ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
+
+  int startY = holdArrow->cachedStartY != HOLD_CACHE_MISS
+                   ? holdArrow->cachedStartY
+                   : getYFor(holdArrow->startTime);
+  int distance = endY - startY;
+  return max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
 }

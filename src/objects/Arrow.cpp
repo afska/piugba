@@ -94,9 +94,6 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
               type == ArrowType::HOLD_TAIL_EXTRA_FILL) &&
              isNearEnd() && isPressing) {
     end();
-  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
-             getFillIndex() + 1 > (int)holdArrow->fillCount) {
-    end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
@@ -112,6 +109,9 @@ Sprite* Arrow::get() {
 void Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
+
+  if (type == ArrowType::HOLD_FILL && isHoldArrowAlive())
+    holdArrow->activeFillCount--;
 }
 
 void Arrow::animatePress() {

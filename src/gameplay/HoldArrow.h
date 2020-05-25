@@ -15,17 +15,23 @@ class HoldArrow : public IPoolable {
   int startTime;
   int endTime;
   u32 headId;
+  u32 fillSkip;
   u32 fillCount;
+  u32 activeFillCount;
+  u32 currentFillIndex = 0;
   int cachedStartY = HOLD_CACHE_MISS;
   int cachedEndY = HOLD_CACHE_MISS;
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
 
-  inline void resetCache() {
+  inline void resetState() {
+    currentFillIndex = 0;
     cachedStartY = HOLD_CACHE_MISS;
     cachedEndY = HOLD_CACHE_MISS;
   }
+
+  u32 getTargetFills() { return fillCount - fillSkip; }
 
   template <typename F>
   inline int getStartY(F get) {
