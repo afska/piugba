@@ -154,6 +154,9 @@ class Arrow : public IPoolable {
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
 
+  inline HoldArrow* getHoldArrow() {
+    return isHoldArrowAlive() ? holdArrow : NULL;
+  }
   inline int getHoldStartTime() { return holdStartTime; }
   inline int getHoldEndTime() { return holdEndTime; }
   inline int getFillIndex() { return fillIndex; }

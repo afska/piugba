@@ -44,6 +44,7 @@ bool ChartReader::preUpdate(int songMsecs) {
       return processTicks(rythmMsecs, false);
   }
 
+  holdArrows->forEach([](HoldArrow* it) { it->resetCache(); });
   processNextEvents();
   return processTicks(rythmMsecs, true);
 }
@@ -63,13 +64,12 @@ int ChartReader::getYFor(Arrow* arrow) {
   switch (arrow->type) {
     {
       case ArrowType::HOLD_HEAD:
-        y = getYFor(arrow->getHoldStartTime());
+        y = getHeadY(arrow);
         break;
     }
     {
       case ArrowType::HOLD_FILL:
-        int headY = getYFor(arrow->getHoldStartTime());  // TODO: Cache values
-                                                         // in the same frame
+        int headY = getHeadY(arrow);
         int fillIndex = arrow->getFillIndex();
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = offset0Y + ARROW_SIZE * fillIndex;
@@ -79,7 +79,7 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_TAIL_EXTRA_FILL:
       case ArrowType::HOLD_TAIL_ARROW:
-        int headY = getYFor(arrow->getHoldStartTime());
+        int headY = getHeadY(arrow);
         int offset0Y = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
         int offsetY = -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[arrow->direction];
         y = max(getYFor(arrow->getHoldEndTime()) + offsetY, headY + offset0Y);
@@ -343,4 +343,15 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
 
 void ChartReader::refresh(Arrow* arrow) {
   arrow->get()->moveTo(arrow->get()->getX(), getYFor(arrow));
+}
+
+int ChartReader::getHeadY(Arrow* arrow) {
+  HoldArrow* holdArrow = arrow->getHoldArrow();
+
+  if (holdArrow != NULL) {
+    return holdArrow->getStartY(
+        [arrow, this]() { return getYFor(arrow->getHoldStartTime()); });
+  } else {
+    return getYFor(arrow->getHoldStartTime());
+  }
 }

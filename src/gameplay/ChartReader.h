@@ -133,6 +133,7 @@ class ChartReader : public TimingProvider {
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
   void refresh(Arrow* arrow);
+  int getHeadY(Arrow* arrow);
 
   template <typename DEBUG>
   void logDebugInfo();
