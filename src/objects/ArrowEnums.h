@@ -1,0 +1,15 @@
+#ifndef ARROW_ENUMS_H
+#define ARROW_ENUMS_H
+
+enum ArrowType {
+  UNIQUE,
+  HOLD_HEAD,
+  HOLD_FILL,
+  HOLD_TAIL_EXTRA_FILL,
+  HOLD_TAIL_ARROW,
+  HOLD_FAKE_HEAD
+};
+enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
+enum ArrowState { ACTIVE, OUT };
+
+#endif  // ARROW_ENUMS_H

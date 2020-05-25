@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "ArrowEnums.h"
+#include "gameplay/HoldArrow.h"
 #include "gameplay/TimingProvider.h"
 #include "score/Feedback.h"
 #include "utils/SpriteUtils.h"
@@ -22,19 +24,6 @@
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
-
-class HoldArrow;
-
-enum ArrowType {
-  UNIQUE,
-  HOLD_HEAD,
-  HOLD_FILL,
-  HOLD_TAIL_EXTRA_FILL,
-  HOLD_TAIL_ARROW,
-  HOLD_FAKE_HEAD
-};
-enum ArrowDirection { DOWNLEFT, UPLEFT, CENTER, UPRIGHT, DOWNRIGHT };
-enum ArrowState { ACTIVE, OUT };
 
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;
@@ -123,7 +112,6 @@ class Arrow : public IPoolable {
     holdStartTime = 0;
     holdEndTime = 0;
     fillIndex = -1;
-    previousFill = NULL;
     partialResult = FeedbackType::UNKNOWN;
     hasEnded = false;
     endAnimationFrame = 0;
@@ -160,7 +148,6 @@ class Arrow : public IPoolable {
   inline int getHoldStartTime() { return holdStartTime; }
   inline int getHoldEndTime() { return holdEndTime; }
   inline int getFillIndex() { return fillIndex; }
-  inline Arrow* getPreviousFill() { return previousFill; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -195,7 +182,6 @@ class Arrow : public IPoolable {
   int holdEndTime = 0;
   int siblingId = -1;
   int fillIndex = -1;
-  Arrow* previousFill = NULL;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
   u32 endAnimationFrame = 0;
@@ -207,8 +193,15 @@ class Arrow : public IPoolable {
   bool isAligned();
   bool isNearEnd();
 
-  void setHoldArrow(HoldArrow* holdArrow);
-  bool isHoldArrowAlive();
+  inline void setHoldArrow(HoldArrow* holdArrow) {
+    this->holdArrow = holdArrow;
+    holdStartTime = holdArrow->startTime;
+    holdEndTime = holdArrow->endTime;
+  }
+
+  inline bool isHoldArrowAlive() {
+    return holdArrow->startTime == holdStartTime;
+  };
 
   inline void refresh() {
     sprite->update();

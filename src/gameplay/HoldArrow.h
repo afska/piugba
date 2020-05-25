@@ -1,7 +1,7 @@
 #ifndef HOLD_ARROW_H
 #define HOLD_ARROW_H
 
-#include "objects/Arrow.h"
+#include "objects/ArrowEnums.h"
 #include "utils/pool/ObjectPool.h"
 
 const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
@@ -14,11 +14,11 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
+  u32 headId;
   u32 fillCount;
+  u32 targetFillCount;
   int cachedStartY = HOLD_CACHE_MISS;
   int cachedEndY = HOLD_CACHE_MISS;
-  Arrow* lastFill;
-  Arrow* tail;
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}

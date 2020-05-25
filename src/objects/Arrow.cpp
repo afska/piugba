@@ -4,7 +4,6 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_arrows.h"
-#include "gameplay/HoldArrow.h"
 #include "utils/SpriteUtils.h"
 
 const u32 END_ANIMATION_START = 5;
@@ -95,6 +94,10 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
               type == ArrowType::HOLD_TAIL_EXTRA_FILL) &&
              isNearEnd() && isPressing) {
     end();
+  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
+             getFillIndex() + 1 > (int)holdArrow->targetFillCount) {
+    holdArrow->fillCount--;
+    end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
   } else
@@ -129,14 +132,3 @@ bool Arrow::isAligned() {
 bool Arrow::isNearEnd() {
   return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
 }
-
-void Arrow::setHoldArrow(HoldArrow* holdArrow) {
-  this->holdArrow = holdArrow;
-  holdStartTime = holdArrow->startTime;
-  holdEndTime = holdArrow->endTime;
-  previousFill = holdArrow->lastFill;
-}
-
-bool Arrow::isHoldArrowAlive() {
-  return holdArrow->startTime == holdStartTime;
-};

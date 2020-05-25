@@ -227,9 +227,9 @@ void ChartReader::startHoldNote(Event* event) {
       }
 
       holdArrow->direction = direction;
+      holdArrow->headId = head->id;
       holdArrow->fillCount = 0;
-      holdArrow->lastFill = head;
-      holdArrow->tail = NULL;
+      holdArrow->targetFillCount = 0;
     });
   });
 }
@@ -249,7 +249,6 @@ void ChartReader::endHoldNote(Event* event) {
                                               holdArrow);
               tail->initializeHoldBorder(ArrowType::HOLD_TAIL_ARROW, direction,
                                          event->timestamp, holdArrow);
-              holdArrow->tail = extraFill;
             },
             extraFill->id);
 
@@ -271,25 +270,35 @@ void ChartReader::processHoldArrows() {
       return;
     }
 
-    int startY = holdArrow->cachedStartY;
+    int startY = holdArrow->cachedStartY != HOLD_CACHE_MISS
+                     ? holdArrow->cachedStartY
+                     : getYFor(holdArrow->startTime);
+    // int startY = holdArrow->cachedStartY;
+    // if (startY == HOLD_CACHE_MISS) {
+    //   LOGSTR("WHY!", 6);  // TODO: FIX
+    // }
+
     int endY = holdArrow->cachedEndY != HOLD_CACHE_MISS ? holdArrow->cachedEndY
                                                         : ARROW_INITIAL_Y;
     int distance = endY - startY;
     int minimumDistance =
         ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
-    u32 targetFillCount =
+    holdArrow->targetFillCount =
         1 + max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
+    DEBULOG(holdArrow->targetFillCount);
+    LOGN(startY, 0);
+    LOGN(holdArrow->cachedEndY, 1);
+    LOGN(endY, 2);
+    LOGN(distance, 3);
+    u32 activeSprites = 0;
+    arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++; });
+    LOGN(activeSprites, 4);
+    // TODO: REMOVE^
 
-    while (holdArrow->fillCount > targetFillCount) {
-      holdArrow->fillCount--;
-      holdArrow->lastFill->scheduleDiscard();
-      holdArrow->lastFill = holdArrow->lastFill->getPreviousFill();
-    }
-
-    while (holdArrow->fillCount < targetFillCount) {
+    while (holdArrow->fillCount < holdArrow->targetFillCount) {
       Arrow* fill = holdArrow->fillCount == 0
-                        ? arrowPool->createWithIdGreaterThan(
-                              [](Arrow* it) {}, holdArrow->lastFill->id)
+                        ? arrowPool->createWithIdGreaterThan([](Arrow* it) {},
+                                                             holdArrow->headId)
                         : arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
@@ -299,7 +308,6 @@ void ChartReader::processHoldArrows() {
         break;
 
       holdArrow->fillCount++;
-      holdArrow->lastFill = fill;
     }
   });
 }
