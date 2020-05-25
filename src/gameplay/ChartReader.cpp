@@ -229,7 +229,6 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->direction = direction;
       holdArrow->headId = head->id;
       holdArrow->fillCount = 0;
-      holdArrow->targetFillCount = 0;
     });
   });
 }
@@ -283,9 +282,9 @@ void ChartReader::processHoldArrows() {
     int distance = endY - startY;
     int minimumDistance =
         ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
-    holdArrow->targetFillCount =
+    u32 targetFillCount =
         1 + max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
-    DEBULOG(holdArrow->targetFillCount);
+    DEBULOG(targetFillCount);
     LOGN(startY, 0);
     LOGN(holdArrow->cachedEndY, 1);
     LOGN(endY, 2);
@@ -295,7 +294,7 @@ void ChartReader::processHoldArrows() {
     LOGN(activeSprites, 4);
     // TODO: REMOVE^
 
-    while (holdArrow->fillCount < holdArrow->targetFillCount) {
+    while (holdArrow->fillCount < targetFillCount) {
       Arrow* fill = holdArrow->fillCount == 0
                         ? arrowPool->createWithIdGreaterThan([](Arrow* it) {},
                                                              holdArrow->headId)
@@ -309,6 +308,7 @@ void ChartReader::processHoldArrows() {
 
       holdArrow->fillCount++;
     }
+    holdArrow->fillCount = targetFillCount;
   });
 }
 

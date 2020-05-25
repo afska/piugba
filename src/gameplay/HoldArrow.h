@@ -16,7 +16,6 @@ class HoldArrow : public IPoolable {
   int endTime;
   u32 headId;
   u32 fillCount;
-  u32 targetFillCount;
   int cachedStartY = HOLD_CACHE_MISS;
   int cachedEndY = HOLD_CACHE_MISS;
 

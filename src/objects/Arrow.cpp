@@ -95,8 +95,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
              isNearEnd() && isPressing) {
     end();
   } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
-             getFillIndex() + 1 > (int)holdArrow->targetFillCount) {
-    holdArrow->fillCount--;
+             getFillIndex() + 1 > (int)holdArrow->fillCount) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
