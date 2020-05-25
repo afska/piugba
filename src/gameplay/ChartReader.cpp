@@ -272,11 +272,6 @@ void ChartReader::processHoldArrows() {
     int startY = holdArrow->cachedStartY != HOLD_CACHE_MISS
                      ? holdArrow->cachedStartY
                      : getYFor(holdArrow->startTime);
-    // int startY = holdArrow->cachedStartY;
-    // if (startY == HOLD_CACHE_MISS) {
-    //   LOGSTR("WHY!", 6);  // TODO: FIX
-    // }
-
     int endY = holdArrow->cachedEndY != HOLD_CACHE_MISS ? holdArrow->cachedEndY
                                                         : ARROW_INITIAL_Y;
     int distance = endY - startY;
@@ -284,15 +279,6 @@ void ChartReader::processHoldArrows() {
         ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
     u32 targetFillCount =
         1 + max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
-    DEBULOG(targetFillCount);
-    LOGN(startY, 0);
-    LOGN(holdArrow->cachedEndY, 1);
-    LOGN(endY, 2);
-    LOGN(distance, 3);
-    u32 activeSprites = 0;
-    arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++; });
-    LOGN(activeSprites, 4);
-    // TODO: REMOVE^
 
     while (holdArrow->fillCount < targetFillCount) {
       Arrow* fill = holdArrow->fillCount == 0
