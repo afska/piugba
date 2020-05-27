@@ -135,7 +135,6 @@ class ChartReader : public TimingProvider {
   void connectArrows(std::vector<Arrow*>& arrows);
   int getHeadY(Arrow* arrow);
   int getTailY(Arrow* arrow, int headY, int offsetY);
-  int calculateFills(HoldArrow* holdArrow, int endY);
 
   template <typename DEBUG>
   void logDebugInfo();

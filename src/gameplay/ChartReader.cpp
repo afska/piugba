@@ -87,18 +87,17 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_FILL:
         if (holdArrow != NULL) {
-          if (holdArrow->currentFillIndex == holdArrow->fillCount - 1) {
-            y = ARROW_OFFSCREEN_LIMIT - 1;
+          if (holdArrow->currentFillOffset + (int)ARROW_SIZE >
+              holdArrow->fillOffsetBottom) {
+            y = -ARROW_SIZE;
             break;
           }
 
           int headY = getHeadY(arrow);
-          int fillIndex = holdArrow->currentFillIndex + holdArrow->fillSkip;
-          int offsetY = ARROW_SIZE * fillIndex;
-          y = headY + offsetY;
-          holdArrow->currentFillIndex++;
+          holdArrow->currentFillOffset += ARROW_SIZE;
+          y = headY + holdArrow->currentFillOffset;
         } else
-          y = ARROW_OFFSCREEN_LIMIT - 1;  // TODO: Revise
+          y = -ARROW_SIZE;  // TODO: Revise
         break;
     }
     default:
@@ -247,8 +246,8 @@ void ChartReader::startHoldNote(Event* event) {
       }
 
       holdArrow->direction = direction;
-      holdArrow->fillSkip = 0;
-      holdArrow->fillCount = 0;
+      holdArrow->fillOffsetTop = 0;
+      holdArrow->fillOffsetBottom = 0;
       holdArrow->activeFillCount = 0;
     });
   });
@@ -290,12 +289,21 @@ void ChartReader::processHoldArrows() {
       return;
     }
 
-    holdArrow->fillSkip = calculateFills(holdArrow, -ARROW_SIZE);
-    holdArrow->fillCount =
-        1 + calculateFills(holdArrow, holdArrow->cachedEndY != HOLD_CACHE_MISS
-                                          ? holdArrow->cachedEndY
-                                          : ARROW_INITIAL_Y);
-    while (holdArrow->activeFillCount < holdArrow->getTargetFills()) {
+    int headY = holdArrow->cachedHeadY != HOLD_CACHE_MISS
+                    ? holdArrow->cachedHeadY
+                    : getYFor(holdArrow->startTime);
+    int minimumDistance =
+        ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
+    holdArrow->fillOffsetTop = max(-headY, 0) + minimumDistance;
+    holdArrow->fillOffsetBottom =
+        holdArrow->cachedTailY != HOLD_CACHE_MISS
+            ? holdArrow->cachedTailY + offsetY - ARROW_SIZE
+            : ARROW_INITIAL_Y;  // TODO: Calculate offsetY (extract method)
+    // ^^^^ offsetY = -ARROW_SIZE + HOLD_ARROW_TAIL_OFFSETS[arrow->direction]
+    u32 targetFills =
+        MATH_divCeil(holdArrow->getFillSectionLength(headY), ARROW_SIZE);
+
+    while (holdArrow->activeFillCount < targetFills) {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
@@ -305,13 +313,18 @@ void ChartReader::processHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
-
-    // LOGSTR("skip: " + std::to_string(holdArrow->fillSkip), 0);
-    // LOGSTR("count: " + std::to_string(holdArrow->fillCount), 1);
-    // u32 activeSprites = 0;
-    // arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++;
-    // }); LOGSTR("sprites: " + std::to_string(activeSprites), 2);
-    // LOGN(holdArrow->cachedStartY, 3);
+    LOGSTR("top: " + std::to_string(holdArrow->fillOffsetTop), 0);
+    LOGSTR("bottom: " + std::to_string(holdArrow->fillOffsetBottom), 1);
+    LOGSTR("fills: " + std::to_string(targetFills), 2);
+    LOGSTR("headY: " + std::to_string(headY), 3);
+    DEBULOG(holdArrow->activeFillCount);
+    (*((int*)NULL)) = 2;
+    u32 activeSprites = 0;
+    arrowPool->forEachActive([&activeSprites](Arrow* it) {
+      if (it->type == ArrowType::HOLD_FILL)
+        activeSprites++;
+    });
+    LOGSTR("sprites: " + std::to_string(activeSprites), 8);
     // // TODO: REMOVE
   });
 }
@@ -369,9 +382,9 @@ int ChartReader::getHeadY(Arrow* arrow) {
   int offsetY = ARROW_SIZE - HOLD_ARROW_FILL_OFFSETS[arrow->direction];
 
   int y = holdArrow != NULL
-              ? (((((((((((((holdArrow->getStartY([arrow, this]() {
+              ? ((((((((((((((holdArrow->getHeadY([arrow, this]() {
                   return getYFor(arrow->getHoldStartTime());
-                }))))))))))))))
+                })))))))))))))))
               : getYFor(arrow->getHoldStartTime());
   return y + offsetY + ARROW_SIZE;
 }
@@ -380,19 +393,8 @@ int ChartReader::getTailY(Arrow* arrow, int headY, int offsetY) {
   HoldArrow* holdArrow = arrow->getHoldArrow();
 
   return holdArrow != NULL
-             ? holdArrow->getEndY([arrow, headY, offsetY, this]() {
+             ? holdArrow->getTailY([arrow, headY, offsetY, this]() {
                  return max(getYFor(arrow->getHoldEndTime()) + offsetY, headY);
                })
              : max(getYFor(arrow->getHoldEndTime()) + offsetY, headY);
-}
-
-int ChartReader::calculateFills(HoldArrow* holdArrow, int endY) {
-  int minimumDistance =
-      ARROW_SIZE * 2 - HOLD_ARROW_FILL_OFFSETS[holdArrow->direction];
-
-  int startY = holdArrow->cachedStartY != HOLD_CACHE_MISS
-                   ? holdArrow->cachedStartY
-                   : getYFor(holdArrow->startTime);
-  int distance = endY - startY;
-  return max(MATH_divCeil(distance - minimumDistance, ARROW_SIZE), 0);
 }

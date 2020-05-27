@@ -14,38 +14,40 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  u32 fillSkip;
-  u32 fillCount;
+  int fillOffsetTop = 0;
+  int fillOffsetBottom;
   u32 activeFillCount;
-  u32 currentFillIndex = 0;
-  int cachedStartY = HOLD_CACHE_MISS;
-  int cachedEndY = HOLD_CACHE_MISS;
+  int currentFillOffset = 0;
+  int cachedHeadY = HOLD_CACHE_MISS;
+  int cachedTailY = HOLD_CACHE_MISS;
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
 
   inline void resetState() {
-    currentFillIndex = 0;
-    cachedStartY = HOLD_CACHE_MISS;
-    cachedEndY = HOLD_CACHE_MISS;
+    currentFillOffset = fillOffsetTop;
+    cachedHeadY = HOLD_CACHE_MISS;
+    cachedTailY = HOLD_CACHE_MISS;
   }
 
-  u32 getTargetFills() { return fillCount - fillSkip; }
-
-  template <typename F>
-  inline int getStartY(F get) {
-    if (cachedStartY == HOLD_CACHE_MISS)
-      cachedStartY = get();
-
-    return cachedStartY;
+  u32 getFillSectionLength(int headY) {
+    return fillOffsetBottom - (headY + fillOffsetTop);
   }
 
   template <typename F>
-  inline int getEndY(F get) {
-    if (cachedEndY == HOLD_CACHE_MISS)
-      cachedEndY = get();
+  inline int getHeadY(F get) {
+    if (cachedHeadY == HOLD_CACHE_MISS)
+      cachedHeadY = get();
 
-    return cachedEndY;
+    return cachedHeadY;
+  }
+
+  template <typename F>
+  inline int getTailY(F get) {
+    if (cachedTailY == HOLD_CACHE_MISS)
+      cachedTailY = get();
+
+    return cachedTailY;
   }
 };
 
