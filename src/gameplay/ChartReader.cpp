@@ -87,13 +87,18 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_FILL:
         if (holdArrow != NULL) {
+          if (holdArrow->currentFillIndex == holdArrow->fillCount - 1) {
+            y = ARROW_OFFSCREEN_LIMIT - 1;
+            break;
+          }
+
           int headY = getHeadY(arrow);
           int fillIndex = holdArrow->currentFillIndex + holdArrow->fillSkip;
           int offsetY = ARROW_SIZE * fillIndex;
           y = headY + offsetY;
           holdArrow->currentFillIndex++;
         } else
-          y = 0;  // TODO: Revise
+          y = ARROW_OFFSCREEN_LIMIT - 1;  // TODO: Revise
         break;
     }
     default:
@@ -301,13 +306,13 @@ void ChartReader::processHoldArrows() {
       holdArrow->activeFillCount++;
     }
 
-    LOGSTR("skip: " + std::to_string(holdArrow->fillSkip), 0);
-    LOGSTR("count: " + std::to_string(holdArrow->fillCount), 1);
-    u32 activeSprites = 0;
-    arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++; });
-    LOGSTR("sprites: " + std::to_string(activeSprites), 2);
-    LOGN(holdArrow->cachedStartY, 3);
-    // TODO: REMOVE
+    // LOGSTR("skip: " + std::to_string(holdArrow->fillSkip), 0);
+    // LOGSTR("count: " + std::to_string(holdArrow->fillCount), 1);
+    // u32 activeSprites = 0;
+    // arrowPool->forEachActive([&activeSprites](Arrow* it) { activeSprites++;
+    // }); LOGSTR("sprites: " + std::to_string(activeSprites), 2);
+    // LOGN(holdArrow->cachedStartY, 3);
+    // // TODO: REMOVE
   });
 }
 
