@@ -283,7 +283,8 @@ void ChartReader::orchestrateHoldArrows() {
         getHoldTopY(holdArrow, holdArrow->direction, holdArrow->startTime);
     int bottomY = holdArrow->hasEnded()
                       ? getHoldBottomY(holdArrow, holdArrow->direction,
-                                       holdArrow->endTime, topY)
+                                       holdArrow->endTime, topY) +
+                            ARROW_QUARTER_SIZE
                       : ARROW_INITIAL_Y + ARROW_SIZE;
     holdArrow->fillOffsetSkip = max(-topY, 0);
     holdArrow->fillOffsetBottom = bottomY - topY;
@@ -300,22 +301,23 @@ void ChartReader::orchestrateHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
-    LOGSTR("skip: " + std::to_string(holdArrow->fillOffsetSkip), 0);
-    LOGSTR("top: " + std::to_string(topY), 2);
-    LOGSTR("bottom: " + std::to_string(bottomY), 3);
-    LOGSTR("botOfs: " + std::to_string(holdArrow->fillOffsetBottom), 4);
-    LOGSTR("length: " +
-               std::to_string(holdArrow->getFillSectionLength(topY, bottomY)),
-           4);
-    LOGSTR("fills: " + std::to_string(targetFills), 5);
+    // LOGSTR("skip: " + std::to_string(holdArrow->fillOffsetSkip), 0);
+    // LOGSTR("top: " + std::to_string(topY), 2);
+    // LOGSTR("bottom: " + std::to_string(bottomY), 3);
+    // LOGSTR("botOfs: " + std::to_string(holdArrow->fillOffsetBottom), 4);
+    // LOGSTR("length: " +
+    //            std::to_string(holdArrow->getFillSectionLength(topY,
+    //            bottomY)),
+    //        4);
+    // LOGSTR("fills: " + std::to_string(targetFills), 5);
 
-    DEBULOG(holdArrow->activeFillCount);
-    u32 activeSprites = 0;
-    arrowPool->forEachActive([&activeSprites](Arrow* it) {
-      if (it->type == ArrowType::HOLD_FILL)
-        activeSprites++;
-    });
-    LOGSTR("tails: " + std::to_string(activeSprites), 8);
+    // DEBULOG(holdArrow->activeFillCount);
+    // u32 activeSprites = 0;
+    // arrowPool->forEachActive([&activeSprites](Arrow* it) {
+    //   if (it->type == ArrowType::HOLD_FILL)
+    //     activeSprites++;
+    // });
+    // LOGSTR("tails: " + std::to_string(activeSprites), 8);
   });
 }
 

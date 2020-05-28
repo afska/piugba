@@ -82,6 +82,8 @@ class Arrow : public IPoolable {
     endAnimationFrame = 0;
     isPressed = false;
     needsAnimation = false;
+
+    refresh();
   }
 
   inline void initializeHoldBorder(ArrowType type,
