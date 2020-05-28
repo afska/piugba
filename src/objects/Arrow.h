@@ -3,47 +3,12 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "ArrowEnums.h"
+#include "ArrowInfo.h"
 #include "gameplay/HoldArrow.h"
 #include "gameplay/TimingProvider.h"
 #include "score/Feedback.h"
 #include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
-
-// TEST MACROS
-#define TEST_MODE true
-#define KEYTEST_MODE false
-#define TIMINGTEST_MODE false
-#define IFTEST if (TEST_MODE)
-#define IFNOTTEST if (!TEST_MODE)
-#define IFKEYTEST if (KEYTEST_MODE)
-#define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define IFNOTKEYTEST if (!KEYTEST_MODE)
-#define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
-#define DEBULOG(NUM) LOGN(NUM, -1);
-#define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
-#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
-#include <libgba-sprite-engine/background/text_stream.h>
-
-const u32 ARROWS_TOTAL = 5;
-const u32 ARROW_FRAMES = 10;
-const int ARROW_OFFSCREEN_LIMIT = -13;
-const u32 ARROW_CORNER_MARGIN_X = 4;
-const u32 ARROW_TILEMAP_LOADING_ID = 1000;
-const u32 ARROW_ANIMATION_FRAMES = 5;
-const u32 ARROW_ANIMATION_DELAY = 2;
-const u32 ARROW_HOLD_FILL_TILE = 9;
-const u32 ARROW_HOLD_TAIL_TILE = 0;
-
-const u32 ARROW_DEFAULT_MULTIPLIER = 3;
-const u32 ARROW_MIN_MULTIPLIER = 1;
-const u32 ARROW_MAX_MULTIPLIER = 4;
-const u32 ARROW_SIZE = 16;
-const u32 ARROW_QUARTER_SIZE = 4;
-const u32 ARROW_MARGIN = ARROW_SIZE + 2;
-const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
-const u32 ARROW_FINAL_Y = 15;
-const u32 ARROW_DISTANCE = ARROW_INITIAL_Y - ARROW_FINAL_Y;
 
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
   switch (direction) {
@@ -117,8 +82,6 @@ class Arrow : public IPoolable {
     endAnimationFrame = 0;
     isPressed = false;
     needsAnimation = false;
-
-    refresh();
   }
 
   inline void initializeHoldBorder(ArrowType type,
@@ -187,7 +150,7 @@ class Arrow : public IPoolable {
   void end();
   void animatePress();
   bool isAligned();
-  bool isNearEnd();
+  bool isNearEnd(int newY);
 
   inline void setHoldArrow(HoldArrow* holdArrow) {
     this->holdArrow = holdArrow;

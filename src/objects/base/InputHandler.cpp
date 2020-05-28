@@ -1,6 +1,6 @@
 #include "InputHandler.h"
 
-#include "objects/Arrow.h"
+#include "objects/ArrowInfo.h"
 
 bool InputHandler::getIsPressed() {
   return isPressed;

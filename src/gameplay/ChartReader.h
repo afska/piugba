@@ -133,8 +133,15 @@ class ChartReader : public TimingProvider {
   void processHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  int getHeadY(Arrow* arrow);
-  int getTailY(Arrow* arrow, int headY, int offsetY);
+  int getHoldTopY(Arrow* arrow);
+  int getHoldTopY(HoldArrow* holdArrow,
+                  ArrowDirection direction,
+                  int startTime);
+  int getHoldBottomY(Arrow* arrow, int topY);
+  int getHoldBottomY(HoldArrow* holdArrow,
+                     ArrowDirection directon,
+                     int endTime,
+                     int topY);
 
   template <typename DEBUG>
   void logDebugInfo();

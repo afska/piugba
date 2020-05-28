@@ -93,7 +93,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   } else if ((type == ArrowType::HOLD_FILL ||
               type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
               type == ArrowType::HOLD_TAIL_EXTRA_FILL) &&
-             isNearEnd() && isPressing) {
+             isNearEnd(newY) && isPressing) {
     end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     end();
@@ -129,6 +129,6 @@ bool Arrow::isAligned() {
   return abs(sprite->getY() - ARROW_FINAL_Y) < ARROW_QUARTER_SIZE;
 }
 
-bool Arrow::isNearEnd() {
-  return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
+bool Arrow::isNearEnd(int newY) {
+  return newY <= (int)(ARROW_FINAL_Y);
 }
