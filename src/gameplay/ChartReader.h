@@ -86,7 +86,7 @@ class ChartReader : public TimingProvider {
     HoldArrow* min = NULL;
     holdArrows->forEachActive(
         [&direction, &action, &min, this](HoldArrow* holdArrow) {
-          if (holdArrow->direction != direction)
+          if (holdArrow->direction != direction || holdArrow->hasEnded())
             return;
 
           if (min == NULL || holdArrow->startTime < min->startTime)
@@ -135,15 +135,8 @@ class ChartReader : public TimingProvider {
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  int getHoldTopY(Arrow* arrow);
-  int getHoldTopY(HoldArrow* holdArrow,
-                  ArrowDirection direction,
-                  int startTime);
-  int getHoldBottomY(Arrow* arrow, int topY);
-  int getHoldBottomY(HoldArrow* holdArrow,
-                     ArrowDirection directon,
-                     int endTime,
-                     int topY);
+  int getHoldTopY(HoldArrow* holdArrow);
+  int getHoldBottomY(HoldArrow* holdArrow, int topY);
 };
 
 class CHART_DEBUG;

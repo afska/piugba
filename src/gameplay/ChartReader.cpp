@@ -59,7 +59,7 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_HEAD_EXTRA_FILL:
       case ArrowType::HOLD_HEAD_ARROW:
-        y = getHoldTopY(arrow) - ARROW_SIZE;
+        y = getHoldTopY(holdArrow) - ARROW_SIZE;
         if (arrow->type == ArrowType::HOLD_HEAD_ARROW)
           y -= HOLD_getFirstFillOffset(arrow->direction);
         break;
@@ -67,25 +67,22 @@ int ChartReader::getYFor(Arrow* arrow) {
     {
       case ArrowType::HOLD_TAIL_EXTRA_FILL:
       case ArrowType::HOLD_TAIL_ARROW:
-        int topY = getHoldTopY(arrow);
-        y = getHoldBottomY(arrow, topY);
+        int topY = getHoldTopY(holdArrow);
+        y = getHoldBottomY(holdArrow, topY);
         if (arrow->type == ArrowType::HOLD_TAIL_ARROW)
           y -= HOLD_getLastFillOffset(arrow->direction);
         break;
     }
     {
       case ArrowType::HOLD_FILL:
-        if (holdArrow != NULL) {
-          if (holdArrow->currentFillOffset >= holdArrow->fillOffsetBottom) {
-            y = -ARROW_SIZE;
-            break;
-          }
+        if (holdArrow->currentFillOffset >= holdArrow->fillOffsetBottom) {
+          y = -ARROW_SIZE;
+          break;
+        }
 
-          int topY = getHoldTopY(arrow);
-          y = topY + holdArrow->currentFillOffset;
-          holdArrow->currentFillOffset += ARROW_SIZE;
-        } else
-          y = -ARROW_SIZE;  // TODO: Revise
+        int topY = getHoldTopY(holdArrow);
+        y = topY + holdArrow->currentFillOffset;
+        holdArrow->currentFillOffset += ARROW_SIZE;
         break;
     }
     default:
@@ -273,19 +270,19 @@ void ChartReader::orchestrateHoldArrows() {
     if (msecs >= holdArrow->startTime)
       holdArrowFlags[holdArrow->direction] = true;
 
-    if (holdArrow->hasEnded() && msecs >= holdArrow->endTime) {
-      holdArrows->discard(holdArrow->id);
+    if (holdArrow->hasEnded() && msecs >= holdArrow->endTime)
       holdArrowFlags[holdArrow->direction] = false;
+
+    int topY = getHoldTopY(holdArrow);
+    int bottomY = (holdArrow->hasEnded() ? getHoldBottomY(holdArrow, topY)
+                                         : ARROW_INITIAL_Y) +
+                  ARROW_QUARTER_SIZE;
+
+    if (bottomY < (int)-ARROW_SIZE) {
+      holdArrows->discard(holdArrow->id);
       return;
     }
 
-    int topY =
-        getHoldTopY(holdArrow, holdArrow->direction, holdArrow->startTime);
-    int bottomY = holdArrow->hasEnded()
-                      ? getHoldBottomY(holdArrow, holdArrow->direction,
-                                       holdArrow->endTime, topY) +
-                            ARROW_QUARTER_SIZE
-                      : ARROW_INITIAL_Y + ARROW_SIZE;
     holdArrow->fillOffsetSkip = max(-topY, 0);
     holdArrow->fillOffsetBottom = bottomY - topY;
     u32 targetFills = MATH_divCeil(
@@ -369,38 +366,18 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   }
 }
 
-int ChartReader::getHoldTopY(Arrow* arrow) {
-  return getHoldTopY(arrow->getHoldArrow(), arrow->direction,
-                     arrow->getHoldStartTime());
-}
+int ChartReader::getHoldTopY(HoldArrow* holdArrow) {
+  int firstFillOffset = HOLD_getFirstFillOffset(holdArrow->direction);
 
-int ChartReader::getHoldTopY(HoldArrow* holdArrow,
-                             ArrowDirection direction,
-                             int startTime) {
-  int firstFillOffset = HOLD_getFirstFillOffset(direction);
-
-  int y = holdArrow != NULL
-              ? ((((((((((((((holdArrow->getHeadY([&startTime, this]() {
-                  return getYFor(startTime);
-                })))))))))))))))
-              : getYFor(startTime);
+  int y = holdArrow->getHeadY(
+      [holdArrow, this]() { return getYFor(holdArrow->startTime); });
   return y + firstFillOffset + ARROW_SIZE;
 }
 
-int ChartReader::getHoldBottomY(Arrow* arrow, int topY) {
-  return getHoldBottomY(arrow->getHoldArrow(), arrow->direction,
-                        arrow->getHoldEndTime(), topY);
-}
+int ChartReader::getHoldBottomY(HoldArrow* holdArrow, int topY) {
+  int lastFillOffset = HOLD_getLastFillOffset(holdArrow->direction);
 
-int ChartReader::getHoldBottomY(HoldArrow* holdArrow,
-                                ArrowDirection direction,
-                                int endTime,
-                                int topY) {
-  int lastFillOffset = HOLD_getLastFillOffset(direction);
-
-  return holdArrow != NULL
-             ? holdArrow->getTailY([&endTime, &topY, &lastFillOffset, this]() {
-                 return max(getYFor(endTime) + lastFillOffset, topY);
-               })
-             : max(getYFor(endTime) + lastFillOffset, topY);
+  return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
+    return max(getYFor(holdArrow->endTime) + lastFillOffset, topY);
+  });
 }

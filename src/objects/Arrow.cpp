@@ -109,7 +109,7 @@ ArrowState Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
 
-  if (type == ArrowType::HOLD_FILL && isHoldArrowAlive())
+  if (type == ArrowType::HOLD_FILL)
     holdArrow->activeFillCount--;
 
   return ArrowState::OUT;
