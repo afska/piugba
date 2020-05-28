@@ -286,7 +286,7 @@ void ChartReader::orchestrateHoldArrows() {
                                          : ARROW_INITIAL_Y) +
                   ARROW_QUARTER_SIZE;
 
-    if (bottomY < (int)-ARROW_SIZE) {
+    if (bottomY < (int)-ARROW_SIZE * 2) {
       holdArrows->discard(holdArrow->id);
       return;
     }
