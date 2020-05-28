@@ -27,7 +27,7 @@ ChartReader::ChartReader(Chart* chart,
   syncArrowTime();
 };
 
-bool ChartReader::preUpdate(int songMsecs) {
+bool ChartReader::update(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
@@ -45,20 +45,11 @@ bool ChartReader::preUpdate(int songMsecs) {
       return processTicks(rythmMsecs, false);
   }
 
-  holdArrows->forEachActive([](HoldArrow* it) { it->resetState(); });
   processNextEvents();
+  predictNoteEvents();
+  orchestrateHoldArrows();
   return processTicks(rythmMsecs, true);
 }
-
-void ChartReader::postUpdate() {
-  if (hasStopped)
-    return;
-
-  predictNoteEvents();
-  processHoldArrows();
-
-  IFTIMINGTEST { logDebugInfo<CHART_DEBUG>(); }
-};
 
 int ChartReader::getYFor(Arrow* arrow) {
   HoldArrow* holdArrow = arrow->getHoldArrow();
@@ -275,8 +266,10 @@ void ChartReader::endHoldNote(Event* event) {
   });
 }
 
-void ChartReader::processHoldArrows() {
+void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
+    holdArrow->resetState();
+
     if (msecs >= holdArrow->startTime)
       holdArrowFlags[holdArrow->direction] = true;
 
@@ -307,23 +300,22 @@ void ChartReader::processHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
-    // LOGSTR("skip: " + std::to_string(holdArrow->fillOffsetSkip), 0);
-    // LOGSTR("top: " + std::to_string(topY), 2);
-    // LOGSTR("bottom: " + std::to_string(bottomY), 3);
-    // LOGSTR("botOfs: " + std::to_string(holdArrow->fillOffsetBottom), 4);
-    // LOGSTR("length: " +
-    //            std::to_string(holdArrow->getFillSectionLength(topY,
-    //            bottomY)),
-    //        4);
-    // LOGSTR("fills: " + std::to_string(targetFills), 5);
+    LOGSTR("skip: " + std::to_string(holdArrow->fillOffsetSkip), 0);
+    LOGSTR("top: " + std::to_string(topY), 2);
+    LOGSTR("bottom: " + std::to_string(bottomY), 3);
+    LOGSTR("botOfs: " + std::to_string(holdArrow->fillOffsetBottom), 4);
+    LOGSTR("length: " +
+               std::to_string(holdArrow->getFillSectionLength(topY, bottomY)),
+           4);
+    LOGSTR("fills: " + std::to_string(targetFills), 5);
 
-    // DEBULOG(holdArrow->activeFillCount);
-    // u32 activeSprites = 0;
-    // arrowPool->forEachActive([&activeSprites](Arrow* it) {
-    //   if (it->type == ArrowType::HOLD_FILL)
-    //     activeSprites++;
-    // });
-    // LOGSTR("tails: " + std::to_string(activeSprites), 8);
+    DEBULOG(holdArrow->activeFillCount);
+    u32 activeSprites = 0;
+    arrowPool->forEachActive([&activeSprites](Arrow* it) {
+      if (it->type == ArrowType::HOLD_FILL)
+        activeSprites++;
+    });
+    LOGSTR("tails: " + std::to_string(activeSprites), 8);
   });
 }
 

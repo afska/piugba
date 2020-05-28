@@ -113,7 +113,7 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  bool isNewBeat = chartReader->preUpdate((int)songMsecs);
+  bool isNewBeat = chartReader->update((int)songMsecs);
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -128,7 +128,7 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  chartReader->postUpdate();
+  IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
 }
 
 void SongScene::setUpPalettes() {

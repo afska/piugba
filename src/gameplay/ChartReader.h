@@ -17,8 +17,7 @@ class ChartReader : public TimingProvider {
  public:
   ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
 
-  bool preUpdate(int msecs);
-  void postUpdate();
+  bool update(int msecs);
 
   int getYFor(Arrow* arrow);
 
@@ -32,6 +31,9 @@ class ChartReader : public TimingProvider {
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();
+
+  template <typename DEBUG>
+  void logDebugInfo();
 
  private:
   Chart* chart;
@@ -130,7 +132,7 @@ class ChartReader : public TimingProvider {
   void processUniqueNote(Event* event);
   void startHoldNote(Event* event);
   void endHoldNote(Event* event);
-  void processHoldArrows();
+  void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
   int getHoldTopY(Arrow* arrow);
@@ -142,9 +144,6 @@ class ChartReader : public TimingProvider {
                      ArrowDirection directon,
                      int endTime,
                      int topY);
-
-  template <typename DEBUG>
-  void logDebugInfo();
 };
 
 class CHART_DEBUG;
