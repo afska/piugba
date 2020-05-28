@@ -147,7 +147,7 @@ class Arrow : public IPoolable {
   bool isPressed = false;
   bool needsAnimation = false;
 
-  void end();
+  ArrowState end();
   void animatePress();
   bool isAligned();
   bool isNearEnd(int newY);
