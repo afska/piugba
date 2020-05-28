@@ -79,7 +79,6 @@ int ChartReader::getYFor(Arrow* arrow) {
           y = -ARROW_SIZE;
           break;
         }
-
         int topY = getHoldTopY(holdArrow);
         y = topY + holdArrow->currentFillOffset;
         holdArrow->currentFillOffset += ARROW_SIZE;
@@ -234,6 +233,7 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->fillOffsetSkip = 0;
       holdArrow->fillOffsetBottom = 0;
       holdArrow->activeFillCount = 0;
+      holdArrow->lastPressTopY = HOLD_NULL;
     });
   });
 }
@@ -274,6 +274,14 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrowFlags[holdArrow->direction] = false;
 
     int topY = getHoldTopY(holdArrow);
+    if (holdArrowFlags[holdArrow->direction] &&
+        judge->isPressed(holdArrow->direction))
+      holdArrow->updateLastPress(topY);
+    int lastPressDiff =
+        topY <= holdArrow->lastPressTopY && topY < 0
+            ? min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
+            : HOLD_FILL_FINAL_Y;
+    int screenTopY = HOLD_FILL_FINAL_Y - lastPressDiff;
     int bottomY = (holdArrow->hasEnded() ? getHoldBottomY(holdArrow, topY)
                                          : ARROW_INITIAL_Y) +
                   ARROW_QUARTER_SIZE;
@@ -283,7 +291,7 @@ void ChartReader::orchestrateHoldArrows() {
       return;
     }
 
-    holdArrow->fillOffsetSkip = max(-topY, 0);
+    holdArrow->fillOffsetSkip = max(screenTopY - topY, screenTopY);
     holdArrow->fillOffsetBottom = bottomY - topY;
     u32 targetFills = MATH_divCeil(
         holdArrow->getFillSectionLength(topY, bottomY), ARROW_SIZE);
@@ -298,23 +306,6 @@ void ChartReader::orchestrateHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
-    // LOGSTR("skip: " + std::to_string(holdArrow->fillOffsetSkip), 0);
-    // LOGSTR("top: " + std::to_string(topY), 2);
-    // LOGSTR("bottom: " + std::to_string(bottomY), 3);
-    // LOGSTR("botOfs: " + std::to_string(holdArrow->fillOffsetBottom), 4);
-    // LOGSTR("length: " +
-    //            std::to_string(holdArrow->getFillSectionLength(topY,
-    //            bottomY)),
-    //        4);
-    // LOGSTR("fills: " + std::to_string(targetFills), 5);
-
-    // DEBULOG(holdArrow->activeFillCount);
-    // u32 activeSprites = 0;
-    // arrowPool->forEachActive([&activeSprites](Arrow* it) {
-    //   if (it->type == ArrowType::HOLD_FILL)
-    //     activeSprites++;
-    // });
-    // LOGSTR("tails: " + std::to_string(activeSprites), 8);
   });
 }
 

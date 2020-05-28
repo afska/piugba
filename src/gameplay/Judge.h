@@ -32,6 +32,10 @@ class Judge {
     return diff < FRAME_MS * TIMING_WINDOW;
   }
 
+  inline bool isPressed(ArrowDirection direction) {
+    return arrowHolders->at(direction)->getIsPressed();
+  }
+
  private:
   ObjectPool<Arrow>* arrowPool;
   std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;

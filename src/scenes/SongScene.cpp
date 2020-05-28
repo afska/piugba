@@ -113,6 +113,9 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
+  updateArrowHolders();
+  processKeys(keys);
+
   bool isNewBeat = chartReader->update((int)songMsecs);
   if (isNewBeat)
     for (auto& arrowHolder : arrowHolders) {
@@ -121,8 +124,6 @@ void SongScene::tick(u16 keys) {
         arrowHolder->blink();
     }
 
-  updateArrowHolders();
-  processKeys(keys);
   updateFakeHeads();
   updateArrows();
   score->tick();
