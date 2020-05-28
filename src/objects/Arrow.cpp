@@ -59,8 +59,13 @@ void Arrow::press() {
 
 ArrowState Arrow::tick(int newY, bool isPressing) {
   sprite->flipHorizontally(flip);
+  bool isHoldArrow = type == ArrowType::HOLD_HEAD_ARROW ||
+                     type == ArrowType::HOLD_TAIL_ARROW ||
+                     type == ArrowType::HOLD_FILL ||
+                     type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
+                     type == ArrowType::HOLD_TAIL_EXTRA_FILL;
 
-  if (SPRITE_isHidden(sprite.get()))
+  if (SPRITE_isHidden(get()))
     return ArrowState::OUT;
 
   if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
@@ -81,24 +86,15 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
         if (type == ArrowType::HOLD_FAKE_HEAD)
           animatePress();
         else
-          end();
+          return end();
       }
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
-  } else if ((type == ArrowType::HOLD_HEAD ||
-              type == ArrowType::HOLD_TAIL_ARROW) &&
-             get()->getY() <= (int)ARROW_FINAL_Y && isPressing) {
-    end();
-  } else if ((type == ArrowType::HOLD_FILL ||
-              type == ArrowType::HOLD_TAIL_EXTRA_FILL) &&
-             isNearEnd() && isPressing) {
-    end();
-  } else if (type == ArrowType::HOLD_FILL && isHoldArrowAlive() &&
-             getFillIndex() + 1 > (int)holdArrow->fillCount) {
-    end();
+  } else if (isHoldArrow && isNearEnd(newY) && isPressing) {
+    return end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
-    end();
+    return end();
   } else
     sprite->moveTo(sprite->getX(), newY);
 
@@ -109,9 +105,14 @@ Sprite* Arrow::get() {
   return sprite.get();
 }
 
-void Arrow::end() {
+ArrowState Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
+
+  if (type == ArrowType::HOLD_FILL)
+    holdArrow->activeFillCount--;
+
+  return ArrowState::OUT;
 }
 
 void Arrow::animatePress() {
@@ -128,6 +129,6 @@ bool Arrow::isAligned() {
   return abs(sprite->getY() - ARROW_FINAL_Y) < ARROW_QUARTER_SIZE;
 }
 
-bool Arrow::isNearEnd() {
-  return sprite->getY() <= (int)(ARROW_FINAL_Y + ARROW_QUARTER_SIZE);
+bool Arrow::isNearEnd(int newY) {
+  return newY <= (int)(ARROW_FINAL_Y);
 }

@@ -1,12 +1,23 @@
 #ifndef HOLD_ARROW_H
 #define HOLD_ARROW_H
 
-#include "objects/ArrowEnums.h"
+#include <libgba-sprite-engine/gba/tonc_math.h>
+
+#include "objects/ArrowInfo.h"
 #include "utils/pool/ObjectPool.h"
 
-const int HOLD_ARROW_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
-const int HOLD_ARROW_TAIL_OFFSETS[] = {7, 8, 8, 8, 7};
-const int HOLD_CACHE_MISS = -99;
+const int HOLD_ARROW_FIRST_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
+const int HOLD_ARROW_LAST_FILL_OFFSETS[] = {7, 8, 8, 8, 7};
+const int HOLD_NULL = -999999;
+const int HOLD_FILL_FINAL_Y = ARROW_FINAL_Y + ARROW_SIZE;
+
+inline int HOLD_getFirstFillOffset(ArrowDirection direction) {
+  return ARROW_SIZE - HOLD_ARROW_FIRST_FILL_OFFSETS[direction];
+}
+
+inline int HOLD_getLastFillOffset(ArrowDirection direction) {
+  return -ARROW_SIZE + HOLD_ARROW_LAST_FILL_OFFSETS[direction];
+}
 
 class HoldArrow : public IPoolable {
  public:
@@ -14,33 +25,45 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  u32 headId;
-  u32 fillCount;
-  int cachedStartY = HOLD_CACHE_MISS;
-  int cachedEndY = HOLD_CACHE_MISS;
+  int fillOffsetSkip = 0;
+  int fillOffsetBottom;
+  u32 activeFillCount;
+  int lastPressTopY;
+  int currentFillOffset = 0;
+  int cachedHeadY = HOLD_NULL;
+  int cachedTailY = HOLD_NULL;
 
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
 
-  inline void resetCache() {
-    cachedStartY = HOLD_CACHE_MISS;
-    cachedEndY = HOLD_CACHE_MISS;
+  inline u32 getFillSectionLength(int topY, int bottomY) {
+    return max(bottomY - (topY + fillOffsetSkip), 0);
+  }
+
+  inline bool hasEnded() { return endTime > 0; }
+
+  inline void updateLastPress(int topY) { lastPressTopY = topY; }
+
+  inline void resetState() {
+    currentFillOffset = fillOffsetSkip;
+    cachedHeadY = HOLD_NULL;
+    cachedTailY = HOLD_NULL;
   }
 
   template <typename F>
-  inline int getStartY(F get) {
-    if (cachedStartY == HOLD_CACHE_MISS)
-      cachedStartY = get();
+  inline int getHeadY(F get) {
+    if (cachedHeadY == HOLD_NULL)
+      cachedHeadY = get();
 
-    return cachedStartY;
+    return cachedHeadY;
   }
 
   template <typename F>
-  inline int getEndY(F get) {
-    if (cachedEndY == HOLD_CACHE_MISS)
-      cachedEndY = get();
+  inline int getTailY(F get) {
+    if (cachedTailY == HOLD_NULL)
+      cachedTailY = get();
 
-    return cachedEndY;
+    return cachedTailY;
   }
 };
 

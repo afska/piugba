@@ -3,47 +3,12 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "ArrowEnums.h"
+#include "ArrowInfo.h"
 #include "gameplay/HoldArrow.h"
 #include "gameplay/TimingProvider.h"
 #include "score/Feedback.h"
 #include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
-
-// TEST MACROS
-#define TEST_MODE true
-#define KEYTEST_MODE false
-#define TIMINGTEST_MODE false
-#define IFTEST if (TEST_MODE)
-#define IFNOTTEST if (!TEST_MODE)
-#define IFKEYTEST if (KEYTEST_MODE)
-#define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define IFNOTKEYTEST if (!KEYTEST_MODE)
-#define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
-#define DEBULOG(NUM) LOGN(NUM, -1);
-#define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
-#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
-#include <libgba-sprite-engine/background/text_stream.h>
-
-const u32 ARROWS_TOTAL = 5;
-const u32 ARROW_FRAMES = 10;
-const int ARROW_OFFSCREEN_LIMIT = -13;
-const u32 ARROW_CORNER_MARGIN_X = 4;
-const u32 ARROW_TILEMAP_LOADING_ID = 1000;
-const u32 ARROW_ANIMATION_FRAMES = 5;
-const u32 ARROW_ANIMATION_DELAY = 2;
-const u32 ARROW_HOLD_FILL_TILE = 9;
-const u32 ARROW_HOLD_TAIL_TILE = 0;
-
-const u32 ARROW_DEFAULT_MULTIPLIER = 3;
-const u32 ARROW_MIN_MULTIPLIER = 1;
-const u32 ARROW_MAX_MULTIPLIER = 4;
-const u32 ARROW_SIZE = 16;
-const u32 ARROW_QUARTER_SIZE = 4;
-const u32 ARROW_MARGIN = ARROW_SIZE + 2;
-const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
-const u32 ARROW_FINAL_Y = 15;
-const u32 ARROW_DISTANCE = ARROW_INITIAL_Y - ARROW_FINAL_Y;
 
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
   switch (direction) {
@@ -80,8 +45,9 @@ class Arrow : public IPoolable {
   inline void initialize(ArrowType type,
                          ArrowDirection direction,
                          int timestamp) {
-    bool isHoldFill =
-        type == ArrowType::HOLD_FILL || type == ArrowType::HOLD_TAIL_EXTRA_FILL;
+    bool isHoldFill = type == ArrowType::HOLD_FILL ||
+                      type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
+                      type == ArrowType::HOLD_TAIL_EXTRA_FILL;
     bool isHoldTail = type == ArrowType::HOLD_TAIL_ARROW;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
@@ -109,9 +75,6 @@ class Arrow : public IPoolable {
 
     siblingId = -1;
     holdArrow = NULL;
-    holdStartTime = 0;
-    holdEndTime = 0;
-    fillIndex = -1;
     partialResult = FeedbackType::UNKNOWN;
     hasEnded = false;
     endAnimationFrame = 0;
@@ -126,28 +89,20 @@ class Arrow : public IPoolable {
                                    int timestamp,
                                    HoldArrow* holdArrow) {
     initialize(type, direction, timestamp);
-    setHoldArrow(holdArrow);
+    this->holdArrow = holdArrow;
   }
 
   inline void initializeHoldFill(ArrowDirection direction,
-                                 HoldArrow* holdArrow,
-                                 int fillIndex) {
+                                 HoldArrow* holdArrow) {
     initialize(ArrowType::HOLD_FILL, direction, timestamp);
-    setHoldArrow(holdArrow);
-    this->fillIndex = fillIndex;
+    this->holdArrow = holdArrow;
   }
 
   void discard() override;
   void scheduleDiscard();
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
-
-  inline HoldArrow* getHoldArrow() {
-    return isHoldArrowAlive() ? holdArrow : NULL;
-  }
-  inline int getHoldStartTime() { return holdStartTime; }
-  inline int getHoldEndTime() { return holdEndTime; }
-  inline int getFillIndex() { return fillIndex; }
+  inline HoldArrow* getHoldArrow() { return holdArrow; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -178,30 +133,17 @@ class Arrow : public IPoolable {
   u32 start = 0;
   bool flip = false;
   HoldArrow* holdArrow = NULL;
-  int holdStartTime = 0;
-  int holdEndTime = 0;
   int siblingId = -1;
-  int fillIndex = -1;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
 
-  void end();
+  ArrowState end();
   void animatePress();
   bool isAligned();
-  bool isNearEnd();
-
-  inline void setHoldArrow(HoldArrow* holdArrow) {
-    this->holdArrow = holdArrow;
-    holdStartTime = holdArrow->startTime;
-    holdEndTime = holdArrow->endTime;
-  }
-
-  inline bool isHoldArrowAlive() {
-    return holdArrow->startTime == holdStartTime;
-  };
+  bool isNearEnd(int newY);
 
   inline void refresh() {
     sprite->update();
