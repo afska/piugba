@@ -122,7 +122,7 @@ class ChartReader : public TimingProvider {
   }
 
   inline void setScrollSpeed(u32 bpm) {
-    targetArrowTime = Div(MINUTE * BEAT_UNIT, bpm * multiplier);
+    targetArrowTime = Div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, bpm * multiplier);
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 
