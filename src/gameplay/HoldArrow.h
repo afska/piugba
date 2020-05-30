@@ -20,6 +20,11 @@ inline int HOLD_getLastFillOffset(ArrowDirection direction) {
   return -ARROW_SIZE + HOLD_ARROW_LAST_FILL_OFFSETS[direction];
 }
 
+typedef struct {
+  bool isActive;
+  int lastStartTime;
+} HoldArrowState;
+
 class HoldArrow : public IPoolable {
  public:
   u32 id;

@@ -42,7 +42,7 @@ class ChartReader : public TimingProvider {
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  std::array<bool, ARROWS_TOTAL> holdArrowFlags;
+  std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
@@ -109,7 +109,8 @@ class ChartReader : public TimingProvider {
             max = holdArrow;
         });
 
-    if (max != NULL)
+    if (max != NULL &&
+        max->startTime == holdArrowStates[direction].lastStartTime)
       action(max);
   }
 

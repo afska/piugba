@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba_engine.h>
 
-// TEST MACROS
+// TEST MACROS ---
 #define TEST_MODE true
 #define KEYTEST_MODE false
 #define TIMINGTEST_MODE false
@@ -18,6 +18,7 @@
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #include <libgba-sprite-engine/background/text_stream.h>
+// ---------------
 
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;

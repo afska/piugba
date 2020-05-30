@@ -19,8 +19,10 @@ ChartReader::ChartReader(Chart* chart,
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    holdArrowFlags[i] = false;
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    holdArrowStates[i].isActive = false;
+    holdArrowStates[i].lastStartTime = 0;
+  }
 
   multiplier = ARROW_DEFAULT_MULTIPLIER;
   targetArrowTime = ARROW_TIME[multiplier];
@@ -92,7 +94,7 @@ int ChartReader::getYFor(Arrow* arrow) {
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
-  return holdArrowFlags[direction];
+  return holdArrowStates[direction].isActive;
 }
 
 bool ChartReader::hasJustStopped() {
@@ -207,7 +209,11 @@ void ChartReader::processUniqueNote(Event* event) {
 
 void ChartReader::startHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
-    holdArrows->create([event, &direction, this](HoldArrow* holdArrow) {
+    int lastStartTime = holdArrowStates[direction].lastStartTime;
+    holdArrowStates[direction].lastStartTime = event->timestamp;
+
+    holdArrows->create([event, &direction, &lastStartTime,
+                        this](HoldArrow* holdArrow) {
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
 
@@ -225,6 +231,7 @@ void ChartReader::startHoldNote(Event* event) {
           });
 
       if (head == NULL) {
+        holdArrowStates[direction].lastStartTime = lastStartTime;
         holdArrows->discard(holdArrow->id);
         return;
       }
@@ -268,13 +275,13 @@ void ChartReader::orchestrateHoldArrows() {
     holdArrow->resetState();
 
     if (msecs >= holdArrow->startTime)
-      holdArrowFlags[holdArrow->direction] = true;
+      holdArrowStates[holdArrow->direction].isActive = true;
 
     if (holdArrow->hasEnded() && msecs >= holdArrow->endTime)
-      holdArrowFlags[holdArrow->direction] = false;
+      holdArrowStates[holdArrow->direction].isActive = false;
 
     int topY = getHoldTopY(holdArrow);
-    if (holdArrowFlags[holdArrow->direction] &&
+    if (holdArrowStates[holdArrow->direction].isActive &&
         judge->isPressed(holdArrow->direction))
       holdArrow->updateLastPress(topY);
     int screenTopY =
