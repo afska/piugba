@@ -8,8 +8,9 @@
 
 const int HOLD_ARROW_FIRST_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
 const int HOLD_ARROW_LAST_FILL_OFFSETS[] = {7, 8, 8, 8, 7};
-const int HOLD_NULL = -999999;
+const int HOLD_OFFSCREEN_LIMIT = (int)-ARROW_SIZE * 2;
 const int HOLD_FILL_FINAL_Y = ARROW_FINAL_Y + ARROW_SIZE;
+const int HOLD_NULL = -999999999;
 
 inline int HOLD_getFirstFillOffset(ArrowDirection direction) {
   return ARROW_SIZE - HOLD_ARROW_FIRST_FILL_OFFSETS[direction];

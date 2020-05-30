@@ -278,7 +278,7 @@ void ChartReader::orchestrateHoldArrows() {
         judge->isPressed(holdArrow->direction))
       holdArrow->updateLastPress(topY);
     int screenTopY =
-        topY <= holdArrow->lastPressTopY && topY < 0
+        topY <= holdArrow->lastPressTopY
             ? HOLD_FILL_FINAL_Y -
                   min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
             : 0;
@@ -286,12 +286,13 @@ void ChartReader::orchestrateHoldArrows() {
                                          : ARROW_INITIAL_Y) +
                   ARROW_QUARTER_SIZE;
 
-    if (bottomY < (int)-ARROW_SIZE * 2) {
+    if (bottomY < HOLD_OFFSCREEN_LIMIT) {
       holdArrows->discard(holdArrow->id);
       return;
     }
 
-    holdArrow->fillOffsetSkip = max(screenTopY - topY, screenTopY);
+    holdArrow->fillOffsetSkip =
+        max(screenTopY - topY, topY > 0 ? 0 : screenTopY);
     holdArrow->fillOffsetBottom = bottomY - topY;
     u32 targetFills = MATH_divCeil(
         holdArrow->getFillSectionLength(topY, bottomY), ARROW_SIZE);
