@@ -277,11 +277,11 @@ void ChartReader::orchestrateHoldArrows() {
     if (holdArrowFlags[holdArrow->direction] &&
         judge->isPressed(holdArrow->direction))
       holdArrow->updateLastPress(topY);
-    int lastPressDiff =
+    int screenTopY =
         topY <= holdArrow->lastPressTopY && topY < 0
-            ? min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
-            : HOLD_FILL_FINAL_Y;
-    int screenTopY = HOLD_FILL_FINAL_Y - lastPressDiff;
+            ? HOLD_FILL_FINAL_Y -
+                  min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
+            : 0;
     int bottomY = (holdArrow->hasEnded() ? getHoldBottomY(holdArrow, topY)
                                          : ARROW_INITIAL_Y) +
                   ARROW_QUARTER_SIZE;
