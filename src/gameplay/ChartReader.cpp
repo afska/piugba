@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "debug/logDebugInfo.h"
-#include "utils/MathUtils.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 
@@ -127,7 +126,7 @@ int ChartReader::getYFor(int timestamp) {
   int now = hasStopped ? stopStart : msecs;
   int timeLeft = timestamp - now;
 
-  return min(ARROW_FINAL_Y + Div(timeLeft * ARROW_DISTANCE, arrowTime),
+  return min(ARROW_FINAL_Y + MATH_div(timeLeft * ARROW_DISTANCE, arrowTime),
              ARROW_INITIAL_Y);
 }
 

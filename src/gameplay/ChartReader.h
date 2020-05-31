@@ -11,6 +11,7 @@
 #include "TimingProvider.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
+#include "utils/MathUtils.h"
 #include "utils/pool/ObjectPool.h"
 
 class ChartReader : public TimingProvider {
@@ -123,7 +124,13 @@ class ChartReader : public TimingProvider {
   }
 
   inline void setScrollSpeed(u32 bpm) {
-    targetArrowTime = Div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, bpm * multiplier);
+    if (bpm == 0xffffffff) {
+      targetArrowTime = 0;
+      return;
+    }
+
+    targetArrowTime =
+        MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, bpm * multiplier);
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 
