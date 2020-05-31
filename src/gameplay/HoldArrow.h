@@ -21,6 +21,7 @@ inline int HOLD_getLastFillOffset(ArrowDirection direction) {
 
 typedef struct {
   bool isActive;
+  int currentStartTime;
   int lastStartTime;
 } HoldArrowState;
 

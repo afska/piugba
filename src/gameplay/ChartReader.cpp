@@ -21,6 +21,7 @@ ChartReader::ChartReader(Chart* chart,
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     holdArrowStates[i].isActive = false;
+    holdArrowStates[i].currentStartTime = 0;
     holdArrowStates[i].lastStartTime = 0;
   }
 
@@ -265,17 +266,20 @@ void ChartReader::endHoldNote(Event* event) {
 
 void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
+    ArrowDirection direction = holdArrow->direction;
     holdArrow->resetState();
 
-    if (msecs >= holdArrow->startTime)
-      holdArrowStates[holdArrow->direction].isActive = true;
+    if (msecs >= holdArrow->startTime) {
+      holdArrowStates[direction].currentStartTime = holdArrow->startTime;
+      holdArrowStates[direction].isActive = true;
+    }
 
-    if (holdArrow->hasEnded() && msecs >= holdArrow->endTime)
-      holdArrowStates[holdArrow->direction].isActive = false;
+    if (holdArrow->hasEnded() && msecs >= holdArrow->endTime &&
+        holdArrowStates[direction].currentStartTime == holdArrow->startTime)
+      holdArrowStates[direction].isActive = false;
 
     int topY = getFillTopY(holdArrow);
-    if (holdArrowStates[holdArrow->direction].isActive &&
-        judge->isPressed(holdArrow->direction))
+    if (holdArrowStates[direction].isActive && judge->isPressed(direction))
       holdArrow->updateLastPress(topY);
     int screenTopY =
         topY <= holdArrow->lastPressTopY
@@ -301,7 +305,7 @@ void ChartReader::orchestrateHoldArrows() {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
-        fill->initializeHoldFill(holdArrow->direction, holdArrow);
+        fill->initializeHoldFill(direction, holdArrow);
       else
         break;
 

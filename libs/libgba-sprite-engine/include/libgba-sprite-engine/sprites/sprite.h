@@ -145,7 +145,6 @@ inline void Sprite::moveTo(int x, int y) {
 
   this->x = x;
   this->y = y;
-  syncPosition();
 }
 
 inline bool Sprite::isOffScreen() {
