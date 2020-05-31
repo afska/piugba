@@ -222,11 +222,9 @@ void ChartReader::processUniqueNote(Event* event) {
 
 void ChartReader::startHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
-    int lastStartTime = holdArrowStates[direction].lastStartTime;
     holdArrowStates[direction].lastStartTime = event->timestamp;
 
-    holdArrows->create([event, &direction, &lastStartTime,
-                        this](HoldArrow* holdArrow) {
+    holdArrows->create([event, &direction, this](HoldArrow* holdArrow) {
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
 
@@ -237,7 +235,6 @@ void ChartReader::startHoldNote(Event* event) {
           });
 
       if (head == NULL) {
-        holdArrowStates[direction].lastStartTime = lastStartTime;
         holdArrows->discard(holdArrow->id);
         return;
       }
