@@ -14,9 +14,14 @@
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
 #define IFNOTKEYTEST if (!KEYTEST_MODE)
 #define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
-#define DEBULOG(NUM) LOGN(NUM, -1);
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
+#define DEBULOG(NUM) LOGN(NUM, -1)
+static int DEBULIST_LINE = -1;
+inline void DEBULIST(int num) {
+  LOGN(num, DEBULIST_LINE);
+  DEBULIST_LINE++;
+}
 #include <libgba-sprite-engine/background/text_stream.h>
 // ---------------
 

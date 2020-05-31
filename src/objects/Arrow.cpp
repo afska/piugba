@@ -89,8 +89,8 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
-  } else if (isHoldArrow && type != ArrowType::HOLD_FILL && isNearEnd(newY) &&
-             isPressing) {
+  } else if (isHoldArrow && (type != ArrowType::HOLD_FILL || isLastFill) &&
+             isNearEnd(newY) && isPressing) {
     return end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     return end();

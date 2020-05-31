@@ -31,7 +31,7 @@ class HoldArrow : public IPoolable {
   ArrowDirection direction;
   int startTime;
   int endTime;
-  int fillOffsetSkip = 0;
+  int fillOffsetSkip;
   int fillOffsetBottom;
   u32 activeFillCount;
   int lastPressTopY;
@@ -51,7 +51,6 @@ class HoldArrow : public IPoolable {
   inline void updateLastPress(int topY) { lastPressTopY = topY; }
 
   inline void resetState() {
-    currentFillOffset = fillOffsetSkip;
     cachedHeadY = HOLD_NULL;
     cachedTailY = HOLD_NULL;
   }

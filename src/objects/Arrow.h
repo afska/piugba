@@ -73,6 +73,7 @@ class Arrow : public IPoolable {
 
     siblingId = -1;
     holdArrow = NULL;
+    isLastFill = false;
     partialResult = FeedbackType::UNKNOWN;
     hasEnded = false;
     endAnimationFrame = 0;
@@ -102,6 +103,7 @@ class Arrow : public IPoolable {
 
   inline void setSiblingId(int siblingId) { this->siblingId = siblingId; }
   inline HoldArrow* getHoldArrow() { return holdArrow; }
+  inline void setIsLastFill(bool isLastFill) { this->isLastFill = isLastFill; }
 
   template <typename F>
   inline void forAll(ObjectPool<Arrow>* arrowPool, F func) {
@@ -131,8 +133,9 @@ class Arrow : public IPoolable {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
-  HoldArrow* holdArrow = NULL;
   int siblingId = -1;
+  HoldArrow* holdArrow = NULL;
+  bool isLastFill = false;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
   u32 endAnimationFrame = 0;

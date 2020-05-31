@@ -79,16 +79,15 @@ int ChartReader::getYFor(Arrow* arrow) {
           break;
         }
 
-        if (isFirst) {
-          arrow->get()->setPriority(ARROW_LAYER_MIDDLE);
-          y = getFillTopY(holdArrow);
-        } else if (isLast) {
+        if (isLast) {
           arrow->get()->setPriority(ARROW_LAYER_FRONT);
           y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) - ARROW_SIZE;
         } else {
-          arrow->get()->setPriority(ARROW_LAYER_FRONT);
+          arrow->get()->setPriority(isFirst ? ARROW_LAYER_MIDDLE
+                                            : ARROW_LAYER_FRONT);
           y = getFillTopY(holdArrow) + holdArrow->currentFillOffset;
         }
+        arrow->setIsLastFill(isLast);
         holdArrow->currentFillOffset += ARROW_SIZE;
         break;
     }
@@ -286,9 +285,8 @@ void ChartReader::orchestrateHoldArrows() {
             ? HOLD_FILL_FINAL_Y -
                   min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
             : 0;
-    int bottomY = (holdArrow->hasEnded() ? getFillBottomY(holdArrow, topY)
-                                         : ARROW_INITIAL_Y) +
-                  ARROW_QUARTER_SIZE;
+    int bottomY = holdArrow->hasEnded() ? getFillBottomY(holdArrow, topY)
+                                        : ARROW_INITIAL_Y;
 
     if (bottomY < ARROW_OFFSCREEN_LIMIT) {
       holdArrows->discard(holdArrow->id);
@@ -298,8 +296,8 @@ void ChartReader::orchestrateHoldArrows() {
     holdArrow->fillOffsetSkip =
         max(screenTopY - topY, topY > 0 ? 0 : screenTopY);
     holdArrow->fillOffsetBottom = bottomY - topY;
-    u32 targetFills = MATH_divCeil(
-        holdArrow->getFillSectionLength(topY, bottomY), ARROW_SIZE);
+    u32 fillSectionLength = holdArrow->getFillSectionLength(topY, bottomY);
+    u32 targetFills = MATH_divCeil(fillSectionLength, ARROW_SIZE);
 
     while (holdArrow->activeFillCount < targetFills) {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
@@ -311,6 +309,8 @@ void ChartReader::orchestrateHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
+
+    holdArrow->currentFillOffset = holdArrow->fillOffsetSkip;
   });
 }
 
