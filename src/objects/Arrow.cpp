@@ -59,11 +59,9 @@ void Arrow::press() {
 
 ArrowState Arrow::tick(int newY, bool isPressing) {
   sprite->flipHorizontally(flip);
-  bool isHoldArrow = type == ArrowType::HOLD_HEAD_ARROW ||
-                     type == ArrowType::HOLD_TAIL_ARROW ||
-                     type == ArrowType::HOLD_FILL ||
-                     type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
-                     type == ArrowType::HOLD_TAIL_EXTRA_FILL;
+  bool isHoldArrow = type == ArrowType::HOLD_HEAD ||
+                     type == ArrowType::HOLD_TAIL ||
+                     type == ArrowType::HOLD_FILL;
 
   if (SPRITE_isHidden(get()))
     return ArrowState::OUT;

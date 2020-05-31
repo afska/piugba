@@ -45,10 +45,8 @@ class Arrow : public IPoolable {
   inline void initialize(ArrowType type,
                          ArrowDirection direction,
                          int timestamp) {
-    bool isHoldFill = type == ArrowType::HOLD_FILL ||
-                      type == ArrowType::HOLD_HEAD_EXTRA_FILL ||
-                      type == ArrowType::HOLD_TAIL_EXTRA_FILL;
-    bool isHoldTail = type == ArrowType::HOLD_TAIL_ARROW;
+    bool isHoldFill = type == ArrowType::HOLD_FILL;
+    bool isHoldTail = type == ArrowType::HOLD_TAIL;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
     u32 start = 0;
@@ -81,13 +79,7 @@ class Arrow : public IPoolable {
     isPressed = false;
     needsAnimation = false;
 
-    if (type == ArrowType::HOLD_HEAD_EXTRA_FILL)
-      sprite->setPriority(ARROW_LAYER_MIDDLE);
-    else if (isHoldTail)
-      sprite->setPriority(ARROW_LAYER_BACK);
-    else
-      sprite->setPriority(ARROW_LAYER_FRONT);
-
+    sprite->setPriority(isHoldTail ? ARROW_LAYER_BACK : ARROW_LAYER_FRONT);
     refresh();
   }
 

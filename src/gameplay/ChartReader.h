@@ -136,8 +136,8 @@ class ChartReader : public TimingProvider {
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
-  int getHoldTopY(HoldArrow* holdArrow);
-  int getHoldBottomY(HoldArrow* holdArrow, int topY);
+  int getFillTopY(HoldArrow* holdArrow);
+  int getFillBottomY(HoldArrow* holdArrow, int topY);
 };
 
 class CHART_DEBUG;
