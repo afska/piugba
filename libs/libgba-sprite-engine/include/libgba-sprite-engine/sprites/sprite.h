@@ -58,7 +58,7 @@ class Sprite {
  private:
   inline void updateVelocity();
   inline void updateAnimation();
-  inline void syncVelocity();
+  inline void syncPosition();
 
  protected:
   const void* data;
@@ -93,7 +93,7 @@ class Sprite {
   inline u32 getImageSize() { return imageSize; }
   inline void setImageSize(u32 size) { imageSize = size; }
 
-  inline void setPriority(int priority) { this->priority = priority; }
+  inline void setPriority(u32 priority) { this->priority = priority; }
   inline void makeAnimated(int beginFrame,
                            int numberOfFrames,
                            int animationDelay);
@@ -145,7 +145,7 @@ inline void Sprite::moveTo(int x, int y) {
 
   this->x = x;
   this->y = y;
-  syncVelocity();
+  syncPosition();
 }
 
 inline bool Sprite::isOffScreen() {
@@ -179,9 +179,11 @@ inline void Sprite::makeAnimated(int beginFrame,
   animate();
 }
 
-inline void Sprite::syncVelocity() {
+inline void Sprite::syncPosition() {
   oam.attr0 = (oam.attr0 & ~ATTR0_Y_MASK) | (y & ATTR0_Y_MASK);
   oam.attr1 = (oam.attr1 & ~ATTR1_X_MASK) | (x & ATTR1_X_MASK);
+  oam.attr2 =
+      (oam.attr2 & ~ATTR2_PRIO_MASK) | (ATTR2_PRIO(priority) & ATTR2_PRIO_MASK);
 }
 
 inline void Sprite::syncAnimation() {
@@ -195,7 +197,7 @@ inline void Sprite::syncAnimation() {
 }
 
 inline void Sprite::syncOam() {
-  syncVelocity();
+  syncPosition();
   syncAnimation();
 }
 

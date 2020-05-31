@@ -81,9 +81,13 @@ class Arrow : public IPoolable {
     isPressed = false;
     needsAnimation = false;
 
-    sprite->setPriority(type == ArrowType::HOLD_HEAD_EXTRA_FILL || isHoldTail
-                            ? ARROW_LAYER_BACK
-                            : ARROW_LAYER_FRONT);
+    if (type == ArrowType::HOLD_HEAD_EXTRA_FILL)
+      sprite->setPriority(ARROW_LAYER_MIDDLE);
+    else if (isHoldTail)
+      sprite->setPriority(ARROW_LAYER_BACK);
+    else
+      sprite->setPriority(ARROW_LAYER_FRONT);
+
     refresh();
   }
 
