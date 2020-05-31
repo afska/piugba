@@ -266,9 +266,10 @@ void ChartReader::endHoldNote(Event* event) {
 void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
+    bool hasStarted = msecs >= holdArrow->startTime;
     holdArrow->resetState();
 
-    if (msecs >= holdArrow->startTime) {
+    if (hasStarted) {
       holdArrowStates[direction].currentStartTime = holdArrow->startTime;
       holdArrowStates[direction].isActive = true;
     }
@@ -278,7 +279,7 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrowStates[direction].isActive = false;
 
     int topY = getFillTopY(holdArrow);
-    if (holdArrowStates[direction].isActive && judge->isPressed(direction))
+    if (hasStarted && judge->isPressed(direction))
       holdArrow->updateLastPress(topY);
     int screenTopY =
         topY <= holdArrow->lastPressTopY
@@ -374,6 +375,6 @@ int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
   int lastFillOffset = HOLD_getLastFillOffset(holdArrow->direction);
 
   return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
-    return max(getYFor(holdArrow->endTime) + lastFillOffset + ARROW_SIZE, topY);
+    return max(getYFor(holdArrow->endTime) + lastFillOffset, topY) + ARROW_SIZE;
   });
 }

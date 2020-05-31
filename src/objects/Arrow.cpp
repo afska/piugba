@@ -129,5 +129,5 @@ bool Arrow::isAligned() {
 }
 
 bool Arrow::isNearEnd(int newY) {
-  return newY <= (int)(ARROW_FINAL_Y);
+  return newY <= (int)ARROW_FINAL_Y;
 }
