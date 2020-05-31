@@ -44,8 +44,10 @@ bool ChartReader::update(int songMsecs) {
       hasStopped = false;
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
-    } else
+    } else {
+      orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
+    }
   }
 
   processNextEvents();
