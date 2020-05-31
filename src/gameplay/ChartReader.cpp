@@ -70,7 +70,7 @@ int ChartReader::getYFor(Arrow* arrow) {
             holdArrow->currentFillOffset == holdArrow->fillOffsetSkip;
         bool isOut =
             holdArrow->currentFillOffset >= holdArrow->fillOffsetBottom;
-        bool isLast = !isOut && holdArrow->endTime > 0 &&
+        bool isLast = !isOut && holdArrow->hasEndTime() &&
                       holdArrow->currentFillOffset + (int)ARROW_SIZE >=
                           holdArrow->fillOffsetBottom;
 
@@ -266,7 +266,7 @@ void ChartReader::endHoldNote(Event* event) {
 void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
-    bool hasStarted = msecs >= holdArrow->startTime;
+    bool hasStarted = holdArrow->hasStarted(msecs);
     holdArrow->resetState();
 
     if (hasStarted) {
@@ -274,7 +274,7 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrowStates[direction].isActive = true;
     }
 
-    if (holdArrow->hasEnded() && msecs >= holdArrow->endTime &&
+    if (holdArrow->hasEnded(msecs) &&
         holdArrowStates[direction].currentStartTime == holdArrow->startTime)
       holdArrowStates[direction].isActive = false;
 
@@ -286,8 +286,8 @@ void ChartReader::orchestrateHoldArrows() {
             ? HOLD_FILL_FINAL_Y -
                   min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
             : 0;
-    int bottomY = holdArrow->hasEnded() ? getFillBottomY(holdArrow, topY)
-                                        : ARROW_INITIAL_Y;
+    int bottomY = holdArrow->hasEndTime() ? getFillBottomY(holdArrow, topY)
+                                          : ARROW_INITIAL_Y;
 
     if (bottomY < ARROW_OFFSCREEN_LIMIT) {
       holdArrows->discard(holdArrow->id);
@@ -335,7 +335,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
 
         withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
                                       this](HoldArrow* holdArrow) {
-          if (msecs >= holdArrow->startTime) {
+          if (holdArrow->isOccurring(msecs)) {
             arrows |= EVENT_ARROW_MASKS[direction];
 
             if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)

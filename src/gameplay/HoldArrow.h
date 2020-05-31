@@ -42,13 +42,20 @@ class HoldArrow : public IPoolable {
   HoldArrow(u32 id) { this->id = id; }
   void discard() override {}
 
+  inline bool hasStarted(int msecs) { return msecs >= startTime; }
+  inline bool hasEnded(int msecs) { return hasEndTime() && msecs >= endTime; }
+
+  inline bool isOccurring(int msecs) {
+    return hasStarted(msecs) && (!hasEndTime() || msecs < endTime);
+  }
+
+  inline bool hasEndTime() { return endTime > 0; }
+
+  inline void updateLastPress(int topY) { lastPressTopY = topY; }
+
   inline u32 getFillSectionLength(int topY, int bottomY) {
     return max(bottomY - (topY + fillOffsetSkip), 0);
   }
-
-  inline bool hasEnded() { return endTime > 0; }
-
-  inline void updateLastPress(int topY) { lastPressTopY = topY; }
 
   inline void resetState() {
     cachedHeadY = HOLD_NULL;

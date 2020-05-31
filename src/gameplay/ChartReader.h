@@ -86,7 +86,7 @@ class ChartReader : public TimingProvider {
     HoldArrow* min = NULL;
     holdArrows->forEachActive(
         [&direction, &action, &min, this](HoldArrow* holdArrow) {
-          if (holdArrow->direction != direction || holdArrow->hasEnded())
+          if (holdArrow->direction != direction)
             return;
 
           if (min == NULL || holdArrow->startTime < min->startTime)
