@@ -14,7 +14,7 @@ void Highlighter::initialize() {
   selectedItem = 0;
 
   BACKGROUND_setup(id, BG_SELECTIONMASK_METADATA.TILES_BANK,
-                   BG_SELECTIONMASK_METADATA.MAP_BANK);
+                   BG_SELECTIONMASK_METADATA.MAP_BANK, id);
   loadPalette();
   loadTiles();
   loadMap();

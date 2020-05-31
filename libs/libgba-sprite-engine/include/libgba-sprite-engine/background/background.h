@@ -24,7 +24,7 @@ class Background {
   const void* map;
   int size, bgIndex;
   int mapSize, mapLayout;
-  int screenBlockIndex, charBlockIndex;
+  int screenBlockIndex, charBlockIndex, priority;
   bool mosaicEnabled = false;
 
  public:
@@ -32,6 +32,7 @@ class Background {
   const int getCharBlock() { return charBlockIndex; }
   void useMapScreenBlock(int block) { screenBlockIndex = block; }
   void useCharBlock(int block) { charBlockIndex = block; }
+  void usePriority(int value) { priority = value; }
   void scroll(int x, int y);
   void scrollSpeed(int dx, int dy);
   void setMosaic(bool enabled) { mosaicEnabled = enabled; }
@@ -62,6 +63,7 @@ class Background {
         mapLayout(MAPLAYOUT_32X32),
         screenBlockIndex(0),
         charBlockIndex(bgIndex),
+        priority(bgIndex),
         mapSize(mapSize) {}
   virtual void persist();
   void updateMap(const void* map);

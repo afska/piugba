@@ -18,13 +18,16 @@ extern "C" {
 #include "player/player.h"
 }
 
-const u32 ID_DARKENER = 0;
-const u32 ID_MAIN_BACKGROUND = 1;
+const u32 DARKENER_ID = 0;
+const u32 DARKENER_PRIORITY = 2;
+const u32 MAIN_BACKGROUND_ID = 1;
+const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 
-static std::unique_ptr<Darkener> darkener{new Darkener(ID_DARKENER)};
+static std::unique_ptr<Darkener> darkener{
+    new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -153,10 +156,11 @@ void SongScene::setUpBackground() {
       gbfs_get_obj(fs, song->backgroundMapPath.c_str(), &backgroundMapLength);
 
   bg = std::unique_ptr<Background>(new Background(
-      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
+      MAIN_BACKGROUND_ID, backgroundTilesData, backgroundTilesLength,
       backgroundMapData, backgroundMapLength));
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->usePriority(MAIN_BACKGROUND_PRIORITY);
   bg->setMosaic(true);
 }
 

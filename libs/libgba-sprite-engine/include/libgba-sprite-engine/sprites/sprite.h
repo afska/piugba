@@ -93,6 +93,7 @@ class Sprite {
   inline u32 getImageSize() { return imageSize; }
   inline void setImageSize(u32 size) { imageSize = size; }
 
+  inline void setPriority(int priority) { this->priority = priority; }
   inline void makeAnimated(int beginFrame,
                            int numberOfFrames,
                            int animationDelay);

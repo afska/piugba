@@ -5,12 +5,13 @@
 
 class Darkener {
  public:
-  Darkener(u8 id);
+  Darkener(u8 id, u8 priority);
 
   void initialize();
 
  private:
   u8 id;
+  u8 priority;
 };
 
 #endif  // DARKENER_H
