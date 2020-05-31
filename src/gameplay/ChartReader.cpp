@@ -217,18 +217,16 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
 
-      Arrow* head =
-          arrowPool->create([event, &direction, &holdArrow, this](Arrow* head) {
-            head->initializeHoldBorder(ArrowType::HOLD_HEAD_ARROW, direction,
-                                       event->timestamp, holdArrow);
-            arrowPool->createWithIdGreaterThan(
-                [event, &direction, &holdArrow](Arrow* extraFill) {
-                  extraFill->initializeHoldBorder(
-                      ArrowType::HOLD_HEAD_EXTRA_FILL, direction,
-                      event->timestamp, holdArrow);
-                },
-                head->id);
-          });
+      Arrow* head = arrowPool->create([event, &direction, &holdArrow,
+                                       this](Arrow* head) {
+        head->initializeHoldBorder(ArrowType::HOLD_HEAD_ARROW, direction,
+                                   event->timestamp, holdArrow);
+        arrowPool->create([event, &direction, &holdArrow](Arrow* extraFill) {
+          extraFill->initializeHoldBorder(ArrowType::HOLD_HEAD_EXTRA_FILL,
+                                          direction, event->timestamp,
+                                          holdArrow);
+        });
+      });
 
       if (head == NULL) {
         holdArrowStates[direction].lastStartTime = lastStartTime;
@@ -247,26 +245,25 @@ void ChartReader::startHoldNote(Event* event) {
 
 void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
-    withLastHoldArrow(direction, [&event, &direction,
-                                  this](HoldArrow* holdArrow) {
-      holdArrow->endTime = event->timestamp;
+    withLastHoldArrow(
+        direction, [&event, &direction, this](HoldArrow* holdArrow) {
+          holdArrow->endTime = event->timestamp;
 
-      arrowPool->create([&holdArrow, &event, &direction,
-                         this](Arrow* extraFill) {
-        Arrow* tail = arrowPool->createWithIdGreaterThan(
-            [&holdArrow, &event, &extraFill, &direction, this](Arrow* tail) {
+          arrowPool->create([&holdArrow, &event, &direction,
+                             this](Arrow* extraFill) {
+            Arrow* tail = arrowPool->create([&holdArrow, &event, &extraFill,
+                                             &direction, this](Arrow* tail) {
               extraFill->initializeHoldBorder(ArrowType::HOLD_TAIL_EXTRA_FILL,
                                               direction, event->timestamp,
                                               holdArrow);
               tail->initializeHoldBorder(ArrowType::HOLD_TAIL_ARROW, direction,
                                          event->timestamp, holdArrow);
-            },
-            extraFill->id);
+            });
 
-        if (tail == NULL)
-          arrowPool->discard(extraFill->id);
-      });
-    });
+            if (tail == NULL)
+              arrowPool->discard(extraFill->id);
+          });
+        });
   });
 }
 

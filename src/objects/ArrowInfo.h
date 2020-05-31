@@ -5,7 +5,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 
 // TEST MACROS ---
-#define TEST_MODE false
+#define TEST_MODE true
 #define KEYTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
@@ -25,6 +25,8 @@ const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_CORNER_MARGIN_X = 4;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
+const u32 ARROW_LAYER_FRONT = 0;
+const u32 ARROW_LAYER_BACK = 1;
 const u32 ARROW_ANIMATION_FRAMES = 5;
 const u32 ARROW_ANIMATION_DELAY = 2;
 const u32 ARROW_HOLD_FILL_TILE = 9;

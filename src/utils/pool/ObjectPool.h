@@ -45,34 +45,6 @@ class ObjectPool {
     return NULL;
   }
 
-  template <typename F>
-  inline T* createWithIdGreaterThan(F initialize, u32 id) {
-    for (auto& it : objects) {
-      if (!it->isActive && it->object->id > id) {
-        it->isActive = true;
-        initialize(it->object);
-        return it->object;
-      }
-    }
-
-    CRASH();
-    return NULL;
-  }
-
-  template <typename F>
-  inline T* createWithIdLowerThan(F initialize, u32 id) {
-    for (auto& it : objects) {
-      if (!it->isActive && it->object->id < id) {
-        it->isActive = true;
-        initialize(it->object);
-        return it->object;
-      }
-    }
-
-    CRASH();
-    return NULL;
-  }
-
   T* getByIndex(u32 index) {
     auto element = objects[index];
     return element->isActive ? objects[index]->object : NULL;
