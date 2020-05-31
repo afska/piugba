@@ -62,6 +62,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   bool isHoldArrow = type == ArrowType::HOLD_HEAD ||
                      type == ArrowType::HOLD_TAIL ||
                      type == ArrowType::HOLD_FILL;
+  bool isHoldFill = type == ArrowType::HOLD_FILL;
 
   if (SPRITE_isHidden(get()))
     return ArrowState::OUT;
@@ -89,8 +90,11 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();
-  } else if (isHoldArrow && (type != ArrowType::HOLD_FILL || isLastFill) &&
-             isNearEnd(newY) && isPressing) {
+  } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
+             isPressing) {
+    if (!isHoldFill && isPressing)
+      markAsPressed();
+
     return end();
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     return end();
