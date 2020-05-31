@@ -13,10 +13,6 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
 }
 
 void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
-  bool isUnique = arrow->type == ArrowType::UNIQUE;
-  if (!isUnique || arrow->getIsPressed())
-    return;
-
   int actualMsecs = timingProvider->getMsecs() + offset;
   int expectedMsecs = arrow->timestamp;
   u32 diff = (u32)abs(actualMsecs - expectedMsecs);

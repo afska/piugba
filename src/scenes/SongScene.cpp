@@ -185,35 +185,55 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  arrowPool->forEachActive([this](Arrow* it) {
-    ArrowDirection direction = it->direction;
-    bool isStopped = chartReader->isStopped();
-    bool isOut = false;
+  std::array<Arrow*, ARROWS_TOTAL> nextArrows;
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    nextArrows[i] = NULL;
 
-    int newY = chartReader->getYFor(it);
+  // update sprites
+  arrowPool->forEachActive([&nextArrows, this](Arrow* arrow) {
+    ArrowDirection direction = arrow->direction;
+    bool isStopped = chartReader->isStopped();
+
+    int newY = chartReader->getYFor(arrow);
     bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
-    ArrowState arrowState = it->tick(newY, isPressing);
+    ArrowState arrowState = arrow->tick(newY, isPressing);
 
     if (arrowState == ArrowState::OUT) {
-      isOut = true;
-      judge->onOut(it);
+      judge->onOut(arrow);
+      return;
     }
 
+    bool canBeJudged =
+        arrow->type == ArrowType::UNIQUE && !arrow->getIsPressed();
+    if (canBeJudged && (nextArrows[direction] == NULL ||
+                        arrow->timestamp < nextArrows[direction]->timestamp))
+      nextArrows[direction] = arrow;
+  });
+
+  // judge key press events
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto arrow = nextArrows[i];
+    bool isStopped = chartReader->isStopped();
+    if (arrow == NULL)
+      continue;
+
+    ArrowDirection direction = arrow->direction;
     bool canBeJudged = true;
     int judgementOffset = 0;
+
     if (isStopped) {
       bool hasJustStopped = chartReader->hasJustStopped();
       bool isAboutToResume = chartReader->isAboutToResume();
 
-      canBeJudged = it->timestamp >= chartReader->getStopStart() &&
+      canBeJudged = arrow->timestamp >= chartReader->getStopStart() &&
                     (hasJustStopped || isAboutToResume);
       judgementOffset = isAboutToResume ? -chartReader->getStopLength() : 0;
     }
 
     bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();
-    if (!isOut && canBeJudged && hasBeenPressedNow)
-      judge->onPress(it, chartReader.get(), judgementOffset);
-  });
+    if (canBeJudged && hasBeenPressedNow)
+      judge->onPress(arrow, chartReader.get(), judgementOffset);
+  }
 }
 
 void SongScene::updateFakeHeads() {
