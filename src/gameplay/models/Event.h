@@ -32,7 +32,7 @@ typedef struct {
   int timestamp;  // in ms
   u8 data;
   /* {
-        [bits 0-2] type (see EnumType)
+        [bits 0-2] type (see EventType)
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
