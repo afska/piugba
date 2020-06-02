@@ -57,12 +57,11 @@ module.exports = class Chart {
         data: it,
       })),
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.scrolls.map((it) => ({ type: Events.SET_SCROLL, data: it })),
       this.header.tickcounts.map((it) => ({
         type: Events.SET_TICKCOUNT,
         data: it,
       })),
-      //this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
-      // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
     ])
       .flatten()
       .sortBy("data.key")
@@ -71,8 +70,6 @@ module.exports = class Chart {
     let currentTimestamp = 0;
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
-    let currentScrollEnabled = true;
-    let currentScrollTimestamp = 0;
 
     return _(segments)
       .map(({ type, data }, i) => {
@@ -106,29 +103,17 @@ module.exports = class Chart {
               type,
               length,
             };
-          case Events.STOP_ASYNC:
-            const scrollEnabled = data.value > 0;
-
-            if (scrollEnabled && !currentScrollEnabled) {
-              length = timestamp - currentScrollTimestamp;
-              currentScrollEnabled = true;
-              currentScrollTimestamp = timestamp;
-
-              return {
-                timestamp,
-                type,
-                length,
-              };
-            }
-
-            currentScrollEnabled = scrollEnabled;
-            currentScrollTimestamp = timestamp;
-            return null;
           case Events.SET_TEMPO:
             return {
               timestamp,
               type,
               bpm: currentBpm,
+            };
+          case Events.SET_SCROLL:
+            return {
+              timestamp,
+              type,
+              scroll: (1 / data.value) * FIXED_POINT_PRECISION,
             };
           case Events.SET_TICKCOUNT:
             return {
@@ -233,3 +218,4 @@ const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
 const NOTE_DATA = /^\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
+const FIXED_POINT_PRECISION = 1000;

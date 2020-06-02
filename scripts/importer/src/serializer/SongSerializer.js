@@ -54,13 +54,15 @@ module.exports = class SongSerializer {
         this.Int32LE(event.timestamp);
 
         if (event.type === Events.SET_TEMPO)
-          this.UInt8(event.type).UInt32LE(Math.round(event.bpm));
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.bpm));
+        else if (event.type === Events.SET_SCROLL)
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.scroll));
         else if (event.type === Events.SET_TICKCOUNT)
-          this.UInt8(event.type).UInt32LE(Math.round(event.tickcount));
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
-          this.UInt8(Events.STOP).UInt32LE(Math.round(event.length));
+          this.UInt8(Events.STOP).UInt32LE(normalizeUInt(event.length));
         else if (event.type === Events.WARP)
-          this.UInt8(event.type).UInt32LE(Math.round(event.length));
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
         else {
           const data = _.range(0, 5).reduce(
             (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
@@ -85,8 +87,14 @@ module.exports = class SongSerializer {
   }
 };
 
+const normalizeUInt = (number) => {
+  if (number === Infinity || number > INFINITY) return INFINITY;
+  return Math.round(number);
+};
+
 const TITLE_LEN = 31;
 const ARTIST_LEN = 27;
+const INFINITY = 0xffffffff;
 
 const ARROW_MASKS = [
   0b00001000,
