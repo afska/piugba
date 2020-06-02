@@ -26,7 +26,7 @@ class ChartReader : public TimingProvider {
   inline void setMultiplier(u32 multiplier) {
     this->multiplier =
         max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
-    setScrollSpeed(bpm);
+    syncScrollSpeed();
   }
 
   bool isHoldActive(ArrowDirection direction);
@@ -42,8 +42,10 @@ class ChartReader : public TimingProvider {
   Judge* judge;
   u32 targetArrowTime;
   u32 multiplier;
+  u32 scrollFactor;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
+  int displayMsecs = 0;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
@@ -123,14 +125,9 @@ class ChartReader : public TimingProvider {
     }
   }
 
-  inline void setScrollSpeed(u32 bpm) {
-    if (bpm == 0xffffffff) {
-      targetArrowTime = 0;
-      return;
-    }
-
+  inline void syncScrollSpeed() {
     targetArrowTime =
-        MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, bpm * multiplier);
+        MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, MATH_mul(bpm, multiplier));
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 

@@ -2,9 +2,38 @@
 #define MATH_UTILS_H
 
 #include <libgba-sprite-engine/gba/tonc_bios.h>
+#include <stdint.h>
 
-inline u32 MATH_div(int numerator, int denominator) {
-  return denominator == 0 ? 0xffffffff : (u32)Div(numerator, denominator);
+#define INFINITY (u32)0xFFFFFFFF
+
+extern "C" {
+uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
+}
+
+// Frac is in [0, INFINITY]
+// => x * 0.5 = fracumul(x, INFINITY / 2);
+inline u32 MATH_fracumul(u32 x, u32 frac) {
+  return frac == 1 ? x : fracumul(x, frac);
+}
+
+inline u32 MATH_div(u32 numerator, u32 denominator) {
+  if (denominator == 0)
+    return INFINITY;
+  if (denominator == INFINITY)
+    return 0;
+
+  return Div(numerator, denominator);
+}
+
+inline u32 MATH_mul(u32 n1, u32 n2) {
+  return n1 == INFINITY || n2 == INFINITY ? INFINITY : n1 * n2;
+}
+
+inline void MATH_approximate(u32* value, u32 targetValue, u32 maxJump) {
+  if (targetValue > *value)
+    *value += min(targetValue - *value, maxJump);
+  else
+    *value -= min(*value - targetValue, maxJump);
 }
 
 inline int MATH_divCeil(int numerator, int denominator) {

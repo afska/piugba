@@ -113,7 +113,7 @@ module.exports = class Chart {
             return {
               timestamp,
               type,
-              scroll: (1 / data.value) * FIXED_POINT_PRECISION,
+              scroll: data.value === 1 ? 1 : data.value * FIXED_POINT_PRECISION,
             };
           case Events.SET_TICKCOUNT:
             return {
@@ -218,4 +218,4 @@ const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
 const NOTE_DATA = /^\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
-const FIXED_POINT_PRECISION = 1000;
+const FIXED_POINT_PRECISION = 0xffffffff + 1;
