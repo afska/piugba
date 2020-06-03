@@ -25,6 +25,7 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
+const u32 BLINK_LEVEL = 3;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -76,6 +77,7 @@ void SongScene::load() {
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
 
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
@@ -88,7 +90,7 @@ void SongScene::load() {
         }
       }));
   chartReader = std::unique_ptr<ChartReader>(
-      new ChartReader(chart, arrowPool.get(), judge.get()));
+      new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get()));
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
@@ -127,6 +129,7 @@ void SongScene::tick(u16 keys) {
         arrowHolder->blink();
     }
 
+  pixelBlink->tick();
   updateFakeHeads();
   updateArrows();
   score->tick();

@@ -3,10 +3,10 @@ const events = {
   HOLD_START: 1,
   HOLD_END: 2,
   SET_TEMPO: 3,
-  SET_TICKCOUNT: 4,
-  STOP: 5,
-  WARP: 6,
-  STOP_ASYNC: 15,
+  SET_SCROLL: 4,
+  SET_TICKCOUNT: 5,
+  STOP: 6,
+  WARP: 7,
 };
 
 module.exports = {

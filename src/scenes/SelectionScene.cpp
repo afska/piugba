@@ -33,6 +33,7 @@ const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
+const u32 BLINK_LEVEL = 6;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -64,7 +65,7 @@ void SelectionScene::load() {
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
   selectInput = std::unique_ptr<InputHandler>(new InputHandler());
   setUpPager();
 

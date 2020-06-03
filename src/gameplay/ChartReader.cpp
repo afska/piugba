@@ -10,10 +10,12 @@ const u32 HOLD_ARROW_POOL_SIZE = 10;
 
 ChartReader::ChartReader(Chart* chart,
                          ObjectPool<Arrow>* arrowPool,
-                         Judge* judge) {
+                         Judge* judge,
+                         PixelBlink* pixelBlink) {
   this->chart = chart;
   this->arrowPool = arrowPool;
   this->judge = judge;
+  this->pixelBlink = pixelBlink;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
@@ -26,6 +28,7 @@ ChartReader::ChartReader(Chart* chart,
 
   multiplier = ARROW_DEFAULT_MULTIPLIER;
   targetArrowTime = ARROW_TIME[multiplier];
+  scrollFactor = 1;
   syncArrowTime();
 };
 
@@ -33,10 +36,7 @@ bool ChartReader::update(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  if (targetArrowTime > arrowTime)
-    arrowTime += min(targetArrowTime - arrowTime, MAX_ARROW_TIME_JUMP);
-  else
-    arrowTime -= min(arrowTime - targetArrowTime, MAX_ARROW_TIME_JUMP);
+  MATH_approximate(&arrowTime, targetArrowTime, MAX_ARROW_TIME_JUMP);
 
   if (hasStopped) {
     if (msecs >= stopStart + (int)stopLength) {
@@ -60,49 +60,49 @@ int ChartReader::getYFor(Arrow* arrow) {
 
   int y;
   switch (arrow->type) {
-    {
-      case ArrowType::HOLD_HEAD:
-        y = getFillTopY(holdArrow) - HOLD_getFirstFillOffset(arrow->direction);
-        break;
+    case ArrowType::HOLD_HEAD: {
+      y = getFillTopY(holdArrow) - HOLD_getFirstFillOffset(arrow->direction);
+      break;
     }
-    {
-      case ArrowType::HOLD_FILL:
-        bool isFirst =
-            holdArrow->currentFillOffset == holdArrow->fillOffsetSkip;
-        bool isOut =
-            holdArrow->currentFillOffset >= holdArrow->fillOffsetBottom;
-        bool isLast = !isOut && holdArrow->hasEndTime() &&
-                      holdArrow->currentFillOffset + (int)ARROW_SIZE >=
-                          holdArrow->fillOffsetBottom;
+    case ArrowType::HOLD_FILL: {
+      bool isFirst = holdArrow->currentFillOffset == holdArrow->fillOffsetSkip;
+      bool isOut = holdArrow->currentFillOffset >= holdArrow->fillOffsetBottom;
+      bool isLast = !isOut && holdArrow->hasEndTime() &&
+                    holdArrow->currentFillOffset + (int)ARROW_SIZE >=
+                        holdArrow->fillOffsetBottom;
 
-        if (isOut) {
-          y = -ARROW_SIZE;
-          break;
-        }
+      if (isOut)
+        return -ARROW_SIZE;
 
-        if (isLast) {
-          arrow->get()->setPriority(ARROW_LAYER_FRONT);
-          y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) - ARROW_SIZE;
-        } else {
-          arrow->get()->setPriority(isFirst ? ARROW_LAYER_MIDDLE
-                                            : ARROW_LAYER_FRONT);
-          y = getFillTopY(holdArrow) + holdArrow->currentFillOffset;
-        }
-        arrow->setIsLastFill(isLast);
-        holdArrow->currentFillOffset += ARROW_SIZE;
-        break;
+      if (isLast) {
+        arrow->get()->setPriority(ARROW_LAYER_FRONT);
+        y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) - ARROW_SIZE;
+      } else {
+        arrow->get()->setPriority(isFirst ? ARROW_LAYER_MIDDLE
+                                          : ARROW_LAYER_FRONT);
+        y = getFillTopY(holdArrow) + holdArrow->currentFillOffset;
+      }
+      arrow->setIsLastFill(isLast);
+      holdArrow->currentFillOffset += ARROW_SIZE;
+      break;
     }
-    {
-      case ArrowType::HOLD_TAIL:
-        y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) -
-            HOLD_getLastFillOffset(arrow->direction) - ARROW_SIZE;
-        break;
+    case ArrowType::HOLD_TAIL: {
+      y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) -
+          HOLD_getLastFillOffset(arrow->direction) - ARROW_SIZE;
+      break;
     }
     default:
       y = getYFor(arrow->timestamp);
   };
 
-  return min(y, ARROW_INITIAL_Y);
+  int currentY = arrow->get()->getY();
+  int diff = y - currentY;
+  int sgnDiff = diff >= 0 ? 1 : -1;
+  u32 absDiff = abs(diff);
+  u32 scrolledAbsDiff = MATH_fracumul(absDiff, scrollFactor);
+  int finalY = currentY + sgnDiff * scrolledAbsDiff;
+
+  return min(finalY, ARROW_INITIAL_Y);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
@@ -122,7 +122,7 @@ bool ChartReader::isAboutToResume() {
 
 int ChartReader::getYFor(int timestamp) {
   // arrowTime ms           -> ARROW_DISTANCE px
-  // timeLeft ms             -> x = timeLeft * ARROW_DISTANCE / arrowTime
+  // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE / arrowTime
   int now = hasStopped ? stopStart : msecs;
   int timeLeft = timestamp - now;
 
@@ -133,17 +133,25 @@ int ChartReader::getYFor(int timestamp) {
 void ChartReader::processNextEvents() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
     switch (type) {
-      case EventType::SET_TEMPO:
-        setScrollSpeed(event->extra);
+      case EventType::SET_TEMPO: {
+        u32 oldBpm = bpm;
+        bpm = event->extra;
+        syncScrollSpeed();
 
-        if (bpm > 0) {
+        if (oldBpm > 0) {
           lastBpmChange = event->timestamp;
           subtick = 0;
         } else
           syncArrowTime();
-
-        bpm = event->extra;
         return true;
+      }
+      case EventType::SET_SCROLL: {
+        if (event->extra != scrollFactor)
+          pixelBlink->blink();
+
+        scrollFactor = event->extra;
+        return true;
+      }
       case EventType::SET_TICKCOUNT:
         tickCount = event->extra;
         lastTick = -1;
@@ -155,6 +163,7 @@ void ChartReader::processNextEvents() {
 
         arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
         holdArrows->clear();
+        pixelBlink->blink();
 
         *stop = true;
         return true;

@@ -13,6 +13,7 @@
 #include "objects/LifeBar.h"
 #include "objects/base/InputHandler.h"
 #include "objects/score/Score.h"
+#include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
 class SongScene : public Scene {
@@ -39,6 +40,7 @@ class SongScene : public Scene {
   std::unique_ptr<Judge> judge;
   std::unique_ptr<LifeBar> lifeBar;
   std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
