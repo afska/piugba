@@ -7,7 +7,7 @@
 
 class PixelBlink {
  public:
-  PixelBlink();
+  PixelBlink(u32 targetValue);
 
   void blink();
   void blinkAndThen(std::function<void()> callback);
@@ -15,6 +15,7 @@ class PixelBlink {
   void tick();
 
  private:
+  u32 targetValue;
   u32 step = 0;
   bool isBlinking = false;
   std::function<void()> callback = NULL;

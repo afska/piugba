@@ -12,11 +12,15 @@
 #include "models/Song.h"
 #include "objects/Arrow.h"
 #include "utils/MathUtils.h"
+#include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
 class ChartReader : public TimingProvider {
  public:
-  ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
+  ChartReader(Chart* chart,
+              ObjectPool<Arrow>*,
+              Judge* judge,
+              PixelBlink* pixelBlink);
 
   bool update(int msecs);
 
@@ -40,12 +44,12 @@ class ChartReader : public TimingProvider {
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
+  PixelBlink* pixelBlink;
   u32 targetArrowTime;
   u32 multiplier;
   u32 scrollFactor;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
-  int displayMsecs = 0;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;

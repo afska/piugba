@@ -10,10 +10,12 @@ const u32 HOLD_ARROW_POOL_SIZE = 10;
 
 ChartReader::ChartReader(Chart* chart,
                          ObjectPool<Arrow>* arrowPool,
-                         Judge* judge) {
+                         Judge* judge,
+                         PixelBlink* pixelBlink) {
   this->chart = chart;
   this->arrowPool = arrowPool;
   this->judge = judge;
+  this->pixelBlink = pixelBlink;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
@@ -32,7 +34,6 @@ ChartReader::ChartReader(Chart* chart,
 
 bool ChartReader::update(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
-  int oldMsecs = msecs;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
   MATH_approximate(&arrowTime, targetArrowTime, MAX_ARROW_TIME_JUMP);
@@ -47,9 +48,6 @@ bool ChartReader::update(int songMsecs) {
       return processTicks(rythmMsecs, false);
     }
   }
-
-  // displayMsecs += MATH_fracumul(msecs - oldMsecs, scrollFactor);
-  // TODO: Use it?
 
   processNextEvents();
   predictNoteEvents();
@@ -103,7 +101,6 @@ int ChartReader::getYFor(Arrow* arrow) {
   u32 absDiff = abs(diff);
   u32 scrolledAbsDiff = MATH_fracumul(absDiff, scrollFactor);
   int finalY = currentY + sgnDiff * scrolledAbsDiff;
-  // TODO: Avoid jumps
 
   return min(finalY, ARROW_INITIAL_Y);
 }
@@ -149,6 +146,9 @@ void ChartReader::processNextEvents() {
         return true;
       }
       case EventType::SET_SCROLL: {
+        if (event->extra != scrollFactor)
+          pixelBlink->blink();
+
         scrollFactor = event->extra;
         return true;
       }
@@ -160,10 +160,10 @@ void ChartReader::processNextEvents() {
       case EventType::WARP:
         warpedMs += event->extra;
         msecs += event->extra;
-        // TODO: Update displayMsecs?
 
         arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
         holdArrows->clear();
+        pixelBlink->blink();
 
         *stop = true;
         return true;

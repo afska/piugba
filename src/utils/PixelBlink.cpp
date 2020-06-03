@@ -4,9 +4,9 @@
 
 #include "EffectUtils.h"
 
-const u32 TARGET_VALUE = 6;
-
-PixelBlink::PixelBlink() {}
+PixelBlink::PixelBlink(u32 targetValue) {
+  this->targetValue = targetValue;
+}
 
 void PixelBlink::blink() {
   step = 0;
@@ -19,9 +19,12 @@ void PixelBlink::blinkAndThen(std::function<void()> callback) {
 }
 
 void PixelBlink::tick() {
+  if (!isBlinking && step == 0)
+    return;
+
   if (isBlinking) {
     step++;
-    if (step == TARGET_VALUE) {
+    if (step == targetValue) {
       isBlinking = false;
       if (callback != NULL) {
         callback();
@@ -29,7 +32,7 @@ void PixelBlink::tick() {
       }
     }
   } else
-    step = max(step - 1, 0);
+    step--;
 
   EFFECT_setMosaic(step);
 }
