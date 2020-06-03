@@ -191,7 +191,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force
+	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force --json
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)
