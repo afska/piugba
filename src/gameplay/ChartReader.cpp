@@ -146,10 +146,11 @@ void ChartReader::processNextEvents() {
         return true;
       }
       case EventType::SET_SCROLL: {
-        if (event->extra != scrollFactor)
-          pixelBlink->blink();
+        // if (event->extra != scrollFactor)
+        //   pixelBlink->blink();
 
-        scrollFactor = event->extra;
+        scrollFactor = 1;  // event->extra;
+        // TODO: REMOVE SCROLLS OR ONLY USE THEM AS ASYNC STOPS (BINARY FACTORS)
         return true;
       }
       case EventType::SET_TICKCOUNT:

@@ -25,7 +25,7 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
-const u32 BLINK_LEVEL = 3;
+const u32 BLINK_LEVEL = 2;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
