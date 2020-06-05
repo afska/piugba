@@ -104,6 +104,22 @@ module.exports = class Chart {
               length,
             };
           case Events.SET_TEMPO:
+            if (data.value > FAST_BPM_WARP) {
+              const nextSegment = segments[i + 1];
+              if (!nextSegment) return null;
+
+              length = this._getRangeDuration(
+                currentBeat,
+                nextSegment.data.key
+              );
+
+              return {
+                timestamp,
+                type: Events.WARP,
+                length,
+              };
+            }
+
             return {
               timestamp,
               type,
@@ -175,7 +191,7 @@ module.exports = class Chart {
   }
 
   _getBpmByBeat(beat) {
-    const bpm = _.findLast(this.header.bpms, (bpm) => beat >= bpm.key);
+    const bpm = _.findLast(this._getFiniteBpms(), (bpm) => beat >= bpm.key);
     if (!bpm) return 0;
 
     return bpm.value;
@@ -195,11 +211,14 @@ module.exports = class Chart {
 
     for (let beat = startBeat; beat < endBeat; beat += FUSE) {
       const bpm = this._getBpmByBeat(beat);
-      const beatLength = this._getBeatLengthByBpm(bpm) * FUSE;
-      length += beatLength;
+      length += this._getBeatLengthByBpm(bpm) * FUSE;
     }
 
     return length;
+  }
+
+  _getFiniteBpms() {
+    return this.header.bpms.filter((it) => it.value <= FAST_BPM_WARP);
   }
 
   _isInsideWarp(timestamp, timingEvents) {
@@ -216,6 +235,7 @@ module.exports = class Chart {
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const BEAT_UNIT = 4;
+const FAST_BPM_WARP = 9999999;
 const NOTE_DATA = /^\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
 const FIXED_POINT_PRECISION = 0xffffffff + 1;
