@@ -162,7 +162,10 @@ void ChartReader::processNextEvents() {
         warpedMs += event->extra;
         msecs += event->extra;
 
-        arrowPool->forEachActive([](Arrow* it) { it->scheduleDiscard(); });
+        arrowPool->forEachActive([](Arrow* it) {
+          if (it->type != ArrowType::UNIQUE)
+            it->scheduleDiscard();
+        });
         holdArrows->clear();
         pixelBlink->blink();
 
