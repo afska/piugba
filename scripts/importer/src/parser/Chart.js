@@ -40,7 +40,11 @@ module.exports = class Chart {
             arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
           }))
           .filter((it) => _.some(it.arrows))
-          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
+          .reject(
+            (it) =>
+              it.type === Events.NOTE &&
+              this._isInsideWarp(it.timestamp, timingEvents)
+          )
           .value();
       });
     });

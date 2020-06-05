@@ -161,12 +161,6 @@ void ChartReader::processNextEvents() {
       case EventType::WARP:
         warpedMs += event->extra;
         msecs += event->extra;
-
-        arrowPool->forEachActive([](Arrow* it) {
-          if (it->type != ArrowType::UNIQUE)
-            it->scheduleDiscard();
-        });
-        holdArrows->clear();
         pixelBlink->blink();
 
         *stop = true;
