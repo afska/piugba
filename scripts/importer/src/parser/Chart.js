@@ -48,31 +48,32 @@ module.exports = class Chart {
 
   _getTimingEvents() {
     const segments = _([
-      this.header.warps.map((it) => ({
-        type: Events.WARP,
-        data: it,
-      })),
-      [...this.header.stops, ...this.header.delays].map((it) => ({
-        type: Events.STOP,
-        data: it,
-      })),
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
       this.header.scrolls.map((it) => ({ type: Events.SET_SCROLL, data: it })),
       this.header.tickcounts.map((it) => ({
         type: Events.SET_TICKCOUNT,
         data: it,
       })),
+      [...this.header.stops, ...this.header.delays].map((it) => ({
+        type: Events.STOP,
+        data: it,
+      })),
+      this.header.warps.map((it) => ({
+        type: Events.WARP,
+        data: it,
+      })),
     ])
       .flatten()
-      .sortBy("data.key")
+      .sortBy(["data.key", "type"])
       .value();
 
     let currentTimestamp = 0;
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
+    let warpStart = -1;
 
     return _(segments)
-      .map(({ type, data }, i) => {
+      .flatMap(({ type, data }, i) => {
         const beat = data.key;
         const beatLength = this._getBeatLengthByBpm(currentBpm);
         currentTimestamp += (beat - currentBeat) * beatLength;
@@ -81,11 +82,67 @@ module.exports = class Chart {
         const timestamp = currentTimestamp;
 
         if (data.value < 0) throw new Error("invalid_negative_timing_segment");
+        const createWarp = () => {
+          const length = timestamp - warpStart;
+          if (length === 0) return null;
 
-        let length;
+          return {
+            timestamp: warpStart,
+            type: Events.WARP,
+            length: timestamp - warpStart,
+          };
+        };
+
         switch (type) {
-          case Events.WARP:
-            length = this._getRangeDuration(
+          case Events.SET_TEMPO: {
+            if (data.value > FAST_BPM_WARP) {
+              if (warpStart === -1) warpStart = timestamp;
+              return null;
+            }
+
+            const bpmChange = {
+              timestamp,
+              type,
+              bpm: currentBpm,
+            };
+
+            if (warpStart > -1) {
+              const warp = createWarp();
+              warpStart = -1;
+              return [warp, bpmChange];
+            } else {
+              return bpmChange;
+            }
+          }
+          case Events.SET_SCROLL: {
+            return {
+              timestamp,
+              type,
+              scroll: data.value === 1 ? 1 : data.value * FIXED_POINT_PRECISION,
+            };
+          }
+          case Events.SET_TICKCOUNT: {
+            return {
+              timestamp,
+              type,
+              tickcount: data.value,
+            };
+          }
+          case Events.STOP: {
+            const length = data.value * SECOND;
+            const stop = { timestamp, type, length };
+
+            if (warpStart > -1) {
+              const warp = createWarp();
+              warpStart = timestamp;
+
+              return [warp, stop];
+            } else {
+              return stop;
+            }
+          }
+          case Events.WARP: {
+            const length = this._getRangeDuration(
               currentBeat,
               currentBeat + data.value
             );
@@ -95,48 +152,7 @@ module.exports = class Chart {
               type,
               length,
             };
-          case Events.STOP:
-            length = data.value * SECOND;
-
-            return {
-              timestamp,
-              type,
-              length,
-            };
-          case Events.SET_TEMPO:
-            if (data.value > FAST_BPM_WARP) {
-              const nextSegment = segments[i + 1];
-              if (!nextSegment) return null;
-
-              length = this._getRangeDuration(
-                currentBeat,
-                nextSegment.data.key
-              );
-
-              return {
-                timestamp,
-                type: Events.WARP,
-                length,
-              };
-            }
-
-            return {
-              timestamp,
-              type,
-              bpm: currentBpm,
-            };
-          case Events.SET_SCROLL:
-            return {
-              timestamp,
-              type,
-              scroll: data.value === 1 ? 1 : data.value * FIXED_POINT_PRECISION,
-            };
-          case Events.SET_TICKCOUNT:
-            return {
-              timestamp,
-              type,
-              tickcount: data.value,
-            };
+          }
           default:
             throw new Error("unknown_timing_segment");
         }

@@ -54,11 +54,11 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
       case EventType::SET_TICKCOUNT:
         typeStr = "tick";
         break;
-      case EventType::STOP:
-        typeStr = "stop";
-        break;
       case EventType::WARP:
         typeStr = "warp";
+        break;
+      case EventType::STOP:
+        typeStr = "stop";
         break;
       default:
         typeStr = std::to_string(type);
