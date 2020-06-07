@@ -12,7 +12,9 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      _.sortBy([...timingEvents, ...noteEvents], ["timestamp", "type"])
+      this._applyAsyncStops(
+        this._sort([...timingEvents, ...noteEvents], ["timestamp", "type"])
+      )
     );
   }
 
@@ -53,7 +55,6 @@ module.exports = class Chart {
   _getTimingEvents() {
     const segments = _([
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
-      this.header.scrolls.map((it) => ({ type: Events.SET_SCROLL, data: it })),
       this.header.tickcounts.map((it) => ({
         type: Events.SET_TICKCOUNT,
         data: it,
@@ -62,6 +63,7 @@ module.exports = class Chart {
         type: Events.STOP,
         data: it,
       })),
+      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
       this.header.warps.map((it) => ({
         type: Events.WARP,
         data: it,
@@ -75,9 +77,11 @@ module.exports = class Chart {
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
     let warpStart = -1;
+    let currentScrollEnabled = true;
+    let currentScrollTimestamp = 0;
 
     return _(segments)
-      .flatMap(({ type, data }, i) => {
+      .flatMap(({ type, data }) => {
         const beat = data.key;
         const beatLength = this._getBeatLengthByBpm(currentBpm);
         currentTimestamp += (beat - currentBeat) * beatLength;
@@ -118,13 +122,6 @@ module.exports = class Chart {
               return bpmChange;
             }
           }
-          case Events.SET_SCROLL: {
-            return {
-              timestamp,
-              type,
-              scroll: data.value === 1 ? 1 : data.value * FIXED_POINT_PRECISION,
-            };
-          }
           case Events.SET_TICKCOUNT: {
             return {
               timestamp,
@@ -144,6 +141,27 @@ module.exports = class Chart {
             } else {
               return stop;
             }
+          }
+          case Events.STOP_ASYNC: {
+            const scrollEnabled = data.value > 0;
+
+            if (!currentScrollEnabled && scrollEnabled) {
+              const length = timestamp - currentScrollTimestamp;
+              currentScrollEnabled = true;
+
+              return {
+                timestamp: currentScrollTimestamp,
+                type,
+                length,
+              };
+            }
+
+            if (currentScrollEnabled && !scrollEnabled) {
+              currentScrollEnabled = false;
+              currentScrollTimestamp = timestamp;
+            }
+
+            return null;
           }
           case Events.WARP: {
             const length = this._getRangeDuration(
@@ -170,6 +188,37 @@ module.exports = class Chart {
       ...it,
       timestamp: Math.round(this.header.offset + it.timestamp),
     }));
+  }
+
+  _applyAsyncStops(events) {
+    let stoppedTime = 0;
+
+    return this._sort(
+      _(events)
+        .map((it) => {
+          if (it.type === Events.STOP_ASYNC) {
+            const timestamp = it.timestamp - stoppedTime;
+            stoppedTime += it.length;
+
+            return {
+              ...it,
+              timestamp,
+              type: Events.STOP,
+            };
+          }
+
+          return {
+            ...it,
+            timestamp: it.timestamp - stoppedTime,
+          };
+        })
+        .compact()
+        .value()
+    );
+  }
+
+  _sort(events) {
+    return _.sortBy(events, ["timestamp", "type"]);
   }
 
   _getMeasures() {

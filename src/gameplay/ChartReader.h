@@ -47,7 +47,6 @@ class ChartReader : public TimingProvider {
   PixelBlink* pixelBlink;
   u32 targetArrowTime;
   u32 multiplier;
-  u32 scrollFactor;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
   u32 eventIndex = 0;

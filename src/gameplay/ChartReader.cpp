@@ -28,7 +28,6 @@ ChartReader::ChartReader(Chart* chart,
 
   multiplier = ARROW_DEFAULT_MULTIPLIER;
   targetArrowTime = ARROW_TIME[multiplier];
-  scrollFactor = 1;
   syncArrowTime();
 };
 
@@ -95,14 +94,7 @@ int ChartReader::getYFor(Arrow* arrow) {
       y = getYFor(arrow->timestamp);
   };
 
-  int currentY = arrow->get()->getY();
-  int diff = y - currentY;
-  int sgnDiff = diff >= 0 ? 1 : -1;
-  u32 absDiff = abs(diff);
-  u32 scrolledAbsDiff = MATH_fracumul(absDiff, scrollFactor);
-  int finalY = currentY + sgnDiff * scrolledAbsDiff;
-
-  return min(finalY, ARROW_INITIAL_Y);
+  return min(y, ARROW_INITIAL_Y);
 }
 
 bool ChartReader::isHoldActive(ArrowDirection direction) {
@@ -145,12 +137,8 @@ void ChartReader::processNextEvents() {
           syncArrowTime();
         return true;
       }
-      case EventType::SET_SCROLL: {
-        // if (event->extra != scrollFactor)
-        //   pixelBlink->blink();
-
-        scrollFactor = 1;  // event->extra;
-        // TODO: REMOVE SCROLLS OR ONLY USE THEM AS ASYNC STOPS (BINARY FACTORS)
+      case EventType::SET_SPEED: {
+        // TODO: IMPLEMENT using FIXED_POINT_PRECISION
         return true;
       }
       case EventType::SET_TICKCOUNT:
@@ -200,10 +188,12 @@ void ChartReader::predictNoteEvents() {
                         endHoldNote(event);
                         return true;
                       case EventType::STOP:
+                        if (hasStopped)
+                          return false;
+
                         hasStopped = true;
                         stopStart = event->timestamp;
                         stopLength = event->extra;
-                        *stop = true;
                         return true;
                       default:
                         return false;

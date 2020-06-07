@@ -15,7 +15,7 @@ enum EventType {
   HOLD_START,
   HOLD_END,
   SET_TEMPO,
-  SET_SCROLL,
+  SET_SPEED,
   SET_TICKCOUNT,
   STOP,
   WARP,
@@ -25,7 +25,7 @@ const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
                                 EVENT_ARROW_DOWNRIGHT};
 
 inline bool EVENT_HAS_EXTRA(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::SET_SCROLL ||
+  return event == EventType::SET_TEMPO || event == EventType::SET_SPEED ||
          event == EventType::SET_TICKCOUNT || event == EventType::STOP ||
          event == EventType::WARP;
 }

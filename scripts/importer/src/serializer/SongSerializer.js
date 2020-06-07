@@ -42,8 +42,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Chart", {
       write: function (chart) {
-        this.Int32LE(chart.header.offset)
-          .UInt8(DifficultyLevels[chart.header.difficulty])
+        this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
           .EventArray(chart.events);
       },
