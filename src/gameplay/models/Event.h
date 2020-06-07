@@ -15,7 +15,6 @@ enum EventType {
   HOLD_START,
   HOLD_END,
   SET_TEMPO,
-  SET_SPEED,
   SET_TICKCOUNT,
   STOP,
   WARP,
@@ -24,10 +23,13 @@ const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
                                 EVENT_ARROW_CENTER, EVENT_ARROW_UPRIGHT,
                                 EVENT_ARROW_DOWNRIGHT};
 
-inline bool EVENT_HAS_EXTRA(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::SET_SPEED ||
-         event == EventType::SET_TICKCOUNT || event == EventType::STOP ||
-         event == EventType::WARP;
+inline bool EVENT_HAS_PARAM(EventType event) {
+  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+         event == EventType::STOP || event == EventType::WARP;
+}
+
+inline bool EVENT_HAS_PARAM2(EventType event) {
+  return event == EventType::SET_TEMPO;
 }
 
 typedef struct {
@@ -38,7 +40,9 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
-  u32 extra;  // not present in note-related events
+  u32 param;
+  u32 param2;
+  // (params are not present in note-related events)
   u32 index = 0;
   bool handled = false;
 } Event;

@@ -52,6 +52,7 @@ class ChartReader : public TimingProvider {
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
+  u32 scrollBpm = 0;
   int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;
@@ -129,8 +130,8 @@ class ChartReader : public TimingProvider {
   }
 
   inline void syncScrollSpeed() {
-    targetArrowTime =
-        MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, MATH_mul(bpm, multiplier));
+    targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
+                               MATH_mul(scrollBpm, multiplier));
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
 

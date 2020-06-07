@@ -52,6 +52,7 @@ module.exports = class Simfile {
       if (_.isEmpty(bpms)) bpms = this._getSingleMatch(REGEXPS.chart.bpms);
       if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
 
+      const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
       const tickcounts = this._getSingleMatch(
         REGEXPS.chart.tickcounts,
         rawChart
@@ -67,6 +68,7 @@ module.exports = class Simfile {
         level,
         offset,
         bpms,
+        speeds,
         tickcounts,
         stops,
         delays,
@@ -122,13 +124,13 @@ const PROPERTY_FLOAT = (name) => ({
   parse: (content) => parseFloat(content),
 });
 
-const DICTIONARY = (name) => ({
+const DICTIONARY = (name, elements = 2) => ({
   exp: PROPERTY(name),
   parse: (content) =>
     _(content)
       .split(",")
       .map((it) => it.trim().split("="))
-      .filter((it) => it.length == 2)
+      .filter((it) => it.length === elements)
       .map(([key, value]) => ({
         key: parseFloat(key),
         value: parseFloat(value),
@@ -155,6 +157,7 @@ const REGEXPS = {
     level: PROPERTY_INT("METER"),
     offset: PROPERTY_FLOAT("OFFSET"),
     bpms: DICTIONARY("BPMS"),
+    speeds: DICTIONARY("SPEEDS", 4),
     tickcounts: DICTIONARY("TICKCOUNTS"),
     stops: DICTIONARY("STOPS"),
     delays: DICTIONARY("DELAYS"),

@@ -127,7 +127,8 @@ void ChartReader::processNextEvents() {
     switch (type) {
       case EventType::SET_TEMPO: {
         u32 oldBpm = bpm;
-        bpm = event->extra;
+        bpm = event->param;
+        scrollBpm = event->param2;
         syncScrollSpeed();
 
         if (oldBpm > 0) {
@@ -137,18 +138,14 @@ void ChartReader::processNextEvents() {
           syncArrowTime();
         return true;
       }
-      case EventType::SET_SPEED: {
-        // TODO: IMPLEMENT using FIXED_POINT_PRECISION
-        return true;
-      }
       case EventType::SET_TICKCOUNT:
-        tickCount = event->extra;
+        tickCount = event->param;
         lastTick = -1;
         subtick = 0;
         return true;
       case EventType::WARP:
-        warpedMs += event->extra;
-        msecs += event->extra;
+        warpedMs += event->param;
+        msecs += event->param;
         pixelBlink->blink();
 
         *stop = true;
@@ -193,7 +190,7 @@ void ChartReader::predictNoteEvents() {
 
                         hasStopped = true;
                         stopStart = event->timestamp;
-                        stopLength = event->extra;
+                        stopLength = event->param;
                         return true;
                       default:
                         return false;

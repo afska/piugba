@@ -38,7 +38,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
   while (currentIndex < chart->eventCount) {
     Event* event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    if (EVENT_HAS_EXTRA(type))
+    if (EVENT_HAS_PARAM(type))
       break;
     currentIndex++;
   }
@@ -66,7 +66,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
     LOGSTR("EVENT:", 11);
     LOGSTR(typeStr, 12);
     LOGN(nextEvent->timestamp, 13);
-    LOGSTR("-> " + std::to_string(nextEvent->extra), 14);
+    LOGSTR("-> " + std::to_string(nextEvent->param), 14);
   }
 
   LOGSTR("SPRITES:", 16);

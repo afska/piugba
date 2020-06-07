@@ -53,9 +53,9 @@ module.exports = class SongSerializer {
         this.Int32LE(event.timestamp);
 
         if (event.type === Events.SET_TEMPO)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.bpm));
-        else if (event.type === Events.SET_SCROLL)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.scroll));
+          this.UInt8(event.type)
+            .UInt32LE(normalizeUInt(event.bpm))
+            .UInt32LE(normalizeUInt(event.scrollBpm));
         else if (event.type === Events.SET_TICKCOUNT)
           this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)

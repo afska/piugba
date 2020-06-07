@@ -55,6 +55,7 @@ module.exports = class Chart {
   _getTimingEvents() {
     const segments = _([
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.speeds.map((it) => ({ type: Events.SET_SPEED, data: it })),
       this.header.tickcounts.map((it) => ({
         type: Events.SET_TICKCOUNT,
         data: it,
@@ -77,6 +78,7 @@ module.exports = class Chart {
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
     let warpStart = -1;
+    let scrollFactor = 1;
     let currentScrollEnabled = true;
     let currentScrollTimestamp = 0;
 
@@ -112,6 +114,7 @@ module.exports = class Chart {
               timestamp,
               type,
               bpm: currentBpm,
+              scrollBpm: currentBpm * scrollFactor,
             };
 
             if (warpStart > -1) {
@@ -121,6 +124,16 @@ module.exports = class Chart {
             } else {
               return bpmChange;
             }
+          }
+          case Events.SET_SPEED: {
+            scrollFactor = data.value;
+
+            return {
+              timestamp,
+              type: Events.SET_TEMPO,
+              bpm: currentBpm,
+              scrollBpm: currentBpm * scrollFactor,
+            };
           }
           case Events.SET_TICKCOUNT: {
             return {
