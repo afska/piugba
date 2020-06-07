@@ -131,9 +131,11 @@ const DICTIONARY = (name, elements = 2) => ({
       .split(",")
       .map((it) => it.trim().split("="))
       .filter((it) => it.length === elements)
-      .map(([key, value]) => ({
+      .map(([key, value, param1, param2]) => ({
         key: parseFloat(key),
         value: parseFloat(value),
+        param1: parseFloat(param1),
+        param2: parseFloat(param2),
       }))
       .sortBy("key")
       .value(),

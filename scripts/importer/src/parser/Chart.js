@@ -79,6 +79,7 @@ module.exports = class Chart {
     let currentBpm = this._getBpmByBeat(0);
     let warpStart = -1;
     let scrollFactor = 1;
+    let scrollChangeFrames = 1;
     let currentScrollEnabled = true;
     let currentScrollTimestamp = 0;
 
@@ -115,6 +116,7 @@ module.exports = class Chart {
               type,
               bpm: currentBpm,
               scrollBpm: currentBpm * scrollFactor,
+              scrollChangeFrames,
             };
 
             if (warpStart > -1) {
@@ -127,12 +129,16 @@ module.exports = class Chart {
           }
           case Events.SET_SPEED: {
             scrollFactor = data.value;
+            scrollChangeFrames =
+              (data.param2 === 0 ? data.param1 * beatLength : data.param1) /
+              FRAME_MS;
 
             return {
               timestamp,
               type: Events.SET_TEMPO,
               bpm: currentBpm,
               scrollBpm: currentBpm * scrollFactor,
+              scrollChangeFrames,
             };
           }
           case Events.SET_TICKCOUNT: {
@@ -316,6 +322,7 @@ module.exports = class Chart {
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
+const FRAME_MS = 17;
 const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
 const NOTE_DATA = /^\d\d\d\d\d$/;

@@ -35,7 +35,7 @@ bool ChartReader::update(int songMsecs) {
   int rythmMsecs = songMsecs - lastBpmChange;
   msecs = songMsecs - AUDIO_LAG - (int)stoppedMs + (int)warpedMs;
 
-  MATH_approximate(&arrowTime, targetArrowTime, MAX_ARROW_TIME_JUMP);
+  MATH_approximate(&arrowTime, targetArrowTime, maxArrowTimeJump);
 
   if (hasStopped) {
     if (msecs >= stopStart + (int)stopLength) {
@@ -127,13 +127,19 @@ void ChartReader::processNextEvents() {
     switch (type) {
       case EventType::SET_TEMPO: {
         u32 oldBpm = bpm;
+        u32 oldTargetArrowTime = targetArrowTime;
         bpm = event->param;
         scrollBpm = event->param2;
+
         syncScrollSpeed();
 
         if (oldBpm > 0) {
           lastBpmChange = event->timestamp;
           subtick = 0;
+
+          u32 arrowTimeDiff =
+              abs((int)targetArrowTime - (int)oldTargetArrowTime);
+          maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
         } else
           syncArrowTime();
         return true;

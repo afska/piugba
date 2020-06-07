@@ -32,6 +32,10 @@ inline bool EVENT_HAS_PARAM2(EventType event) {
   return event == EventType::SET_TEMPO;
 }
 
+inline bool EVENT_HAS_PARAM3(EventType event) {
+  return event == EventType::SET_TEMPO;
+}
+
 typedef struct {
   int timestamp;  // in ms
   u8 data;
@@ -42,6 +46,7 @@ typedef struct {
   */
   u32 param;
   u32 param2;
+  u32 param3;
   // (params are not present in note-related events)
   u32 index = 0;
   bool handled = false;

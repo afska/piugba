@@ -53,6 +53,7 @@ class ChartReader : public TimingProvider {
   u32 subtick = 0;
   u32 bpm = 0;
   u32 scrollBpm = 0;
+  u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 4;
   int lastTick = 0;

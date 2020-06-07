@@ -15,7 +15,6 @@ const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
 const int HOLD_ARROW_TICK_OFFSET_MS = 84;
 //                                    ^ OFFSET_GOOD * FRAME_MS = 5 * 16.73322954
-const u32 FRAME_MS = 17;
 
 class Judge {
  public:

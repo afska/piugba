@@ -16,6 +16,7 @@ const int AUDIO_LAG = 180;
 const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607};
 const u32 MAX_ARROW_TIME_JUMP = 100;
 const u32 MINUTE = 60000;
+const u32 FRAME_MS = 17;
 const u32 BEAT_UNIT = 4;
 const u32 ARROW_SCROLL_LENGTH_BEATS = BEAT_UNIT * 2;
 
