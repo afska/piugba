@@ -8,8 +8,8 @@
 
 #include "IPoolable.h"
 
-inline void CRASH() {
-  // *((u32*)NULL) = 1;
+inline void LOGERROR() {
+  IFTEST { LOGSTR("no-memory!", 0); }
 }
 
 template <class T>
@@ -41,7 +41,7 @@ class ObjectPool {
       }
     }
 
-    CRASH();
+    LOGERROR();
     return NULL;
   }
 
