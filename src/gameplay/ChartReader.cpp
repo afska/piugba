@@ -124,74 +124,64 @@ int ChartReader::getYFor(int timestamp) {
 void ChartReader::processNextEvents() {
   processEvents(msecs + targetArrowTime, [this](EventType type, Event* event,
                                                 bool* stop) {
-    if (msecs < event->timestamp) {
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event);
-          return true;
-        case EventType::HOLD_START:
-          startHoldNote(event);
-          return true;
-        case EventType::HOLD_END:
-          endHoldNote(event);
-          return true;
-        default:
+    switch (type) {
+      case EventType::NOTE:
+        processUniqueNote(event);
+        return true;
+      case EventType::HOLD_START:
+        startHoldNote(event);
+        return true;
+      case EventType::HOLD_END:
+        endHoldNote(event);
+        return true;
+      default:
+        if (msecs < event->timestamp)
           return false;
-      }
-    } else {
-      switch (type) {
-        case EventType::NOTE:
-          processUniqueNote(event);
-          return true;
-        case EventType::HOLD_START:
-          startHoldNote(event);
-          return true;
-        case EventType::HOLD_END:
-          endHoldNote(event);
-          return true;
-        case EventType::SET_TEMPO: {
-          u32 oldBpm = bpm;
-          bpm = event->param;
-          scrollBpm = event->param2;
+    }
 
-          syncScrollSpeed();
+    switch (type) {
+      case EventType::SET_TEMPO: {
+        u32 oldBpm = bpm;
+        bpm = event->param;
+        scrollBpm = event->param2;
 
-          if (oldBpm > 0) {
-            lastBpmChange = event->timestamp;
-            subtick = 0;
+        syncScrollSpeed();
 
-            u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-            maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
-          } else
-            syncArrowTime();
-          return true;
-        }
-        case EventType::SET_TICKCOUNT:
-          tickCount = event->param;
-          lastTick = -1;
+        if (oldBpm > 0) {
+          lastBpmChange = event->timestamp;
           subtick = 0;
-          return true;
-        case EventType::STOP:
-          if (hasStopped)
-            return false;
 
-          hasStopped = true;
-          stopStart = event->timestamp;
-          stopLength = event->param;
-          return true;
-        case EventType::WARP:
-          if (hasStopped)
-            return false;
-
-          warpedMs += event->param;
-          msecs += event->param;
-          pixelBlink->blink();
-
-          *stop = true;
-          return true;
-        default:
-          return false;
+          u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+          maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+        } else
+          syncArrowTime();
+        return true;
       }
+      case EventType::SET_TICKCOUNT:
+        tickCount = event->param;
+        lastTick = -1;
+        subtick = 0;
+        return true;
+      case EventType::STOP:
+        if (hasStopped)
+          return false;
+
+        hasStopped = true;
+        stopStart = event->timestamp;
+        stopLength = event->param;
+        return true;
+      case EventType::WARP:
+        if (hasStopped)
+          return false;
+
+        warpedMs += event->param;
+        msecs += event->param;
+        pixelBlink->blink();
+
+        *stop = true;
+        return true;
+      default:
+        return false;
     }
   });
 }
