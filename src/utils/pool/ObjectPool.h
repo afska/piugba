@@ -36,6 +36,7 @@ class ObjectPool {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
+        activeObjects++;
         initialize(it->object);
         return it->object;
       }
@@ -50,9 +51,12 @@ class ObjectPool {
     return element->isActive ? objects[index]->object : NULL;
   }
 
+  bool isFull() { return activeObjects == objects.size(); }
+
   void discard(u32 index) {
     ((IPoolable*)objects[index]->object)->discard();
     objects[index]->isActive = false;
+    activeObjects--;
   }
 
   void clear() {
@@ -82,6 +86,7 @@ class ObjectPool {
 
  private:
   std::vector<PooledObject<T>*> objects;
+  u32 activeObjects = 0;
 };
 
 #endif  // OBJECT_POOL_H

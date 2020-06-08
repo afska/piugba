@@ -126,12 +126,21 @@ void ChartReader::processNextEvents() {
                                                 bool* stop) {
     switch (type) {
       case EventType::NOTE:
+        if (arrowPool->isFull())
+          return false;
+
         processUniqueNote(event);
         return true;
       case EventType::HOLD_START:
+        if (arrowPool->isFull() || holdArrows->isFull())
+          return false;
+
         startHoldNote(event);
         return true;
       case EventType::HOLD_END:
+        if (arrowPool->isFull())
+          return false;
+
         endHoldNote(event);
         return true;
       default:
