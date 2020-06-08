@@ -31,6 +31,7 @@ class ChartReader : public TimingProvider {
     this->multiplier =
         max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
     syncScrollSpeed();
+    maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   }
 
   bool isHoldActive(ArrowDirection direction);
@@ -138,7 +139,6 @@ class ChartReader : public TimingProvider {
 
   int getYFor(int timestamp);
   void processNextEvents();
-  void predictNoteEvents();
   void processUniqueNote(Event* event);
   void startHoldNote(Event* event);
   void endHoldNote(Event* event);

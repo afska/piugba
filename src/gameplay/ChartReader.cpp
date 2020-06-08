@@ -49,7 +49,6 @@ bool ChartReader::update(int songMsecs) {
   }
 
   processNextEvents();
-  predictNoteEvents();
   orchestrateHoldArrows();
   return processTicks(rythmMsecs, true);
 }
@@ -123,84 +122,78 @@ int ChartReader::getYFor(int timestamp) {
 }
 
 void ChartReader::processNextEvents() {
-  processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
-    switch (type) {
-      case EventType::SET_TEMPO: {
-        u32 oldBpm = bpm;
-        bpm = event->param;
-        scrollBpm = event->param2;
-
-        syncScrollSpeed();
-
-        if (oldBpm > 0) {
-          lastBpmChange = event->timestamp;
-          subtick = 0;
-
-          u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-          maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
-        } else
-          syncArrowTime();
-        return true;
+  processEvents(msecs + targetArrowTime, [this](EventType type, Event* event,
+                                                bool* stop) {
+    if (msecs < event->timestamp) {
+      switch (type) {
+        case EventType::NOTE:
+          processUniqueNote(event);
+          return true;
+        case EventType::HOLD_START:
+          startHoldNote(event);
+          return true;
+        case EventType::HOLD_END:
+          endHoldNote(event);
+          return true;
+        default:
+          return false;
       }
-      case EventType::SET_TICKCOUNT:
-        tickCount = event->param;
-        lastTick = -1;
-        subtick = 0;
-        return true;
-      case EventType::WARP:
-        warpedMs += event->param;
-        msecs += event->param;
-        pixelBlink->blink();
+    } else {
+      switch (type) {
+        case EventType::NOTE:
+          processUniqueNote(event);
+          return true;
+        case EventType::HOLD_START:
+          startHoldNote(event);
+          return true;
+        case EventType::HOLD_END:
+          endHoldNote(event);
+          return true;
+        case EventType::SET_TEMPO: {
+          u32 oldBpm = bpm;
+          bpm = event->param;
+          scrollBpm = event->param2;
 
-        *stop = true;
-        return true;
-      default:
-        return false;
+          syncScrollSpeed();
+
+          if (oldBpm > 0) {
+            lastBpmChange = event->timestamp;
+            subtick = 0;
+
+            u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+            maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+          } else
+            syncArrowTime();
+          return true;
+        }
+        case EventType::SET_TICKCOUNT:
+          tickCount = event->param;
+          lastTick = -1;
+          subtick = 0;
+          return true;
+        case EventType::STOP:
+          if (hasStopped)
+            return false;
+
+          hasStopped = true;
+          stopStart = event->timestamp;
+          stopLength = event->param;
+          return true;
+        case EventType::WARP:
+          if (hasStopped)
+            return false;
+
+          warpedMs += event->param;
+          msecs += event->param;
+          pixelBlink->blink();
+
+          *stop = true;
+          return true;
+        default:
+          return false;
+      }
     }
   });
-}
-
-void ChartReader::predictNoteEvents() {
-  processEvents(msecs + targetArrowTime,
-                [this](EventType type, Event* event, bool* stop) {
-                  if (msecs < event->timestamp) {
-                    switch (type) {
-                      case EventType::NOTE:
-                        processUniqueNote(event);
-                        return true;
-                      case EventType::HOLD_START:
-                        startHoldNote(event);
-                        return true;
-                      case EventType::HOLD_END:
-                        endHoldNote(event);
-                        return true;
-                      default:
-                        return false;
-                    }
-                  } else {
-                    switch (type) {
-                      case EventType::NOTE:
-                        processUniqueNote(event);
-                        return true;
-                      case EventType::HOLD_START:
-                        startHoldNote(event);
-                        return true;
-                      case EventType::HOLD_END:
-                        endHoldNote(event);
-                        return true;
-                      case EventType::STOP:
-                        if (hasStopped)
-                          return false;
-
-                        hasStopped = true;
-                        stopStart = event->timestamp;
-                        stopLength = event->param;
-                        return true;
-                      default:
-                        return false;
-                    }
-                  }
-                });
 }
 
 void ChartReader::processUniqueNote(Event* event) {
