@@ -127,7 +127,6 @@ void ChartReader::processNextEvents() {
     switch (type) {
       case EventType::SET_TEMPO: {
         u32 oldBpm = bpm;
-        u32 oldTargetArrowTime = targetArrowTime;
         bpm = event->param;
         scrollBpm = event->param2;
 
@@ -137,8 +136,7 @@ void ChartReader::processNextEvents() {
           lastBpmChange = event->timestamp;
           subtick = 0;
 
-          u32 arrowTimeDiff =
-              abs((int)targetArrowTime - (int)oldTargetArrowTime);
+          u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
           maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
         } else
           syncArrowTime();
