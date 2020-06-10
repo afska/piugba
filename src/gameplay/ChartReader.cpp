@@ -160,8 +160,11 @@ void ChartReader::processNextEvents() {
           lastBpmChange = event->timestamp;
           subtick = 0;
 
-          u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-          maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+          if (event->param3 > 0) {
+            u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+            maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+          } else
+            resetMaxArrowTimeJump();
         } else
           syncArrowTime();
         return true;
