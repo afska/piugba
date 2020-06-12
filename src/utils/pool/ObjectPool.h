@@ -9,7 +9,7 @@
 #include "IPoolable.h"
 
 inline void LOGERROR() {
-  IFTEST { LOGSTR("no-memory!", 0); }
+  IFTEST { LOGSTR("!", 0); }
 }
 
 template <class T>

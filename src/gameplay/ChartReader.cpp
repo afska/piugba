@@ -122,83 +122,83 @@ int ChartReader::getYFor(int timestamp) {
 }
 
 void ChartReader::processNextEvents() {
-  processEvents(msecs + targetArrowTime, [this](EventType type, Event* event,
-                                                bool* stop) {
-    switch (type) {
-      case EventType::NOTE:
-        if (arrowPool->isFull())
-          return false;
+  processEvents(
+      msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
+        switch (type) {
+          case EventType::NOTE:
+            if (arrowPool->isFull())
+              return false;
 
-        processUniqueNote(event);
-        return true;
-      case EventType::HOLD_START:
-        if (arrowPool->isFull() || holdArrows->isFull())
-          return false;
+            processUniqueNote(event);
+            return true;
+          case EventType::HOLD_START:
+            if (arrowPool->isFull() || holdArrows->isFull())
+              return false;
 
-        startHoldNote(event);
-        return true;
-      case EventType::HOLD_END:
-        if (arrowPool->isFull())
-          return false;
+            startHoldNote(event);
+            return true;
+          case EventType::HOLD_END:
+            if (arrowPool->isFull())
+              return false;
 
-        endHoldNote(event);
-        return true;
-      case EventType::SET_FAKE:
-        fake = event->param;
-        return true;
-      default:
-        if (msecs < event->timestamp)
-          return false;
-    }
+            endHoldNote(event);
+            return true;
+          case EventType::SET_FAKE:
+            fake = event->param;
+            return true;
+          default:
+            if (msecs < event->timestamp)
+              return false;
+        }
 
-    switch (type) {
-      case EventType::SET_TEMPO: {
-        u32 oldBpm = bpm;
-        bpm = event->param;
-        scrollBpm = event->param2;
+        switch (type) {
+          case EventType::SET_TEMPO: {
+            u32 oldBpm = bpm;
+            bpm = event->param;
+            scrollBpm = event->param2;
 
-        syncScrollSpeed();
+            syncScrollSpeed();
 
-        if (oldBpm > 0) {
-          lastBpmChange = event->timestamp;
-          subtick = 0;
+            if (oldBpm > 0) {
+              lastBpmChange = event->timestamp;
+              subtick = 0;
 
-          if (event->param3 > 0) {
-            u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-            maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
-          } else
-            resetMaxArrowTimeJump();
-        } else
-          syncArrowTime();
-        return true;
-      }
-      case EventType::SET_TICKCOUNT:
-        tickCount = event->param;
-        lastTick = -1;
-        subtick = 0;
-        return true;
-      case EventType::STOP:
-        if (hasStopped)
-          return false;
+              if (event->param3 > 0) {
+                u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+                maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+              } else
+                resetMaxArrowTimeJump();
+            } else
+              syncArrowTime();
+            return true;
+          }
+          case EventType::SET_TICKCOUNT:
+            tickCount = event->param;
+            lastTick = -1;
+            subtick = 0;
+            return true;
+          case EventType::STOP:
+            if (hasStopped)
+              return false;
 
-        hasStopped = true;
-        stopStart = event->timestamp;
-        stopLength = event->param;
-        return true;
-      case EventType::WARP:
-        if (hasStopped)
-          return false;
+            hasStopped = true;
+            stopStart = event->timestamp;
+            stopLength = event->param;
+            return true;
+          case EventType::WARP:
+            if (hasStopped)
+              return false;
 
-        warpedMs += event->param;
-        msecs += event->param;
-        pixelBlink->blink();
+            warpedMs += event->param;
+            msecs += event->param;
+            pixelBlink->blink();
 
-        *stop = true;
-        return true;
-      default:
-        return false;
-    }
-  });
+            *stop = true;
+            return true;
+          default:
+            return false;
+        }
+      });
 }
 
 void ChartReader::processUniqueNote(Event* event) {
