@@ -30,61 +30,70 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    const charts = this.content.match(REGEXPS.chart.start).map((rawChart) => {
-      const startIndex = this.content.indexOf(rawChart);
+    const charts = _.compact(
+      this.content.match(REGEXPS.chart.start).map((rawChart) => {
+        const startIndex = this.content.indexOf(rawChart);
 
-      const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
-      const difficulty =
-        this._getSingleMatchFromEnum(
-          REGEXPS.chart.difficulty,
-          DifficultyLevels,
+        const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
+        const difficulty =
+          this._getSingleMatchFromEnum(
+            REGEXPS.chart.difficulty,
+            DifficultyLevels,
+            rawChart
+          ) || "NUMERIC";
+        const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
+
+        let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
+        if (!_.isFinite(chartOffset))
+          chartOffset = this._getSingleMatch(REGEXPS.chart.offset);
+        if (!_.isFinite(chartOffset)) chartOffset = 0;
+        const offset = -chartOffset * SECOND;
+
+        let bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+        if (_.isEmpty(bpms)) bpms = this._getSingleMatch(REGEXPS.chart.bpms);
+        if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
+
+        const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
+        const tickcounts = this._getSingleMatch(
+          REGEXPS.chart.tickcounts,
           rawChart
-        ) || "NUMERIC";
-      const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
+        );
+        const fakes = this._getSingleMatch(REGEXPS.chart.fakes, rawChart);
+        const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
+        const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
+        const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
+        const warps = this._getSingleMatch(REGEXPS.chart.warps, rawChart);
+        const header = {
+          startIndex,
+          name,
+          difficulty,
+          level,
+          offset,
+          bpms,
+          speeds,
+          tickcounts,
+          fakes,
+          stops,
+          delays,
+          scrolls,
+          warps,
+        };
 
-      let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
-      if (!_.isFinite(chartOffset))
-        chartOffset = this._getSingleMatch(REGEXPS.chart.offset);
-      if (!_.isFinite(chartOffset)) chartOffset = 0;
-      const offset = -chartOffset * SECOND;
+        const notesStart = startIndex + rawChart.length;
+        const rawNotes = this._getSingleMatch(
+          REGEXPS.limit,
+          this.content.substring(notesStart)
+        );
 
-      let bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
-      if (_.isEmpty(bpms)) bpms = this._getSingleMatch(REGEXPS.chart.bpms);
-      if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
-
-      const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
-      const tickcounts = this._getSingleMatch(
-        REGEXPS.chart.tickcounts,
-        rawChart
-      );
-      const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
-      const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
-      const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
-      const warps = this._getSingleMatch(REGEXPS.chart.warps, rawChart);
-      const header = {
-        startIndex,
-        name,
-        difficulty,
-        level,
-        offset,
-        bpms,
-        speeds,
-        tickcounts,
-        stops,
-        delays,
-        scrolls,
-        warps,
-      };
-
-      const notesStart = startIndex + rawChart.length;
-      const rawNotes = this._getSingleMatch(
-        REGEXPS.limit,
-        this.content.substring(notesStart)
-      );
-      const events = new Chart(header, rawNotes).events;
-
-      return { header, events };
-    });
+        try {
+          const events = new Chart(header, rawNotes).events;
+          return { header, events };
+        } catch (e) {
+          if (_.isString(e)) console.warn(`[!] ${e}`);
+          return null;
+        }
+      })
+    );
 
     return _.sortBy(charts, "header.level");
   }
@@ -161,6 +170,7 @@ const REGEXPS = {
     bpms: DICTIONARY("BPMS"),
     speeds: DICTIONARY("SPEEDS", 4),
     tickcounts: DICTIONARY("TICKCOUNTS"),
+    fakes: DICTIONARY("FAKES"),
     stops: DICTIONARY("STOPS"),
     delays: DICTIONARY("DELAYS"),
     scrolls: DICTIONARY("SCROLLS"),

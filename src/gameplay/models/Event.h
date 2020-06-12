@@ -11,6 +11,7 @@
 #define EVENT_ARROW_DOWNRIGHT /*  */ 0b10000000
 
 enum EventType {
+  SET_FAKE,
   NOTE,
   HOLD_START,
   HOLD_END,
@@ -25,7 +26,8 @@ const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
 
 inline bool EVENT_HAS_PARAM(EventType event) {
   return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
-         event == EventType::STOP || event == EventType::WARP;
+         event == EventType::SET_FAKE || event == EventType::STOP ||
+         event == EventType::WARP;
 }
 
 inline bool EVENT_HAS_PARAM2(EventType event) {

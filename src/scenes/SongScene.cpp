@@ -249,7 +249,8 @@ void SongScene::updateFakeHeads() {
 
     if (isHoldMode && isPressing && !chartReader->isStopped()) {
       if (!isVisible) {
-        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0);
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0,
+                                 false);
         isVisible = true;
       }
     } else if (isVisible) {
@@ -282,7 +283,8 @@ void SongScene::processKeys(u16 keys) {
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
           it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
-                         chartReader->getMsecs() + chartReader->getArrowTime());
+                         chartReader->getMsecs() + chartReader->getArrowTime(),
+                         false);
         });
   }
 }

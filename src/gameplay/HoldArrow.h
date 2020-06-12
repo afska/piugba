@@ -35,6 +35,7 @@ class HoldArrow : public IPoolable {
   int fillOffsetBottom;
   u32 activeFillCount;
   int lastPressTopY;
+  bool isFake;
   int currentFillOffset = 0;
   int cachedHeadY = HOLD_NULL;
   int cachedTailY = HOLD_NULL;

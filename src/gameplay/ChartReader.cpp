@@ -143,6 +143,9 @@ void ChartReader::processNextEvents() {
 
         endHoldNote(event);
         return true;
+      case EventType::SET_FAKE:
+        fake = event->param;
+        return true;
       default:
         if (msecs < event->timestamp)
           return false;
@@ -203,8 +206,8 @@ void ChartReader::processUniqueNote(Event* event) {
 
   forEachDirection(
       event->data, [event, &arrows, this](ArrowDirection direction) {
-        arrowPool->create([event, &arrows, &direction](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, direction, event->timestamp);
+        arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction, event->timestamp, fake);
           arrows.push_back(it);
         });
       });
@@ -223,7 +226,7 @@ void ChartReader::startHoldNote(Event* event) {
       Arrow* head =
           arrowPool->create([event, &direction, &holdArrow, this](Arrow* head) {
             head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction,
-                                       event->timestamp, holdArrow);
+                                       event->timestamp, holdArrow, fake);
           });
 
       if (head == NULL) {
@@ -236,6 +239,7 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->fillOffsetBottom = 0;
       holdArrow->activeFillCount = 0;
       holdArrow->lastPressTopY = HOLD_NULL;
+      holdArrow->isFake = fake;
     });
   });
 }
@@ -248,7 +252,7 @@ void ChartReader::endHoldNote(Event* event) {
 
       arrowPool->create([&holdArrow, &event, &direction, this](Arrow* tail) {
         tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction,
-                                   event->timestamp, holdArrow);
+                                   event->timestamp, holdArrow, fake);
       });
     });
   });
@@ -319,15 +323,17 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
 
     if (checkHoldArrows) {
       u8 arrows = 0;
+      bool isFake = false;
       bool canMiss = true;
 
       for (u32 i = 0; i < ARROWS_TOTAL; i++) {
         auto direction = static_cast<ArrowDirection>(i);
 
-        withNextHoldArrow(direction, [&arrows, &canMiss, &direction,
+        withNextHoldArrow(direction, [&arrows, &canMiss, &direction, &isFake,
                                       this](HoldArrow* holdArrow) {
           if (holdArrow->isOccurring(msecs)) {
             arrows |= EVENT_ARROW_MASKS[direction];
+            isFake = holdArrow->isFake;
 
             if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
               canMiss = false;
@@ -335,7 +341,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
         });
       }
 
-      if (arrows > 0)
+      if (arrows > 0 && !isFake)
         judge->onHoldTick(arrows, canMiss);
     }
   }

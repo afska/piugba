@@ -59,6 +59,8 @@ module.exports = class SongSerializer {
             .UInt32LE(normalizeUInt(event.scrollChangeFrames));
         else if (event.type === Events.SET_TICKCOUNT)
           this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+        else if (event.type === Events.SET_FAKE)
+          this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
           this.UInt8(Events.STOP).UInt32LE(normalizeUInt(event.length));
         else if (event.type === Events.WARP)

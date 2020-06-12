@@ -72,7 +72,8 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
   if (result != FeedbackType::UNKNOWN) {
-    updateScore(result);
+    if (!arrow->isFake)
+      updateScore(result);
 
     switch (result) {
       case FeedbackType::MISS:

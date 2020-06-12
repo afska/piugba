@@ -12,8 +12,8 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._applyAsyncStops(
-        this._sort([...timingEvents, ...noteEvents], ["timestamp", "type"])
+      this._applyFakes(
+        this._applyAsyncStops(this._sort([...timingEvents, ...noteEvents]))
       )
     );
   }
@@ -58,6 +58,10 @@ module.exports = class Chart {
       this.header.speeds.map((it) => ({ type: Events.SET_SPEED, data: it })),
       this.header.tickcounts.map((it) => ({
         type: Events.SET_TICKCOUNT,
+        data: it,
+      })),
+      this.header.fakes.map((it) => ({
+        type: Events.SET_FAKE,
         data: it,
       })),
       [...this.header.stops, ...this.header.delays].map((it) => ({
@@ -145,6 +149,13 @@ module.exports = class Chart {
               timestamp,
               type,
               tickcount: data.value,
+            };
+          }
+          case Events.SET_FAKE: {
+            return {
+              timestamp,
+              type,
+              endTime: timestamp + data.value * beatLength,
             };
           }
           case Events.STOP: {
@@ -235,8 +246,41 @@ module.exports = class Chart {
     );
   }
 
+  _applyFakes(events) {
+    let fakeEndTime = -1;
+
+    return _.flatMap(events, (it) => {
+      let event = it;
+
+      if (it.type === Events.SET_FAKE) {
+        fakeEndTime = it.endTime;
+
+        event = {
+          timestamp: it.timestamp,
+          type: it.type,
+          enabled: 1,
+        };
+      }
+
+      if (fakeEndTime !== -1 && it.timestamp > fakeEndTime) {
+        fakeEndTime = -1;
+
+        return [
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 0,
+          },
+          event,
+        ];
+      }
+
+      return event;
+    });
+  }
+
   _sort(events) {
-    return _.sortBy(events, ["timestamp", "type"]);
+    return _.sortBy(events, [(it) => Math.round(it.timestamp), "type"]);
   }
 
   _getMeasures() {

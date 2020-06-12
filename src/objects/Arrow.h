@@ -38,13 +38,15 @@ class Arrow : public IPoolable {
   ArrowType type = ArrowType::UNIQUE;
   ArrowDirection direction = ArrowDirection::DOWNLEFT;
   int timestamp = 0;
+  bool isFake = false;
   u32 index = 0;
 
   Arrow(u32 id);
 
   inline void initialize(ArrowType type,
                          ArrowDirection direction,
-                         int timestamp) {
+                         int timestamp,
+                         bool isFake) {
     bool isHoldFill = type == ArrowType::HOLD_FILL;
     bool isHoldTail = type == ArrowType::HOLD_TAIL;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -55,6 +57,7 @@ class Arrow : public IPoolable {
     this->type = type;
     this->direction = direction;
     this->timestamp = timestamp;
+    this->isFake = isFake;
     this->start = start;
     this->flip = flip;
 
@@ -67,10 +70,13 @@ class Arrow : public IPoolable {
       SPRITE_goToFrame(sprite.get(), start + tileOffset);
     } else if (isHoldFakeHead)
       animatePress();
+    else if (isFake)
+      SPRITE_goToFrame(sprite.get(), start + ARROW_FAKE_TILE);
     else
       sprite->makeAnimated(this->start, ARROW_ANIMATION_FRAMES,
                            ARROW_ANIMATION_DELAY);
 
+    isFake = false;
     siblingId = -1;
     holdArrow = NULL;
     isLastFill = false;
@@ -87,14 +93,15 @@ class Arrow : public IPoolable {
   inline void initializeHoldBorder(ArrowType type,
                                    ArrowDirection direction,
                                    int timestamp,
-                                   HoldArrow* holdArrow) {
-    initialize(type, direction, timestamp);
+                                   HoldArrow* holdArrow,
+                                   bool isFake) {
+    initialize(type, direction, timestamp, isFake);
     this->holdArrow = holdArrow;
   }
 
   inline void initializeHoldFill(ArrowDirection direction,
                                  HoldArrow* holdArrow) {
-    initialize(ArrowType::HOLD_FILL, direction, timestamp);
+    initialize(ArrowType::HOLD_FILL, direction, timestamp, false);
     this->holdArrow = holdArrow;
   }
 
