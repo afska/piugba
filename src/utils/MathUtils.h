@@ -11,7 +11,7 @@ uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 }
 
 // Frac is in [0, INFINITY]
-// => x * 0.5 = fracumul(x, INFINITY / 2);
+// => x * 0.5 = fracumul(x, INFINITY * 0.5);
 inline u32 MATH_fracumul(u32 x, u32 frac) {
   return frac == 1 ? x : fracumul(x, frac);
 }
