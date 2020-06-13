@@ -132,15 +132,9 @@ void ChartReader::processNextEvents() {
             processUniqueNote(event);
             return true;
           case EventType::HOLD_START:
-            if (arrowPool->isFull() || holdArrows->isFull())
-              return false;
-
             startHoldNote(event);
             return true;
           case EventType::HOLD_END:
-            if (arrowPool->isFull())
-              return false;
-
             endHoldNote(event);
             return true;
           case EventType::SET_FAKE:
@@ -260,9 +254,6 @@ void ChartReader::endHoldNote(Event* event) {
 
 void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
-    if (arrowPool->isFull())
-      holdArrow->endTime = holdArrow->startTime;
-
     ArrowDirection direction = holdArrow->direction;
     bool hasStarted = holdArrow->hasStarted(msecs);
     holdArrow->resetState();
