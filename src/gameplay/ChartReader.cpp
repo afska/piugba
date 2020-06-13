@@ -260,6 +260,9 @@ void ChartReader::endHoldNote(Event* event) {
 
 void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
+    if (arrowPool->isFull())
+      holdArrow->endTime = holdArrow->startTime;
+
     ArrowDirection direction = holdArrow->direction;
     bool hasStarted = holdArrow->hasStarted(msecs);
     holdArrow->resetState();
