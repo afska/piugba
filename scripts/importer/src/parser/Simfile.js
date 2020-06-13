@@ -91,7 +91,7 @@ module.exports = class Simfile {
           const events = new Chart(header, rawNotes).events;
           return { header, events };
         } catch (e) {
-          if (_.isString(e)) console.warn(`[!] ${e}`);
+          console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
           return null;
         }
       })
