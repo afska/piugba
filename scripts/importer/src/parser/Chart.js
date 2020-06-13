@@ -133,8 +133,9 @@ module.exports = class Chart {
           case Events.SET_SPEED: {
             scrollFactor = data.value;
             const scrollChangeFrames =
-              (data.param2 === 0 ? data.param1 * beatLength : data.param1) /
-              FRAME_MS;
+              (data.param2 === 0
+                ? data.param1 * beatLength
+                : data.param1 * SECOND) / FRAME_MS;
 
             return {
               timestamp,
