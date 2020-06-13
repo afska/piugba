@@ -12,7 +12,7 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-enum Channel { ORIGINAL, KPOP, WORLD };
+enum Channel { ORIGINAL, KPOP, WORLD, UNKNOWN };
 
 typedef struct {
   char* title;      // (31 bytes)
