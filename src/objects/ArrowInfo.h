@@ -12,8 +12,6 @@
 #define IFNOTTEST if (!TEST_MODE)
 #define IFSTRESSTEST if (STRESSTEST_MODE)
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define IFNOTSTRESSTEST if (!STRESSTEST_MODE)
-#define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #define DEBULOG(NUM) LOGN(NUM, -1)

@@ -52,6 +52,7 @@ class ObjectPool {
   }
 
   bool isFull() { return activeObjects == objects.size(); }
+  u32 getActiveObjects() { return activeObjects; }
 
   void discard(u32 index) {
     ((IPoolable*)objects[index]->object)->discard();
