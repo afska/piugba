@@ -19,6 +19,7 @@ const u32 MINUTE = 60000;
 const u32 FRAME_MS = 17;
 const u32 BEAT_UNIT = 4;
 const u32 ARROW_SCROLL_LENGTH_BEATS = BEAT_UNIT * 2;
+const u32 FRACUMUL_DIV_BY_MINUTE = 71583;  // (1/MINUTE) * INFINITY
 
 class TimingProvider {
  public:

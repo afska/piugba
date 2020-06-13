@@ -306,8 +306,10 @@ void ChartReader::orchestrateHoldArrows() {
 
 bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
   // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> beat = millis * BPM / 60000
-  int tick = Div(rythmMsecs * bpm * tickCount, MINUTE);
+  // rythmMsecs ms      -> beat = msecs * BPM / 60000
+  int tick =
+      MATH_fracumul(rythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
+
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
