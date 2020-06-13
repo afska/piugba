@@ -231,6 +231,12 @@ void SongScene::updateArrows() {
       canBeJudged = arrow->timestamp >= chartReader->getStopStart() &&
                     (hasJustStopped || isAboutToResume);
       judgementOffset = isAboutToResume ? -chartReader->getStopLength() : 0;
+
+      if (chartReader->isStopJudgeable()) {
+        canBeJudged = true;
+        judgementOffset =
+            -(chartReader->getMsecs() - chartReader->getStopStart());
+      }
     }
 
     bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();

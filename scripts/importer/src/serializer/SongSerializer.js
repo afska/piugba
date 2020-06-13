@@ -62,7 +62,9 @@ module.exports = class SongSerializer {
         else if (event.type === Events.SET_FAKE)
           this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
-          this.UInt8(Events.STOP).UInt32LE(normalizeUInt(event.length));
+          this.UInt8(Events.STOP)
+            .UInt32LE(normalizeUInt(event.length))
+            .UInt32LE(event.judgeable ? 1 : 0);
         else if (event.type === Events.WARP)
           this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
         else {

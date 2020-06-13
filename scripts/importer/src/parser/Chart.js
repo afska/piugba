@@ -160,7 +160,7 @@ module.exports = class Chart {
           }
           case Events.STOP: {
             const length = data.value * SECOND;
-            const stop = { timestamp, type, length };
+            const stop = { timestamp, type, length, judgeable: false };
 
             if (warpStart > -1) {
               const warp = createWarp();
@@ -182,6 +182,7 @@ module.exports = class Chart {
                 timestamp: currentScrollTimestamp,
                 type,
                 length,
+                judgeable: true,
               };
             }
 

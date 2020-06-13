@@ -178,6 +178,7 @@ void ChartReader::processNextEvents() {
             hasStopped = true;
             stopStart = event->timestamp;
             stopLength = event->param;
+            stopJudgeable = event->param2;
             return true;
           case EventType::WARP:
             if (hasStopped)

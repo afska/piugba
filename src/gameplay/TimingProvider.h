@@ -27,6 +27,7 @@ class TimingProvider {
   inline bool isStopped() { return hasStopped; }
   inline int getStopStart() { return stopStart; }
   inline u32 getStopLength() { return stopLength; }
+  inline bool isStopJudgeable() { return stopJudgeable; }
 
  protected:
   int msecs = 0;
@@ -34,6 +35,7 @@ class TimingProvider {
   u32 arrowTime;
   int stopStart = 0;
   u32 stopLength = 0;
+  bool stopJudgeable = false;
 };
 
 #endif  // TIMING_PROVIDER_H
