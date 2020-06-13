@@ -15,15 +15,15 @@ extern "C" {
 enum Channel { ORIGINAL, KPOP, WORLD };
 
 typedef struct {
-  char* title;      // (31 bytes)
-  char* artist;     // (27 bytes)
-  Channel channel;  // (u8)
-  u32 lastMillisecond;
-  u32 sampleStart;   // in ms
-  u32 sampleLength;  // in ms
+  char* title;          // 0x00 (31 bytes - including \0)
+  char* artist;         // 0x1E (27 bytes - including \0)
+  Channel channel;      // 0x39 (u8)
+  u32 lastMillisecond;  // 0x3A (u32)
+  u32 sampleStart;      // 0x3E (u32 - in ms)
+  u32 sampleLength;     // 0x42 (u32 - in ms)
 
-  u8 chartCount;
-  Chart* charts;  // ("chartCount" times)
+  u8 chartCount;  //       0x46 (u8)
+  Chart* charts;  //       0x47 ("chartCount" times)
 
   // custom fields:
   std::string audioPath;
