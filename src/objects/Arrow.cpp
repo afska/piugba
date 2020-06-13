@@ -104,10 +104,6 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   return ArrowState::ACTIVE;
 }
 
-Sprite* Arrow::get() {
-  return sprite.get();
-}
-
 ArrowState Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();

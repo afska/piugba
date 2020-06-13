@@ -6,13 +6,13 @@
 
 // TEST MACROS ---
 #define TEST_MODE true
-#define KEYTEST_MODE false
+#define STRESSTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
 #define IFNOTTEST if (!TEST_MODE)
-#define IFKEYTEST if (KEYTEST_MODE)
+#define IFSTRESSTEST if (STRESSTEST_MODE)
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define IFNOTKEYTEST if (!KEYTEST_MODE)
+#define IFNOTSTRESSTEST if (!STRESSTEST_MODE)
 #define IFNOTTIMINGTEST if (!TIMINGTEST_MODE)
 #define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))

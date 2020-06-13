@@ -14,7 +14,7 @@ class ArrowSelector : public InputHandler {
   ArrowSelector(ArrowDirection direction);
 
   void tick();
-  Sprite* get();
+  inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;

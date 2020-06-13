@@ -3,11 +3,21 @@
 
 #include <libgba-sprite-engine/gba_engine.h>
 
+#include "objects/ArrowInfo.h"
+
 class InputHandler {
  public:
-  bool getIsPressed();
-  bool hasBeenPressedNow();
-  void setIsPressed(bool isPressed);
+  inline bool getIsPressed() { return isPressed; }
+
+  inline bool hasBeenPressedNow() { return isNewPressEvent; }
+
+  inline void setIsPressed(bool isPressed) {
+    bool isNewPressEvent = !this->isPressed && isPressed;
+    this->isPressed = isPressed;
+
+    this->isNewPressEvent = isNewPressEvent;
+    IFSTRESSTEST { this->isNewPressEvent = isPressed; }
+  }
 
  protected:
   bool isPressed = false;

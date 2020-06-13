@@ -7,7 +7,7 @@ class Of {
  public:
   Of(u32 x, u32 y);
 
-  Sprite* get();
+  inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;

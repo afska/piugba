@@ -31,10 +31,6 @@ void Combo::setValue(int value) {
   // digits[2]->set(DivMod(absValue, 10), isRed);
 }
 
-u32 Combo::getValue() {
-  return value;
-}
-
 void Combo::show() {
   title->show();
 

@@ -11,7 +11,3 @@ Of::Of(u32 x, u32 y) {
                .withLocation(x, y)
                .buildPtr();
 }
-
-Sprite* Of::get() {
-  return sprite.get();
-}

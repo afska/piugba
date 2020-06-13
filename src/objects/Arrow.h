@@ -134,7 +134,7 @@ class Arrow : public IPoolable {
   inline void markAsPressed() { isPressed = true; }
 
   ArrowState tick(int newY, bool isPressing);
-  Sprite* get();
+  inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;

@@ -42,7 +42,3 @@ void ArrowHolder::tick() {
   } else if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
     SPRITE_goToFrame(sprite.get(), currentFrame - 1);
 }
-
-Sprite* ArrowHolder::get() {
-  return sprite.get();
-}

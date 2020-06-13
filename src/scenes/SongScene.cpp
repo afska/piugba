@@ -278,7 +278,7 @@ void SongScene::processKeys(u16 keys) {
   if (speedDownInput->hasBeenPressedNow())
     chartReader->setMultiplier(chartReader->getMultiplier() - 1);
 
-  IFKEYTEST {
+  IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {

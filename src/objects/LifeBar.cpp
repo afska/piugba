@@ -63,10 +63,6 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
     wait--;
 }
 
-Sprite* LifeBar::get() {
-  return sprite.get();
-}
-
 void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   bool isBorder = false;
 

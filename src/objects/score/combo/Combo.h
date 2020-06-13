@@ -13,7 +13,7 @@ class Combo {
   Combo();
 
   void setValue(int value);
-  u32 getValue();
+  inline u32 getValue() { return value; }
   void show();
   void hide();
 

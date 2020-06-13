@@ -17,7 +17,7 @@ class LifeBar {
   void blink(ForegroundPaletteManager* foregroundPalette);
 
   void tick(ForegroundPaletteManager* foregroundPalette);
-  Sprite* get();
+  inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;

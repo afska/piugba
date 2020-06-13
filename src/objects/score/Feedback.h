@@ -14,7 +14,7 @@ class Feedback : public AnimatedIndicator {
   Feedback();
 
   void setType(FeedbackType type);
-  FeedbackType getType();
+  inline FeedbackType getType() { return this->type; }
 
   Sprite* get() override;
 
