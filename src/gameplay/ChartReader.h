@@ -61,6 +61,7 @@ class ChartReader : public TimingProvider {
   int lastTick = 0;
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
+  u32 frameSkipCount = 0;
 
   template <typename F>
   inline void processEvents(int targetMsecs, F action) {

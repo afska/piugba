@@ -7,6 +7,7 @@
 #include "debug/logDebugInfo.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
+const u32 FRAME_SKIP = 1;
 
 ChartReader::ChartReader(Chart* chart,
                          ObjectPool<Arrow>* arrowPool,
@@ -29,6 +30,7 @@ ChartReader::ChartReader(Chart* chart,
   multiplier = ARROW_DEFAULT_MULTIPLIER;
   targetArrowTime = ARROW_TIME[multiplier];
   syncArrowTime();
+  frameSkipCount = FRAME_SKIP;
 };
 
 bool ChartReader::update(int songMsecs) {
@@ -122,6 +124,13 @@ int ChartReader::getYFor(int timestamp) {
 }
 
 void ChartReader::processNextEvents() {
+  if (frameSkipCount == FRAME_SKIP) {
+    frameSkipCount = 0;
+  } else {
+    frameSkipCount++;
+    return;
+  }
+
   processEvents(
       msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
         switch (type) {
