@@ -35,7 +35,7 @@ module.exports = class SongSerializer {
           .map((char) => char.charCodeAt(0));
 
         this.loop(characters, this.UInt8);
-        const padding = size - string.length;
+        const padding = size - characters.length;
         for (let i = 0; i < padding; i++) this.UInt8(0);
       },
     });
