@@ -64,7 +64,6 @@ class Sprite {
   int x, y;
   u8 animation_offset;
   u32 priority, w, h, size_bits, shape_bits;
-  bool stayWithinBounds;
   u32 imageSize, tileIndex;
   SpriteSize spriteSize;
   u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
@@ -72,8 +71,8 @@ class Sprite {
   bool animating;
 
   inline void syncAnimation();
-  inline virtual void syncOam();
-  inline virtual void buildOam(int tileIndex);
+  inline void syncOam();
+  inline void buildOam(int tileIndex);
   inline void setAttributesBasedOnSize(SpriteSize size);
 
  public:
@@ -100,7 +99,6 @@ class Sprite {
   inline void animateToFrame(int frame) { this->currentFrame = frame; }
   inline void animate() { this->animating = true; }
   inline void stopAnimating() { this->animating = false; }
-  inline void setStayWithinBounds(bool b) { stayWithinBounds = b; }
   inline void update();
 
   inline void moveTo(int x, int y);

@@ -13,7 +13,6 @@ template <typename T>
 class SpriteBuilder {
  private:
   u32 imageSize;
-  bool stayWithinBounds = false;
   const void* imageData;
   u32 x, y;
   u32 beginFrame, numberOfFrames, animationDelay;
@@ -23,16 +22,11 @@ class SpriteBuilder {
   void reset() {
     imageSize = x = y = beginFrame = numberOfFrames = animationDelay = 0;
     imageData = nullptr;
-    stayWithinBounds = false;
     size = SIZE_16_16;
   }
 
  public:
   SpriteBuilder() { reset(); }
-  SpriteBuilder& withinBounds() {
-    stayWithinBounds = true;
-    return *this;
-  }
   SpriteBuilder& withData(const void* imageData, int imageSize) {
     this->imageData = imageData;
     this->imageSize = imageSize;
@@ -82,7 +76,6 @@ void SpriteBuilder<T>::setProperties(T* s) {
     s->makeAnimated(this->beginFrame, this->numberOfFrames,
                     this->animationDelay);
   }
-  s->setStayWithinBounds(stayWithinBounds);
 }
 
 template <typename T>

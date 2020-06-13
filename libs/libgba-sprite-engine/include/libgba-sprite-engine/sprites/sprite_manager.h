@@ -20,23 +20,11 @@ class SpriteManager {
 
   inline void copyOverSpriteOAMToVRAM() {
     int i = 0;
-    // int affineIndex = 0;
 
     for (auto sprite : this->sprites) {
       if (sprite->enabled) {
         sprite->update();
         oam_mem[i] = sprite->oam;
-
-        // auto affine = dynamic_cast<AffineSprite*>(sprite);
-        // if(affine) {
-        //     // WHY warning: can't do this: obj_aff_mem[affineIndex] =
-        //     *affineShadow;
-        //     // because that would override OAM also! only want to set
-        //     non-overlapping affine attribs
-        //     affine->setTransformationMatrix(&obj_aff_mem[affineIndex]);
-        //     affine->setAffineIndex(affineIndex);
-        //     affineIndex++;
-        // }
       }
 
       i++;
