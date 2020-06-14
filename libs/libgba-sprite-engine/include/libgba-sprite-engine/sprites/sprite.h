@@ -176,9 +176,6 @@ inline void Sprite::syncPosition() {
 }
 
 inline void Sprite::syncAnimation() {
-  if (previousFrame == currentFrame)
-    return;
-
   int newTileIndex =
       this->tileIndex + (currentFrame * (this->animation_offset * 2));
   oam.attr2 &= OAM_TILE_OFFSET_CLEAR;
