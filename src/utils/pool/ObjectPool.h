@@ -8,8 +8,14 @@
 
 #include "IPoolable.h"
 
-inline void LOGERROR() {
-  IFTEST { LOGSTR("!", 0); }
+static bool isWarningVisible = false;
+inline void LOG_WARNING() {
+  IFTEST {
+    if (!isWarningVisible) {
+      LOGSTR("!", 0);
+      isWarningVisible = true;
+    }
+  }
 }
 
 template <class T>
@@ -42,7 +48,7 @@ class ObjectPool {
       }
     }
 
-    LOGERROR();
+    LOG_WARNING();
     return NULL;
   }
 
