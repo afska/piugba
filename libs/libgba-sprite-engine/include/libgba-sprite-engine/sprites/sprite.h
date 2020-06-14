@@ -176,10 +176,15 @@ inline void Sprite::syncPosition() {
 }
 
 inline void Sprite::syncAnimation() {
+  if (previousFrame == currentFrame)
+    return;
+
   int newTileIndex =
       this->tileIndex + (currentFrame * (this->animation_offset * 2));
   oam.attr2 &= OAM_TILE_OFFSET_CLEAR;
   oam.attr2 |= (newTileIndex & OAM_TILE_OFFSET_NEW);
+
+  previousFrame = currentFrame;
 }
 
 inline void Sprite::syncOam() {
@@ -192,7 +197,6 @@ inline void Sprite::updateAnimation() {
     return;
 
   animationCounter++;
-  previousFrame = currentFrame;
   if (animationCounter > animationDelay) {
     currentFrame++;
     if (currentFrame > (numberOfFrames - 1) + beginFrame) {
