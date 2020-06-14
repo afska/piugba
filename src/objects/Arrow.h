@@ -87,7 +87,6 @@ class Arrow : public IPoolable {
     needsAnimation = false;
 
     sprite->setPriority(isHoldTail ? ARROW_LAYER_BACK : ARROW_LAYER_FRONT);
-    refresh();
   }
 
   inline void initializeHoldBorder(ArrowType type,
