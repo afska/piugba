@@ -11,12 +11,13 @@ u8 TRANSPARENT_TILE = 254;
 u8 BLACK_TILE = 255;
 u32 OPACITY = 10;
 
-Darkener::Darkener(u8 id) {
+Darkener::Darkener(u8 id, u8 priority) {
   this->id = id;
+  this->priority = priority;
 }
 
 void Darkener::initialize() {
-  BACKGROUND_setup(id, BANK_TILES, BANK_MAP);
+  BACKGROUND_setup(id, BANK_TILES, BANK_MAP, priority);
 
   BACKGROUND_setColor(COLOR_INDEX, 0);
   BACKGROUND_createSolidTile(BANK_TILES, TRANSPARENT_TILE, 0);

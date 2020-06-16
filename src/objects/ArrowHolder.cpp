@@ -20,6 +20,7 @@ ArrowHolder::ArrowHolder(ArrowDirection direction) {
 
   SPRITE_reuseTiles(sprite.get());
   SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
+  sprite->setPriority(ARROW_LAYER_BACK);
 }
 
 void ArrowHolder::blink() {
@@ -40,8 +41,4 @@ void ArrowHolder::tick() {
       isBlinking = false;
   } else if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
     SPRITE_goToFrame(sprite.get(), currentFrame - 1);
-}
-
-Sprite* ArrowHolder::get() {
-  return sprite.get();
 }

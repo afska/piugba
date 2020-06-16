@@ -73,7 +73,7 @@ IARCH   := -mthumb-interwork -marm -mlong-calls
 
 # --- Main flags ---
 
-CFLAGS		:= -mcpu=arm7tdmi -mtune=arm7tdmi -O3
+CFLAGS		:= -mcpu=arm7tdmi -mtune=arm7tdmi -Ofast
 CFLAGS		+= -Wall
 CFLAGS		+= $(INCLUDE)
 CFLAGS		+= -ffast-math -fno-strict-aliasing
@@ -191,7 +191,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force
+	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force --json
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
 package: $(BUILD)

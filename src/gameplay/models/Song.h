@@ -12,18 +12,18 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-enum Channel { ORIGINAL, KPOP, WORLD };
+enum Channel { ORIGINAL, KPOP, WORLD, OTHER };
 
 typedef struct {
-  char* title;      // (31 bytes)
-  char* artist;     // (27 bytes)
-  Channel channel;  // (u8)
-  u32 lastMillisecond;
-  u32 sampleStart;   // in ms
-  u32 sampleLength;  // in ms
+  char* title;          // 0x00 (31 bytes - including \0)
+  char* artist;         // 0x1F (27 bytes - including \0)
+  Channel channel;      // 0x3A (u8)
+  u32 lastMillisecond;  // 0x3B (u32)
+  u32 sampleStart;      // 0x3F (u32 - in ms)
+  u32 sampleLength;     // 0x43 (u32 - in ms)
 
-  u8 chartCount;
-  Chart* charts;  // ("chartCount" times)
+  u8 chartCount;  //       0x47 (u8)
+  Chart* charts;  //       0x48 ("chartCount" times)
 
   // custom fields:
   std::string audioPath;

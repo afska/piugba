@@ -13,10 +13,6 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
 }
 
 void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
-  bool isUnique = arrow->type == ArrowType::UNIQUE;
-  if (!isUnique || arrow->getIsPressed())
-    return;
-
   int actualMsecs = timingProvider->getMsecs() + offset;
   int expectedMsecs = arrow->timestamp;
   u32 diff = (u32)abs(actualMsecs - expectedMsecs);
@@ -35,8 +31,19 @@ void Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
 
 void Judge::onOut(Arrow* arrow) {
   bool isUnique = arrow->type == ArrowType::UNIQUE;
+  bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
+  bool isHoldTail = arrow->type == ArrowType::HOLD_TAIL;
+
   if (isUnique && !arrow->getIsPressed()) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
+    if (result == FeedbackType::UNKNOWN)
+      return;
+  }
+
+  if (isHoldHead || isHoldTail) {
+    FeedbackType result =
+        onResult(arrow, arrow->getIsPressed() ? FeedbackType::PERFECT
+                                              : FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
   }
@@ -65,7 +72,8 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   FeedbackType result = arrow->getResult(partialResult, arrowPool);
 
   if (result != FeedbackType::UNKNOWN) {
-    updateScore(result);
+    if (!arrow->isFake)
+      updateScore(result);
 
     switch (result) {
       case FeedbackType::MISS:

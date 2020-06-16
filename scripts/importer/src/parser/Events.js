@@ -1,12 +1,14 @@
 const events = {
-  NOTE: 0,
-  HOLD_START: 1,
-  HOLD_END: 2,
-  SET_TEMPO: 3,
-  SET_TICKCOUNT: 4,
-  STOP: 5,
-  WARP: 6,
-  STOP_ASYNC: 15,
+  SET_FAKE: 0,
+  NOTE: 1,
+  HOLD_START: 2,
+  HOLD_END: 3,
+  SET_TEMPO: 4,
+  SET_TICKCOUNT: 5,
+  STOP: 6,
+  WARP: 7,
+  SET_SPEED: 104,
+  STOP_ASYNC: 106,
 };
 
 module.exports = {

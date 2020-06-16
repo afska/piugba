@@ -11,7 +11,9 @@
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
+#include "objects/base/InputHandler.h"
 #include "objects/score/Score.h"
+#include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
 class SongScene : public Scene {
@@ -38,10 +40,13 @@ class SongScene : public Scene {
   std::unique_ptr<Judge> judge;
   std::unique_ptr<LifeBar> lifeBar;
   std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
+  std::unique_ptr<InputHandler> speedUpInput;
+  std::unique_ptr<InputHandler> speedDownInput;
   int init = 0;
   u32 blinkFrame = 0;
 

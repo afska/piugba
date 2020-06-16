@@ -7,6 +7,7 @@ const $path = require("path");
 const _ = require("lodash");
 
 const EXTENSION = "pius";
+const JSON_EXTENSION = "json";
 
 module.exports = (name, filePath, outputPath) => {
   const content = fs.readFileSync(filePath).toString();
@@ -14,6 +15,13 @@ module.exports = (name, filePath, outputPath) => {
 
   checkIntegrity(metadata, charts);
   const simfile = completeDifficulty(metadata, charts, content, filePath);
+
+  if (GLOBAL_OPTIONS.json) {
+    fs.writeFileSync(
+      $path.join(outputPath, `${name}.${JSON_EXTENSION}`),
+      JSON.stringify(simfile, null, 2)
+    );
+  }
 
   const output = new SongSerializer(simfile).serialize();
   fs.writeFileSync($path.join(outputPath, `${name}.${EXTENSION}`), output);

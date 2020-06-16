@@ -56,16 +56,14 @@ class SpriteManager;
 
 class Sprite {
  private:
-  inline void updateVelocity();
   inline void updateAnimation();
-  inline void syncVelocity();
+  inline void syncPosition();
 
  protected:
   const void* data;
-  int x, y, dx, dy;
+  int x, y;
   u8 animation_offset;
   u32 priority, w, h, size_bits, shape_bits;
-  bool stayWithinBounds;
   u32 imageSize, tileIndex;
   SpriteSize spriteSize;
   u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
@@ -73,8 +71,8 @@ class Sprite {
   bool animating;
 
   inline void syncAnimation();
-  inline virtual void syncOam();
-  inline virtual void buildOam(int tileIndex);
+  inline void syncOam();
+  inline void buildOam(int tileIndex);
   inline void setAttributesBasedOnSize(SpriteSize size);
 
  public:
@@ -93,6 +91,7 @@ class Sprite {
   inline u32 getImageSize() { return imageSize; }
   inline void setImageSize(u32 size) { imageSize = size; }
 
+  inline void setPriority(u32 priority) { this->priority = priority; }
   inline void makeAnimated(int beginFrame,
                            int numberOfFrames,
                            int animationDelay);
@@ -100,11 +99,6 @@ class Sprite {
   inline void animateToFrame(int frame) { this->currentFrame = frame; }
   inline void animate() { this->animating = true; }
   inline void stopAnimating() { this->animating = false; }
-  inline void setStayWithinBounds(bool b) { stayWithinBounds = b; }
-  inline void setVelocity(int dx, int dy) {
-    this->dx = dx;
-    this->dy = dy;
-  }
   inline void update();
 
   inline void moveTo(int x, int y);
@@ -118,11 +112,8 @@ class Sprite {
   inline VECTOR getPos() { return {x, y}; }
   inline GBAVector getPosAsVector() { return GBAVector(getPos()); }
   inline VECTOR getCenter() { return {x + w / 2, y + h / 2}; }
-  inline VECTOR getVelocity() { return {dx, dy}; }
   inline int getX() { return x; }
   inline int getY() { return y; }
-  inline u32 getDx() { return dx; }
-  inline u32 getDy() { return dy; }
   inline u32 getWidth() { return w; }
   inline u32 getHeight() { return h; }
   inline u32 getAnimationDelay() { return animationDelay; }
@@ -144,7 +135,6 @@ inline void Sprite::moveTo(int x, int y) {
 
   this->x = x;
   this->y = y;
-  syncVelocity();
 }
 
 inline bool Sprite::isOffScreen() {
@@ -178,9 +168,11 @@ inline void Sprite::makeAnimated(int beginFrame,
   animate();
 }
 
-inline void Sprite::syncVelocity() {
+inline void Sprite::syncPosition() {
   oam.attr0 = (oam.attr0 & ~ATTR0_Y_MASK) | (y & ATTR0_Y_MASK);
   oam.attr1 = (oam.attr1 & ~ATTR1_X_MASK) | (x & ATTR1_X_MASK);
+  oam.attr2 =
+      (oam.attr2 & ~ATTR2_PRIO_MASK) | (ATTR2_PRIO(priority) & ATTR2_PRIO_MASK);
 }
 
 inline void Sprite::syncAnimation() {
@@ -191,30 +183,13 @@ inline void Sprite::syncAnimation() {
       this->tileIndex + (currentFrame * (this->animation_offset * 2));
   oam.attr2 &= OAM_TILE_OFFSET_CLEAR;
   oam.attr2 |= (newTileIndex & OAM_TILE_OFFSET_NEW);
+
+  previousFrame = currentFrame;
 }
 
 inline void Sprite::syncOam() {
-  syncVelocity();
+  syncPosition();
   syncAnimation();
-}
-
-inline void Sprite::updateVelocity() {
-  if (dx == 0 && dy == 0)
-    return;
-
-  this->x += this->dx;
-  this->y += this->dy;
-
-  if (stayWithinBounds) {
-    if (this->x < 0)
-      this->x = 0;
-    if (this->y < 0)
-      this->y = 0;
-    if (this->x > (GBA_SCREEN_WIDTH - this->w))
-      this->x = GBA_SCREEN_WIDTH - this->w;
-    if (this->y > (GBA_SCREEN_HEIGHT - this->h))
-      this->y = GBA_SCREEN_HEIGHT - this->h;
-  }
 }
 
 inline void Sprite::updateAnimation() {
@@ -222,7 +197,6 @@ inline void Sprite::updateAnimation() {
     return;
 
   animationCounter++;
-  previousFrame = currentFrame;
   if (animationCounter > animationDelay) {
     currentFrame++;
     if (currentFrame > (numberOfFrames - 1) + beginFrame) {
@@ -237,7 +211,6 @@ inline void Sprite::updateAnimation() {
 }
 
 inline void Sprite::update() {
-  updateVelocity();
   updateAnimation();
   syncOam();
 }

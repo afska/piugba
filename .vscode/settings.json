@@ -67,6 +67,7 @@
 		"gbfs.h": "c",
 		"gsm.h": "c",
 		"stddef.h": "c",
-		"tonc_core.h": "c"
+		"tonc_core.h": "c",
+		"bg_selectionmask.h": "c"
 	}
 }

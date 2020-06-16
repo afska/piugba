@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <tonc_input.h>
 
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
@@ -32,6 +33,7 @@ const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
+const u32 BLINK_LEVEL = 6;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -63,7 +65,8 @@ void SelectionScene::load() {
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink());
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
+  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
   setUpPager();
 
   setUpSpritesPalette();
@@ -92,7 +95,7 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChange();
   processSelectionChange();
 
-  if (KEY_CENTER(keys))
+  if (selectInput->hasBeenPressedNow())
     goToSong();
 }
 
@@ -183,6 +186,7 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
   arrowSelectors[2]->setIsPressed(KEY_UPRIGHT(keys));
   arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
+  selectInput->setIsPressed(KEY_CENTER(keys));
 }
 
 void SelectionScene::processDifficultyChange() {

@@ -1,6 +1,9 @@
 #ifndef CHART_READER_H
 #define CHART_READER_H
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
+
 #include <vector>
 
 #include "HoldArrow.h"
@@ -8,47 +11,57 @@
 #include "TimingProvider.h"
 #include "models/Song.h"
 #include "objects/Arrow.h"
+#include "utils/MathUtils.h"
+#include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
 class ChartReader : public TimingProvider {
  public:
-  ChartReader(Chart* chart, ObjectPool<Arrow>*, Judge* judge);
+  ChartReader(Chart* chart,
+              ObjectPool<Arrow>*,
+              Judge* judge,
+              PixelBlink* pixelBlink);
 
-  int getMsecs() override { return msecs; }
-  u32 getTimeNeeded() override { return timeNeeded; }
-  bool isStopped() override { return hasStopped; }
-  int getStopStart() override { return stopStart; }
-  u32 getStopLength() override { return stopLength; }
+  bool update(int msecs);
 
-  bool preUpdate(int msecs);
-  void postUpdate();
+  int getYFor(Arrow* arrow);
 
-  int getYFor(int timestamp);
-  int getTimestampFor(int y);
+  inline u32 getMultiplier() { return multiplier; }
+  inline void setMultiplier(u32 multiplier) {
+    this->multiplier =
+        max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
+    syncScrollSpeed();
+    resetMaxArrowTimeJump();
+  }
 
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
-  bool isAboutToStop(int* nextStopStart);
   bool isAboutToResume();
 
+  template <typename DEBUG>
+  void logDebugInfo();
+
  private:
-  int msecs = 0;
-  bool hasStopped = false;
   Chart* chart;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
-  u32 timeNeeded = 0;
+  PixelBlink* pixelBlink;
+  u32 targetArrowTime;
+  u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
+  std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
+  u32 scrollBpm = 0;
+  u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 4;
+  bool fake = false;
   int lastTick = 0;
-  int stopStart = 0;
-  u32 stopLength = 0;
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
+  u32 frameSkipCount = 0;
 
   template <typename F>
   inline void processEvents(int targetMsecs, F action) {
@@ -107,22 +120,10 @@ class ChartReader : public TimingProvider {
             max = holdArrow;
         });
 
-    if (max != NULL)
+    if (max != NULL &&
+        max->startTime == holdArrowStates[direction].lastStartTime)
       action(max);
   }
-
-  void processNextEvents();
-  void predictNoteEvents();
-  void processUniqueNote(Event* event);
-  void startHoldNote(Event* event);
-  void endHoldNote(Event* event);
-  void processHoldArrows();
-  bool processTicks(int rythmMsecs, bool checkHoldArrows);
-  void connectArrows(std::vector<Arrow*>& arrows);
-  void snapClosestArrowToHolder();
-
-  template <typename DEBUG>
-  void logDebugInfo();
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
@@ -131,6 +132,26 @@ class ChartReader : public TimingProvider {
         action(static_cast<ArrowDirection>(i));
     }
   }
+
+  inline void syncScrollSpeed() {
+    targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
+                               MATH_mul(scrollBpm, multiplier));
+  }
+  inline void syncArrowTime() { arrowTime = targetArrowTime; }
+  inline void resetMaxArrowTimeJump() {
+    maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
+  }
+
+  int getYFor(int timestamp);
+  void processNextEvents();
+  void processUniqueNote(Event* event);
+  void startHoldNote(Event* event);
+  void endHoldNote(Event* event);
+  void orchestrateHoldArrows();
+  bool processTicks(int rythmMsecs, bool checkHoldArrows);
+  void connectArrows(std::vector<Arrow*>& arrows);
+  int getFillTopY(HoldArrow* holdArrow);
+  int getFillBottomY(HoldArrow* holdArrow, int topY);
 };
 
 class CHART_DEBUG;

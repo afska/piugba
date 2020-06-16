@@ -12,7 +12,9 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      _.sortBy([...timingEvents, ...noteEvents], ["timestamp", "type"])
+      this._applyFakes(
+        this._applyAsyncStops(this._sort([...timingEvents, ...noteEvents]))
+      )
     );
   }
 
@@ -40,7 +42,11 @@ module.exports = class Chart {
             arrows: _.range(0, 5).map((id) => _.includes(arrows, id)),
           }))
           .filter((it) => _.some(it.arrows))
-          .reject((it) => this._isInsideWarp(it.timestamp, timingEvents))
+          .reject(
+            (it) =>
+              it.type === Events.NOTE &&
+              this._isInsideWarp(it.timestamp, timingEvents)
+          )
           .value();
       });
     });
@@ -48,34 +54,40 @@ module.exports = class Chart {
 
   _getTimingEvents() {
     const segments = _([
-      this.header.warps.map((it) => ({
-        type: Events.WARP,
+      this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
+      this.header.speeds.map((it) => ({ type: Events.SET_SPEED, data: it })),
+      this.header.tickcounts.map((it) => ({
+        type: Events.SET_TICKCOUNT,
+        data: it,
+      })),
+      this.header.fakes.map((it) => ({
+        type: Events.SET_FAKE,
         data: it,
       })),
       [...this.header.stops, ...this.header.delays].map((it) => ({
         type: Events.STOP,
         data: it,
       })),
-      this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
-      this.header.tickcounts.map((it) => ({
-        type: Events.SET_TICKCOUNT,
+      this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
+      this.header.warps.map((it) => ({
+        type: Events.WARP,
         data: it,
       })),
-      //this.header.scrolls.map((it) => ({ type: Events.STOP_ASYNC, data: it })),
-      // TODO: NOW THAT STOPS ARE SYNC IN THE GBA, IMPLEMENT ASYNC STOPS
     ])
       .flatten()
-      .sortBy("data.key")
+      .sortBy(["data.key", "type"])
       .value();
 
     let currentTimestamp = 0;
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
+    let warpStart = -1;
+    let scrollFactor = 1;
     let currentScrollEnabled = true;
     let currentScrollTimestamp = 0;
 
     return _(segments)
-      .map(({ type, data }, i) => {
+      .flatMap(({ type, data }) => {
         const beat = data.key;
         const beatLength = this._getBeatLengthByBpm(currentBpm);
         currentTimestamp += (beat - currentBeat) * beatLength;
@@ -84,11 +96,106 @@ module.exports = class Chart {
         const timestamp = currentTimestamp;
 
         if (data.value < 0) throw new Error("invalid_negative_timing_segment");
+        const createWarp = () => {
+          const length = timestamp - warpStart;
+          if (length === 0) return null;
 
-        let length;
+          return {
+            timestamp: warpStart,
+            type: Events.WARP,
+            length: timestamp - warpStart,
+          };
+        };
+
         switch (type) {
-          case Events.WARP:
-            length = this._getRangeDuration(
+          case Events.SET_TEMPO: {
+            if (data.value > FAST_BPM_WARP) {
+              if (warpStart === -1) warpStart = timestamp;
+              return null;
+            }
+
+            const bpmChange = {
+              timestamp,
+              type,
+              bpm: currentBpm,
+              scrollBpm: currentBpm * scrollFactor,
+              scrollChangeFrames: 0,
+            };
+
+            if (warpStart > -1) {
+              const warp = createWarp();
+              warpStart = -1;
+              return [warp, bpmChange];
+            } else {
+              return bpmChange;
+            }
+          }
+          case Events.SET_SPEED: {
+            scrollFactor = data.value;
+            const scrollChangeFrames =
+              (data.param2 === 0
+                ? data.param1 * beatLength
+                : data.param1 * SECOND) / FRAME_MS;
+
+            return {
+              timestamp,
+              type: Events.SET_TEMPO,
+              bpm: currentBpm,
+              scrollBpm: currentBpm * scrollFactor,
+              scrollChangeFrames,
+            };
+          }
+          case Events.SET_TICKCOUNT: {
+            return {
+              timestamp,
+              type,
+              tickcount: data.value,
+            };
+          }
+          case Events.SET_FAKE: {
+            return {
+              timestamp,
+              type,
+              endTime: timestamp + data.value * beatLength,
+            };
+          }
+          case Events.STOP: {
+            const length = data.value * SECOND;
+            const stop = { timestamp, type, length, judgeable: false };
+
+            if (warpStart > -1) {
+              const warp = createWarp();
+              warpStart = timestamp;
+
+              return [warp, stop];
+            } else {
+              return stop;
+            }
+          }
+          case Events.STOP_ASYNC: {
+            const scrollEnabled = data.value > 0;
+
+            if (!currentScrollEnabled && scrollEnabled) {
+              const length = timestamp - currentScrollTimestamp;
+              currentScrollEnabled = true;
+
+              return {
+                timestamp: currentScrollTimestamp,
+                type,
+                length,
+                judgeable: true,
+              };
+            }
+
+            if (currentScrollEnabled && !scrollEnabled) {
+              currentScrollEnabled = false;
+              currentScrollTimestamp = timestamp;
+            }
+
+            return null;
+          }
+          case Events.WARP: {
+            const length = this._getRangeDuration(
               currentBeat,
               currentBeat + data.value
             );
@@ -98,44 +205,7 @@ module.exports = class Chart {
               type,
               length,
             };
-          case Events.STOP:
-            length = data.value * SECOND;
-
-            return {
-              timestamp,
-              type,
-              length,
-            };
-          case Events.STOP_ASYNC:
-            const scrollEnabled = data.value > 0;
-
-            if (scrollEnabled && !currentScrollEnabled) {
-              length = timestamp - currentScrollTimestamp;
-              currentScrollEnabled = true;
-              currentScrollTimestamp = timestamp;
-
-              return {
-                timestamp,
-                type,
-                length,
-              };
-            }
-
-            currentScrollEnabled = scrollEnabled;
-            currentScrollTimestamp = timestamp;
-            return null;
-          case Events.SET_TEMPO:
-            return {
-              timestamp,
-              type,
-              bpm: currentBpm,
-            };
-          case Events.SET_TICKCOUNT:
-            return {
-              timestamp,
-              type,
-              tickcount: data.value,
-            };
+          }
           default:
             throw new Error("unknown_timing_segment");
         }
@@ -149,6 +219,70 @@ module.exports = class Chart {
       ...it,
       timestamp: Math.round(this.header.offset + it.timestamp),
     }));
+  }
+
+  _applyAsyncStops(events) {
+    let stoppedTime = 0;
+
+    return this._sort(
+      _(events)
+        .map((it) => {
+          if (it.type === Events.STOP_ASYNC) {
+            const timestamp = it.timestamp - stoppedTime;
+            stoppedTime += it.length;
+
+            return {
+              ...it,
+              timestamp,
+              type: Events.STOP,
+            };
+          }
+
+          return {
+            ...it,
+            timestamp: it.timestamp - stoppedTime,
+          };
+        })
+        .compact()
+        .value()
+    );
+  }
+
+  _applyFakes(events) {
+    let fakeEndTime = -1;
+
+    return _.flatMap(events, (it) => {
+      let event = it;
+
+      if (it.type === Events.SET_FAKE) {
+        fakeEndTime = it.endTime;
+
+        event = {
+          timestamp: it.timestamp,
+          type: it.type,
+          enabled: 1,
+        };
+      }
+
+      if (fakeEndTime !== -1 && it.timestamp > fakeEndTime) {
+        fakeEndTime = -1;
+
+        return [
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 0,
+          },
+          event,
+        ];
+      }
+
+      return event;
+    });
+  }
+
+  _sort(events) {
+    return _.sortBy(events, [(it) => Math.round(it.timestamp), "type"]);
   }
 
   _getMeasures() {
@@ -190,7 +324,7 @@ module.exports = class Chart {
   }
 
   _getBpmByBeat(beat) {
-    const bpm = _.findLast(this.header.bpms, (bpm) => beat >= bpm.key);
+    const bpm = _.findLast(this._getFiniteBpms(), (bpm) => beat >= bpm.key);
     if (!bpm) return 0;
 
     return bpm.value;
@@ -210,11 +344,14 @@ module.exports = class Chart {
 
     for (let beat = startBeat; beat < endBeat; beat += FUSE) {
       const bpm = this._getBpmByBeat(beat);
-      const beatLength = this._getBeatLengthByBpm(bpm) * FUSE;
-      length += beatLength;
+      length += this._getBeatLengthByBpm(bpm) * FUSE;
     }
 
     return length;
+  }
+
+  _getFiniteBpms() {
+    return this.header.bpms.filter((it) => it.value <= FAST_BPM_WARP);
   }
 
   _isInsideWarp(timestamp, timingEvents) {
@@ -230,6 +367,9 @@ module.exports = class Chart {
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
+const FRAME_MS = 17;
 const BEAT_UNIT = 4;
+const FAST_BPM_WARP = 9999999;
 const NOTE_DATA = /^\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
+const FIXED_POINT_PRECISION = 0xffffffff + 1;

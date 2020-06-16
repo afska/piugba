@@ -8,9 +8,8 @@
 enum DifficultyLevel { NORMAL, HARD, CRAZY, NUMERIC };
 
 typedef struct {
-  int offset;
   DifficultyLevel difficulty;  // u8
-  u8 level;                    // 0-30
+  u8 level;
 
   u32 eventCount;
   Event* events;  // ("eventCount" times)

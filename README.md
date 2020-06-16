@@ -88,13 +88,6 @@ rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmak
 
 ### Troubleshooting
 
-#### Log numbers
-
-```cpp
-#include <libgba-sprite-engine/background/text_stream.h>
-log_text(std::to_string(number).c_str());
-```
-
 #### Undefined reference to *function name*
 
 If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!

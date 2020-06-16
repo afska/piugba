@@ -1,11 +1,11 @@
 #include "Combo.h"
 
-#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
 #include "utils/SpriteUtils.h"
 
 u32 MAX_COMBO = 999;
+u32 DIGITS = 3;
 
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
@@ -21,13 +21,14 @@ void Combo::setValue(int value) {
   u32 absValue = min(abs(value), MAX_COMBO);
 
   this->value = absValue;
-  digits[0]->set(Div(absValue, 100), isRed);
-  digits[1]->set(Div(DivMod(absValue, 100), 10), isRed);
-  digits[2]->set(DivMod(absValue, 10), isRed);
-}
+  digits[0]->set(COMBO_VALUE_LUT[absValue * DIGITS], isRed);
+  digits[1]->set(COMBO_VALUE_LUT[absValue * DIGITS + 1], isRed);
+  digits[2]->set(COMBO_VALUE_LUT[absValue * DIGITS + 2], isRed);
 
-u32 Combo::getValue() {
-  return value;
+  // Without optimizations:
+  // digits[0]->set(Div(absValue, 100), isRed);
+  // digits[1]->set(Div(DivMod(absValue, 100), 10), isRed);
+  // digits[2]->set(DivMod(absValue, 10), isRed);
 }
 
 void Combo::show() {

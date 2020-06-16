@@ -13,9 +13,9 @@ inline void BACKGROUND_enable(bool bg0, bool bg1, bool bg2, bool bg3) {
   REG_DISPCNT = bg3 ? REG_DISPCNT | DCNT_BG3 : REG_DISPCNT & ~DCNT_BG3;
 }
 
-inline void BACKGROUND_setup(u8 id, u8 charblock, u8 screenblock) {
-  REG_BGCNT[id] =
-      BG_CBB(charblock) | BG_SBB(screenblock) | BG_8BPP | BG_REG_32x32 | id;
+inline void BACKGROUND_setup(u8 id, u8 charblock, u8 screenblock, u8 priority) {
+  REG_BGCNT[id] = BG_CBB(charblock) | BG_SBB(screenblock) | BG_8BPP |
+                  BG_REG_32x32 | priority;
 }
 
 inline void BACKGROUND_loadPalette(const unsigned int data[],

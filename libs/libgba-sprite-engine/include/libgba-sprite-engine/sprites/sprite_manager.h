@@ -8,7 +8,9 @@
 #pragma GCC system_header
 
 #include <libgba-sprite-engine/gba/tonc_types.h>
+
 #include <vector>
+
 #include "sprite.h"
 
 class SpriteManager {
@@ -16,7 +18,19 @@ class SpriteManager {
   bool initialized;
   std::vector<Sprite*> sprites;
 
-  void copyOverSpriteOAMToVRAM();
+  inline void copyOverSpriteOAMToVRAM() {
+    int i = 0;
+
+    for (auto sprite : this->sprites) {
+      if (sprite->enabled) {
+        sprite->update();
+        oam_mem[i] = sprite->oam;
+      }
+
+      i++;
+    }
+  }
+
   void copyOverImageDataToVRAM(Sprite* s);
   void copyOverImageDataToVRAM();
 
@@ -28,7 +42,13 @@ class SpriteManager {
   void set(std::vector<Sprite*> sprites);
   void persist();  // copies over image and palette data to VRAM, modifies
                    // sprite OAM indiches
-  void render();   // copies over OAM buffer to OAM RAM, called in game loop
+
+  inline void
+  render() {  // copies over OAM buffer to OAM RAM, called in game loop
+    // WARNING - This is called every time in the main update loop; keep amount
+    // of instructions as minimal as possible in here!
+    copyOverSpriteOAMToVRAM();
+  }
 };
 
 #endif  // GBA_SPRITE_ENGINE_SPRITE_MANAGER_H

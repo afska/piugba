@@ -24,20 +24,21 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
 
   LOGSTR("BPM:", 0);
   LOGN(bpm, 1);
-  LOGSTR("MSECS:", 2);
-  LOGN(msecs, 3);
+  LOGSTR("-> " + std::to_string(getArrowTime()), 2);
+  LOGSTR("MSECS:", 3);
+  LOGN(msecs, 4);
 
-  LOGSTR("NEXT -> MS:", 5);
-  LOGN(min == NULL ? -1 : min->timestamp, 6);
-  LOGSTR("NEXT -> Y:", 7);
-  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 8);
+  LOGSTR("NEXT -> MS:", 6);
+  LOGN(min == NULL ? -1 : min->timestamp, 7);
+  LOGSTR("NEXT -> Y:", 8);
+  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 9);
 
   std::string typeStr;
   u32 currentIndex = eventIndex;
   while (currentIndex < chart->eventCount) {
     Event* event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    if (EVENT_HAS_EXTRA(type))
+    if (EVENT_HAS_PARAM(type))
       break;
     currentIndex++;
   }
@@ -53,24 +54,24 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
       case EventType::SET_TICKCOUNT:
         typeStr = "tick";
         break;
-      case EventType::STOP:
-        typeStr = "stop";
-        break;
       case EventType::WARP:
         typeStr = "warp";
+        break;
+      case EventType::STOP:
+        typeStr = "stop";
         break;
       default:
         typeStr = std::to_string(type);
     }
-    LOGSTR("EVENT:", 10);
-    LOGSTR(typeStr, 11);
-    LOGN(nextEvent->timestamp, 12);
-    LOGSTR("-> " + std::to_string(nextEvent->extra), 13);
+    LOGSTR("EVENT:", 11);
+    LOGSTR(typeStr, 12);
+    LOGN(nextEvent->timestamp, 13);
+    LOGSTR("-> " + std::to_string(nextEvent->param), 14);
   }
 
-  LOGSTR("SPRITES:", 15);
-  LOGN(activeSprites, 16);
-  LOGSTR("-> " + std::to_string(maxSprites), 17);
+  LOGSTR("SPRITES:", 16);
+  LOGN(activeSprites, 17);
+  LOGSTR("-> " + std::to_string(maxSprites), 18);
 }
 
 #endif  // LOG_DEBUG_INFO_H

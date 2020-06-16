@@ -42,7 +42,3 @@ void ArrowSelector::tick() {
     sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
   }
 }
-
-Sprite* ArrowSelector::get() {
-  return sprite.get();
-}

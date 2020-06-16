@@ -8,8 +8,14 @@
 
 #include "IPoolable.h"
 
-inline void CRASH() {
-  // *((u32*)NULL) = 1;
+static bool isWarningVisible = false;
+inline void LOG_WARNING() {
+  IFTEST {
+    if (!isWarningVisible) {
+      LOGSTR("!", 0);
+      isWarningVisible = true;
+    }
+  }
 }
 
 template <class T>
@@ -36,40 +42,13 @@ class ObjectPool {
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
+        activeObjects++;
         initialize(it->object);
         return it->object;
       }
     }
 
-    CRASH();
-    return NULL;
-  }
-
-  template <typename F>
-  inline T* createWithIdGreaterThan(F initialize, u32 id) {
-    for (auto& it : objects) {
-      if (!it->isActive && it->object->id > id) {
-        it->isActive = true;
-        initialize(it->object);
-        return it->object;
-      }
-    }
-
-    CRASH();
-    return NULL;
-  }
-
-  template <typename F>
-  inline T* createWithIdLowerThan(F initialize, u32 id) {
-    for (auto& it : objects) {
-      if (!it->isActive && it->object->id < id) {
-        it->isActive = true;
-        initialize(it->object);
-        return it->object;
-      }
-    }
-
-    CRASH();
+    LOG_WARNING();
     return NULL;
   }
 
@@ -78,9 +57,13 @@ class ObjectPool {
     return element->isActive ? objects[index]->object : NULL;
   }
 
+  bool isFull() { return activeObjects == objects.size(); }
+  u32 getActiveObjects() { return activeObjects; }
+
   void discard(u32 index) {
     ((IPoolable*)objects[index]->object)->discard();
     objects[index]->isActive = false;
+    activeObjects--;
   }
 
   void clear() {
@@ -110,6 +93,7 @@ class ObjectPool {
 
  private:
   std::vector<PooledObject<T>*> objects;
+  u32 activeObjects = 0;
 };
 
 #endif  // OBJECT_POOL_H

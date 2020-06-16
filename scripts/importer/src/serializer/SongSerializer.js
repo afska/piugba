@@ -35,15 +35,14 @@ module.exports = class SongSerializer {
           .map((char) => char.charCodeAt(0));
 
         this.loop(characters, this.UInt8);
-        const padding = size - string.length;
+        const padding = size - characters.length;
         for (let i = 0; i < padding; i++) this.UInt8(0);
       },
     });
 
     this.protocol.define("Chart", {
       write: function (chart) {
-        this.Int32LE(chart.header.offset)
-          .UInt8(DifficultyLevels[chart.header.difficulty])
+        this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
           .EventArray(chart.events);
       },
@@ -54,13 +53,20 @@ module.exports = class SongSerializer {
         this.Int32LE(event.timestamp);
 
         if (event.type === Events.SET_TEMPO)
-          this.UInt8(event.type).UInt32LE(Math.round(event.bpm));
+          this.UInt8(event.type)
+            .UInt32LE(normalizeUInt(event.bpm))
+            .UInt32LE(normalizeUInt(event.scrollBpm))
+            .UInt32LE(normalizeUInt(event.scrollChangeFrames));
         else if (event.type === Events.SET_TICKCOUNT)
-          this.UInt8(event.type).UInt32LE(Math.round(event.tickcount));
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+        else if (event.type === Events.SET_FAKE)
+          this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
         else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
-          this.UInt8(Events.STOP).UInt32LE(Math.round(event.length));
+          this.UInt8(Events.STOP)
+            .UInt32LE(normalizeUInt(event.length))
+            .UInt32LE(event.judgeable ? 1 : 0);
         else if (event.type === Events.WARP)
-          this.UInt8(event.type).UInt32LE(Math.round(event.length));
+          this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
         else {
           const data = _.range(0, 5).reduce(
             (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
@@ -85,8 +91,14 @@ module.exports = class SongSerializer {
   }
 };
 
+const normalizeUInt = (number) => {
+  if (number === Infinity || number > INFINITY) return INFINITY;
+  return Math.round(number);
+};
+
 const TITLE_LEN = 31;
 const ARTIST_LEN = 27;
+const INFINITY = 0xffffffff;
 
 const ARROW_MASKS = [
   0b00001000,
