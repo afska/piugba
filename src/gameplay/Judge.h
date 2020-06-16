@@ -9,7 +9,7 @@
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
-const u32 TIMING_WINDOW = 8;
+const u32 TIMING_WINDOW = 9;
 const u32 OFFSET_BAD = 7;
 const u32 OFFSET_GOOD = 5;
 const u32 OFFSET_GREAT = 3;
