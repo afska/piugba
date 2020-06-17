@@ -18,7 +18,7 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
-const DIFFICULTY_OPTIONS = ["auto", "manual", "overwrite"];
+const DIFFICULTY_OPTIONS = ["auto", "manual", "manual-overwrite"];
 const DIFFICULTY_DEFAULT = "manual";
 
 const opt = getopt
@@ -26,7 +26,7 @@ const opt = getopt
     [
       "d",
       "difficulty=MODE",
-      "difficulty provider (one of: auto|*manual*|overwrite)",
+      "difficulty provider (one of: auto|*manual*|manual-overwrite)",
     ],
     ["j", "json", "generate JSON debug files"],
     ["f", "force", "ignore errors"],

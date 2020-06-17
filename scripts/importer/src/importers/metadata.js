@@ -1,7 +1,7 @@
 const Simfile = require("../parser/Simfile");
 const SongSerializer = require("../serializer/SongSerializer");
 const checkIntegrity = require("./integrity/checkIntegrity");
-const completeDifficulty = require("./integrity/completeDifficulty");
+const completeMissingData = require("./integrity/completeMissingData");
 const fs = require("fs");
 const $path = require("path");
 const _ = require("lodash");
@@ -14,7 +14,7 @@ module.exports = (name, filePath, outputPath) => {
   const { metadata, charts } = new Simfile(content, name);
 
   checkIntegrity(metadata, charts);
-  const simfile = completeDifficulty(metadata, charts, content, filePath);
+  const simfile = completeMissingData(metadata, charts, content, filePath);
 
   if (GLOBAL_OPTIONS.json) {
     fs.writeFileSync(

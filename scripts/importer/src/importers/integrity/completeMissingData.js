@@ -3,16 +3,35 @@ const utils = require("../../utils");
 const fs = require("fs");
 const _ = require("lodash");
 
+const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["NORMAL", "HARD", "CRAZY"];
-const PROPERTY = (name) => new RegExp(`#${name}:((.|(\r|\n))*?);`);
+const PROP_REGEXP = (name) => `#${name}:((.|(\r|\n))*?);`;
+const GLOBAL_PROPERTY = (name) => new RegExp(PROP_REGEXP(name), "g");
+const PROPERTY = (name) => new RegExp(PROP_REGEXP(name));
+const CHANNEL_PROP = "SONGCATEGORY";
 const DIFFICULTY_PROP = "DIFFICULTY";
 
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
+  if (metadata.channel === "UNKNOWN") {
+    const channelOptions = KNOWN_CHANNELS.map(
+      (name, i) => `${i} = ${name}`
+    ).join(", ");
+
+    console.log("-> channels: ".bold + `(${channelOptions})`.cyan);
+    const channel = utils.insistentChoice(
+      "What channel?",
+      _.range(KNOWN_CHANNELS.length)
+    );
+    metadata.channel = _.keys(Channels)[parseInt(channel)];
+
+    isDirty = true;
+  }
+
   if (
     GLOBAL_OPTIONS.difficulty === "auto" ||
-    GLOBAL_OPTIONS.difficulty === "overwrite"
+    GLOBAL_OPTIONS.difficulty === "manual-overwrite"
   ) {
     charts.forEach((it) => {
       it.header.difficulty = "NUMERIC";
@@ -27,27 +46,7 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   });
 
-  if (isDirty) {
-    const writeChanges = utils.insistentChoice(
-      "Write simfile? (y/n)",
-      ["y", "n"],
-      "red"
-    );
-    if (writeChanges === "y") {
-      let newContent = content;
-
-      charts.forEach(({ header }) => {
-        newContent = utils.replaceRange(
-          newContent,
-          PROPERTY(DIFFICULTY_PROP),
-          `#${DIFFICULTY_PROP}:${header.difficulty};`,
-          header.startIndex
-        );
-      });
-
-      fs.writeFileSync(filePath, newContent);
-    }
-  }
+  if (isDirty) writeIfNeeded(metadata, charts, content, filePath);
 
   return {
     metadata,
@@ -57,6 +56,33 @@ module.exports = (metadata, charts, content, filePath) => {
           _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
         ),
   };
+};
+
+const writeIfNeeded = (metadata, charts, content, filePath) => {
+  const writeChanges = utils.insistentChoice(
+    "Write simfile? (y/n)",
+    ["y", "n"],
+    "red"
+  );
+  if (writeChanges === "y") {
+    let newContent = content;
+
+    newContent = newContent.replace(
+      GLOBAL_PROPERTY(CHANNEL_PROP),
+      `#${CHANNEL_PROP}:${metadata.channel};`
+    );
+
+    charts.forEach(({ header }) => {
+      newContent = utils.replaceRange(
+        newContent,
+        PROPERTY(DIFFICULTY_PROP),
+        `#${DIFFICULTY_PROP}:${header.difficulty};`,
+        header.startIndex
+      );
+    });
+
+    fs.writeFileSync(filePath, newContent);
+  }
 };
 
 const autoSetDifficulty = (charts, difficultyName) => {
