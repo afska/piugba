@@ -51,11 +51,11 @@ void gsm_init(gsm r) {
 }
 
 void unmute() {
-  SNDSTAT = SNDSTAT | 0b0000000010000000;
+  DSOUNDCTRL = DSOUNDCTRL | 0b0000001100000000;
 }
 
 void mute() {
-  SNDSTAT = SNDSTAT & 0b1111111101111111;
+  DSOUNDCTRL = DSOUNDCTRL & 0b1111110011111111;
 }
 
 void player_init() {
