@@ -16,25 +16,22 @@
 #include "utils/gbfs/gbfs.h"
 
 #define TIMER_16MHZ 0
+uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 
 Playback PlaybackState;
-
-struct gsm_state decoder;
 const GBFS_FILE* fs;
 const unsigned char* src;
 uint32_t src_len;
-
-signed short out_samples[160];
-signed char double_buffers[2][608] __attribute__((aligned(4)));
-
 const unsigned char* src_pos = NULL;
 const unsigned char* src_end = NULL;
+
+struct gsm_state decoder;
+signed short out_samples[160];
+signed char double_buffers[2][608] __attribute__((aligned(4)));
 unsigned int decode_pos = 160, cur_buffer = 0;
 signed char* dst_pos;
 int last_sample = 0;
 int i;
-
-uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 
 static void dsound_switch_buffers(const void* src) {
   REG_DMA1CNT = 0;
