@@ -13,25 +13,26 @@
 #include "PlaybackState.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
+#include "fxes.h"
 #include "utils/gbfs/gbfs.h"
 
 #define TIMER_16MHZ 0
 uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 
 Playback PlaybackState;
-const GBFS_FILE* fs;
-const unsigned char* src;
-uint32_t src_len;
-const unsigned char* src_pos = NULL;
-const unsigned char* src_end = NULL;
+static const GBFS_FILE* fs;
+static const unsigned char* src;
+static uint32_t src_len;
+static const unsigned char* src_pos = NULL;
+static const unsigned char* src_end = NULL;
 
-struct gsm_state decoder;
-signed short out_samples[160];
-signed char double_buffers[2][608] __attribute__((aligned(4)));
-unsigned int decode_pos = 160, cur_buffer = 0;
-signed char* dst_pos;
-int last_sample = 0;
-int i;
+static struct gsm_state decoder;
+static signed short out_samples[160];
+static signed char double_buffers[2][608] __attribute__((aligned(4)));
+static unsigned int decode_pos = 160, cur_buffer = 0;
+static signed char* dst_pos;
+static int last_sample = 0;
+static int i;
 
 static void dsound_switch_buffers(const void* src) {
   REG_DMA1CNT = 0;
@@ -45,16 +46,16 @@ static void dsound_switch_buffers(const void* src) {
                 DMA_ENABLE | 1;
 }
 
-void gsm_init(gsm r) {
+static void gsm_init(gsm r) {
   memset((char*)r, 0, sizeof(*r));
   r->nrp = 40;
 }
 
-void unmute() {
+static void unmute() {
   DSOUNDCTRL = DSOUNDCTRL | 0b0000001100000000;
 }
 
-void mute() {
+static void mute() {
   DSOUNDCTRL = DSOUNDCTRL & 0b1111110011111111;
 }
 
@@ -71,6 +72,8 @@ void player_init() {
   REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 
   mute();
+
+  fxes_init();
 }
 
 void player_play(const char* name) {
@@ -96,6 +99,8 @@ void player_forever(void (*update)()) {
     msecs = fracumul(msecs, 1146880 * 1000);
     PlaybackState.msecs = msecs;
     update();
+
+    fxes_preUpdate();
 
     dst_pos = double_buffers[cur_buffer];
 
@@ -136,7 +141,12 @@ void player_forever(void (*update)()) {
       PlaybackState.hasFinished = true;
     }
 
-    VBlankIntrWait();
+    // --------------
+    VBlankIntrWait();  // VBLANK
+    // --------------
+
+    fxes_postUpdate();
+
     dsound_switch_buffers(double_buffers[cur_buffer]);
 
     if (src_pos != NULL)
