@@ -10,87 +10,38 @@
 #include <stdlib.h>
 #include <string.h>  // for memset
 
+#include "GSMPlayer.h"
 #include "PlaybackState.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "fxes.h"
 #include "utils/gbfs/gbfs.h"
 
-#define TIMER_16MHZ 0
-uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
-
 Playback PlaybackState;
-static const GBFS_FILE* fs;
-static const unsigned char* src;
-static uint32_t src_len;
-static const unsigned char* src_pos = NULL;
-static const unsigned char* src_end = NULL;
 
-static struct gsm_state decoder;
-static signed short out_samples[160];
-static signed char double_buffers[2][608] __attribute__((aligned(4)));
-static unsigned int decode_pos = 160, cur_buffer = 0;
-static signed char* dst_pos;
-static int last_sample = 0;
-static int i;
-
-static void dsound_switch_buffers(const void* src) {
-  REG_DMA1CNT = 0;
-
-  /* no-op to let DMA registers catch up */
-  asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
-
-  REG_DMA1SAD = (intptr_t)src;
-  REG_DMA1DAD = (intptr_t)0x040000a0; /* write to FIFO A address */
-  REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
-                DMA_ENABLE | 1;
-}
-
-static void gsm_init(gsm r) {
-  memset((char*)r, 0, sizeof(*r));
-  r->nrp = 40;
-}
-
-static void unmute() {
-  DSOUNDCTRL = DSOUNDCTRL | 0b0000001100000000;
-}
-
-static void mute() {
-  DSOUNDCTRL = DSOUNDCTRL & 0b1111110011111111;
-}
+PLAYER_DEFINE(REG_DMA1CNT,
+              REG_DMA1SAD,
+              REG_DMA1DAD,
+              FIFO_ADDR_A,
+              CHANNEL_A_MUTE,
+              CHANNEL_A_UNMUTE);
 
 void player_init() {
-  fs = find_first_gbfs_file(0);
-
-  // TM0CNT_L is count; TM0CNT_H is control
-  REG_TM0CNT_H = 0;
-  // turn on sound circuit
-  SETSNDRES(1);
-  SNDSTAT = SNDSTAT_ENABLE;
-  DSOUNDCTRL = 0x0b0e;
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
-  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
-
-  mute();
-
+  PLAYER_TURN_ON_SOUND();
+  PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
   fxes_init();
 }
 
 void player_play(const char* name) {
-  gsm_init(&decoder);
-  src = gbfs_get_obj(fs, name, &src_len);
-  src_pos = src;
-  src_end = src + src_len;
+  PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
 }
 
 void player_stop() {
-  src_pos = NULL;
-  src_end = NULL;
+  PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
-  mute();
 }
 
 void player_forever(void (*update)()) {
@@ -100,58 +51,17 @@ void player_forever(void (*update)()) {
     PlaybackState.msecs = msecs;
     update();
 
-    fxes_preUpdate();
-
-    dst_pos = double_buffers[cur_buffer];
-
-    if (src_pos < src_end) {
-      for (i = 304 / 4; i > 0; i--) {
-        int cur_sample;
-        if (decode_pos >= 160) {
-          if (src_pos < src_end) {
-            gsm_decode(&decoder, src_pos, out_samples);
-          }
-          src_pos += sizeof(gsm_frame);
-          decode_pos = 0;
-        }
-
-        /* 2:1 linear interpolation */
-        cur_sample = out_samples[decode_pos++];
-        *dst_pos++ = (last_sample + cur_sample) >> 9;
-        *dst_pos++ = cur_sample >> 8;
-        last_sample = cur_sample;
-
-        cur_sample = out_samples[decode_pos++];
-        *dst_pos++ = (last_sample + cur_sample) >> 9;
-        *dst_pos++ = cur_sample >> 8;
-        last_sample = cur_sample;
-
-        cur_sample = out_samples[decode_pos++];
-        *dst_pos++ = (last_sample + cur_sample) >> 9;
-        *dst_pos++ = cur_sample >> 8;
-        last_sample = cur_sample;
-
-        cur_sample = out_samples[decode_pos++];
-        *dst_pos++ = (last_sample + cur_sample) >> 9;
-        *dst_pos++ = cur_sample >> 8;
-        last_sample = cur_sample;
-      }
-    } else {
-      player_stop();
+    PLAYER_PRE_UPDATE({
+      PlaybackState.msecs = 0;
       PlaybackState.hasFinished = true;
-    }
+    });
+    fxes_preUpdate();
 
     // --------------
     VBlankIntrWait();  // VBLANK
     // --------------
 
+    PLAYER_POST_UPDATE();
     fxes_postUpdate();
-
-    dsound_switch_buffers(double_buffers[cur_buffer]);
-
-    if (src_pos != NULL)
-      unmute();
-
-    cur_buffer = !cur_buffer;
   }
 }
