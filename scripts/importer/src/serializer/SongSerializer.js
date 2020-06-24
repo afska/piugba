@@ -52,41 +52,9 @@ module.exports = class SongSerializer {
       write: function (event) {
         this.Int32LE(event.timestamp);
 
-        switch (event.type) {
-          case Events.SET_TEMPO: {
-            this.UInt8(event.type)
-              .UInt32LE(normalizeUInt(event.bpm))
-              .UInt32LE(normalizeUInt(event.scrollBpm))
-              .UInt32LE(normalizeUInt(event.scrollChangeFrames));
-            break;
-          }
-          case Events.SET_TICKCOUNT: {
-            this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
-            break;
-          }
-          case Events.SET_FAKE: {
-            this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
-            break;
-          }
-          case Events.STOP: {
-            this.UInt8(Events.STOP)
-              .UInt32LE(normalizeUInt(event.length))
-              .UInt32LE(event.judgeable ? 1 : 0);
-            break;
-          }
-          case Events.WARP: {
-            this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
-            break;
-          }
-          default: {
-            const data = _.range(0, 5).reduce(
-              (acum, elem) =>
-                acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
-              event.type
-            );
-            this.UInt8(data);
-          }
-        }
+        const { write } =
+          EVENT_SERIALIZERS[event.type] || EVENT_SERIALIZERS.NOTES;
+        write.bind(this)(event);
       },
     });
 
@@ -102,6 +70,54 @@ module.exports = class SongSerializer {
       },
     });
   }
+};
+
+const EVENT_SERIALIZERS = {
+  NOTES: {
+    write: function (event) {
+      const data = _.range(0, 5).reduce(
+        (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
+        event.type
+      );
+      this.UInt8(data);
+    },
+    size: 1,
+  },
+  [Events.SET_FAKE]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
+    },
+    size: 1 + 4,
+  },
+  [Events.SET_TEMPO]: {
+    write: function (event) {
+      this.UInt8(event.type)
+        .UInt32LE(normalizeUInt(event.bpm))
+        .UInt32LE(normalizeUInt(event.scrollBpm))
+        .UInt32LE(normalizeUInt(event.scrollChangeFrames));
+    },
+    size: 1 + 4 + 4 + 4,
+  },
+  [Events.SET_TICKCOUNT]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+    },
+    size: 1 + 4,
+  },
+  [Events.STOP]: {
+    write: function (event) {
+      this.UInt8(Events.STOP)
+        .UInt32LE(normalizeUInt(event.length))
+        .UInt32LE(event.judgeable ? 1 : 0);
+    },
+    size: 1 + 4 + 4,
+  },
+  [Events.WARP]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
+    },
+    size: 1 + 4,
+  },
 };
 
 const normalizeUInt = (number) => {
