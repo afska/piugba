@@ -52,27 +52,40 @@ module.exports = class SongSerializer {
       write: function (event) {
         this.Int32LE(event.timestamp);
 
-        if (event.type === Events.SET_TEMPO)
-          this.UInt8(event.type)
-            .UInt32LE(normalizeUInt(event.bpm))
-            .UInt32LE(normalizeUInt(event.scrollBpm))
-            .UInt32LE(normalizeUInt(event.scrollChangeFrames));
-        else if (event.type === Events.SET_TICKCOUNT)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
-        else if (event.type === Events.SET_FAKE)
-          this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
-        else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
-          this.UInt8(Events.STOP)
-            .UInt32LE(normalizeUInt(event.length))
-            .UInt32LE(event.judgeable ? 1 : 0);
-        else if (event.type === Events.WARP)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
-        else {
-          const data = _.range(0, 5).reduce(
-            (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
-            event.type
-          );
-          this.UInt8(data);
+        switch (event.type) {
+          case Events.SET_TEMPO: {
+            this.UInt8(event.type)
+              .UInt32LE(normalizeUInt(event.bpm))
+              .UInt32LE(normalizeUInt(event.scrollBpm))
+              .UInt32LE(normalizeUInt(event.scrollChangeFrames));
+            break;
+          }
+          case Events.SET_TICKCOUNT: {
+            this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+            break;
+          }
+          case Events.SET_FAKE: {
+            this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
+            break;
+          }
+          case Events.STOP: {
+            this.UInt8(Events.STOP)
+              .UInt32LE(normalizeUInt(event.length))
+              .UInt32LE(event.judgeable ? 1 : 0);
+            break;
+          }
+          case Events.WARP: {
+            this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
+            break;
+          }
+          default: {
+            const data = _.range(0, 5).reduce(
+              (acum, elem) =>
+                acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
+              event.type
+            );
+            this.UInt8(data);
+          }
         }
       },
     });
