@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <tonc_input.h>
 
+#include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
@@ -14,6 +15,8 @@
 #include "utils/SpriteUtils.h"
 
 extern "C" {
+#include "player/fxes.h"
+#include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
 
@@ -162,7 +165,8 @@ void SelectionScene::setUpPager() {
 }
 
 void SelectionScene::goToSong() {
-  Song* song = Song_parse(fs, getSelectedSong());
+  fxes_stop();
+  Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
@@ -215,6 +219,8 @@ void SelectionScene::processDifficultyChange() {
 
 void SelectionScene::processSelectionChange() {
   if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+    fxes_play(SOUND_MOVE);
+
     if (getSelectedSongIndex() == count - 1)
       return;
 
@@ -231,6 +237,8 @@ void SelectionScene::processSelectionChange() {
   }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
+    fxes_play(SOUND_MOVE);
+
     if (page == 0 && selected == 0)
       return;
 
@@ -248,8 +256,9 @@ void SelectionScene::processSelectionChange() {
 }
 
 void SelectionScene::updatePage() {
-  Song* song = Song_parse(fs, getSelectedSong());
+  Song* song = Song_parse(fs, getSelectedSong(), false);
   setNames(song->title, song->artist);
+  player_play(song->audioPath.c_str());
   Song_free(song);
 }
 

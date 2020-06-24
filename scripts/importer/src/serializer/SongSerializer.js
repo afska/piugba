@@ -42,8 +42,14 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Chart", {
       write: function (chart) {
+        const eventChunkSize = _.sumBy(
+          chart.events,
+          (it) => EVENT_SERIALIZERS.get(it).size
+        );
+
         this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
+          .UInt32LE(4 + eventChunkSize)
           .EventArray(chart.events);
       },
     });
@@ -52,8 +58,7 @@ module.exports = class SongSerializer {
       write: function (event) {
         this.Int32LE(event.timestamp);
 
-        const { write } =
-          EVENT_SERIALIZERS[event.type] || EVENT_SERIALIZERS.NOTES;
+        const { write } = EVENT_SERIALIZERS.get(event);
         write.bind(this)(event);
       },
     });
@@ -73,6 +78,9 @@ module.exports = class SongSerializer {
 };
 
 const EVENT_SERIALIZERS = {
+  get(event) {
+    return this[event.type] || this.NOTES;
+  },
   NOTES: {
     write: function (event) {
       const data = _.range(0, 5).reduce(
