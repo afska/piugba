@@ -167,6 +167,7 @@ void SelectionScene::setUpPager() {
 void SelectionScene::goToSong() {
   player_stop();
   fxes_stop();
+
   Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
 
@@ -224,6 +225,7 @@ void SelectionScene::processDifficultyChange() {
 
 void SelectionScene::processSelectionChange() {
   if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+    player_stop();
     fxes_play(SOUND_MOVE);
 
     if (getSelectedSongIndex() == count - 1)
@@ -242,6 +244,7 @@ void SelectionScene::processSelectionChange() {
   }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
+    player_stop();
     fxes_play(SOUND_MOVE);
 
     if (page == 0 && selected == 0)
