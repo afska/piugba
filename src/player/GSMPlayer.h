@@ -80,9 +80,8 @@
     for (i = 304 / 4; i > 0; i--) {                   \
       int cur_sample;                                 \
       if (decode_pos >= 160) {                        \
-        if (src_pos < src_end) {                      \
+        if (src_pos < src_end)                        \
           gsm_decode(&decoder, src_pos, out_samples); \
-        }                                             \
         src_pos += sizeof(gsm_frame);                 \
         decode_pos = 0;                               \
       }                                               \

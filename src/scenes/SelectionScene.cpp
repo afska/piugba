@@ -36,7 +36,7 @@ const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
-const u32 BLINK_LEVEL = 6;
+const u32 BLINK_LEVEL = 4;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -165,6 +165,7 @@ void SelectionScene::setUpPager() {
 }
 
 void SelectionScene::goToSong() {
+  player_stop();
   fxes_stop();
   Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
@@ -195,6 +196,8 @@ void SelectionScene::processKeys(u16 keys) {
 
 void SelectionScene::processDifficultyChange() {
   if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
+    fxes_play(SOUND_MOVE);
+
     auto newValue =
         static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0));
     if (newValue == difficulty->getValue())
@@ -206,6 +209,8 @@ void SelectionScene::processDifficultyChange() {
   }
 
   if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
+    fxes_play(SOUND_MOVE);
+
     auto newValue = static_cast<DifficultyLevel>(
         min((int)difficulty->getValue() + 1, MAX_DIFFICULTY));
     if (newValue == difficulty->getValue())
