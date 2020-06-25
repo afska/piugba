@@ -191,6 +191,7 @@ assets:
 	./scripts/assets.sh
 
 import:
+	export GLOBIGNORE="*.json"
 	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force --json
 	cd src/data/content/_compiled_songs && gbfs ../files.gbfs *
 
