@@ -161,7 +161,7 @@ void SelectionScene::setUpArrows() {
 void SelectionScene::setUpPager() {
   count = library->getCount();
   setPage(0, 0);
-  updatePage();
+  updateSelection();
 }
 
 void SelectionScene::goToSong() {
@@ -225,11 +225,13 @@ void SelectionScene::processDifficultyChange() {
 
 void SelectionScene::processSelectionChange() {
   if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
-    player_stop();
-    fxes_play(SOUND_MOVE);
-
-    if (getSelectedSongIndex() == count - 1)
+    if (getSelectedSongIndex() == count - 1) {
+      player_stop();
+      fxes_play(SOUND_MOVE);
       return;
+    }
+
+    player_stop();
 
     if (selected == PAGE_SIZE - 1)
       setPage(page + 1, 1);
@@ -244,11 +246,13 @@ void SelectionScene::processSelectionChange() {
   }
 
   if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
-    player_stop();
-    fxes_play(SOUND_MOVE);
-
-    if (page == 0 && selected == 0)
+    if (page == 0 && selected == 0) {
+      player_stop();
+      fxes_play(SOUND_MOVE);
       return;
+    }
+
+    player_stop();
 
     if (selected == 0)
       setPage(page - 1, -1);
@@ -263,11 +267,16 @@ void SelectionScene::processSelectionChange() {
   }
 }
 
-void SelectionScene::updatePage() {
+void SelectionScene::updateSelection() {
   Song* song = Song_parse(fs, getSelectedSong(), false);
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   Song_free(song);
+}
+
+void SelectionScene::updatePage() {
+  updateSelection();
+  fxes_play(SOUND_MOVE);
 }
 
 void SelectionScene::setPage(u32 page, int direction) {

@@ -54,6 +54,7 @@ class SelectionScene : public Scene {
   void processDifficultyChange();
   void processSelectionChange();
 
+  void updateSelection();
   void updatePage();
   void setPage(u32 page, int direction);
   void setNames(std::string title, std::string artist);
