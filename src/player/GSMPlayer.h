@@ -66,7 +66,8 @@
   gsm_init(&decoder);                     \
   src = gbfs_get_obj(fs, NAME, &src_len); \
   src_pos = src;                          \
-  src_end = src + src_len;
+  src_end = src + src_len;                \
+  mute();
 
 #define PLAYER_STOP() \
   src_pos = NULL;     \
@@ -107,7 +108,7 @@
       *dst_pos++ = cur_sample >> 8;                   \
       last_sample = cur_sample;                       \
     }                                                 \
-  } else {                                            \
+  } else if (src_pos != NULL) {                       \
     PLAYER_STOP();                                    \
     ON_STOP;                                          \
   }
