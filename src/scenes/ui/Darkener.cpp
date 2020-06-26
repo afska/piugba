@@ -3,13 +3,13 @@
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 
+u32 OPACITY = 10;
+u32 MAX_COL = 12;  // TODO: Use 30 for FULL_BGADARK
 u32 BANK_TILES = 3;
 u32 BANK_MAP = 28;
 u32 COLOR_INDEX = 255;
-u32 MAX_COL = 12;
 u8 TRANSPARENT_TILE = 254;
 u8 BLACK_TILE = 255;
-u32 OPACITY = 10;
 
 Darkener::Darkener(u8 id, u8 priority) {
   this->id = id;
