@@ -266,6 +266,7 @@ void SelectionScene::updateSelection() {
   Song* song = Song_parse(fs, getSelectedSong(), false);
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
+  player_seek(song->sampleStart);
   Song_free(song);
 }
 

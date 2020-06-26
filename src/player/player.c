@@ -38,6 +38,20 @@ void player_play(const char* name) {
   PlaybackState.hasFinished = false;
 }
 
+void player_seek(unsigned int msecs) {
+  // (cursor must be a multiple of AUDIO_CHUNK)
+  // cursor = src_pos - src
+  // msecs = cursor * msecsPerSample
+  // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
+  // => msecs = cursor * 0.267
+  // => cursor = msecs / 0.267 = msecs * 3.75
+
+  unsigned int quarter = fracumul(msecs, DEVIDE_BY_FOUR);
+  unsigned int cursor = msecs * 3 + quarter * 3;
+  cursor = (msecs / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
+  src_pos = src + cursor;
+}
+
 void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
@@ -52,7 +66,7 @@ void player_stopAll() {
 void player_forever(void (*update)()) {
   while (1) {
     unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, 1146880 * 1000);
+    msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
     update();
 
