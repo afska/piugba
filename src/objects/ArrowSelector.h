@@ -13,6 +13,8 @@ class ArrowSelector : public InputHandler {
 
   ArrowSelector(ArrowDirection direction);
 
+  bool shouldFireEvent();
+
   void tick();
   inline Sprite* get() { return sprite.get(); }
 
@@ -20,6 +22,8 @@ class ArrowSelector : public InputHandler {
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
   bool flip = false;
+  u32 lastPressFrame = 0;
+  u32 autoFireSpeed = 1;
 };
 
 #endif  // ARROW_SELECTOR_H

@@ -223,10 +223,12 @@ void SelectionScene::processDifficultyChange() {
 }
 
 void SelectionScene::processSelectionChange() {
-  if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+  if (arrowSelectors[SELECTOR_NEXT_SONG]->shouldFireEvent()) {
     if (getSelectedSongIndex() == count - 1) {
-      player_stop();
-      fxes_play(SOUND_MOVE);
+      if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
+        player_stop();
+        fxes_play(SOUND_MOVE);
+      }
       return;
     }
 
@@ -246,10 +248,12 @@ void SelectionScene::processSelectionChange() {
     return;
   }
 
-  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
+  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->shouldFireEvent()) {
     if (page == 0 && selected == 0) {
-      player_stop();
-      fxes_play(SOUND_MOVE);
+      if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
+        player_stop();
+        fxes_play(SOUND_MOVE);
+      }
       return;
     }
 

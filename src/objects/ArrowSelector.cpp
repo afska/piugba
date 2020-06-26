@@ -29,9 +29,32 @@ ArrowSelector::ArrowSelector(ArrowDirection direction) {
     SPRITE_reuseTiles(sprite.get());
 }
 
+bool ArrowSelector::shouldFireEvent() {
+  if (hasBeenPressedNow()) {
+    lastPressFrame = 0;
+    autoFireSpeed = 1;
+  }
+
+  if (autoFireSpeed == 1) {
+    if (getIsPressed() && lastPressFrame > 30) {
+      lastPressFrame = 0;
+      autoFireSpeed = 2;
+      return true;
+    }
+  } else if (autoFireSpeed == 2) {
+    if (getIsPressed() && lastPressFrame > 10) {
+      lastPressFrame = 0;
+      return true;
+    }
+  }
+
+  return hasBeenPressedNow();
+}
+
 void ArrowSelector::tick() {
   sprite->flipHorizontally(flip);
   isNewPressEvent = false;
+  lastPressFrame++;
 
   u32 currentFrame = sprite->getCurrentFrame();
 
