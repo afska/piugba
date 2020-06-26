@@ -236,10 +236,8 @@ bool SelectionScene::onSelectionChange(u32 selector,
                                        int direction) {
   if (arrowSelectors[selector]->shouldFireEvent()) {
     if (isOnListEdge) {
-      if (arrowSelectors[selector]->hasBeenPressedNow()) {
-        player_stop();
+      if (arrowSelectors[selector]->hasBeenPressedNow())
         fxes_play(SOUND_MOVE);
-      }
       return true;
     }
 
