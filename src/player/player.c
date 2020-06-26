@@ -44,11 +44,11 @@ void player_seek(unsigned int msecs) {
   // msecs = cursor * msecsPerSample
   // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
   // => msecs = cursor * 0.267
-  // => cursor = msecs / 0.267 = msecs * 3.75
+  // => cursor = msecs / 0.267 = msecs * 3.7453
+  // => cursor = msecs * (3 + 0.7453)
 
-  unsigned int quarter = fracumul(msecs, DEVIDE_BY_FOUR);
-  unsigned int cursor = msecs * 3 + quarter * 3;
-  cursor = (msecs / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
+  unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
+  cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
   src_pos = src + cursor;
 }
 

@@ -11,7 +11,7 @@
 #define AUDIO_CHUNK_SIZE (33 * 50)
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
-#define DEVIDE_BY_FOUR 1073741824
+#define AS_CURSOR 3201039125
 
 #define PLAYER_DEFINE(DMA_CNT, DMA_SAD, DMA_DAD, FIFO_ADDRESS, MUTE, UNMUTE)   \
   uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));     \
