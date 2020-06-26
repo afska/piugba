@@ -165,8 +165,7 @@ void SelectionScene::setUpPager() {
 }
 
 void SelectionScene::goToSong() {
-  player_stop();
-  fxes_stop();
+  player_stopAll();
 
   Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
@@ -231,15 +230,17 @@ void SelectionScene::processSelectionChange() {
       return;
     }
 
-    player_stop();
+    player_stopAll();
 
-    if (selected == PAGE_SIZE - 1)
+    if (selected == PAGE_SIZE - 1) {
       setPage(page + 1, 1);
-    else {
+      player_play(SOUND_MOVE);
+    } else {
       selected++;
-      updatePage();
+      updateSelection();
       highlighter->select(selected);
       pixelBlink->blink();
+      fxes_play(SOUND_MOVE);
     }
 
     return;
@@ -252,15 +253,17 @@ void SelectionScene::processSelectionChange() {
       return;
     }
 
-    player_stop();
+    player_stopAll();
 
-    if (selected == 0)
+    if (selected == 0) {
       setPage(page - 1, -1);
-    else {
+      player_play(SOUND_MOVE);
+    } else {
       selected--;
-      updatePage();
+      updateSelection();
       highlighter->select(selected);
       pixelBlink->blink();
+      fxes_play(SOUND_MOVE);
     }
 
     return;
@@ -272,11 +275,6 @@ void SelectionScene::updateSelection() {
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   Song_free(song);
-}
-
-void SelectionScene::updatePage() {
-  updateSelection();
-  fxes_play(SOUND_MOVE);
 }
 
 void SelectionScene::setPage(u32 page, int direction) {
@@ -293,7 +291,7 @@ void SelectionScene::setPage(u32 page, int direction) {
   else
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
-      updatePage();
+      updateSelection();
     });
 }
 

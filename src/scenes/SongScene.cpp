@@ -296,7 +296,7 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::unload() {
-  player_stop();
+  player_stopAll();
 }
 
 SongScene::~SongScene() {

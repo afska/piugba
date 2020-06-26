@@ -44,6 +44,11 @@ void player_stop() {
   PlaybackState.hasFinished = false;
 }
 
+void player_stopAll() {
+  player_stop();
+  fxes_stop();
+}
+
 void player_forever(void (*update)()) {
   while (1) {
     unsigned int msecs = src_pos - src;
