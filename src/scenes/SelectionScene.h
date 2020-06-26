@@ -51,8 +51,13 @@ class SelectionScene : public Scene {
   u32 getPageStart();
 
   void processKeys(u16 keys);
-  void processDifficultyChange();
-  void processSelectionChange();
+  void processDifficultyChangeEvents();
+  void processSelectionChangeEvents();
+  bool onDifficultyChange(u32 selector, DifficultyLevel newValue);
+  bool onSelectionChange(u32 selector,
+                         bool isOnListEdge,
+                         bool isOnPageEdge,
+                         int direction);
 
   void updateSelection();
   void setPage(u32 page, int direction);
