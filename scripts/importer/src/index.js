@@ -10,7 +10,7 @@ const _ = require("lodash");
 require("colors");
 
 const SONGS_PATH = $path.join(__dirname, "../../../src/data/content/songs");
-const OUTPUT_PATH = $path.join(SONGS_PATH, "../_compiled_songs");
+const OUTPUT_PATH = $path.join(SONGS_PATH, "../_compiled_files");
 
 const SEPARATOR = " - ";
 const MAX_FILE_LENGTH = 15;
