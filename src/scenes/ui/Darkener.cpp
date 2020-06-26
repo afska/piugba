@@ -6,10 +6,9 @@
 u32 BANK_TILES = 3;
 u32 BANK_MAP = 28;
 u32 COLOR_INDEX = 255;
-u32 MAX_COL = 30;
+u32 MAX_COL = 12;  // TODO: Use 30 for FULL_BGADARK
 u8 TRANSPARENT_TILE = 254;
 u8 BLACK_TILE = 255;
-u32 OPACITY = 10;
 
 Darkener::Darkener(u8 id, u8 priority) {
   this->id = id;
@@ -27,5 +26,5 @@ void Darkener::initialize() {
   });
 
   EFFECT_setUpBlend(BLD_BG[id], BLD_BG[id + 1]);
-  EFFECT_setBlendAlpha(OPACITY);
+  EFFECT_setBlendAlpha(DARKENER_OPACITY);
 }

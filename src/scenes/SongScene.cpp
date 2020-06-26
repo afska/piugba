@@ -25,7 +25,8 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
-const u32 BLINK_LEVEL = 2;
+const u32 PIXEL_BLINK_LEVEL = 2;
+const u32 ALPHA_BLINK_TIME = 6;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -77,7 +78,7 @@ void SongScene::load() {
   IFNOTTEST { setUpBackground(); }
   setUpArrows();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
@@ -123,7 +124,7 @@ void SongScene::tick(u16 keys) {
 
   bool isNewBeat = chartReader->update((int)songMsecs);
   if (isNewBeat) {
-    blinkFrame += 6;
+    blinkFrame += ALPHA_BLINK_TIME;
 
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -132,8 +133,8 @@ void SongScene::tick(u16 keys) {
     }
   }
 
-  blinkFrame = max(blinkFrame - 1, 0);  // TODO: tonc_math
-  EFFECT_setBlendAlpha(10 - blinkFrame);
+  blinkFrame = max(blinkFrame - 1, 0);
+  EFFECT_setBlendAlpha(DARKENER_OPACITY - blinkFrame);
 
   pixelBlink->tick();
   updateFakeHeads();

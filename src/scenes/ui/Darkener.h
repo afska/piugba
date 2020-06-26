@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+u32 DARKENER_OPACITY = 10;
+
 class Darkener {
  public:
   Darkener(u8 id, u8 priority);
