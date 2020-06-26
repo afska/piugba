@@ -42,8 +42,14 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Chart", {
       write: function (chart) {
+        const eventChunkSize = _.sumBy(
+          chart.events,
+          (it) => EVENT_SERIALIZERS.get(it).size
+        );
+
         this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
+          .UInt32LE(4 + eventChunkSize)
           .EventArray(chart.events);
       },
     });
@@ -52,28 +58,8 @@ module.exports = class SongSerializer {
       write: function (event) {
         this.Int32LE(event.timestamp);
 
-        if (event.type === Events.SET_TEMPO)
-          this.UInt8(event.type)
-            .UInt32LE(normalizeUInt(event.bpm))
-            .UInt32LE(normalizeUInt(event.scrollBpm))
-            .UInt32LE(normalizeUInt(event.scrollChangeFrames));
-        else if (event.type === Events.SET_TICKCOUNT)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
-        else if (event.type === Events.SET_FAKE)
-          this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
-        else if (event.type === Events.STOP || event.type === Events.STOP_ASYNC)
-          this.UInt8(Events.STOP)
-            .UInt32LE(normalizeUInt(event.length))
-            .UInt32LE(event.judgeable ? 1 : 0);
-        else if (event.type === Events.WARP)
-          this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
-        else {
-          const data = _.range(0, 5).reduce(
-            (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
-            event.type
-          );
-          this.UInt8(data);
-        }
+        const { write } = EVENT_SERIALIZERS.get(event);
+        write.bind(this)(event);
       },
     });
 
@@ -89,6 +75,57 @@ module.exports = class SongSerializer {
       },
     });
   }
+};
+
+const EVENT_SERIALIZERS = {
+  get(event) {
+    return this[event.type] || this.NOTES;
+  },
+  NOTES: {
+    write: function (event) {
+      const data = _.range(0, 5).reduce(
+        (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
+        event.type
+      );
+      this.UInt8(data);
+    },
+    size: 1,
+  },
+  [Events.SET_FAKE]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
+    },
+    size: 1 + 4,
+  },
+  [Events.SET_TEMPO]: {
+    write: function (event) {
+      this.UInt8(event.type)
+        .UInt32LE(normalizeUInt(event.bpm))
+        .UInt32LE(normalizeUInt(event.scrollBpm))
+        .UInt32LE(normalizeUInt(event.scrollChangeFrames));
+    },
+    size: 1 + 4 + 4 + 4,
+  },
+  [Events.SET_TICKCOUNT]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+    },
+    size: 1 + 4,
+  },
+  [Events.STOP]: {
+    write: function (event) {
+      this.UInt8(Events.STOP)
+        .UInt32LE(normalizeUInt(event.length))
+        .UInt32LE(event.judgeable ? 1 : 0);
+    },
+    size: 1 + 4 + 4,
+  },
+  [Events.WARP]: {
+    write: function (event) {
+      this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
+    },
+    size: 1 + 4,
+  },
 };
 
 const normalizeUInt = (number) => {

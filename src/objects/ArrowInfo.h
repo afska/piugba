@@ -4,24 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba_engine.h>
 
-// TEST MACROS ---
-#define TEST_MODE false
-#define STRESSTEST_MODE false
-#define TIMINGTEST_MODE false
-#define IFTEST if (TEST_MODE)
-#define IFNOTTEST if (!TEST_MODE)
-#define IFSTRESSTEST if (STRESSTEST_MODE)
-#define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
-#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
-#define DEBULOG(NUM) LOGN(NUM, -1)
-static int DEBULIST_LINE = -1;
-inline void DEBULIST(int num) {
-  LOGN(num, DEBULIST_LINE);
-  DEBULIST_LINE++;
-}
-#include <libgba-sprite-engine/background/text_stream.h>
-// ---------------
+#include "gameplay/debug/DebugTools.h"
 
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;

@@ -12,7 +12,7 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-enum Channel { ORIGINAL, KPOP, WORLD, OTHER };
+enum Channel { ORIGINAL, KPOP, WORLD };
 
 typedef struct {
   char* title;          // 0x00 (31 bytes - including \0)
@@ -32,7 +32,7 @@ typedef struct {
   std::string backgroundMapPath;
 } Song;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile* file);
+Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full);
 Chart* Song_findChartByNumericLevel(Song* song, u8 level);
 Chart* Song_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel);

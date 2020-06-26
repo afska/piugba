@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <tonc_input.h>
 
+#include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
@@ -14,6 +15,8 @@
 #include "utils/SpriteUtils.h"
 
 extern "C" {
+#include "player/fxes.h"
+#include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
 
@@ -33,7 +36,7 @@ const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
-const u32 BLINK_LEVEL = 6;
+const u32 BLINK_LEVEL = 4;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 static std::unique_ptr<Library> library{new Library(fs)};
@@ -92,8 +95,8 @@ void SelectionScene::tick(u16 keys) {
     it->tick();
 
   processKeys(keys);
-  processDifficultyChange();
-  processSelectionChange();
+  processDifficultyChangeEvents();
+  processSelectionChangeEvents();
 
   if (selectInput->hasBeenPressedNow())
     goToSong();
@@ -158,11 +161,13 @@ void SelectionScene::setUpArrows() {
 void SelectionScene::setUpPager() {
   count = library->getCount();
   setPage(0, 0);
-  updatePage();
+  updateSelection();
 }
 
 void SelectionScene::goToSong() {
-  Song* song = Song_parse(fs, getSelectedSong());
+  player_stopAll();
+
+  Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
@@ -189,67 +194,78 @@ void SelectionScene::processKeys(u16 keys) {
   selectInput->setIsPressed(KEY_CENTER(keys));
 }
 
-void SelectionScene::processDifficultyChange() {
-  if (arrowSelectors[SELECTOR_PREVIOUS_DIFFICULTY]->hasBeenPressedNow()) {
-    auto newValue =
-        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0));
+void SelectionScene::processDifficultyChangeEvents() {
+  if (onDifficultyChange(SELECTOR_NEXT_DIFFICULTY,
+                         static_cast<DifficultyLevel>(min(
+                             (int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
+    return;
+
+  onDifficultyChange(
+      SELECTOR_PREVIOUS_DIFFICULTY,
+      static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+}
+
+void SelectionScene::processSelectionChangeEvents() {
+  if (onSelectionChange(SELECTOR_NEXT_SONG, getSelectedSongIndex() == count - 1,
+                        selected == PAGE_SIZE - 1, 1))
+    return;
+
+  onSelectionChange(SELECTOR_PREVIOUS_SONG, page == 0 && selected == 0,
+                    selected == 0, -1);
+}
+
+bool SelectionScene::onDifficultyChange(u32 selector,
+                                        DifficultyLevel newValue) {
+  if (arrowSelectors[selector]->hasBeenPressedNow()) {
+    fxes_play(SOUND_MOVE);
+
     if (newValue == difficulty->getValue())
-      return;
+      return true;
 
     difficulty->setValue(newValue);
     pixelBlink->blink();
-    return;
+    return true;
   }
 
-  if (arrowSelectors[SELECTOR_NEXT_DIFFICULTY]->hasBeenPressedNow()) {
-    auto newValue = static_cast<DifficultyLevel>(
-        min((int)difficulty->getValue() + 1, MAX_DIFFICULTY));
-    if (newValue == difficulty->getValue())
-      return;
-
-    difficulty->setValue(newValue);
-    pixelBlink->blink();
-    return;
-  }
+  return false;
 }
 
-void SelectionScene::processSelectionChange() {
-  if (arrowSelectors[SELECTOR_NEXT_SONG]->hasBeenPressedNow()) {
-    if (getSelectedSongIndex() == count - 1)
-      return;
-
-    if (selected == PAGE_SIZE - 1)
-      setPage(page + 1, 1);
-    else {
-      selected++;
-      updatePage();
-      highlighter->select(selected);
-      pixelBlink->blink();
+bool SelectionScene::onSelectionChange(u32 selector,
+                                       bool isOnListEdge,
+                                       bool isOnPageEdge,
+                                       int direction) {
+  if (arrowSelectors[selector]->shouldFireEvent()) {
+    if (isOnListEdge) {
+      if (arrowSelectors[selector]->hasBeenPressedNow()) {
+        player_stop();
+        fxes_play(SOUND_MOVE);
+      }
+      return true;
     }
 
-    return;
-  }
+    player_stopAll();
 
-  if (arrowSelectors[SELECTOR_PREVIOUS_SONG]->hasBeenPressedNow()) {
-    if (page == 0 && selected == 0)
-      return;
-
-    if (selected == 0)
-      setPage(page - 1, -1);
-    else {
-      selected--;
-      updatePage();
+    if (isOnPageEdge) {
+      setPage(page + direction, direction);
+      player_play(SOUND_MOVE);
+    } else {
+      selected += direction;
+      updateSelection();
       highlighter->select(selected);
       pixelBlink->blink();
+      fxes_play(SOUND_MOVE);
     }
 
-    return;
+    return true;
   }
+
+  return false;
 }
 
-void SelectionScene::updatePage() {
-  Song* song = Song_parse(fs, getSelectedSong());
+void SelectionScene::updateSelection() {
+  Song* song = Song_parse(fs, getSelectedSong(), false);
   setNames(song->title, song->artist);
+  player_play(song->audioPath.c_str());
   Song_free(song);
 }
 
@@ -267,7 +283,7 @@ void SelectionScene::setPage(u32 page, int direction) {
   else
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
-      updatePage();
+      updateSelection();
     });
 }
 

@@ -21,7 +21,7 @@ int main() {
 }
 
 void ISR_reset() {
-  player_stop();
+  player_stopAll();
   SoftReset();
   REG_IF = IRQ_KEYPAD;
 }

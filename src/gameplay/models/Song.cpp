@@ -6,7 +6,7 @@
 const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile* file) {
+Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -31,6 +31,13 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile* file) {
 
     chart->difficulty = static_cast<DifficultyLevel>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
+
+    chart->eventChunkSize = parse_u32le(data, &cursor);
+    if (!full) {
+      chart->eventCount = 0;
+      cursor += chart->eventChunkSize;
+      continue;
+    }
 
     chart->eventCount = parse_u32le(data, &cursor);
     chart->events = (Event*)malloc(sizeof(Event) * chart->eventCount);
@@ -82,8 +89,10 @@ void Song_free(Song* song) {
   free(song->title);
   free(song->artist);
 
-  for (u32 i = 0; i < song->chartCount; i++)
-    free((song->charts + i)->events);
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if ((song->charts + i)->eventCount > 0)
+      free((song->charts + i)->events);
+  }
   free(song->charts);
 
   delete song;

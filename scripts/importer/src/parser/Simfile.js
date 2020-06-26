@@ -18,7 +18,7 @@ module.exports = class Simfile {
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
       channel:
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
-        "OTHER",
+        "UNKNOWN",
       lastMillisecond: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.lastSecondHint) || 999999
       ),
@@ -36,23 +36,25 @@ module.exports = class Simfile {
       this.content.match(REGEXPS.chart.start).map((rawChart) => {
         const startIndex = this.content.indexOf(rawChart);
 
-        const name = this._getSingleMatch(REGEXPS.chart.name, rawChart);
+        const name = this._getSingleMatch(REGEXPS.chart.name, rawChart, true);
         const difficulty =
           this._getSingleMatchFromEnum(
             REGEXPS.chart.difficulty,
             DifficultyLevels,
             rawChart
           ) || "NUMERIC";
-        const level = this._getSingleMatch(REGEXPS.chart.level, rawChart);
+        const level = this._getSingleMatch(REGEXPS.chart.level, rawChart, true);
+        if (!_.isFinite(level)) throw new Error("no_level_info");
 
         let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
-        if (!_.isFinite(chartOffset))
-          chartOffset = this._getSingleMatch(REGEXPS.chart.offset);
         if (!_.isFinite(chartOffset)) chartOffset = 0;
         const offset = -chartOffset * SECOND;
 
-        let bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
-        if (_.isEmpty(bpms)) bpms = this._getSingleMatch(REGEXPS.chart.bpms);
+        const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+        if (_.isEmpty(bpms)) {
+          console.log(name, difficulty, bpms);
+          process.exit(1);
+        }
         if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
 
         const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
@@ -100,13 +102,20 @@ module.exports = class Simfile {
     return _.sortBy(charts, "header.level");
   }
 
-  _getSingleMatch(regexp, content = this.content) {
+  _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {
     const exp = regexp.exp || regexp;
     const parse = regexp.parse || _.identity;
 
     const match = content && content.match(exp);
-    const result = parse((match && match[1]) || null);
-    return _.isString(result) ? this._toAsciiOnly(result) : result;
+    const rawData = (match && match[1]) || null;
+    const parsedData = parse(rawData);
+    const finalData = _.isString(parsedData)
+      ? this._toAsciiOnly(parsedData)
+      : parsedData;
+
+    return content !== this.content && rawData === null && !isChartExclusive
+      ? this._getSingleMatch(regexp)
+      : finalData;
   }
 
   _getSingleMatchFromEnum(regexp, options, content = this.content) {
