@@ -9,8 +9,12 @@ const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
 
-const SONGS_PATH = $path.join(__dirname, "../../../src/data/content/songs");
-const OUTPUT_PATH = $path.join(SONGS_PATH, "../_compiled_files");
+const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
+
+const CONTENT_PATH = $path.join(__dirname, "../../../src/data/content");
+const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
+const AUDIO_PATH = $path.join(CONTENT_PATH, "assets/audio");
+const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const SEPARATOR = " - ";
 const MAX_FILE_LENGTH = 15;
@@ -75,6 +79,14 @@ const songs = _(fs.readdirSync(SONGS_PATH))
   })
   .sortBy("outputName")
   .value();
+
+console.log(`${"Importing".bold} audio fx...`);
+fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
+  const name = `_aud_${REMOVE_EXTENSION(audioFile)}`;
+  const path = $path.join(AUDIO_PATH, audioFile);
+
+  utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
+});
 
 let lastSelectorBuilt = -1;
 const simfiles = songs.map((song, i) => {
