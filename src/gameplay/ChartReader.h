@@ -27,11 +27,14 @@ class ChartReader : public TimingProvider {
   int getYFor(Arrow* arrow);
 
   inline u32 getMultiplier() { return multiplier; }
-  inline void setMultiplier(u32 multiplier) {
+  inline bool setMultiplier(u32 multiplier) {
+    u32 oldMultiplier = this->multiplier;
     this->multiplier =
         max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
     syncScrollSpeed();
     resetMaxArrowTimeJump();
+
+    return this->multiplier != oldMultiplier;
   }
 
   bool isHoldActive(ArrowDirection direction);

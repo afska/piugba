@@ -14,6 +14,10 @@ const int AUDIO_LAG = 180;
   => Look-up table for speeds 0, 1, 2, 3 and 4 px/frame
 */
 const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607};
+// TODO: Stop using this as default time and use first bpm event as reference
+
+// TODO: ADD MORE MULTIPLIERS
+
 const u32 MAX_ARROW_TIME_JUMP = 100;
 const u32 MINUTE = 60000;
 const u32 FRAME_MS = 17;
