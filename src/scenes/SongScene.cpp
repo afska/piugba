@@ -286,11 +286,15 @@ void SongScene::processKeys(u16 keys) {
   speedUpInput->setIsPressed(keys & KEY_START);
   speedDownInput->setIsPressed(keys & KEY_SELECT);
 
-  if (speedUpInput->hasBeenPressedNow())
+  if (speedUpInput->hasBeenPressedNow()) {
+    pixelBlink->blink();
     chartReader->setMultiplier(chartReader->getMultiplier() + 1);
+  }
 
-  if (speedDownInput->hasBeenPressedNow())
+  if (speedDownInput->hasBeenPressedNow()) {
+    pixelBlink->blink();
     chartReader->setMultiplier(chartReader->getMultiplier() - 1);
+  }
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
