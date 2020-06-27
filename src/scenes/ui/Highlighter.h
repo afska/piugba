@@ -7,7 +7,7 @@ class Highlighter {
  public:
   Highlighter(u8 id);
 
-  void initialize();
+  void initialize(u8 selectedItem);
   void select(u8 option);
 
  private:

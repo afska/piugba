@@ -10,8 +10,8 @@ Highlighter::Highlighter(u8 id) {
   this->id = id;
 }
 
-void Highlighter::initialize() {
-  selectedItem = 0;
+void Highlighter::initialize(u8 selectedItem) {
+  this->selectedItem = selectedItem;
 
   BACKGROUND_setup(id, BG_SELECTIONMASK_METADATA.TILES_BANK,
                    BG_SELECTIONMASK_METADATA.MAP_BANK, id);

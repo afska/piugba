@@ -3,6 +3,7 @@
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <tonc_input.h>
+#include <tonc_memmap.h>  // TODO: For sram_mem
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
@@ -86,7 +87,7 @@ void SelectionScene::tick(u16 keys) {
   } else if (init == INIT_FRAME) {
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
-    highlighter->initialize();
+    highlighter->initialize(selected);
     init++;
   }
 
@@ -160,7 +161,12 @@ void SelectionScene::setUpArrows() {
 
 void SelectionScene::setUpPager() {
   count = library->getCount();
-  setPage(0, 0);
+
+  // TODO: Create abstraction
+  page = sram_mem[0];
+  selected = sram_mem[1];
+
+  setPage(page, 0);
   updateSelection();
 }
 
@@ -266,24 +272,30 @@ void SelectionScene::updateSelection() {
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);
   Song_free(song);
+
+  // TODO: Create abstraction
+  sram_mem[0] = page;
+  sram_mem[1] = selected;
 }
 
 void SelectionScene::setPage(u32 page, int direction) {
   progress->setValue(0, count);  // TODO: Implement progress
 
   this->page = page;
-  this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
+
   songs.clear();
   songs = library->getSongs(page * PAGE_SIZE, PAGE_SIZE);
 
-  highlighter->select(selected);
   if (direction == 0)
     setUpBackground();
-  else
+  else {
+    this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
+    highlighter->select(selected);
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
       updateSelection();
     });
+  }
 }
 
 void SelectionScene::setNames(std::string title, std::string artist) {
