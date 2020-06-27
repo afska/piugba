@@ -265,6 +265,7 @@ void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
     bool hasStarted = holdArrow->hasStarted(msecs);
+    bool hasEnded = holdArrow->hasEnded(msecs);
     holdArrow->resetState();
 
     if (hasStarted) {
@@ -272,7 +273,7 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrowStates[direction].isActive = true;
     }
 
-    if (holdArrow->hasEnded(msecs) &&
+    if (hasEnded &&
         holdArrowStates[direction].currentStartTime == holdArrow->startTime)
       holdArrowStates[direction].isActive = false;
 
@@ -295,8 +296,12 @@ void ChartReader::orchestrateHoldArrows() {
     holdArrow->fillOffsetSkip =
         max(screenTopY - topY, topY > 0 ? 0 : screenTopY);
     holdArrow->fillOffsetBottom = bottomY - topY;
+    holdArrow->currentFillOffset = holdArrow->fillOffsetSkip;
     u32 fillSectionLength = holdArrow->getFillSectionLength(topY, bottomY);
     u32 targetFills = MATH_divCeil(fillSectionLength, ARROW_SIZE);
+
+    if (hasEnded)
+      return;
 
     while (holdArrow->activeFillCount < targetFills) {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
@@ -308,8 +313,6 @@ void ChartReader::orchestrateHoldArrows() {
 
       holdArrow->activeFillCount++;
     }
-
-    holdArrow->currentFillOffset = holdArrow->fillOffsetSkip;
   });
 }
 
