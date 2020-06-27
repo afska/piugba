@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+const u32 HIGHLIGHTER_OPACITY = 12;
+
 class Highlighter {
  public:
   Highlighter(u8 id);

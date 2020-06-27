@@ -4,8 +4,6 @@
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 
-const u32 OPACITY = 12;
-
 Highlighter::Highlighter(u8 id) {
   this->id = id;
 }
@@ -20,7 +18,7 @@ void Highlighter::initialize(u8 selectedItem) {
   loadMap();
 
   EFFECT_setUpBlend(BLD_BG0 | BLD_BG[id], BLD_BG[id + 1]);
-  EFFECT_setBlendAlpha(OPACITY);
+  EFFECT_setBlendAlpha(HIGHLIGHTER_OPACITY);
 }
 
 void Highlighter::select(u8 option) {

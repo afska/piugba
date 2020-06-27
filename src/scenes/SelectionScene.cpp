@@ -10,7 +10,6 @@
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "scenes/SongScene.h"
-#include "ui/Highlighter.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
@@ -101,8 +100,16 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
 
-  if (selectInput->hasBeenPressedNow())
-    goToSong();
+  if (selectInput->hasBeenPressedNow()) {
+    if (confirmed)
+      goToSong();
+    else
+      confirm();
+  }
+
+  blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_BLEND),
+                   HIGHLIGHTER_OPACITY);
+  EFFECT_setBlendAlpha(blendAlpha);
 }
 
 void SelectionScene::setUpSpritesPalette() {
@@ -225,7 +232,8 @@ void SelectionScene::processSelectionChangeEvents() {
 bool SelectionScene::onDifficultyChange(u32 selector,
                                         DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
-    fxes_play(SOUND_MOVE);
+    unconfirm();
+    fxes_play(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -245,9 +253,10 @@ bool SelectionScene::onSelectionChange(u32 selector,
                                        bool isOnPageEdge,
                                        int direction) {
   if (arrowSelectors[selector]->shouldFireEvent()) {
+    unconfirm();
     if (isOnListEdge) {
       if (arrowSelectors[selector]->hasBeenPressedNow())
-        fxes_play(SOUND_MOVE);
+        fxes_play(SOUND_STEP);
       return true;
     }
 
@@ -255,13 +264,13 @@ bool SelectionScene::onSelectionChange(u32 selector,
 
     if (isOnPageEdge) {
       setPage(page + direction, direction);
-      player_play(SOUND_MOVE);
+      player_play(SOUND_STEP);
     } else {
       selected += direction;
       updateSelection();
       highlighter->select(selected);
       pixelBlink->blink();
-      fxes_play(SOUND_MOVE);
+      fxes_play(SOUND_STEP);
     }
 
     return true;
@@ -280,6 +289,21 @@ void SelectionScene::updateSelection() {
   // TODO: Create abstraction
   sram_mem[0] = page;
   sram_mem[1] = selected;
+}
+
+void SelectionScene::confirm() {
+  fxes_play(SOUND_STEP);
+  confirmed = true;
+  TextStream::instance().clear();
+  TextStream::instance().setText(
+      "Press center to start!", TEXT_ROW,
+      TEXT_MIDDLE_COL - std::string("Press center to start!").length() / 2);
+}
+
+void SelectionScene::unconfirm() {
+  if (confirmed)
+    updateSelection();
+  confirmed = false;
 }
 
 void SelectionScene::setPage(u32 page, int direction) {

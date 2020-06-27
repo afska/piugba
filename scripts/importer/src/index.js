@@ -14,6 +14,7 @@ const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
 const CONTENT_PATH = $path.join(__dirname, "../../../src/data/content");
 const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const AUDIO_PATH = $path.join(CONTENT_PATH, "assets/audio");
+const IMAGES_PATH = $path.join(CONTENT_PATH, "assets/images");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const SEPARATOR = " - ";
@@ -56,6 +57,8 @@ const GET_SONG_FILES = ({ path, id, name }) => {
 // ---
 
 mkdirp(SONGS_PATH);
+mkdirp(AUDIO_PATH);
+mkdirp(IMAGES_PATH);
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
 

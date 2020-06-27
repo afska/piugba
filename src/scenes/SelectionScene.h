@@ -13,6 +13,7 @@
 #include "objects/Difficulty.h"
 #include "objects/NumericProgress.h"
 #include "objects/base/InputHandler.h"
+#include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
 
 class SelectionScene : public Scene {
@@ -33,6 +34,8 @@ class SelectionScene : public Scene {
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
+  bool confirmed = false;
+  u32 blendAlpha = HIGHLIGHTER_OPACITY;
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
@@ -60,6 +63,8 @@ class SelectionScene : public Scene {
                          int direction);
 
   void updateSelection();
+  void confirm();
+  void unconfirm();
   void setPage(u32 page, int direction);
   void setNames(std::string title, std::string artist);
 };
