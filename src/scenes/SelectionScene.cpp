@@ -71,6 +71,8 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
   selectInput = std::unique_ptr<InputHandler>(new InputHandler());
+  difficulty->setValue(
+      static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create abstraction
   setUpPager();
 
   setUpSpritesPalette();
@@ -227,6 +229,8 @@ bool SelectionScene::onDifficultyChange(u32 selector,
 
     if (newValue == difficulty->getValue())
       return true;
+
+    sram_mem[2] = newValue;  // TODO: Create abstraction
 
     difficulty->setValue(newValue);
     pixelBlink->blink();
