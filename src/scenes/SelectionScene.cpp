@@ -299,10 +299,11 @@ void SelectionScene::updateSelection() {
 }
 
 void SelectionScene::confirm() {
+  player_stop();
   fxes_play(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
-  TextStream::instance().clear();  // TODO: Make it faster
+  TextStream::instance().clear();
   TextStream::instance().setText(
       CONFIRM_MESSAGE, TEXT_ROW + 1,
       TEXT_MIDDLE_COL - std::string(CONFIRM_MESSAGE).length() / 2);
