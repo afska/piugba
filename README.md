@@ -12,8 +12,8 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   * Normal, hold and fake notes
   * BPM changes
   * Scroll speed changes
-  * Stops and Delays
-  * Warps
+  * Stops/Delays and async-stops
+  * Warps and fast-BPM warps
 - **Speed multiplier** can be changed in-game
 - **BGA DARK** mode with blink effect
 - **Song selector** with names, backgrounds and sound previews

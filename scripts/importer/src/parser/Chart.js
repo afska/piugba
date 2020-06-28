@@ -372,4 +372,3 @@ const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
 const NOTE_DATA = /^\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
-const FIXED_POINT_PRECISION = 0xffffffff + 1;
