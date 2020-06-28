@@ -25,8 +25,6 @@ class SelectionScene : public Scene {
   void load() override;
   void tick(u16 keys) override;
 
-  ~SelectionScene();
-
  private:
   u32 init = 0;
   std::vector<std::unique_ptr<SongFile>> songs;

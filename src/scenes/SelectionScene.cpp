@@ -67,6 +67,8 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
 
@@ -342,9 +344,4 @@ void SelectionScene::setNames(std::string title, std::string artist) {
                                  TEXT_MIDDLE_COL - title.length() / 2);
   TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
-}
-
-SelectionScene::~SelectionScene() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
 }

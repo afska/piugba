@@ -72,6 +72,8 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   player_play(song->audioPath.c_str());
 
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   IFTEST { BACKGROUND_enable(true, false, false, false); }
 
@@ -312,7 +314,6 @@ void SongScene::unload() {
 }
 
 SongScene::~SongScene() {
-  EFFECT_turnOffBlend();
   arrowHolders.clear();
   fakeHeads.clear();
   Song_free(song);
