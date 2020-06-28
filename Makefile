@@ -111,6 +111,10 @@ else
 	ASFLAGS		+= -DNDEBUG
 endif
 
+# --- Custom vars ? ---
+
+# CXXFLAGS += -DCUSTOM_VAR_DEFINE
+
 # === BUILD PROC ======================================================
 
 ifneq ($(BUILD),$(notdir $(CURDIR)))
