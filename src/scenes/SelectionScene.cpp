@@ -73,8 +73,9 @@ void SelectionScene::load() {
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
-  difficulty->setValue(
-      static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create abstraction
+  // difficulty->setValue(
+  //     static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create
+  //     abstraction
   setUpPager();
 
   setUpSpritesPalette();
@@ -178,8 +179,8 @@ void SelectionScene::setUpPager() {
   count = library->getCount();
 
   // TODO: Create abstraction
-  page = sram_mem[0];
-  selected = sram_mem[1];
+  // page = sram_mem[0];
+  // selected = sram_mem[1];
 
   setPage(page, 0);
   updateSelection();
@@ -293,8 +294,8 @@ void SelectionScene::updateSelection() {
   Song_free(song);
 
   // TODO: Create abstraction
-  sram_mem[0] = page;
-  sram_mem[1] = selected;
+  // sram_mem[0] = page;
+  // sram_mem[1] = selected;
 }
 
 void SelectionScene::confirm() {
