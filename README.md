@@ -1,6 +1,46 @@
 # piugba
 
-This is a version of PIU for the GBA. It's under development, so don't try to compile it yet: it won't work since the necessary images and audio files (`src/data/content`) are not here. A ROM creator will be provided in the final release.
+This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
+
+⚠️ Under development ⚠️
+
+![demo](demo.gif)
+
+## Key features
+
+- Full **.ssc files** support, including:
+  * Normal, hold and fake notes
+  * BPM changes
+  * Scroll speed changes
+  * Stops and Delays
+  * Warps
+- **Speed multiplier** can be changed in-game
+- **BGA DARK** mode with blink effect
+- **Song selector** with names, backgrounds and sound previews
+- **Optimized** to support ~60 songs per ROM file.
+
+## How does it work?
+
+A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into binary files which the GBA can understand. For audio, it uses GSM audio files which are very small in size.
+
+Charts are converted into a format created for this project called **PIUS**. Then everything is bundled in a **GBFS** file (a filesystem created by the GBA scene) and appended to the final ROM.
+
+[See the wiki](https://github.com/rodri042/piugba/wiki) for more details!
+
+## How to a build a ROM
+
+- Install everything (read the section below).
+- Create in `src/data/content` one folder per song, including:
+  - one `.ssc` file with the charts
+  - one `.mp3` file with the song
+  - one `.png` file with the background
+- Run:
+```bash
+make import MODE=auto
+make assets
+make build ENV=production PLATFORM=gba
+make package
+```
 
 ## Install
 
@@ -56,15 +96,6 @@ Name | Values | Description
 `MODE` | **`manual`** or `auto` | In `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
 `ENV` | **`development`** or `production` | In `development`, backgrounds are disabled and stage-break is OFF.
 `PLATFORM` | **`emulator`** or `gba` | In `emulator`, the game add some audio lag corrections.
-
-#### Example
-
-```bash
-# Compile a production version
-make import MODE=auto
-make assets
-make restart ENV=production PLATFORM=gba
-```
 
 ### Scripts
 
