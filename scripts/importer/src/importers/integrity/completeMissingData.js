@@ -15,31 +15,30 @@ module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
   if (metadata.channel === "UNKNOWN") {
-    const channelOptions = KNOWN_CHANNELS.map(
-      (name, i) => `${i} = ${name}`
-    ).join(", ");
+    if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
+    else {
+      const channelOptions = KNOWN_CHANNELS.map(
+        (name, i) => `${i} = ${name}`
+      ).join(", ");
 
-    console.log("-> channels: ".bold + `(${channelOptions})`.cyan);
-    const channel = utils.insistentChoice(
-      "What channel?",
-      _.range(KNOWN_CHANNELS.length)
-    );
-    metadata.channel = _.keys(Channels)[parseInt(channel)];
+      console.log("-> channels: ".bold + `(${channelOptions})`.cyan);
+      const channel = utils.insistentChoice(
+        "What channel?",
+        _.range(KNOWN_CHANNELS.length)
+      );
+      metadata.channel = _.keys(Channels)[parseInt(channel)];
 
-    isDirty = true;
+      isDirty = true;
+    }
   }
 
-  if (
-    GLOBAL_OPTIONS.difficulty === "auto" ||
-    GLOBAL_OPTIONS.difficulty === "manual-overwrite"
-  ) {
+  if (GLOBAL_OPTIONS.mode === "auto")
     charts.forEach((it) => {
-      it.header.difficulty = "NUMERIC";
+      it.header.mode = "NUMERIC";
     });
-  }
 
   NON_NUMERIC_LEVELS.forEach((difficulty) => {
-    if (GLOBAL_OPTIONS.difficulty === "auto") {
+    if (GLOBAL_OPTIONS.mode === "auto") {
       autoSetDifficulty(charts, difficulty);
     } else {
       if (setDifficulty(charts, difficulty)) isDirty = true;

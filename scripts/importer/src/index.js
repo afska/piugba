@@ -23,16 +23,12 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
 const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
-const DIFFICULTY_OPTIONS = ["auto", "manual", "manual-overwrite"];
-const DIFFICULTY_DEFAULT = "manual";
+const MODE_OPTIONS = ["auto", "manual"];
+const MODE_DEFAULT = "manual";
 
 const opt = getopt
   .create([
-    [
-      "d",
-      "difficulty=MODE",
-      "difficulty provider (one of: auto|*manual*|manual-overwrite)",
-    ],
+    ["d", "mode=MODE", "how to complete missing data (one of: auto|*manual*)"],
     ["j", "json", "generate JSON debug files"],
     ["f", "force", "ignore errors"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
@@ -41,8 +37,8 @@ const opt = getopt
   .parseSystem();
 
 global.GLOBAL_OPTIONS = opt.options;
-if (!_.includes(DIFFICULTY_OPTIONS, GLOBAL_OPTIONS.difficulty))
-  GLOBAL_OPTIONS.difficulty = DIFFICULTY_DEFAULT;
+if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
+  GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 
 const GET_SONG_FILES = ({ path, id, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));

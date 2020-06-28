@@ -186,7 +186,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-DIFFICULTY ?= manual
+MODE ?= manual
 .PHONY: clean
 .PHONY: start
 .PHONY: restart
@@ -195,7 +195,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --difficulty $(DIFFICULTY) --all --force
+	node ./scripts/importer/src/index.js --mode $(MODE) --all --force
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)
