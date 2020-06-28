@@ -4,6 +4,7 @@ SOURCE="src/data"
 DESTINATION="content/_compiled_sprites"
 
 cd "$SOURCE"
+mkdir -p "$DESTINATION"
 rm $DESTINATION/*.h $DESTINATION/*.c
 grit \
   spr_arrows.bmp \
