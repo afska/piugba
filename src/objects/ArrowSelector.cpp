@@ -52,6 +52,9 @@ bool ArrowSelector::shouldFireEvent() {
 }
 
 void ArrowSelector::tick() {
+  if (direction == ArrowDirection::CENTER)
+    return;
+
   sprite->flipHorizontally(flip);
   isNewPressEvent = false;
   lastPressFrame++;
@@ -62,6 +65,6 @@ void ArrowSelector::tick() {
     SPRITE_goToFrame(sprite.get(),
                      max(currentFrame + 1, start + ARROW_HOLDER_IDLE + 1));
   } else if (!isPressed && currentFrame >= start + ARROW_HOLDER_IDLE) {
-    sprite->makeAnimated(this->start, ANIMATION_FRAMES, ANIMATION_DELAY);
+    sprite->makeAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY);
   }
 }

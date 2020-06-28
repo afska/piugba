@@ -20,18 +20,22 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+#define CONFIRM_MESSAGE "Press    to start!"
+
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 PAGE_SIZE = 4;
-const u32 ARROW_SELECTORS = 4;
+const u32 ARROW_SELECTORS = 5;
 const u32 SELECTOR_PREVIOUS_DIFFICULTY = 1;
-const u32 SELECTOR_NEXT_DIFFICULTY = 2;
+const u32 SELECTOR_NEXT_DIFFICULTY = 3;
 const u32 SELECTOR_PREVIOUS_SONG = 0;
-const u32 SELECTOR_NEXT_SONG = 3;
+const u32 SELECTOR_NEXT_SONG = 4;
 const u32 SELECTOR_MARGIN = 3;
+const u32 CENTER_X = 96;
+const u32 CENTER_Y = 108;
 const u32 TEXT_ROW = 13;
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
@@ -69,7 +73,6 @@ void SelectionScene::load() {
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
-  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
   difficulty->setValue(
       static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create abstraction
   setUpPager();
@@ -100,7 +103,7 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
 
-  if (selectInput->hasBeenPressedNow()) {
+  if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
     if (confirmed)
       goToSong();
     else
@@ -154,6 +157,8 @@ void SelectionScene::setUpArrows() {
   arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
       new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPLEFT))});
   arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::CENTER))});
+  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
       new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPRIGHT))});
   arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
       static_cast<ArrowDirection>(ArrowDirection::DOWNRIGHT))});
@@ -161,9 +166,10 @@ void SelectionScene::setUpArrows() {
   arrowSelectors[0]->get()->moveTo(
       SELECTOR_MARGIN, GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
   arrowSelectors[1]->get()->moveTo(SELECTOR_MARGIN, SELECTOR_MARGIN);
-  arrowSelectors[2]->get()->moveTo(
-      GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
+  SPRITE_hide(arrowSelectors[2]->get());
   arrowSelectors[3]->get()->moveTo(
+      GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
+  arrowSelectors[4]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
 }
@@ -204,9 +210,9 @@ u32 SelectionScene::getPageStart() {
 void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
-  arrowSelectors[2]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowSelectors[3]->setIsPressed(KEY_DOWNRIGHT(keys));
-  selectInput->setIsPressed(KEY_CENTER(keys));
+  arrowSelectors[2]->setIsPressed(KEY_CENTER(keys));
+  arrowSelectors[3]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowSelectors[4]->setIsPressed(KEY_DOWNRIGHT(keys));
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
@@ -294,13 +300,15 @@ void SelectionScene::updateSelection() {
 void SelectionScene::confirm() {
   fxes_play(SOUND_STEP);
   confirmed = true;
-  TextStream::instance().clear();
+  arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
+  TextStream::instance().clear();  // TODO: Make it faster
   TextStream::instance().setText(
-      "Press center to start!", TEXT_ROW,
-      TEXT_MIDDLE_COL - std::string("Press center to start!").length() / 2);
+      CONFIRM_MESSAGE, TEXT_ROW + 1,
+      TEXT_MIDDLE_COL - std::string(CONFIRM_MESSAGE).length() / 2);
 }
 
 void SelectionScene::unconfirm() {
+  SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
   if (confirmed)
     updateSelection();
   confirmed = false;

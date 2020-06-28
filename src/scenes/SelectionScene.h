@@ -12,7 +12,6 @@
 #include "objects/ArrowSelector.h"
 #include "objects/Difficulty.h"
 #include "objects/NumericProgress.h"
-#include "objects/base/InputHandler.h"
 #include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
 
@@ -41,7 +40,6 @@ class SelectionScene : public Scene {
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
-  std::unique_ptr<InputHandler> selectInput;
 
   void setUpSpritesPalette();
   void setUpBackground();
