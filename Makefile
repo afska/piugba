@@ -113,6 +113,21 @@ endif
 
 # --- Custom vars ? ---
 
+ENV ?= development
+PLATFORM ?= emulator
+
+ifeq ($(ENV), development)
+	CXXFLAGS += -DTEST_MODE=true
+else
+	CXXFLAGS += -DTEST_MODE=false
+endif
+
+ifeq ($(PLATFORM), emulator)
+	CXXFLAGS += -DAUDIO_LAG=180
+else
+	CXXFLAGS += -DAUDIO_LAG=0
+endif
+
 # CXXFLAGS += -DCUSTOM_VAR_DEFINE
 
 # === BUILD PROC ======================================================

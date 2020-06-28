@@ -49,6 +49,23 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 - `make start`: Starts the compiled ROM
 - `make restart`: Recompiles and starts the ROM
 
+#### Parameters
+
+Name | Values | Description
+--- | --- | ---
+`MODE` | **`manual`** or `auto` | In `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
+`ENV` | **`development`** or `production` | In `development`, backgrounds are disabled and stage-break is OFF.
+`PLATFORM` | **`emulator`** or `gba` | In `emulator`, the game add some audio lag corrections.
+
+#### Example
+
+```bash
+# Compile a production version
+make import MODE=auto
+make assets
+make restart ENV=production PLATFORM=gba
+```
+
 ### Scripts
 
 #### Build sprites

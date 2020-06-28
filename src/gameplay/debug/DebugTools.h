@@ -3,7 +3,11 @@
 
 #include <libgba-sprite-engine/background/text_stream.h>
 
-#define TEST_MODE true
+#ifndef TEST_MODE
+// Defined in Makefile: Test mode
+#define TEST_MODE false
+#endif
+
 #define STRESSTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFTEST if (TEST_MODE)
