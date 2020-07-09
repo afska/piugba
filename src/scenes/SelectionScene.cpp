@@ -190,6 +190,7 @@ void SelectionScene::setUpPager() {
 
 void SelectionScene::goToSong() {
   player_stopAll();
+  confirmed = false;
 
   Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
