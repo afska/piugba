@@ -4,7 +4,6 @@ const $path = require("path");
 const $tmp = require("tmp");
 const fs = require("fs");
 
-const SELECTOR_DIR = "selector";
 const SELECTOR_MSL = "selector.msl";
 const SELECTOR_BMP = "selector.bmp";
 const SELECTOR_OUTPUT_PNG = "output.bmp";
@@ -13,7 +12,7 @@ const COMMAND_2 = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
 const COMMAND_3 = (input) => `rm -rf "${input}"`;
 const EXTENSION_TMP = "h";
 
-module.exports = (name, options, outputPath) => {
+module.exports = (name, options, outputPath, selectorDir) => {
   const tempDir = $tmp.dirSync();
   const tempFile = $path.join(outputPath, `${name}.${EXTENSION_TMP}`);
 
@@ -22,7 +21,7 @@ module.exports = (name, options, outputPath) => {
     buildSelector(options.length)
   );
   fs.copyFileSync(
-    $path.join(__dirname, SELECTOR_DIR, SELECTOR_BMP),
+    $path.join(selectorDir, SELECTOR_BMP),
     $path.join(tempDir.name, SELECTOR_BMP)
   );
   options.forEach(({ files }, i) => {

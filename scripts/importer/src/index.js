@@ -9,6 +9,8 @@ const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
 
+const NORMALIZE_FILENAME = (it) =>
+  it.replace(/[^0-9a-z _-]/gi, "").substring(0, MAX_FILE_LENGTH);
 const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
 
 const CONTENT_PATH = $path.join(__dirname, "../../../src/data/content");
@@ -65,9 +67,7 @@ const songs = _(fs.readdirSync(SONGS_PATH))
 
     const id = parts.length === 2 ? _.first(parts) : i.toString();
     const name = _.last(parts);
-    const outputName = (id + "-" + name)
-      .replace(/[^0-9a-z -]/gi, "")
-      .substring(0, MAX_FILE_LENGTH);
+    const outputName = NORMALIZE_FILENAME(id + "-" + name);
 
     return {
       path: $path.join(SONGS_PATH, directory),
@@ -79,12 +79,24 @@ const songs = _(fs.readdirSync(SONGS_PATH))
   .sortBy("outputName")
   .value();
 
-console.log(`${"Importing".bold} audio fx...`);
+console.log(`${"Importing".bold} audio...`);
 fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
-  const name = `_aud_${REMOVE_EXTENSION(audioFile)}`;
+  if (!FILE_AUDIO.test(audioFile)) return;
+
+  const name = NORMALIZE_FILENAME(`_aud_${REMOVE_EXTENSION(audioFile)}`);
   const path = $path.join(AUDIO_PATH, audioFile);
 
   utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
+});
+
+console.log(`${"Importing".bold} images...`);
+fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
+  if (!FILE_BACKGROUND.test(imageFile)) return;
+
+  const name = NORMALIZE_FILENAME(`_img_${REMOVE_EXTENSION(imageFile)}`);
+  const path = $path.join(IMAGES_PATH, imageFile);
+
+  utils.report(() => importers.background(name, path, OUTPUT_PATH), imageFile);
 });
 
 let lastSelectorBuilt = -1;
@@ -128,7 +140,7 @@ const simfiles = songs.map((song, i) => {
 
     const name = `_sel_${from}`;
     utils.report(
-      () => importers.selector(name, options, OUTPUT_PATH),
+      () => importers.selector(name, options, OUTPUT_PATH, IMAGES_PATH),
       "selector"
     );
   }

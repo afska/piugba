@@ -34,6 +34,7 @@ Charts are converted into a format created for this project called **PIUS**. The
   - one `.ssc` file with the charts
   - one `.mp3` file with the song
   - one `.png` file with the background
+- Put your theme in `src/data/assets` (⚠️ TODO: Provide a default theme & update docs ⚠️)
 - Run:
 ```bash
 make import MODE=auto
