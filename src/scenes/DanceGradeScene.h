@@ -8,9 +8,13 @@
 
 #include "objects/score/Grade.h"
 
+extern "C" {
+#include "utils/gbfs/gbfs.h"
+}
+
 class DanceGradeScene : public Scene {
  public:
-  DanceGradeScene(std::shared_ptr<GBAEngine> engine);
+  DanceGradeScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -20,8 +24,11 @@ class DanceGradeScene : public Scene {
 
  private:
   std::unique_ptr<Grade> grade;
+  std::unique_ptr<Background> bg;
+  const GBFS_FILE* fs;
 
   void setUpSpritesPalette();
+  void setUpBackground();
 };
 
 #endif  // DANCE_GRADE_SCENE_H

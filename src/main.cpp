@@ -16,7 +16,8 @@ int main() {
   player_init();
 
   // engine->setScene(new SelectionScene(engine));
-  engine->setScene(new DanceGradeScene(engine));
+  engine->setScene(
+      new DanceGradeScene(engine, find_first_gbfs_file(0)));  // TODO: REMOVE
   player_forever([]() { engine->update(); });
 
   return 0;

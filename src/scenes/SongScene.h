@@ -16,6 +16,10 @@
 #include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
+extern "C" {
+#include "utils/gbfs/gbfs.h"
+}
+
 class SongScene : public Scene {
  public:
   SongScene(std::shared_ptr<GBAEngine> engine,
