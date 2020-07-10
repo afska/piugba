@@ -130,22 +130,12 @@ void SelectionScene::setUpBackground() {
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
   auto backgroundMapFile = backgroundFile + BACKGROUND_MAP_EXTENSION;
 
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
-      fs, backgroundPaletteFile.c_str(), &backgroundPaletteLength);
   backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
+      BACKGROUND_loadPaletteFile(fs, backgroundPaletteFile.c_str());
   backgroundPalette->persist();
-
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData =
-      gbfs_get_obj(fs, backgroundTilesFile.c_str(), &backgroundTilesLength);
-  auto backgroundMapData =
-      gbfs_get_obj(fs, backgroundMapFile.c_str(), &backgroundMapLength);
-  bg = std::unique_ptr<Background>(new Background(
-      ID_MAIN_BACKGROUND, backgroundTilesData, backgroundTilesLength,
-      backgroundMapData, backgroundMapLength));
+  bg = BACKGROUND_loadBackgroundFiles(fs, backgroundTilesFile.c_str(),
+                                      backgroundMapFile.c_str(),
+                                      ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);

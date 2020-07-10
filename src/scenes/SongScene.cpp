@@ -152,25 +152,14 @@ void SongScene::setUpPalettes() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
       new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal)));
 
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData = (COLOR*)gbfs_get_obj(
-      fs, song->backgroundPalettePath.c_str(), &backgroundPaletteLength);
-
   backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
+      BACKGROUND_loadPaletteFile(fs, song->backgroundPalettePath.c_str());
 }
 
 void SongScene::setUpBackground() {
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData = gbfs_get_obj(fs, song->backgroundTilesPath.c_str(),
-                                          &backgroundTilesLength);
-  auto backgroundMapData =
-      gbfs_get_obj(fs, song->backgroundMapPath.c_str(), &backgroundMapLength);
-
-  bg = std::unique_ptr<Background>(new Background(
-      MAIN_BACKGROUND_ID, backgroundTilesData, backgroundTilesLength,
-      backgroundMapData, backgroundMapLength));
+  bg = BACKGROUND_loadBackgroundFiles(fs, song->backgroundTilesPath.c_str(),
+                                      song->backgroundMapPath.c_str(),
+                                      MAIN_BACKGROUND_ID);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->usePriority(MAIN_BACKGROUND_PRIORITY);

@@ -47,20 +47,6 @@ void DanceGradeScene::setUpSpritesPalette() {
 }
 
 void DanceGradeScene::setUpBackground() {
-  u32 backgroundPaletteLength;
-  auto backgroundPaletteData =
-      (COLOR*)gbfs_get_obj(fs, BG_GRADE_PALETTE, &backgroundPaletteLength);
-
-  backgroundPalette =
-      std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-          backgroundPaletteData, backgroundPaletteLength));
-
-  u32 backgroundTilesLength, backgroundMapLength;
-  auto backgroundTilesData =
-      gbfs_get_obj(fs, BG_GRADE_TILES, &backgroundTilesLength);
-  auto backgroundMapData = gbfs_get_obj(fs, BG_GRADE_MAP, &backgroundMapLength);
-
-  bg = std::unique_ptr<Background>(
-      new Background(1, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
+  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
+  bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP, 1);
 }

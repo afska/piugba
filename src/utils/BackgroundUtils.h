@@ -1,8 +1,16 @@
 #ifndef BACKGROUND_UTILS_H
 #define BACKGROUND_UTILS_H
 
+#include <libgba-sprite-engine/background/background.h>
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_core.h>
+#include <libgba-sprite-engine/scene.h>
+
+#include <memory>
+
+extern "C" {
+#include "utils/gbfs/gbfs.h"
+}
 
 const u32 TILE_SIZE = 16;
 
@@ -16,6 +24,32 @@ inline void BACKGROUND_enable(bool bg0, bool bg1, bool bg2, bool bg3) {
 inline void BACKGROUND_setup(u8 id, u8 charblock, u8 screenblock, u8 priority) {
   REG_BGCNT[id] = BG_CBB(charblock) | BG_SBB(screenblock) | BG_8BPP |
                   BG_REG_32x32 | priority;
+}
+
+inline std::unique_ptr<BackgroundPaletteManager> BACKGROUND_loadPaletteFile(
+    const GBFS_FILE* fs,
+    const char* fileName) {
+  u32 backgroundPaletteLength;
+  auto backgroundPaletteData =
+      (COLOR*)gbfs_get_obj(fs, fileName, &backgroundPaletteLength);
+
+  return std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
+      backgroundPaletteData, backgroundPaletteLength));
+}
+
+inline std::unique_ptr<Background> BACKGROUND_loadBackgroundFiles(
+    const GBFS_FILE* fs,
+    const char* tilesFileName,
+    const char* mapFileName,
+    int bgIndex) {
+  u32 backgroundTilesLength, backgroundMapLength;
+  auto backgroundTilesData =
+      gbfs_get_obj(fs, tilesFileName, &backgroundTilesLength);
+  auto backgroundMapData = gbfs_get_obj(fs, mapFileName, &backgroundMapLength);
+
+  return std::unique_ptr<Background>(
+      new Background(bgIndex, backgroundTilesData, backgroundTilesLength,
+                     backgroundMapData, backgroundMapLength));
 }
 
 inline void BACKGROUND_loadPalette(const unsigned int data[],
