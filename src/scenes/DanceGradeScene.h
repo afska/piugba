@@ -23,6 +23,7 @@ class DanceGradeScene : public Scene {
   void tick(u16 keys) override;
 
  private:
+  bool hasStarted = false;
   std::unique_ptr<Grade> grade;
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;

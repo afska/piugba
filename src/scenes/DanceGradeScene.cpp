@@ -8,6 +8,9 @@
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 
+const u32 GRADE_X = 88;
+const u32 GRADE_Y = 52;
+
 DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs)
     : Scene(engine) {
@@ -27,15 +30,23 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 }
 
 void DanceGradeScene::load() {
-  BACKGROUND_enable(false, true, false, false);
-  grade = std::unique_ptr<Grade>{new Grade(GradeType::S, 50, 50)};
+  BACKGROUND_enable(false, false, false, false);
+  grade = std::unique_ptr<Grade>{new Grade(GradeType::S, GRADE_X, GRADE_Y)};
 
   setUpSpritesPalette();
   setUpBackground();
 }
 
 void DanceGradeScene::tick(u16 keys) {
-  if (keys & KEY_ANY && !engine->isTransitioning()) {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(false, true, false, false);
+    hasStarted = true;
+  }
+
+  if (keys & KEY_ANY) {
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
   }

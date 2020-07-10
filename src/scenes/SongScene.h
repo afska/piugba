@@ -51,7 +51,6 @@ class SongScene : public Scene {
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   std::unique_ptr<InputHandler> speedUpInput;
   std::unique_ptr<InputHandler> speedDownInput;
-  int init = 0;
   u32 blinkFrame = 0;
 
   void setUpPalettes();
