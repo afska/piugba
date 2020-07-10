@@ -35,3 +35,9 @@ numbers:
 
 lifebar:
 -> 56 colors
+
+numbers_mini:
+-> 30 colors
+
+grades:
+-> 225 colors

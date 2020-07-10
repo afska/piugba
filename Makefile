@@ -202,9 +202,7 @@ endif		# End BUILD switch
 # --- More targets ----------------------------------------------------
 
 MODE ?= manual
-.PHONY: clean
-.PHONY: start
-.PHONY: restart
+.PHONY: clean assets start restart
 
 assets:
 	./scripts/assets.sh
