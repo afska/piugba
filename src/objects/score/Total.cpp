@@ -6,7 +6,7 @@
 
 const u32 MAX_TOTAL = 999;
 const u32 DIGITS = 3;
-const u32 DIGITS_POSITION_X = 147;
+const u32 DIGITS_POSITION_X = 160;
 
 Total::Total(u32 y, bool isFirst) {
   for (u32 i = 0; i < 3; i++) {
