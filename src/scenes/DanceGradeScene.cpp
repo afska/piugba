@@ -8,6 +8,8 @@
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 
+const u32 TOTALS_Y[] = {38, 54, 68, 85, 101};
+const u32 TOTAL_MAX_COMBO_Y = 115;
 const u32 GRADE_X = 88;
 const u32 GRADE_Y = 52;
 
@@ -24,6 +26,9 @@ std::vector<Background*> DanceGradeScene::backgrounds() {
 std::vector<Sprite*> DanceGradeScene::sprites() {
   std::vector<Sprite*> sprites;
 
+  for (u32 i = 0; i < totals.size(); i++)
+    totals[i]->render(&sprites);
+  maxComboTotal->render(&sprites);
   sprites.push_back(grade->get());
 
   return sprites;
@@ -32,6 +37,10 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 void DanceGradeScene::load() {
   BACKGROUND_enable(false, false, false, false);
   grade = std::unique_ptr<Grade>{new Grade(GradeType::GS, GRADE_X, GRADE_Y)};
+
+  for (u32 i = 0; i < totals.size(); i++)
+    totals[i] = std::unique_ptr<Total>{new Total(TOTALS_Y[i])};
+  maxComboTotal = std::unique_ptr<Total>{new Total(TOTAL_MAX_COMBO_Y)};
 
   setUpSpritesPalette();
   setUpBackground();

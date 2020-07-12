@@ -4,23 +4,23 @@
 
 #include "utils/SpriteUtils.h"
 
-const u32 DIGIT_CURRENT_POSITION_X = 63;
-const u32 DIGIT_TOTAL_POSITION_X = 121;
+const u32 DIGITS_CURRENT_POSITION_X = 63;
+const u32 DIGITS_TOTAL_POSITION_X = 121;
 const u32 OF_POSITION_X = 104;
-const u32 DIGIT_POSITION_Y = 131;
-const u32 OF_POSITION_Y = DIGIT_POSITION_Y;
+const u32 DIGITS_POSITION_Y = 131;
+const u32 OF_POSITION_Y = DIGITS_POSITION_Y;
 
 NumericProgress::NumericProgress() {
   for (u32 i = 0; i < 2; i++) {
     auto digit = std::unique_ptr<Digit>{new Digit(
-        DigitSize::BIG, DIGIT_CURRENT_POSITION_X, DIGIT_POSITION_Y, i)};
+        DigitSize::BIG, DIGITS_CURRENT_POSITION_X, DIGITS_POSITION_Y, i)};
     digit->showAt(0);
     completedDigits.push_back(std::move(digit));
   }
 
   for (u32 i = 0; i < 2; i++) {
-    auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, DIGIT_TOTAL_POSITION_X, DIGIT_POSITION_Y, i)};
+    auto digit = std::unique_ptr<Digit>{new Digit(
+        DigitSize::BIG, DIGITS_TOTAL_POSITION_X, DIGITS_POSITION_Y, i)};
     SPRITE_reuseTiles(digit->get());
     digit->showAt(0);
     totalDigits.push_back(std::move(digit));

@@ -6,12 +6,12 @@
 
 const u32 MAX_TOTAL = 999;
 const u32 DIGITS = 3;
-const u32 DIGIT_POSITION_X = 8;
+const u32 DIGITS_POSITION_X = 147;
 
 Total::Total(u32 y) {
   for (u32 i = 0; i < 3; i++) {
     auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, DIGIT_POSITION_X, y, i)};
+        new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i)};
     digit->showAt(0);
     digits.push_back(std::move(digit));
   }

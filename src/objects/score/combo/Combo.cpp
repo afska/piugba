@@ -6,15 +6,15 @@
 
 const u32 MAX_COMBO = 999;
 const u32 DIGITS = 3;
-const u32 DIGIT_POSITION_X = 8;
-const u32 DIGIT_POSITION_Y = 89;
+const u32 DIGITS_POSITION_X = 8;
+const u32 DIGITS_POSITION_Y = 89;
 
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
   for (u32 i = 0; i < 3; i++) {
     auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, DIGIT_POSITION_X, DIGIT_POSITION_Y, i)};
+        new Digit(DigitSize::BIG, DIGITS_POSITION_X, DIGITS_POSITION_Y, i)};
     digits.push_back(std::move(digit));
   }
 }
