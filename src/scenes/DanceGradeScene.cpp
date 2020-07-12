@@ -7,6 +7,7 @@
 #include "gameplay/models/Song.h"
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
+#include "utils/EffectUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -41,6 +42,8 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 }
 
 void DanceGradeScene::load() {
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   grade = std::unique_ptr<Grade>{
       new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
