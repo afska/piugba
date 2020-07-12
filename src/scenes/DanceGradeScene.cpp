@@ -18,9 +18,11 @@ const u32 GRADE_X = 88;
 const u32 GRADE_Y = 52;
 
 DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
-                                 const GBFS_FILE* fs)
+                                 const GBFS_FILE* fs,
+                                 std::unique_ptr<Evaluation> evaluation)
     : Scene(engine) {
   this->fs = fs;
+  this->evaluation = std::move(evaluation);
 }
 
 std::vector<Background*> DanceGradeScene::backgrounds() {
@@ -45,6 +47,15 @@ void DanceGradeScene::load() {
   for (u32 i = 0; i < totals.size(); i++)
     totals[i] = std::unique_ptr<Total>{new Total(TOTALS_Y[i], i == 0)};
   maxComboTotal = std::unique_ptr<Total>{new Total(TOTAL_MAX_COMBO_Y, false)};
+
+  totals[FeedbackType::PERFECT]->setValue(evaluation->perfects);
+  totals[FeedbackType::GREAT]->setValue(evaluation->greats);
+  totals[FeedbackType::GOOD]->setValue(evaluation->goods);
+  totals[FeedbackType::BAD]->setValue(evaluation->bads);
+  totals[FeedbackType::MISS]->setValue(evaluation->misses);
+  maxComboTotal->setValue(evaluation->maxCombo);
+
+  // TODO: Use points?
 
   setUpSpritesPalette();
   setUpBackground();

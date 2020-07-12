@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "gameplay/Evaluation.h"
 #include "objects/score/Feedback.h"
 #include "objects/score/Grade.h"
 #include "objects/score/Total.h"
@@ -16,7 +17,9 @@ extern "C" {
 
 class DanceGradeScene : public Scene {
  public:
-  DanceGradeScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  DanceGradeScene(std::shared_ptr<GBAEngine> engine,
+                  const GBFS_FILE* fs,
+                  std::unique_ptr<Evaluation> evaluation);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -29,6 +32,7 @@ class DanceGradeScene : public Scene {
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
+  std::unique_ptr<Evaluation> evaluation;
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
 

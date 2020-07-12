@@ -117,8 +117,9 @@ void SongScene::tick(u16 keys) {
 
   if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
     unload();
-    engine->transitionIntoScene(new DanceGradeScene(engine, fs),
-                                new FadeOutScene(1));
+    engine->transitionIntoScene(
+        new DanceGradeScene(engine, fs, score->evaluate()),
+        new FadeOutScene(1));
     return;
   }
 

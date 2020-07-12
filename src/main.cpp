@@ -1,7 +1,6 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
-#include "scenes/DanceGradeScene.h"  // TODO: REMOVE
 #include "scenes/SelectionScene.h"
 
 extern "C" {
@@ -15,9 +14,7 @@ int main() {
   setUpInterrupts();
   player_init();
 
-  // engine->setScene(new SelectionScene(engine));
-  engine->setScene(
-      new DanceGradeScene(engine, find_first_gbfs_file(0)));  // TODO: REMOVE
+  engine->setScene(new SelectionScene(engine));
   player_forever([]() { engine->update(); });
 
   return 0;
