@@ -104,13 +104,13 @@ void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  if (!hasStarted) {
-    IFNOTTEST {
-      BACKGROUND_enable(true, true, false, false);
-      darkener->initialize();
-    }
+  if (init == 0) {
+    IFNOTTEST { darkener->initialize(); }
     IFTEST { BACKGROUND_setColor(0, 127); }
-    hasStarted = true;
+    init++;
+  } else if (init == 1) {
+    BACKGROUND_enable(true, true, false, false);
+    init++;
   }
 
   u32 songMsecs = PlaybackState.msecs;

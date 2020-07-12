@@ -36,7 +36,7 @@ class SongScene : public Scene {
   ~SongScene();
 
  private:
-  bool hasStarted = false;
+  u32 init = 0;
   const GBFS_FILE* fs;
   Song* song;
   Chart* chart;
