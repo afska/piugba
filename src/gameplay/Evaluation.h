@@ -27,13 +27,14 @@ class Evaluation {
   u32 longNotes = 0;
 
   inline GradeType getGrade() {
-    u32 percent = Div((perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
-                       MATH_fracumul(greats, FRACUMUL_0_90) +
-                       MATH_fracumul(goods, FRACUMUL_0_60) -
-                       MATH_fracumul(bads, FRACUMUL_0_45) -
-                       MATH_fracumul(misses, FRACUMUL_0_90) -
-                       MATH_fracumul(longNotes, FRACUMUL_0_20) +
-                       MATH_fracumul(maxCombo, FRACUMUL_0_05)) *
+    u32 percent = Div(max(perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
+                              MATH_fracumul(greats, FRACUMUL_0_90) +
+                              MATH_fracumul(goods, FRACUMUL_0_60) -
+                              MATH_fracumul(bads, FRACUMUL_0_45) -
+                              MATH_fracumul(misses, FRACUMUL_0_90) -
+                              MATH_fracumul(longNotes, FRACUMUL_0_20) +
+                              MATH_fracumul(maxCombo, FRACUMUL_0_05),
+                          0) *
                           100,
                       totalNotes());
 

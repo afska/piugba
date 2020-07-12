@@ -67,9 +67,9 @@ void DanceGradeScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    BACKGROUND_enable(false, true, false, false);
-    player_play(SOUND_RANK_A);
+    BACKGROUND_enable(true, true, false, false);
     hasStarted = true;
+    playSound();
   }
 
   if (keys & KEY_ANY) {
@@ -87,4 +87,33 @@ void DanceGradeScene::setUpSpritesPalette() {
 void DanceGradeScene::setUpBackground() {
   backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
   bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP, 1);
+}
+
+void DanceGradeScene::playSound() {
+  switch (grade->getType()) {
+    case GradeType::S: {
+      player_play(SOUND_RANK_S);
+      break;
+    }
+    case GradeType::A: {
+      player_play(SOUND_RANK_A);
+      break;
+    }
+    case GradeType::B: {
+      player_play(SOUND_RANK_B);
+      break;
+    }
+    case GradeType::C: {
+      player_play(SOUND_RANK_C);
+      break;
+    }
+    case GradeType::D: {
+      player_play(SOUND_RANK_D);
+      break;
+    }
+    case GradeType::F: {
+      player_play(SOUND_RANK_F);
+      break;
+    }
+  }
 }

@@ -13,4 +13,6 @@ Grade::Grade(GradeType type, u32 x, u32 y) {
                .buildPtr();
 
   SPRITE_goToFrame(sprite.get(), type);
+
+  this->type = type;
 }
