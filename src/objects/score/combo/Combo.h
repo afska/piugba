@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include "ComboDigit.h"
 #include "ComboTitle.h"
+#include "objects/Digit.h"
 
 class Combo {
  public:
@@ -25,7 +25,7 @@ class Combo {
  private:
   u32 value = 0;
   std::unique_ptr<ComboTitle> title;
-  std::vector<std::unique_ptr<ComboDigit>> digits;
+  std::vector<std::unique_ptr<Digit>> digits;
 };
 
 const u8 COMBO_VALUE_LUT[] = {

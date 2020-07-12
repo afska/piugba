@@ -1,15 +1,15 @@
-#ifndef COMBO_DIGIT_H
-#define COMBO_DIGIT_H
+#ifndef DIGIT_H
+#define DIGIT_H
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "objects/base/AnimatedIndicator.h"
 
-const u32 DIGIT_WIDTH = 26;
+enum DigitSize { BIG, MINI };
 
-class ComboDigit : public AnimatedIndicator {
+class Digit : public AnimatedIndicator {
  public:
-  ComboDigit(u32 position);
+  Digit(DigitSize size, u32 x, u32 y, u32 index);
 
   void set(u32 value, bool isRed);
 
@@ -19,4 +19,4 @@ class ComboDigit : public AnimatedIndicator {
   std::unique_ptr<Sprite> sprite;
 };
 
-#endif  // COMBO_DIGIT_H
+#endif  // DIGIT_H

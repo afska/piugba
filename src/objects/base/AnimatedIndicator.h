@@ -6,6 +6,10 @@
 class AnimatedIndicator {
  public:
   void show();
+  void showAt(s8 animationDirection) {
+    this->animationDirection = animationDirection;
+    show();
+  }
 
   void tick();
   virtual Sprite* get();

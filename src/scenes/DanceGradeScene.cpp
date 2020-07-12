@@ -31,7 +31,7 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 
 void DanceGradeScene::load() {
   BACKGROUND_enable(false, false, false, false);
-  grade = std::unique_ptr<Grade>{new Grade(GradeType::S, GRADE_X, GRADE_Y)};
+  grade = std::unique_ptr<Grade>{new Grade(GradeType::GS, GRADE_X, GRADE_Y)};
 
   setUpSpritesPalette();
   setUpBackground();

@@ -5,8 +5,8 @@
 
 #include <vector>
 
+#include "Digit.h"
 #include "Of.h"
-#include "score/combo/ComboDigit.h"
 
 class NumericProgress {
  public:
@@ -19,8 +19,8 @@ class NumericProgress {
   ~NumericProgress();
 
  private:
-  std::vector<std::unique_ptr<ComboDigit>> completedDigits;
-  std::vector<std::unique_ptr<ComboDigit>> totalDigits;
+  std::vector<std::unique_ptr<Digit>> completedDigits;
+  std::vector<std::unique_ptr<Digit>> totalDigits;
   std::unique_ptr<Of> of;
 };
 
