@@ -186,7 +186,7 @@ void SelectionScene::goToSong() {
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                              new FadeOutScene(FadeOutType::ToBlack, 2));
+                              new FadeOutScene(2));
 }
 
 SongFile* SelectionScene::getSelectedSong() {

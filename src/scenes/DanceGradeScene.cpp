@@ -63,7 +63,7 @@ void DanceGradeScene::tick(u16 keys) {
   if (keys & KEY_ANY) {
     player_stop();
     engine->transitionIntoScene(new SelectionScene(engine),
-                                new FadeOutScene(FadeOutType::ToBlack, 2));
+                                new FadeOutScene(2));
   }
 }
 
