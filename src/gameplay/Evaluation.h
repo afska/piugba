@@ -3,6 +3,9 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include "objects/score/Grade.h"
+#include "utils/MathUtils.h"
+
 class Evaluation {
  public:
   Evaluation() {}
@@ -16,6 +19,12 @@ class Evaluation {
   u32 maxCombo = 0;
   u32 points = 0;
   u32 longNotes = 0;
+
+  inline GradeType getGrade() {
+    // TODO: IMPLEMENT
+
+    return GradeType::S;
+  }
 
   inline u32 totalNotes() { return perfects + greats + goods + bads + misses; }
 };
