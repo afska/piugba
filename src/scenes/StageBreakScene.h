@@ -16,8 +16,6 @@ class StageBreakScene : public Scene {
   void load() override;
   void tick(u16 keys) override;
 
-  ~StageBreakScene();
-
  private:
 };
 

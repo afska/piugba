@@ -19,7 +19,10 @@ Score::Score(LifeBar* lifeBar) {
     counters[i] = 0;
 }
 
-bool Score::update(FeedbackType feedbackType) {
+bool Score::update(FeedbackType feedbackType, bool isLong) {
+  if (isLong)
+    longNotes++;
+
   feedback->setType(feedbackType);
   feedback->show();
 
@@ -29,6 +32,20 @@ bool Score::update(FeedbackType feedbackType) {
   updatePoints(feedbackType);
 
   return isAlive;
+}
+
+std::unique_ptr<Evaluation> Score::evaluate() {
+  auto evaluation = new Evaluation();
+  evaluation->perfects = counters[FeedbackType::PERFECT];
+  evaluation->greats = counters[FeedbackType::GREAT];
+  evaluation->goods = counters[FeedbackType::GOOD];
+  evaluation->bads = counters[FeedbackType::BAD];
+  evaluation->misses = counters[FeedbackType::MISS];
+  evaluation->maxCombo = maxCombo;
+  evaluation->points = points;
+  evaluation->longNotes = longNotes;
+
+  return std::unique_ptr<Evaluation>(evaluation);
 }
 
 void Score::tick() {

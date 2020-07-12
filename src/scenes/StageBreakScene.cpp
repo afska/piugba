@@ -32,5 +32,3 @@ void StageBreakScene::tick(u16 keys) {
                                 new FadeOutScene(2));
   }
 }
-
-StageBreakScene::~StageBreakScene() {}

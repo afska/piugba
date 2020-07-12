@@ -9,6 +9,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 #include <libgba-sprite-engine/gba/tonc_types.h>
+
 #include "combined_palette.h"
 
 #define PALETTE_BANK_SIZE 16
@@ -38,9 +39,9 @@ class PaletteManager {
   void persistToBank(int bank);
   COLOR change(int bank, int index, COLOR newColor);
   COLOR get(int bank, int index) { return paletteBank()[bank][index]; }
-  void increaseBrightness(u32 intensity);
+  void changeBrightness(int intensity);
 
-  static COLOR modify(COLOR color, u32 intensity);
+  static COLOR modify(COLOR color, int intensity);
   static COLOR color(u32 r, u32 g, u32 b);
   static u32 red(COLOR r);
   static u32 green(COLOR r);

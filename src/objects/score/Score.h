@@ -8,13 +8,15 @@
 
 #include "Feedback.h"
 #include "combo/Combo.h"
+#include "gameplay/Evaluation.h"
 #include "objects/LifeBar.h"
 
 class Score {
  public:
   Score(LifeBar* lifeBar);
 
-  bool update(FeedbackType feedbackType);
+  bool update(FeedbackType feedbackType, bool isLong);
+  std::unique_ptr<Evaluation> evaluate();
 
   void tick();
   void render(std::vector<Sprite*>* sprites);
@@ -29,6 +31,7 @@ class Score {
   u32 maxCombo = 0;
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;
+  u32 longNotes = 0;
 
   bool updateLife(FeedbackType feedbackType);
   void updateCombo(FeedbackType feedbackType);

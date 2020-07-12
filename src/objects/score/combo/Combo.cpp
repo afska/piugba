@@ -4,14 +4,17 @@
 
 #include "utils/SpriteUtils.h"
 
-u32 MAX_COMBO = 999;
-u32 DIGITS = 3;
+const u32 MAX_COMBO = 999;
+const u32 DIGITS = 3;
+const u32 DIGITS_POSITION_X = 8;
+const u32 DIGITS_POSITION_Y = 89;
 
 Combo::Combo() {
   title = std::unique_ptr<ComboTitle>{new ComboTitle()};
 
   for (u32 i = 0; i < 3; i++) {
-    auto digit = std::unique_ptr<ComboDigit>{new ComboDigit(i)};
+    auto digit = std::unique_ptr<Digit>{
+        new Digit(DigitSize::BIG, DIGITS_POSITION_X, DIGITS_POSITION_Y, i)};
     digits.push_back(std::move(digit));
   }
 }
@@ -21,9 +24,9 @@ void Combo::setValue(int value) {
   u32 absValue = min(abs(value), MAX_COMBO);
 
   this->value = absValue;
-  digits[0]->set(COMBO_VALUE_LUT[absValue * DIGITS], isRed);
-  digits[1]->set(COMBO_VALUE_LUT[absValue * DIGITS + 1], isRed);
-  digits[2]->set(COMBO_VALUE_LUT[absValue * DIGITS + 2], isRed);
+  digits[0]->set(THREE_DIGITS_LUT[absValue * DIGITS], isRed);
+  digits[1]->set(THREE_DIGITS_LUT[absValue * DIGITS + 1], isRed);
+  digits[2]->set(THREE_DIGITS_LUT[absValue * DIGITS + 2], isRed);
 
   // Without optimizations:
   // digits[0]->set(Div(absValue, 100), isRed);

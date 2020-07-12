@@ -42,7 +42,7 @@ class Judge {
   std::function<void()> onStageBreak;
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
-  void updateScore(FeedbackType result);
+  void updateScore(FeedbackType result, bool isLong);
 };
 
 #endif  // JUDGE_H
