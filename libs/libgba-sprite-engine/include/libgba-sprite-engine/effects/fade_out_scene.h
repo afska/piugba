@@ -8,16 +8,20 @@
 #pragma GCC system_header
 
 #include <libgba-sprite-engine/scene.h>
+
 #include "scene_effect.h"
+
+enum FadeOutType { ToWhite, ToBlack };
 
 class FadeOutScene : public SceneEffect {
  private:
+  FadeOutType type;
   int timesUpdated;
   int speed;
   std::unique_ptr<CombinedPalette> palette;
 
  public:
-  FadeOutScene(int speed);
+  FadeOutScene(FadeOutType type, int speed);
   void update() override;
   bool isDone() override { return timesUpdated >= (32 / speed); }
 };

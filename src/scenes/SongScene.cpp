@@ -89,8 +89,9 @@ void SongScene::load() {
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         IFNOTTEST {
           unload();
-          engine->transitionIntoScene(new StageBreakScene(engine),
-                                      new FadeOutScene(2));
+          engine->transitionIntoScene(
+              new StageBreakScene(engine),
+              new FadeOutScene(FadeOutType::ToBlack, 2));
         }
       }));
   chartReader = std::unique_ptr<ChartReader>(
@@ -118,7 +119,7 @@ void SongScene::tick(u16 keys) {
   if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
     unload();
     engine->transitionIntoScene(new DanceGradeScene(engine, fs),
-                                new FadeOutScene(1));
+                                new FadeOutScene(FadeOutType::ToBlack, 1));
     return;
   }
 

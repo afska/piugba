@@ -29,6 +29,6 @@ void StageBreakScene::load() {
 void StageBreakScene::tick(u16 keys) {
   if (keys & KEY_ANY && !engine->isTransitioning()) {
     engine->transitionIntoScene(new SelectionScene(engine),
-                                new FadeOutScene(2));
+                                new FadeOutScene(FadeOutType::ToBlack, 2));
   }
 }
