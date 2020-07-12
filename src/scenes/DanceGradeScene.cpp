@@ -42,7 +42,8 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 
 void DanceGradeScene::load() {
   BACKGROUND_enable(false, false, false, false);
-  grade = std::unique_ptr<Grade>{new Grade(GradeType::A, GRADE_X, GRADE_Y)};
+  grade = std::unique_ptr<Grade>{
+      new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
 
   for (u32 i = 0; i < totals.size(); i++)
     totals[i] = std::unique_ptr<Total>{new Total(TOTALS_Y[i], i == 0)};
