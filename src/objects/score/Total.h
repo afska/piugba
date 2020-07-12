@@ -9,7 +9,7 @@
 
 class Total {
  public:
-  Total(u32 y);
+  Total(u32 y, bool isFirst);
 
   void setValue(u32 value);
   void render(std::vector<Sprite*>* sprites);

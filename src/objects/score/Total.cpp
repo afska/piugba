@@ -8,11 +8,15 @@ const u32 MAX_TOTAL = 999;
 const u32 DIGITS = 3;
 const u32 DIGITS_POSITION_X = 147;
 
-Total::Total(u32 y) {
+Total::Total(u32 y, bool isFirst) {
   for (u32 i = 0; i < 3; i++) {
     auto digit = std::unique_ptr<Digit>{
         new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i)};
     digit->showAt(0);
+
+    if (i == 0 && !isFirst)
+      SPRITE_reuseTiles(digit->get());
+
     digits.push_back(std::move(digit));
   }
 }
