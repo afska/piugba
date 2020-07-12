@@ -21,7 +21,7 @@ int main() {
 }
 
 void ISR_reset() {
-  player_stopAll();
+  RegisterRamReset(RESET_REG | RESET_VRAM);
   SoftReset();
   REG_IF = IRQ_KEYPAD;
 }
