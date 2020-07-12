@@ -24,9 +24,9 @@ void Combo::setValue(int value) {
   u32 absValue = min(abs(value), MAX_COMBO);
 
   this->value = absValue;
-  digits[0]->set(COMBO_VALUE_LUT[absValue * DIGITS], isRed);
-  digits[1]->set(COMBO_VALUE_LUT[absValue * DIGITS + 1], isRed);
-  digits[2]->set(COMBO_VALUE_LUT[absValue * DIGITS + 2], isRed);
+  digits[0]->set(THREE_DIGITS_LUT[absValue * DIGITS], isRed);
+  digits[1]->set(THREE_DIGITS_LUT[absValue * DIGITS + 1], isRed);
+  digits[2]->set(THREE_DIGITS_LUT[absValue * DIGITS + 2], isRed);
 
   // Without optimizations:
   // digits[0]->set(Div(absValue, 100), isRed);
