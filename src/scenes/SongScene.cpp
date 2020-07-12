@@ -4,7 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
-#include "SelectionScene.h"
+#include "DanceGradeScene.h"
 #include "StageBreakScene.h"
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
@@ -117,8 +117,8 @@ void SongScene::tick(u16 keys) {
 
   if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
     unload();
-    engine->transitionIntoScene(new SelectionScene(engine),
-                                new FadeOutScene(2));
+    engine->transitionIntoScene(new DanceGradeScene(engine, fs),
+                                new FadeOutScene(1));
     return;
   }
 

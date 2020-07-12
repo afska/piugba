@@ -8,6 +8,10 @@
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 
+extern "C" {
+#include "player/player.h"
+}
+
 const u32 TOTALS_Y[] = {37, 53, 69, 85, 101};
 const u32 TOTAL_MAX_COMBO_Y = 117;
 const u32 GRADE_X = 88;
@@ -36,7 +40,7 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 
 void DanceGradeScene::load() {
   BACKGROUND_enable(false, false, false, false);
-  grade = std::unique_ptr<Grade>{new Grade(GradeType::S, GRADE_X, GRADE_Y)};
+  grade = std::unique_ptr<Grade>{new Grade(GradeType::A, GRADE_X, GRADE_Y)};
 
   for (u32 i = 0; i < totals.size(); i++)
     totals[i] = std::unique_ptr<Total>{new Total(TOTALS_Y[i], i == 0)};
@@ -52,10 +56,12 @@ void DanceGradeScene::tick(u16 keys) {
 
   if (!hasStarted) {
     BACKGROUND_enable(false, true, false, false);
+    player_play(SOUND_RANK_A);
     hasStarted = true;
   }
 
   if (keys & KEY_ANY) {
+    player_stop();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
   }
