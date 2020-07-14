@@ -25,7 +25,7 @@ class CombinedPalette {
       : palette1(one), palette2(two) {}
   CombinedPalette(const CombinedPalette& other) = delete;
 
-  void increaseBrightness(u32 intensity);
+  void changeBrightness(int intensity);
 };
 
 #endif  // GBA_SPRITE_ENGINE_COMBINED_PALETTE_H
