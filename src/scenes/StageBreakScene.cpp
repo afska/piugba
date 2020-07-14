@@ -16,9 +16,23 @@ extern "C" {
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 TEXT_COLOR = 0x7FFF;
+const u32 TEXT_COLOR = 2686;
+const u32 TEXT_BLEND_ALPHA = 12;
 const u32 INSTRUCTOR_X = 152;
 const u32 INSTRUCTOR_Y = 48;
+const u32 PIXEL_BLINK_LEVEL = 2;
+
+#define WRITE(MSECS, TEXT, ROW, COL, DX, DY, FLIP_X, FLIP_Y)     \
+  if (msecs > MSECS && step == totalSteps) {                     \
+    TextStream::instance().setText(TEXT, ROW, COL);              \
+    instructor->get()->moveTo(instructor->get()->getX() + (DX),  \
+                              instructor->get()->getY() + (DY)); \
+    isFlippedX = FLIP_X;                                         \
+    isFlippedY = FLIP_Y;                                         \
+    pixelBlink->blink();                                         \
+    step++;                                                      \
+  }                                                              \
+  totalSteps++;
 
 StageBreakScene::StageBreakScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs)
@@ -47,11 +61,11 @@ void StageBreakScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
-
-  TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
-  auto title = std::string("Hey! Why don't you...");
-  TextStream::instance().setText(title, 1, 12 - title.length() / 2);
+
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
+  EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
 }
 
 void StageBreakScene::tick(u16 keys) {
@@ -64,6 +78,11 @@ void StageBreakScene::tick(u16 keys) {
     hasStarted = true;
     player_play(SOUND_STAGE_BREAK);
   }
+
+  animate();
+  pixelBlink->tick();
+  instructor->get()->flipHorizontally(isFlippedX);
+  instructor->get()->flipVertically(isFlippedY);
 
   if (PlaybackState.hasFinished && keys & KEY_ANY) {
     player_stop();
@@ -83,4 +102,33 @@ void StageBreakScene::setUpBackground() {
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
+}
+
+void StageBreakScene::animate() {
+  u32 msecs = PlaybackState.msecs;
+  u32 totalSteps = 0;
+  int heyRow = 4;
+  int heyCol = 7;
+
+  TextStream::instance().setFontColor(TEXT_COLOR);
+
+  WRITE(1500, "H", heyRow, heyCol + 0, -1, 2, false, false);
+  WRITE(1525, "e", heyRow, heyCol + 1, 3, -3, false, true);
+  WRITE(1550, "e", heyRow, heyCol + 2, 1, 1, true, false);
+  WRITE(1575, "e", heyRow, heyCol + 3, -3, -4, false, false);
+  WRITE(1600, "e", heyRow, heyCol + 4, -6, 4, true, false);
+  WRITE(1625, "e", heyRow, heyCol + 5, 2, -3, false, false);
+  WRITE(1650, "y", heyRow, heyCol + 6, -2, -1, false, false);
+  WRITE(1675, "!", heyRow, heyCol + 7, 1, 1, false, true);
+
+  WRITE(2116, "Why", /*   */ 6, 0, -10, -8, false, false);
+  WRITE(2310, "don't", /* */ 7, 4, 2, 10, false, false);
+  WRITE(2430, "you", /*   */ 8, 10, -4, -3, true, false);
+  WRITE(2480, "just", /*  */ 9, 4, 6, -2, false, false);
+  WRITE(2660, "get", /*   */ 10, 1, -3, -6, false, false);
+  WRITE(2730, "up", /*    */ 11, 5, 4, 8, true, false);
+  WRITE(2830, "and", /*   */ 12, 8, -2, 4, false, false);
+  WRITE(2970, "dance,", /**/ 13, 1, -4, -4, false, false);
+  WRITE(3280, "man?", /*  */ 14, 7, 2, 4, false, false);
 }

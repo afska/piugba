@@ -7,6 +7,7 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "objects/Instructor.h"
+#include "utils/PixelBlink.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
@@ -26,10 +27,15 @@ class StageBreakScene : public Scene {
   bool hasStarted = false;
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  u32 step = 0;
+  bool isFlippedX = false;
+  bool isFlippedY = false;
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void animate();
 };
 
 #endif  // STAGE_BREAK_SCENE_H
