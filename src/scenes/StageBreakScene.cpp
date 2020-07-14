@@ -16,7 +16,8 @@ extern "C" {
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 TEXT_COLOR = 2686;
+const u32 TEXT_COLOR_START = 2686;
+const u32 TEXT_COLOR_END = 0x7FFF;
 const u32 TEXT_BLEND_ALPHA = 12;
 const u32 INSTRUCTOR_X = 152;
 const u32 INSTRUCTOR_Y = 48;
@@ -32,6 +33,13 @@ const u32 PIXEL_BLINK_LEVEL = 2;
     pixelBlink->blink();                                         \
     step++;                                                      \
   }                                                              \
+  totalSteps++;
+
+#define CLEAR(MSECS)                         \
+  if (msecs > MSECS && step == totalSteps) { \
+    TextStream::instance().clear();          \
+    step++;                                  \
+  }                                          \
   totalSteps++;
 
 StageBreakScene::StageBreakScene(std::shared_ptr<GBAEngine> engine,
@@ -111,7 +119,8 @@ void StageBreakScene::animate() {
   int heyRow = 4;
   int heyCol = 7;
 
-  TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().setFontColor(msecs >= 2110 ? TEXT_COLOR_END
+                                                    : TEXT_COLOR_START);
 
   WRITE(1500, "H", heyRow, heyCol + 0, -1, 2, false, false);
   WRITE(1525, "e", heyRow, heyCol + 1, 3, -3, false, true);
@@ -121,6 +130,7 @@ void StageBreakScene::animate() {
   WRITE(1625, "e", heyRow, heyCol + 5, 2, -3, false, false);
   WRITE(1650, "y", heyRow, heyCol + 6, -2, -1, false, false);
   WRITE(1675, "!", heyRow, heyCol + 7, 1, 1, false, true);
+  CLEAR(2110);
 
   WRITE(2116, "Why", /*   */ 6, 1, -10, -8, false, false);
   WRITE(2310, "don't", /* */ 7, 4, 2, 10, false, false);
