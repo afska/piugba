@@ -109,6 +109,7 @@ void SongScene::tick(u16 keys) {
     init++;
   } else if (init == 1) {
     IFNOTTEST { BACKGROUND_enable(true, true, false, false); }
+    SPRITE_enable();
     init++;
   }
 

@@ -13,6 +13,14 @@ extern "C" {
 #include "player/player.h"
 }
 
+const u32 ID_MAIN_BACKGROUND = 1;
+const u32 BANK_BACKGROUND_TILES = 0;
+const u32 BANK_BACKGROUND_MAP = 16;
+const u32 TEXT_COLOR = 0x7FFF;
+const u32 TEXT_ROW = 17;
+const u32 TEXT_MIDDLE_COL = 12;
+const u32 SCORE_DIGITS = 8;
+
 const u32 TOTALS_Y[] = {37, 53, 69, 85, 101};
 const u32 TOTAL_MAX_COMBO_Y = 117;
 const u32 GRADE_X = 88;
@@ -59,10 +67,9 @@ void DanceGradeScene::load() {
   totals[FeedbackType::MISS]->setValue(evaluation->misses);
   maxComboTotal->setValue(evaluation->maxCombo);
 
-  // TODO: Use points?
-
   setUpSpritesPalette();
   setUpBackground();
+  printScore();
 }
 
 void DanceGradeScene::tick(u16 keys) {
@@ -71,6 +78,7 @@ void DanceGradeScene::tick(u16 keys) {
 
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
     hasStarted = true;
     playSound();
   }
@@ -89,7 +97,25 @@ void DanceGradeScene::setUpSpritesPalette() {
 
 void DanceGradeScene::setUpBackground() {
   backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP, 1);
+  bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP,
+                                      ID_MAIN_BACKGROUND);
+  bg->useCharBlock(BANK_BACKGROUND_TILES);
+  bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+}
+
+void DanceGradeScene::printScore() {
+  TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().clear();
+
+  auto title = std::string("Score:");
+  auto points = std::to_string(evaluation->points);
+  while (points.length() < SCORE_DIGITS)
+    points = "0" + points;
+
+  TextStream::instance().setText(title, TEXT_ROW,
+                                 TEXT_MIDDLE_COL - title.length() / 2);
+  TextStream::instance().setText(points, TEXT_ROW + 1,
+                                 TEXT_MIDDLE_COL - points.length() / 2);
 }
 
 void DanceGradeScene::playSound() {

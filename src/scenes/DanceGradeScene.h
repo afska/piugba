@@ -38,6 +38,7 @@ class DanceGradeScene : public Scene {
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void printScore();
   void playSound();
 };
 

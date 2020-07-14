@@ -37,14 +37,14 @@ mv \
 
 # DanceGradeScene
 grit \
-  spr_grades.bmp \
   spr_numbers_mini.bmp \
+  spr_grade_*.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_grade.c
 mv \
-  spr_grades.h \
-  spr_grades.c \
   spr_numbers_mini.h \
   spr_numbers_mini.c \
+  spr_grade_*.h \
+  spr_grade_*.c \
   palette_grade.* \
   "$DESTINATION"
 

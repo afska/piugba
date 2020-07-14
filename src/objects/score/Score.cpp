@@ -118,7 +118,7 @@ void Score::updateCounters(FeedbackType feedbackType) {
 }
 
 void Score::updatePoints(FeedbackType feedbackType) {
-  points += POINT_DIFFS[feedbackType];
+  points = max(points + POINT_DIFFS[feedbackType], 0);
 
   bool isPerfectOrGreat = feedbackType == FeedbackType::PERFECT ||
                           feedbackType == FeedbackType::GREAT;
