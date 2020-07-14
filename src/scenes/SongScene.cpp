@@ -75,7 +75,6 @@ void SongScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
-  IFTEST { BACKGROUND_enable(true, false, false, false); }
 
   setUpPalettes();
   IFNOTTEST { setUpBackground(); }
@@ -109,7 +108,7 @@ void SongScene::tick(u16 keys) {
     IFTEST { BACKGROUND_setColor(0, 127); }
     init++;
   } else if (init == 1) {
-    BACKGROUND_enable(true, true, false, false);
+    IFNOTTEST { BACKGROUND_enable(true, true, false, false); }
     init++;
   }
 
