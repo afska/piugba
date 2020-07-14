@@ -122,9 +122,9 @@ void StageBreakScene::animate() {
   WRITE(1650, "y", heyRow, heyCol + 6, -2, -1, false, false);
   WRITE(1675, "!", heyRow, heyCol + 7, 1, 1, false, true);
 
-  WRITE(2116, "Why", /*   */ 6, 0, -10, -8, false, false);
+  WRITE(2116, "Why", /*   */ 6, 1, -10, -8, false, false);
   WRITE(2310, "don't", /* */ 7, 4, 2, 10, false, false);
-  WRITE(2430, "you", /*   */ 8, 10, -4, -3, true, false);
+  WRITE(2430, "you", /*   */ 8, 9, -4, -3, true, false);
   WRITE(2480, "just", /*  */ 9, 4, 6, -2, false, false);
   WRITE(2660, "get", /*   */ 10, 1, -3, -6, false, false);
   WRITE(2730, "up", /*    */ 11, 5, 4, 8, true, false);
