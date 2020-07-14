@@ -41,3 +41,6 @@ numbers_mini:
 
 grades:
 -> 225 colors
+
+players:
+-> 255 colors
