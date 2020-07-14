@@ -83,7 +83,7 @@ void DanceGradeScene::tick(u16 keys) {
     playSound();
   }
 
-  if (PlaybackState.hasFinished & keys & KEY_ANY) {
+  if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
     player_stop();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));

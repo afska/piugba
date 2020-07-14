@@ -84,7 +84,7 @@ void StageBreakScene::tick(u16 keys) {
   instructor->get()->flipHorizontally(isFlippedX);
   instructor->get()->flipVertically(isFlippedY);
 
-  if (PlaybackState.hasFinished && keys & KEY_ANY) {
+  if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
     player_stop();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));
