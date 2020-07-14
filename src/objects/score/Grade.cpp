@@ -8,7 +8,6 @@
 #include "data/content/_compiled_sprites/spr_grade_d.h"
 #include "data/content/_compiled_sprites/spr_grade_f.h"
 #include "data/content/_compiled_sprites/spr_grade_s.h"
-#include "utils/SpriteUtils.h"
 
 const void* TILES[] = {spr_grade_sTiles, spr_grade_aTiles, spr_grade_bTiles,
                        spr_grade_cTiles, spr_grade_dTiles, spr_grade_fTiles};

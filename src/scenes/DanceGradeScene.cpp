@@ -4,7 +4,7 @@
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
-#include "gameplay/models/Song.h"
+#include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
@@ -83,7 +83,7 @@ void DanceGradeScene::tick(u16 keys) {
     playSound();
   }
 
-  if (keys & KEY_ANY) {
+  if (PlaybackState.hasFinished & keys & KEY_ANY) {
     player_stop();
     engine->transitionIntoScene(new SelectionScene(engine),
                                 new FadeOutScene(2));

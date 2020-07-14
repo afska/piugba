@@ -88,8 +88,8 @@ void SongScene::load() {
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         IFNOTTEST {
           unload();
-          engine->transitionIntoScene(new StageBreakScene(engine),
-                                      new FadeOutScene(2));
+          engine->transitionIntoScene(new StageBreakScene(engine, fs),
+                                      new FadeOutScene(6));
         }
       }));
   chartReader = std::unique_ptr<ChartReader>(

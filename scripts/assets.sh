@@ -35,6 +35,16 @@ mv \
   palette_selection.* \
   "$DESTINATION"
 
+# StageBreakScene
+grit \
+  spr_instructors.bmp \
+  -ftc -pS -gB8 -gT ff00ff -O palette_break.c
+mv \
+  spr_instructors.h \
+  spr_instructors.c \
+  palette_break.* \
+  "$DESTINATION"
+
 # DanceGradeScene
 grit \
   spr_numbers_mini.bmp \
