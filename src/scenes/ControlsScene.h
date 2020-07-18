@@ -1,21 +1,20 @@
-#ifndef STAGE_BREAK_SCENE_H
-#define STAGE_BREAK_SCENE_H
+#ifndef CONTROLS_SCENE_H
+#define CONTROLS_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "objects/Instructor.h"
 #include "utils/PixelBlink.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-class StageBreakScene : public Scene {
+class ControlsScene : public Scene {
  public:
-  StageBreakScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  ControlsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -29,14 +28,8 @@ class StageBreakScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
-  std::unique_ptr<Instructor> instructor;
-  u32 step = 0;
-  bool isFlippedX = false;
-  bool isFlippedY = false;
-
   void setUpSpritesPalette();
   void setUpBackground();
-  void animate();
 };
 
-#endif  // STAGE_BREAK_SCENE_H
+#endif  // CONTROLS_SCENE_H

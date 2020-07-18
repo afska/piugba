@@ -29,12 +29,13 @@ class DanceGradeScene : public Scene {
 
  private:
   bool hasStarted = false;
+  std::unique_ptr<Background> bg;
+  const GBFS_FILE* fs;
+
+  std::unique_ptr<Evaluation> evaluation;
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
-  std::unique_ptr<Evaluation> evaluation;
-  std::unique_ptr<Background> bg;
-  const GBFS_FILE* fs;
 
   void setUpSpritesPalette();
   void setUpBackground();

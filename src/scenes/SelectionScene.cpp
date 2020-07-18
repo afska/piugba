@@ -42,13 +42,15 @@ const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 BLINK_LEVEL = 4;
 
-static const GBFS_FILE* fs = find_first_gbfs_file(0);
-static std::unique_ptr<Library> library{new Library(fs)};
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
 
-SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine)
-    : Scene(engine) {}
+SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine,
+                               const GBFS_FILE* fs)
+    : Scene(engine) {
+  this->fs = fs;
+  library = std::unique_ptr<Library>{new Library(fs)};
+}
 
 std::vector<Background*> SelectionScene::backgrounds() {
   return {};

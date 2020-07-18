@@ -94,7 +94,7 @@ void StageBreakScene::tick(u16 keys) {
 
   if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
     player_stop();
-    engine->transitionIntoScene(new SelectionScene(engine),
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
                                 new FadeOutScene(2));
   }
 }

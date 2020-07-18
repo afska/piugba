@@ -1,7 +1,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
-#include "scenes/SelectionScene.h"
+#include "scenes/ControlsScene.h"
 
 extern "C" {
 #include "player/player.h"
@@ -10,11 +10,13 @@ extern "C" {
 void setUpInterrupts();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
+static const GBFS_FILE* fs = find_first_gbfs_file(0);
+
 int main() {
   setUpInterrupts();
   player_init();
 
-  engine->setScene(new SelectionScene(engine));
+  engine->setScene(new ControlsScene(engine, fs));
   player_forever([]() { engine->update(); });
 
   return 0;

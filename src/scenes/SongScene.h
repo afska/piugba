@@ -37,14 +37,15 @@ class SongScene : public Scene {
 
  private:
   u32 init = 0;
+  std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+
   Song* song;
   Chart* chart;
   std::unique_ptr<ChartReader> chartReader;
   std::unique_ptr<Judge> judge;
   std::unique_ptr<LifeBar> lifeBar;
-  std::unique_ptr<Background> bg;
-  std::unique_ptr<PixelBlink> pixelBlink;
   std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;

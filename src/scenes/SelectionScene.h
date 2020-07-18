@@ -15,9 +15,13 @@
 #include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
 
+extern "C" {
+#include "utils/gbfs/gbfs.h"
+}
+
 class SelectionScene : public Scene {
  public:
-  SelectionScene(std::shared_ptr<GBAEngine> engine);
+  SelectionScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -27,17 +31,20 @@ class SelectionScene : public Scene {
 
  private:
   u32 init = 0;
+  std::unique_ptr<Background> bg;
+  std::unique_ptr<PixelBlink> pixelBlink;
+  const GBFS_FILE* fs;
+
+  std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
+  std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
+  std::unique_ptr<Difficulty> difficulty;
+  std::unique_ptr<NumericProgress> progress;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
-  std::unique_ptr<Background> bg;
-  std::unique_ptr<PixelBlink> pixelBlink;
-  std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
-  std::unique_ptr<Difficulty> difficulty;
-  std::unique_ptr<NumericProgress> progress;
 
   void setUpSpritesPalette();
   void setUpBackground();
