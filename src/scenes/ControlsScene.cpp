@@ -75,15 +75,15 @@ void ControlsScene::tick(u16 keys) {
     hasStarted = true;
   }
 
+  processKeys(keys);
+  processCombo();
+
   pixelBlink->tick();
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     buttons[i]->tick();
   buttons[RIGHT_CENTER]->tick();
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
     comboArrows[i]->tick();
-
-  processKeys(keys);
-  processCombo();
 }
 
 void ControlsScene::setUpSpritesPalette() {
