@@ -160,7 +160,7 @@ void ControlsScene::advanceCombo() {
   if (comboStep == START_COMBO_TOTAL) {
     fxes_stop();
     engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(2));
+                                new FadeOutScene(1));
   }
 }
 
