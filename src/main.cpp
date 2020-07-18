@@ -1,7 +1,9 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
+#include "gameplay/debug/DebugTools.h"
 #include "scenes/ControlsScene.h"
+#include "scenes/SelectionScene.h"
 
 extern "C" {
 #include "player/player.h"
@@ -16,7 +18,8 @@ int main() {
   setUpInterrupts();
   player_init();
 
-  engine->setScene(new ControlsScene(engine, fs));
+  IFTEST { engine->setScene(new SelectionScene(engine, fs)); }
+  IFNOTTEST { engine->setScene(new ControlsScene(engine, fs)); }
   player_forever([]() { engine->update(); });
 
   return 0;
