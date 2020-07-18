@@ -2,6 +2,7 @@
 #define ASSETS_H
 
 #define SOUND_STEP ((char*)"_aud_step.gsm")
+#define SOUND_MOD ((char*)"_aud_mod.gsm")
 #define SOUND_RANK_S ((char*)"_aud_rank_s.gsm")
 #define SOUND_RANK_A ((char*)"_aud_rank_a.gsm")
 #define SOUND_RANK_B ((char*)"_aud_rank_b.gsm")

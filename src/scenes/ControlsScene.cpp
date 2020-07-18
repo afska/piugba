@@ -41,11 +41,11 @@ std::vector<Sprite*> ControlsScene::sprites() {
   sprites.push_back(instructor->get());
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    sprites.push_back(indicators[i]->get());
-  sprites.push_back(indicators[RIGHT_CENTER]->get());
+    sprites.push_back(buttons[i]->get());
+  sprites.push_back(buttons[RIGHT_CENTER]->get());
 
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
-    sprites.push_back(inputArrows[i]->get());
+    sprites.push_back(comboArrows[i]->get());
 
   return sprites;
 }
@@ -75,19 +75,15 @@ void ControlsScene::tick(u16 keys) {
     hasStarted = true;
   }
 
+  pixelBlink->tick();
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    indicators[i]->tick();
-  indicators[RIGHT_CENTER]->tick();
+    buttons[i]->tick();
+  buttons[RIGHT_CENTER]->tick();
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
-    inputArrows[i]->tick();
+    comboArrows[i]->tick();
 
   processKeys(keys);
-
-  // if (keys & KEY_ANY) {
-  //   fxes_stop();
-  //   engine->transitionIntoScene(new SelectionScene(engine, fs),
-  //                               new FadeOutScene(2));
-  // }
+  processCombo();
 }
 
 void ControlsScene::setUpSpritesPalette() {
@@ -108,36 +104,74 @@ void ControlsScene::setUpBackground() {
 void ControlsScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
-    indicators.push_back(
+    buttons.push_back(
         std::unique_ptr<ArrowSelector>{new ArrowSelector(direction, true)});
   }
 
-  indicators.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
+  buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
       static_cast<ArrowDirection>(ArrowDirection::CENTER), true)});
-  SPRITE_reuseTiles(indicators[RIGHT_CENTER]->get());
+  SPRITE_reuseTiles(buttons[RIGHT_CENTER]->get());
 
-  indicators[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
-  indicators[ArrowDirection::UPLEFT]->get()->moveTo(31, 59);
-  indicators[ArrowDirection::CENTER]->get()->moveTo(39, 68);
-  indicators[ArrowDirection::UPRIGHT]->get()->moveTo(187, 25);
-  indicators[ArrowDirection::DOWNRIGHT]->get()->moveTo(199, 65);
-  indicators[RIGHT_CENTER]->get()->moveTo(183, 74);
+  buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
+  buttons[ArrowDirection::UPLEFT]->get()->moveTo(31, 59);
+  buttons[ArrowDirection::CENTER]->get()->moveTo(39, 68);
+  buttons[ArrowDirection::UPRIGHT]->get()->moveTo(187, 25);
+  buttons[ArrowDirection::DOWNRIGHT]->get()->moveTo(199, 65);
+  buttons[RIGHT_CENTER]->get()->moveTo(183, 74);
 
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
-    inputArrows.push_back(
+    comboArrows.push_back(
         std::unique_ptr<ArrowTutorial>{new ArrowTutorial(START_COMBO[i])});
 
-  inputArrows[0]->get()->moveTo(76, 142);
-  inputArrows[1]->get()->moveTo(94, 142);
-  inputArrows[2]->get()->moveTo(112, 142);
-  inputArrows[3]->get()->moveTo(130, 142);
-  inputArrows[4]->get()->moveTo(148, 141);
+  comboArrows[0]->get()->moveTo(76, 142);
+  comboArrows[1]->get()->moveTo(94, 142);
+  comboArrows[2]->get()->moveTo(112, 142);
+  comboArrows[3]->get()->moveTo(130, 142);
+  comboArrows[4]->get()->moveTo(148, 141);
 }
 
 void ControlsScene::processKeys(u16 keys) {
-  indicators[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  indicators[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-  indicators[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-  indicators[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-  indicators[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  buttons[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+  buttons[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
+  buttons[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
+  buttons[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
+  buttons[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  buttons[RIGHT_CENTER]->setIsPressed(KEY_CENTER(keys));
+}
+
+void ControlsScene::processCombo() {
+  for (u32 i = 0; i < START_COMBO_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+
+    if (buttons[direction]->hasBeenPressedNow()) {
+      if (START_COMBO[comboStep] == direction)
+        advanceCombo();
+      else
+        resetCombo();
+    }
+  }
+}
+
+void ControlsScene::advanceCombo() {
+  fxes_play(SOUND_STEP);
+  comboArrows[comboStep]->on();
+  comboStep++;
+
+  if (comboStep == START_COMBO_TOTAL) {
+    fxes_stop();
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new FadeOutScene(2));
+  }
+}
+
+void ControlsScene::resetCombo() {
+  if (comboStep == 0)
+    return;
+
+  fxes_play(SOUND_MOD);
+  pixelBlink->blink();
+
+  comboStep = 0;
+  for (u32 i = 0; i < START_COMBO_TOTAL; i++)
+    comboArrows[i]->off();
 }

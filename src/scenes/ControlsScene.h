@@ -32,14 +32,18 @@ class ControlsScene : public Scene {
   const GBFS_FILE* fs;
 
   std::unique_ptr<Instructor> instructor;
-  std::vector<std::unique_ptr<ArrowSelector>> indicators;
-  std::vector<std::unique_ptr<ArrowTutorial>> inputArrows;
+  std::vector<std::unique_ptr<ArrowSelector>> buttons;
+  std::vector<std::unique_ptr<ArrowTutorial>> comboArrows;
+  u32 comboStep = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
 
   void processKeys(u16 keys);
+  void processCombo();
+  void advanceCombo();
+  void resetCombo();
 };
 
 #endif  // CONTROLS_SCENE_H
