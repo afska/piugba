@@ -22,8 +22,8 @@ const u32 INSTRUCTOR_X = 86;
 const u32 INSTRUCTOR_Y = 49;
 const u32 START_COMBO_TOTAL = 5;
 const ArrowDirection START_COMBO[] = {
-    ArrowDirection::UPLEFT, ArrowDirection::UPRIGHT, ArrowDirection::UPLEFT,
-    ArrowDirection::UPRIGHT, ArrowDirection::CENTER};
+    ArrowDirection::UPLEFT, ArrowDirection::UPRIGHT, ArrowDirection::DOWNLEFT,
+    ArrowDirection::DOWNRIGHT, ArrowDirection::CENTER};
 
 ControlsScene::ControlsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs)
