@@ -42,5 +42,12 @@ numbers_mini:
 grades:
 -> 225 colors
 
-players:
--> 255 colors
+instructors:
+-> 150 colors
+
+===
+
+screen_controls:
+  Image -> Mode -> Indexed...
+    -> 254 colors
+		-> Color dithering: None

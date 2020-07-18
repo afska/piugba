@@ -3,7 +3,7 @@
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "assets.h"
-#include "data/content/_compiled_sprites/palette_selection.h"
+#include "data/content/_compiled_sprites/palette_controls.h"
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
@@ -67,7 +67,7 @@ void ControlsScene::tick(u16 keys) {
 void ControlsScene::setUpSpritesPalette() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_selectionPal, sizeof(palette_selectionPal)));
+          palette_controlsPal, sizeof(palette_controlsPal)));
 }
 
 void ControlsScene::setUpBackground() {
