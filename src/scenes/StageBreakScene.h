@@ -36,6 +36,7 @@ class StageBreakScene : public Scene {
 
   void setUpSpritesPalette();
   void setUpBackground();
+
   void animate();
 };
 

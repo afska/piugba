@@ -64,8 +64,6 @@ void StageBreakScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
-  instructor = std::unique_ptr<Instructor>{
-      new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
 
   setUpSpritesPalette();
   setUpBackground();
@@ -74,6 +72,9 @@ void StageBreakScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
+
+  instructor = std::unique_ptr<Instructor>{
+      new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
 }
 
 void StageBreakScene::tick(u16 keys) {

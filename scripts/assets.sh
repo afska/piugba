@@ -9,19 +9,6 @@ cd "$SOURCE"
 mkdir -p "$DESTINATION"
 rm $DESTINATION/*.h $DESTINATION/*.c
 
-# ControlsScene
-grit \
-  spr_instructors.bmp \
-  spr_arrows.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_controls.c
-mv \
-  spr_instructors.h \
-  spr_instructors.c \
-  spr_arrows.h \
-  spr_arrows.c \
-  palette_controls.* \
-  "$DESTINATION"
-
 # SongScene
 grit \
   spr_arrows.bmp \
@@ -48,13 +35,23 @@ mv \
   palette_selection.* \
   "$DESTINATION"
 
-# StageBreakScene
+# ControlsScene
 grit \
+  spr_arrows.bmp \
   spr_instructors.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_break.c
+  -ftc -pS -gB8 -gT ff00ff -O palette_controls.c
 mv \
   spr_instructors.h \
   spr_instructors.c \
+  palette_controls.* \
+  "$DESTINATION"
+
+# StageBreakScene
+grit \
+  spr_arrows.bmp \
+  spr_instructors.bmp \
+  -ftc -pS -gB8 -gT ff00ff -O palette_break.c
+mv \
   palette_break.* \
   "$DESTINATION"
 

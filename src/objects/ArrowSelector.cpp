@@ -8,14 +8,17 @@
 
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
+const u32 AUTOFIRE_FIRST_DELAY = 30;
+const u32 AUTOFIRE_SECOND_DELAY = 10;
 
-ArrowSelector::ArrowSelector(ArrowDirection direction) {
+ArrowSelector::ArrowSelector(ArrowDirection direction, bool reactive) {
   u32 start = 0;
   bool flip = false;
   ARROW_initialize(direction, start, flip);
   this->direction = direction;
   this->start = start;
   this->flip = flip;
+  this->reactive = reactive;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
@@ -36,13 +39,13 @@ bool ArrowSelector::shouldFireEvent() {
   }
 
   if (autoFireSpeed == 1) {
-    if (getIsPressed() && lastPressFrame > 30) {
+    if (getIsPressed() && lastPressFrame > AUTOFIRE_FIRST_DELAY) {
       lastPressFrame = 0;
       autoFireSpeed = 2;
       return true;
     }
   } else if (autoFireSpeed == 2) {
-    if (getIsPressed() && lastPressFrame > 10) {
+    if (getIsPressed() && lastPressFrame > AUTOFIRE_SECOND_DELAY) {
       lastPressFrame = 0;
       return true;
     }
@@ -52,12 +55,12 @@ bool ArrowSelector::shouldFireEvent() {
 }
 
 void ArrowSelector::tick() {
-  if (direction == ArrowDirection::CENTER)
-    return;
-
   sprite->flipHorizontally(flip);
   isNewPressEvent = false;
   lastPressFrame++;
+
+  if (!reactive)
+    return;
 
   u32 currentFrame = sprite->getCurrentFrame();
 

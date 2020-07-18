@@ -53,6 +53,11 @@ void DanceGradeScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
+
+  setUpSpritesPalette();
+  setUpBackground();
+  printScore();
+
   grade = std::unique_ptr<Grade>{
       new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
 
@@ -66,10 +71,6 @@ void DanceGradeScene::load() {
   totals[FeedbackType::BAD]->setValue(evaluation->bads);
   totals[FeedbackType::MISS]->setValue(evaluation->misses);
   maxComboTotal->setValue(evaluation->maxCombo);
-
-  setUpSpritesPalette();
-  setUpBackground();
-  printScore();
 }
 
 void DanceGradeScene::tick(u16 keys) {

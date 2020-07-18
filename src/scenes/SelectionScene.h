@@ -59,8 +59,8 @@ class SelectionScene : public Scene {
   void processKeys(u16 keys);
   void processDifficultyChangeEvents();
   void processSelectionChangeEvents();
-  bool onDifficultyChange(u32 selector, DifficultyLevel newValue);
-  bool onSelectionChange(u32 selector,
+  bool onDifficultyChange(ArrowDirection selector, DifficultyLevel newValue);
+  bool onSelectionChange(ArrowDirection selector,
                          bool isOnListEdge,
                          bool isOnPageEdge,
                          int direction);

@@ -28,11 +28,6 @@ const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 PAGE_SIZE = 4;
-const u32 ARROW_SELECTORS = 5;
-const u32 SELECTOR_PREVIOUS_DIFFICULTY = 1;
-const u32 SELECTOR_NEXT_DIFFICULTY = 3;
-const u32 SELECTOR_PREVIOUS_SONG = 0;
-const u32 SELECTOR_NEXT_SONG = 4;
 const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
 const u32 CENTER_Y = 108;
@@ -59,7 +54,7 @@ std::vector<Background*> SelectionScene::backgrounds() {
 std::vector<Sprite*> SelectionScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 i = 0; i < ARROW_SELECTORS; i++)
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(arrowSelectors[i]->get());
 
   difficulty->render(&sprites);
@@ -74,16 +69,18 @@ void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
 
+  setUpSpritesPalette();
+  setUpPager();
+
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
+
+  setUpArrows();
+
   // difficulty->setValue(
   //     static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create
   //     abstraction
-  setUpPager();
-
-  setUpSpritesPalette();
-  setUpArrows();
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -147,24 +144,21 @@ void SelectionScene::setUpBackground() {
 }
 
 void SelectionScene::setUpArrows() {
-  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-      static_cast<ArrowDirection>(ArrowDirection::DOWNLEFT))});
-  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPLEFT))});
-  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::CENTER))});
-  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(static_cast<ArrowDirection>(ArrowDirection::UPRIGHT))});
-  arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-      static_cast<ArrowDirection>(ArrowDirection::DOWNRIGHT))});
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    auto direction = static_cast<ArrowDirection>(i);
+    arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
+        new ArrowSelector(static_cast<ArrowDirection>(direction),
+                          direction != ArrowDirection::CENTER)});
+  }
 
-  arrowSelectors[0]->get()->moveTo(
+  arrowSelectors[ArrowDirection::DOWNLEFT]->get()->moveTo(
       SELECTOR_MARGIN, GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
-  arrowSelectors[1]->get()->moveTo(SELECTOR_MARGIN, SELECTOR_MARGIN);
+  arrowSelectors[ArrowDirection::UPLEFT]->get()->moveTo(SELECTOR_MARGIN,
+                                                        SELECTOR_MARGIN);
   SPRITE_hide(arrowSelectors[2]->get());
-  arrowSelectors[3]->get()->moveTo(
+  arrowSelectors[ArrowDirection::UPRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
-  arrowSelectors[4]->get()->moveTo(
+  arrowSelectors[ArrowDirection::DOWNRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
 }
@@ -204,34 +198,35 @@ u32 SelectionScene::getPageStart() {
 }
 
 void SelectionScene::processKeys(u16 keys) {
-  arrowSelectors[0]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowSelectors[1]->setIsPressed(KEY_UPLEFT(keys));
-  arrowSelectors[2]->setIsPressed(KEY_CENTER(keys));
-  arrowSelectors[3]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowSelectors[4]->setIsPressed(KEY_DOWNRIGHT(keys));
+  arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
+  arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
+  arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
-  if (onDifficultyChange(SELECTOR_NEXT_DIFFICULTY,
+  if (onDifficultyChange(ArrowDirection::UPRIGHT,
                          static_cast<DifficultyLevel>(min(
                              (int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
     return;
 
   onDifficultyChange(
-      SELECTOR_PREVIOUS_DIFFICULTY,
+      ArrowDirection::UPLEFT,
       static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
 }
 
 void SelectionScene::processSelectionChangeEvents() {
-  if (onSelectionChange(SELECTOR_NEXT_SONG, getSelectedSongIndex() == count - 1,
+  if (onSelectionChange(ArrowDirection::DOWNRIGHT,
+                        getSelectedSongIndex() == count - 1,
                         selected == PAGE_SIZE - 1, 1))
     return;
 
-  onSelectionChange(SELECTOR_PREVIOUS_SONG, page == 0 && selected == 0,
+  onSelectionChange(ArrowDirection::DOWNLEFT, page == 0 && selected == 0,
                     selected == 0, -1);
 }
 
-bool SelectionScene::onDifficultyChange(u32 selector,
+bool SelectionScene::onDifficultyChange(ArrowDirection selector,
                                         DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
@@ -250,7 +245,7 @@ bool SelectionScene::onDifficultyChange(u32 selector,
   return false;
 }
 
-bool SelectionScene::onSelectionChange(u32 selector,
+bool SelectionScene::onSelectionChange(ArrowDirection selector,
                                        bool isOnListEdge,
                                        bool isOnPageEdge,
                                        int direction) {

@@ -6,6 +6,9 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "objects/ArrowSelector.h"
+#include "objects/ArrowTutorial.h"
+#include "objects/Instructor.h"
 #include "utils/PixelBlink.h"
 
 extern "C" {
@@ -28,8 +31,15 @@ class ControlsScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
+  std::unique_ptr<Instructor> instructor;
+  std::vector<std::unique_ptr<ArrowSelector>> indicators;
+  std::vector<std::unique_ptr<ArrowTutorial>> inputArrows;
+
   void setUpSpritesPalette();
   void setUpBackground();
+  void setUpArrows();
+
+  void processKeys(u16 keys);
 };
 
 #endif  // CONTROLS_SCENE_H

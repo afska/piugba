@@ -57,6 +57,7 @@ class SongScene : public Scene {
   void setUpPalettes();
   void setUpBackground();
   void setUpArrows();
+
   void updateArrowHolders();
   void updateArrows();
   void updateFakeHeads();
