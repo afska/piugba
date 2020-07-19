@@ -11,7 +11,7 @@ class ArrowSelector : public InputHandler {
  public:
   ArrowDirection direction;
 
-  ArrowSelector(ArrowDirection direction, bool reactive);
+  ArrowSelector(ArrowDirection direction, bool reuseTiles, bool reactive);
 
   bool shouldFireEvent();
 

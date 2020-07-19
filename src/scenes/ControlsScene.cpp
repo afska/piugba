@@ -39,9 +39,11 @@ std::vector<Sprite*> ControlsScene::sprites() {
   std::vector<Sprite*> sprites;
 
   sprites.push_back(instructor->get());
-
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    sprites.push_back(buttons[i]->get());
+  sprites.push_back(buttons[ArrowDirection::UPLEFT]->get());
+  sprites.push_back(buttons[ArrowDirection::DOWNLEFT]->get());
+  sprites.push_back(buttons[ArrowDirection::CENTER]->get());
+  sprites.push_back(buttons[ArrowDirection::UPRIGHT]->get());
+  sprites.push_back(buttons[ArrowDirection::DOWNRIGHT]->get());
   sprites.push_back(buttons[RIGHT_CENTER]->get());
 
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
@@ -104,13 +106,12 @@ void ControlsScene::setUpBackground() {
 void ControlsScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
-    buttons.push_back(
-        std::unique_ptr<ArrowSelector>{new ArrowSelector(direction, true)});
+    buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
+        direction, direction != ArrowDirection::UPLEFT, true)});
   }
 
   buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-      static_cast<ArrowDirection>(ArrowDirection::CENTER), true)});
-  SPRITE_reuseTiles(buttons[RIGHT_CENTER]->get());
+      static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
 
   buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
   buttons[ArrowDirection::UPLEFT]->get()->moveTo(31, 59);

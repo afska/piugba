@@ -11,7 +11,9 @@ const u32 ANIMATION_DELAY = 2;
 const u32 AUTOFIRE_FIRST_DELAY = 30;
 const u32 AUTOFIRE_SECOND_DELAY = 10;
 
-ArrowSelector::ArrowSelector(ArrowDirection direction, bool reactive) {
+ArrowSelector::ArrowSelector(ArrowDirection direction,
+                             bool reuseTiles,
+                             bool reactive) {
   u32 start = 0;
   bool flip = false;
   ARROW_initialize(direction, start, flip);
@@ -28,7 +30,7 @@ ArrowSelector::ArrowSelector(ArrowDirection direction, bool reactive) {
                              ARROW_FINAL_Y)
                .buildPtr();
 
-  if (direction > 0)
+  if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
 }
 

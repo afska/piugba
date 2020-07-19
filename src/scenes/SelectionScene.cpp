@@ -147,7 +147,7 @@ void SelectionScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
     arrowSelectors.push_back(std::unique_ptr<ArrowSelector>{
-        new ArrowSelector(static_cast<ArrowDirection>(direction),
+        new ArrowSelector(static_cast<ArrowDirection>(direction), direction > 0,
                           direction != ArrowDirection::CENTER)});
   }
 
