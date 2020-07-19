@@ -12,9 +12,11 @@ module.exports = class Simfile {
   }
 
   get metadata() {
+    const title = this._getSingleMatch(REGEXPS.metadata.title);
+    const subtitle = this._getSingleMatch(REGEXPS.metadata.subtitle);
+
     return {
-      id: this._getSingleMatch(REGEXPS.metadata.id),
-      title: this._getSingleMatch(REGEXPS.metadata.title),
+      title: subtitle || title,
       artist: this._getSingleMatch(REGEXPS.metadata.artist),
       channel:
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
@@ -164,8 +166,8 @@ const DICTIONARY = (name, elements = 2) => ({
 const REGEXPS = {
   limit: /((.|(\r|\n))*?);/,
   metadata: {
-    id: PROPERTY("TITLE"),
-    title: PROPERTY("SUBTITLE"),
+    title: PROPERTY("TITLE"),
+    subtitle: PROPERTY("SUBTITLE"),
     artist: PROPERTY("ARTIST"),
     channel: PROPERTY("SONGCATEGORY"),
     lastSecondHint: PROPERTY_FLOAT("LASTSECONDHINT"),

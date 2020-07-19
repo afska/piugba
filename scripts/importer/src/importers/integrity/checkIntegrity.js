@@ -1,7 +1,6 @@
 const _ = require("lodash");
 
 module.exports = (metadata, charts) => {
-  if (_.isEmpty(metadata.id)) throw new Error("missing_id");
   if (_.isEmpty(metadata.title)) throw new Error("missing_title");
   if (_.isEmpty(metadata.artist)) throw new Error("missing_artist");
   if (!_.isFinite(metadata.sampleStart)) throw new Error("invalid_samplestart");

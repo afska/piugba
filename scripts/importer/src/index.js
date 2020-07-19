@@ -9,8 +9,10 @@ const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
 
-const NORMALIZE_FILENAME = (it) =>
-  it.replace(/[^0-9a-z _-]/gi, "").substring(0, MAX_FILE_LENGTH);
+const CREATE_ID = (i) => _.padStart(i, 3, "0");
+const NORMALIZE_FILENAME = (it, prefix = "") =>
+  prefix +
+  it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
 const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
 
 const CONTENT_PATH = $path.join(__dirname, "../../../src/data/content");
@@ -19,7 +21,6 @@ const AUDIO_PATH = $path.join(CONTENT_PATH, "assets/audio");
 const IMAGES_PATH = $path.join(CONTENT_PATH, "assets/images");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
-const SEPARATOR = " - ";
 const MAX_FILE_LENGTH = 15;
 const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc/i;
@@ -42,7 +43,7 @@ global.GLOBAL_OPTIONS = opt.options;
 if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 
-const GET_SONG_FILES = ({ path, id, name }) => {
+const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
 
   return {
@@ -62,16 +63,12 @@ mkdirp.sync(OUTPUT_PATH);
 
 const songs = _(fs.readdirSync(SONGS_PATH))
   .sortBy()
-  .map((directory, i) => {
-    const parts = directory.split(SEPARATOR);
-
-    const id = parts.length === 2 ? _.first(parts) : i.toString();
-    const name = _.last(parts);
-    const outputName = NORMALIZE_FILENAME(id + "-" + name);
+  .map((directory) => {
+    const name = directory;
+    const outputName = NORMALIZE_FILENAME(name);
 
     return {
       path: $path.join(SONGS_PATH, directory),
-      id,
       name,
       outputName,
     };
@@ -83,7 +80,7 @@ console.log(`${"Importing".bold} audio...`);
 fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
   if (!FILE_AUDIO.test(audioFile)) return;
 
-  const name = NORMALIZE_FILENAME(`_aud_${REMOVE_EXTENSION(audioFile)}`);
+  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
   const path = $path.join(AUDIO_PATH, audioFile);
 
   utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
@@ -93,7 +90,7 @@ console.log(`${"Importing".bold} images...`);
 fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
   if (!FILE_BACKGROUND.test(imageFile)) return;
 
-  const name = NORMALIZE_FILENAME(`_img_${REMOVE_EXTENSION(imageFile)}`);
+  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
   const path = $path.join(IMAGES_PATH, imageFile);
 
   utils.report(() => importers.background(name, path, OUTPUT_PATH), imageFile);
@@ -149,8 +146,8 @@ const simfiles = songs.map((song, i) => {
 });
 
 printTable(
-  simfiles.map((it) => ({
-    id: it.metadata.id,
+  simfiles.map((it, i) => ({
+    id: CREATE_ID(i),
     title: it.metadata.title,
     artist: it.metadata.artist,
     channel: it.metadata.channel,
