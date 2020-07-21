@@ -78,9 +78,8 @@ void SelectionScene::load() {
 
   setUpArrows();
 
-  // difficulty->setValue(
-  //     static_cast<DifficultyLevel>(sram_mem[2]));  // TODO: Create
-  //     abstraction
+  auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+  difficulty->setValue(static_cast<DifficultyLevel>(level));
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -166,9 +165,8 @@ void SelectionScene::setUpArrows() {
 void SelectionScene::setUpPager() {
   count = library->getCount();
 
-  // TODO: Create abstraction
-  // page = sram_mem[0];
-  // selected = sram_mem[1];
+  page = SAVEFILE_read8(SRAM->memory.pageIndex);
+  selected = SAVEFILE_read8(SRAM->memory.songIndex);
 
   setPage(page, 0);
   updateSelection();
@@ -235,7 +233,7 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
     if (newValue == difficulty->getValue())
       return true;
 
-    sram_mem[2] = newValue;  // TODO: Create abstraction
+    SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
 
     difficulty->setValue(newValue);
     pixelBlink->blink();
@@ -283,9 +281,8 @@ void SelectionScene::updateSelection() {
   player_seek(song->sampleStart);
   Song_free(song);
 
-  // TODO: Create abstraction
-  // sram_mem[0] = page;
-  // sram_mem[1] = selected;
+  SAVEFILE_write8(SRAM->memory.pageIndex, page);
+  SAVEFILE_write8(SRAM->memory.songIndex, selected);
 }
 
 void SelectionScene::confirm() {

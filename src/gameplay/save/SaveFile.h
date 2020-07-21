@@ -22,14 +22,14 @@ typedef struct {
   Progress progress;
 } SaveFile;
 
-#define _ ((SaveFile*)sram_mem)
+#define SRAM ((SaveFile*)sram_mem)
 
-#define SAVEFILE_READ8(TARGET) *((u8*)&TARGET)
-#define SAVEFILE_WRITE8(DEST, VALUE) *((u8*)&DEST) = VALUE;
-#define SAVEFILE_READ32(TARGET)                                    \
+#define SAVEFILE_read8(TARGET) *((u8*)&TARGET)
+#define SAVEFILE_write8(DEST, VALUE) *((u8*)&DEST) = VALUE;
+#define SAVEFILE_read32(TARGET)                                    \
   (u32)(*(((char*)&TARGET) + 0) + (*(((char*)&TARGET) + 1) << 8) + \
         (*(((char*)&TARGET) + 2) << 16) + (*(((char*)&TARGET) + 3) << 24))
-#define SAVEFILE_WRITE32(DEST, VALUE)                        \
+#define SAVEFILE_write32(DEST, VALUE)                        \
   *(((char*)&DEST) + 0) = (((u32)VALUE) & 0x000000ff) >> 0;  \
   *(((char*)&DEST) + 1) = (((u32)VALUE) & 0x0000ff00) >> 8;  \
   *(((char*)&DEST) + 2) = (((u32)VALUE) & 0x00ff0000) >> 16; \
@@ -38,20 +38,22 @@ typedef struct {
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
 
-  if (SAVEFILE_READ32(_->romId) != romId) {
-    SAVEFILE_WRITE32(_->romId, romId);
+  if (SAVEFILE_read32(SRAM->romId) != romId) {
+    SAVEFILE_write32(SRAM->romId, romId);
 
-    SAVEFILE_WRITE32(_->settings.audioLag, 0);
-    SAVEFILE_WRITE8(_->settings.pixelize, 0);
-    SAVEFILE_WRITE8(_->settings.holderPosition, HolderPosition::LEFT);
-    SAVEFILE_WRITE8(_->settings.backgroundType, BackgroundType::HALF_BGA_DARK);
-    SAVEFILE_WRITE8(_->settings.bgaDarkBlink, true);
+    SAVEFILE_write32(SRAM->settings.audioLag, 0);
+    SAVEFILE_write8(SRAM->settings.pixelize, 0);
+    SAVEFILE_write8(SRAM->settings.holderPosition, HolderPosition::LEFT);
+    SAVEFILE_write8(SRAM->settings.backgroundType,
+                    BackgroundType::HALF_BGA_DARK);
+    SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
 
-    SAVEFILE_WRITE8(_->memory.lastPage, 0);
-    SAVEFILE_WRITE8(_->memory.lastSong, 0);
-    SAVEFILE_WRITE8(_->memory.multiplier, 3);
+    SAVEFILE_write8(SRAM->memory.pageIndex, 0);
+    SAVEFILE_write8(SRAM->memory.songIndex, 0);
+    SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
+    SAVEFILE_write8(SRAM->memory.multiplier, 3);
 
-    SAVEFILE_WRITE32(_->progress.completedSongs, 0);
+    SAVEFILE_write32(SRAM->progress.completedSongs, 0);
   }
 }
 
