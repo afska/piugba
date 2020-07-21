@@ -1,8 +1,8 @@
 #ifndef SAVE_FILE_H
 #define SAVE_FILE_H
 
-#include <libgba-sprite-engine/gba/tonc_core.h>  // TODO: Stop using headers from libgba-sprite-engine
-#include <tonc_memmap.h>
+#include <libgba-sprite-engine/gba/tonc_core.h>
+#include <libgba-sprite-engine/gba/tonc_memmap.h>
 
 #include "Memory.h"
 #include "Progress.h"
