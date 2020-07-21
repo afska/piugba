@@ -10,6 +10,7 @@ const _ = require("lodash");
 require("colors");
 
 const CREATE_ID = (i) => _.padStart(i, 3, "0");
+const ROM_ID_FILE = "_rom_id.u32";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
@@ -28,6 +29,10 @@ const FILE_AUDIO = /\.mp3/i;
 const FILE_BACKGROUND = /\.png/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "manual";
+
+// ------------
+// COMMAND LINE
+// ------------
 
 const opt = getopt
   .create([
@@ -53,13 +58,56 @@ const GET_SONG_FILES = ({ path, name }) => {
   };
 };
 
-// ---
+// -------
+// CLEANUP
+// -------
 
 mkdirp(SONGS_PATH);
 mkdirp(AUDIO_PATH);
 mkdirp(IMAGES_PATH);
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
+
+// -------
+// ROM ID
+// -------
+
+fs.writeFileSync(
+  $path.join(OUTPUT_PATH, ROM_ID_FILE),
+  new Buffer(4).writeUInt32LE(Math.floor(Math.random() * 0xffffffff))
+);
+
+// ------------
+// AUDIO ASSETS
+// ------------
+
+console.log(`${"Importing".bold} audio...`);
+fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
+  if (!FILE_AUDIO.test(audioFile)) return;
+
+  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
+  const path = $path.join(AUDIO_PATH, audioFile);
+
+  utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
+});
+
+// ------------
+// IMAGE ASSETS
+// ------------
+
+console.log(`${"Importing".bold} images...`);
+fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
+  if (!FILE_BACKGROUND.test(imageFile)) return;
+
+  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
+  const path = $path.join(IMAGES_PATH, imageFile);
+
+  utils.report(() => importers.background(name, path, OUTPUT_PATH), imageFile);
+});
+
+// ---------------
+// SONGS DETECTION
+// ---------------
 
 const songs = _(fs.readdirSync(SONGS_PATH))
   .sortBy()
@@ -76,25 +124,9 @@ const songs = _(fs.readdirSync(SONGS_PATH))
   .sortBy("outputName")
   .value();
 
-console.log(`${"Importing".bold} audio...`);
-fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
-  if (!FILE_AUDIO.test(audioFile)) return;
-
-  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
-  const path = $path.join(AUDIO_PATH, audioFile);
-
-  utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
-});
-
-console.log(`${"Importing".bold} images...`);
-fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
-  if (!FILE_BACKGROUND.test(imageFile)) return;
-
-  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
-  const path = $path.join(IMAGES_PATH, imageFile);
-
-  utils.report(() => importers.background(name, path, OUTPUT_PATH), imageFile);
-});
+// ------------
+// SONGS IMPORT
+// ------------
 
 let lastSelectorBuilt = -1;
 const simfiles = songs.map((song, i) => {
@@ -144,6 +176,10 @@ const simfiles = songs.map((song, i) => {
 
   return simfile;
 });
+
+// -------
+// SUMMARY
+// -------
 
 printTable(
   simfiles.map((it, i) => ({
