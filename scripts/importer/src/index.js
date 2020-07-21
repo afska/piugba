@@ -72,10 +72,9 @@ mkdirp.sync(OUTPUT_PATH);
 // ROM ID
 // -------
 
-fs.writeFileSync(
-  $path.join(OUTPUT_PATH, ROM_ID_FILE),
-  new Buffer(4).writeUInt32LE(Math.floor(Math.random() * 0xffffffff))
-);
+const romIdBuffer = Buffer.alloc(4);
+romIdBuffer.writeUInt32LE(Math.floor(Math.random() * 0xffffffff));
+fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // ------------
 // AUDIO ASSETS

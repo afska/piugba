@@ -9,6 +9,7 @@
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
+#include "gameplay/save/SaveFile.h"
 #include "scenes/SongScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
