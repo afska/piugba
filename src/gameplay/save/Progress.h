@@ -5,11 +5,11 @@
 
 #include "objects/score/Grade.h"
 
-#define MAX_PROGRESS_REGISTERS 1000
+#define MAX_PROGRESS_REGISTERS 100
 
 typedef struct {
   u32 completedSongs;
-  GradeType grades[MAX_PROGRESS_REGISTERS];
+  u8 grades[MAX_PROGRESS_REGISTERS];
 } Progress;
 
 #endif  // PROGRESS_H
