@@ -2,6 +2,7 @@
 #include <tonc.h>
 
 #include "gameplay/debug/DebugTools.h"
+#include "gameplay/save/SaveFile.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
 
@@ -17,6 +18,7 @@ static const GBFS_FILE* fs = find_first_gbfs_file(0);
 int main() {
   setUpInterrupts();
   player_init();
+  SAVEFILE_initialize(fs);
 
   IFTEST { engine->setScene(new SelectionScene(engine, fs)); }
   IFNOTTEST { engine->setScene(new ControlsScene(engine, fs)); }
