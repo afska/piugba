@@ -19,7 +19,9 @@ typedef struct {
 
   Settings settings;
   Memory memory;
-  Progress progress;
+  Progress progressNormal;
+  Progress progressHard;
+  Progress progressCrazy;
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
@@ -53,7 +55,9 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
 
-    SAVEFILE_write32(SRAM->progress.completedSongs, 0);
+    SAVEFILE_write32(SRAM->progressNormal.completedSongs, 0);
+    SAVEFILE_write32(SRAM->progressHard.completedSongs, 0);
+    SAVEFILE_write32(SRAM->progressCrazy.completedSongs, 0);
   }
 }
 
