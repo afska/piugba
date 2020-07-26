@@ -4,7 +4,6 @@
 #include "gameplay/save/SaveFile.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
-#include "scenes/SettingsScene.h"  // TODO: REMOVE
 
 extern "C" {
 #include "player/player.h"
@@ -21,9 +20,8 @@ int main() {
   SAVEFILE_initialize(fs);
 
   bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
-  // engine->setScene(showControls ? (Scene*)new ControlsScene(engine, fs)
-  //                               : (Scene*)new SelectionScene(engine, fs));
-  engine->setScene(new SettingsScene(engine, fs));
+  engine->setScene(showControls ? (Scene*)new ControlsScene(engine, fs)
+                                : (Scene*)new SelectionScene(engine, fs));
   player_forever([]() { engine->update(); });
 
   return 0;

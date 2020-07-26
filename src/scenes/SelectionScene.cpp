@@ -9,6 +9,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
+#include "scenes/SettingsScene.h"
 #include "scenes/SongScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
@@ -108,6 +109,12 @@ void SelectionScene::tick(u16 keys) {
       goToSong();
     else
       confirm();
+  }
+
+  if (keys & KEY_START) {
+    player_stopAll();
+    engine->transitionIntoScene(new SettingsScene(engine, fs),
+                                new FadeOutScene(2));
   }
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_BLEND),

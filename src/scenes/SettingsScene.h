@@ -44,6 +44,7 @@ class SettingsScene : public Scene {
   void printMenu();
   void printOption(u32 id, std::string name, std::string value, u32 row);
   void move(int direction);
+  void select();
 };
 
 #endif  // SETTINGS_SCENE_H

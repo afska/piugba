@@ -8,6 +8,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
+#include "scenes/CalibrateScene.h"
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
@@ -18,6 +19,12 @@ extern "C" {
 }
 
 #define TITLE "SETTINGS"
+#define OPTION_AUDIO_LAG 0
+#define OPTION_SHOW_CONTROLS 1
+#define OPTION_HOLDER_POSITION 2
+#define OPTION_BACKGROUND_TYPE 3
+#define OPTION_BGA_DARK_BLINK 4
+#define OPTION_QUIT 5
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
@@ -116,13 +123,16 @@ void SettingsScene::processKeys(u16 keys) {
   selectButton->setIsPressed(KEY_CENTER(keys));
   backButton->setIsPressed(KEY_DOWNLEFT(keys));
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
+
+  if (keys & KEY_START) {
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new FadeOutScene(2));
+  }
 }
 
 void SettingsScene::processSelection() {
-  if (selectButton->hasBeenPressedNow()) {
-    fxes_play(SOUND_STEP);
-    pixelBlink->blink();
-  }
+  if (selectButton->hasBeenPressedNow())
+    select();
 
   if (nextButton->hasBeenPressedNow())
     move(1);
@@ -137,12 +147,27 @@ void SettingsScene::printMenu() {
 
   BACKGROUND_write(TITLE, 2);
 
-  printOption(0, "Audio lag", "1273", 5);
-  printOption(1, "Show controls", "ON", 7);
-  printOption(2, "Arrows' position", "LEFT", 9);
-  printOption(3, "Background type", "HALF_DARK", 11);
-  printOption(4, "Background blink", "ON", 13);
-  printOption(5, "QUIT GAME", "", 15);
+  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
+  u8 holderPosition = SAVEFILE_read8(SRAM->settings.holderPosition);
+  u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
+  bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+
+  printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
+  printOption(OPTION_SHOW_CONTROLS, "Show controls",
+              showControls ? "ON" : "OFF", 7);
+  printOption(
+      OPTION_HOLDER_POSITION, "Arrows' position",
+      holderPosition == 0 ? "LEFT" : holderPosition == 1 ? "CENTER" : "RIGHT",
+      9);
+  printOption(OPTION_BACKGROUND_TYPE, "Background type",
+              backgroundType == 0
+                  ? "RAW"
+                  : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
+              11);
+  printOption(OPTION_BGA_DARK_BLINK, "Background blink",
+              bgaDarkBlink ? "ON" : "OFF", 13);
+  printOption(OPTION_QUIT, "QUIT GAME", "", 15);
 }
 
 void SettingsScene::printOption(u32 id,
@@ -163,7 +188,7 @@ void SettingsScene::printOption(u32 id,
 
 void SettingsScene::move(int direction) {
   if (selected == OPTION_MAX && direction > 0)
-    selected = 0;
+    selected = OPTION_MIN;
   else if (selected == OPTION_MIN && direction < 0)
     selected = OPTION_MAX;
   else
@@ -172,4 +197,51 @@ void SettingsScene::move(int direction) {
   fxes_play(SOUND_STEP);
   pixelBlink->blink();
   printMenu();
+}
+
+void SettingsScene::select() {
+  fxes_play(SOUND_STEP);
+  pixelBlink->blink();
+
+  switch (selected) {
+    case OPTION_AUDIO_LAG: {
+      fxes_stop();
+      engine->transitionIntoScene(new CalibrateScene(engine, fs),
+                                  new FadeOutScene(2));
+      break;
+    }
+    case OPTION_SHOW_CONTROLS: {
+      bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
+      SAVEFILE_write8(SRAM->settings.showControls, !showControls);
+      printMenu();
+      break;
+    }
+    case OPTION_HOLDER_POSITION: {
+      u8 holderPosition = SAVEFILE_read8(SRAM->settings.holderPosition);
+      SAVEFILE_write8(SRAM->settings.holderPosition,
+                      holderPosition == 0 ? 1 : holderPosition == 1 ? 2 : 0);
+      printMenu();
+      break;
+    }
+    case OPTION_BACKGROUND_TYPE: {
+      u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
+      SAVEFILE_write8(SRAM->settings.backgroundType,
+                      backgroundType == 0 ? 1 : backgroundType == 1 ? 2 : 0);
+      printMenu();
+      break;
+    }
+    case OPTION_BGA_DARK_BLINK: {
+      bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+      SAVEFILE_write8(SRAM->settings.bgaDarkBlink, !bgaDarkBlink);
+      printMenu();
+      break;
+    }
+    case OPTION_QUIT: {
+      fxes_stop();
+      engine->transitionIntoScene(
+          new SelectionScene(engine, fs),  // TODO: StartScene
+          new FadeOutScene(2));
+      break;
+    }
+  }
 }
