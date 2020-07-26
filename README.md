@@ -94,9 +94,9 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 
 Name | Values | Description
 --- | --- | ---
-`MODE` | **`manual`** or `auto` | In `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
-`ENV` | **`development`** or `production` | In `development`, backgrounds are disabled and stage-break is OFF.
-`PLATFORM` | **`emulator`** or `gba` | In `emulator`, the game add some audio lag corrections.
+`MODE` | **`manual`** or `auto` | With `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
+`ENV` | **`development`** or `production` | With `development`, backgrounds are disabled and stage-break is OFF.
+`PLATFORM` | **`emulator`** or `gba` | With `emulator`, the game add a *180ms* offset to correct audio lag on the **mGBA** emulator.
 
 ### Scripts
 
