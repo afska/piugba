@@ -8,6 +8,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
+#include "scenes/SettingsScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
@@ -107,12 +108,13 @@ void CalibrateScene::tick(u16 keys) {
   if (calibrateButton->hasBeenPressedNow())
     calibrate();
 
-  if (resetButton->hasBeenPressedNow()) {
+  if (resetButton->hasBeenPressedNow() &&
+      !SPRITE_isHidden(resetButton->get())) {
     measuredLag = 0;
     save();
   }
 
-  if (saveButton->hasBeenPressedNow())
+  if (saveButton->hasBeenPressedNow() && !SPRITE_isHidden(saveButton->get()))
     save();
 
   pixelBlink->tick();
@@ -198,5 +200,7 @@ void CalibrateScene::finish() {
 
 void CalibrateScene::save() {
   SAVEFILE_write32(SRAM->settings.audioLag, (u32)measuredLag);
-  // TODO: GO TO SETTINGS SCREEN
+  player_stop();
+  engine->transitionIntoScene(new SettingsScene(engine, fs),
+                              new FadeOutScene(2));
 }

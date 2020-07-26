@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <string>
+
 #include "objects/ArrowSelector.h"
 #include "utils/PixelBlink.h"
 
@@ -29,16 +31,20 @@ class SettingsScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
-  // TODO: ARROWS
-  // std::unique_ptr<ArrowSelector> calibrateButton;
-  // std::unique_ptr<ArrowSelector> resetButton;
-  // std::unique_ptr<ArrowSelector> saveButton;
+  std::unique_ptr<ArrowSelector> selectButton;
+  std::unique_ptr<ArrowSelector> backButton;
+  std::unique_ptr<ArrowSelector> nextButton;
+  u32 selected = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();
 
   void processKeys(u16 keys);
+  void processSelection();
   void printMenu();
+  void printOption(u32 id, std::string name, std::string value, u32 row);
+  void move(int direction);
+  void select();
 };
 
 #endif  // SETTINGS_SCENE_H

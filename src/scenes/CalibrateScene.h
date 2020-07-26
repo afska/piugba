@@ -32,7 +32,6 @@ class CalibrateScene : public Scene {
   std::unique_ptr<ArrowSelector> calibrateButton;
   std::unique_ptr<ArrowSelector> resetButton;
   std::unique_ptr<ArrowSelector> saveButton;
-
   bool isMeasuring = false;
   int measuredLag = 0;
 
