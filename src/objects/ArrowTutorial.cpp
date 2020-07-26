@@ -16,8 +16,7 @@ ArrowTutorial::ArrowTutorial(ArrowDirection direction) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
-               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                             ARROW_FINAL_Y)
+               .withLocation(0, 0)
                .buildPtr();
 
   SPRITE_reuseTiles(sprite.get());
