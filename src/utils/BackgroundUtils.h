@@ -7,12 +7,14 @@
 #include <libgba-sprite-engine/scene.h>
 
 #include <memory>
+#include <string>
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
 const u32 TILE_SIZE = 16;
+const u32 TEXT_MIDDLE_COL = 12;
 
 inline void BACKGROUND_enable(bool bg0, bool bg1, bool bg2, bool bg3) {
   REG_DISPCNT = bg0 ? REG_DISPCNT | DCNT_BG0 : REG_DISPCNT & ~DCNT_BG0;
@@ -110,6 +112,11 @@ inline void BACKGROUND_fillMap(u8 screenblock, T getTile) {
     u8 col = DivMod(i, 32);
     se_mem[screenblock][i] = getTile(row, col);
   }
+}
+
+inline void BACKGROUND_write(std::string text, u32 row) {
+  TextStream::instance().setText(text, row,
+                                 TEXT_MIDDLE_COL - text.length() / 2);
 }
 
 #endif  // BACKGROUND_UTILS_H

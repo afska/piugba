@@ -1,5 +1,6 @@
 #include "CalibrateScene.h"
 
+#include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "assets.h"
@@ -41,7 +42,6 @@ const u32 TEXT_ROW_BUTTONS = 17;
 const u32 TEXT_COL_SUBTITLE = 3;
 const u32 TEXT_COL_RESET = 1;
 const u32 TEXT_COL_SAVE = 19;
-const u32 TEXT_MIDDLE_COL = 12;
 const u32 CALIBRATE_BUTTON_X = 112;
 const u32 CALIBRATE_BUTTON_Y = 72;
 const u32 BUTTON_MARGIN = 12;
@@ -149,8 +149,7 @@ void CalibrateScene::printTitle() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
 
-  TextStream::instance().setText(
-      TITLE, TEXT_ROW_TITLE, TEXT_MIDDLE_COL - std::string(TITLE).length() / 2);
+  BACKGROUND_write(TITLE, TEXT_ROW_TITLE);
   TextStream::instance().setText(SUBTITLE1, TEXT_ROW_SUBTITLE1,
                                  TEXT_COL_SUBTITLE);
   TextStream::instance().setText(SUBTITLE2, TEXT_ROW_SUBTITLE2,
@@ -191,13 +190,10 @@ void CalibrateScene::finish() {
   TextStream::instance().setText(RESET_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_RESET);
   TextStream::instance().setText(SAVE_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_SAVE);
 
-  TextStream::instance().setText(
-      MEASURE_TITLE, TEXT_ROW_MEASURE_TITLE,
-      TEXT_MIDDLE_COL - std::string(MEASURE_TITLE).length() / 2);
+  BACKGROUND_write(MEASURE_TITLE, TEXT_ROW_MEASURE_TITLE);
 
   auto value = std::to_string(measuredLag);
-  TextStream::instance().setText(value, TEXT_ROW_MEASURE_VALUE,
-                                 TEXT_MIDDLE_COL - value.length() / 2);
+  BACKGROUND_write(value, TEXT_ROW_MEASURE_VALUE);
 }
 
 void CalibrateScene::save() {

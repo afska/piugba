@@ -32,10 +32,9 @@ const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
 const u32 CENTER_Y = 108;
 const u32 TEXT_ROW = 13;
-const u32 TEXT_MIDDLE_COL = 12;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
-const u32 BLINK_LEVEL = 4;
+const u32 PIXEL_BLINK_LEVEL = 4;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -74,7 +73,7 @@ void SelectionScene::load() {
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
   setUpArrows();
 
@@ -291,9 +290,7 @@ void SelectionScene::confirm() {
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().clear();
-  TextStream::instance().setText(
-      CONFIRM_MESSAGE, TEXT_ROW + 1,
-      TEXT_MIDDLE_COL - std::string(CONFIRM_MESSAGE).length() / 2);
+  BACKGROUND_write(CONFIRM_MESSAGE, TEXT_ROW + 1);
 }
 
 void SelectionScene::unconfirm() {
@@ -325,8 +322,7 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::setNames(std::string title, std::string artist) {
   TextStream::instance().clear();
-  TextStream::instance().setText(title, TEXT_ROW,
-                                 TEXT_MIDDLE_COL - title.length() / 2);
+  BACKGROUND_write(title, TEXT_ROW);
   TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }

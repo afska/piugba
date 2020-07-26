@@ -13,12 +13,13 @@ extern "C" {
 #include "player/player.h"
 }
 
+#define SCORE_TITLE "Score:"
+
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_ROW = 17;
-const u32 TEXT_MIDDLE_COL = 12;
 const u32 SCORE_DIGITS = 8;
 
 const u32 TOTALS_Y[] = {37, 53, 69, 85, 101};
@@ -108,15 +109,12 @@ void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
 
-  auto title = std::string("Score:");
   auto points = std::to_string(evaluation->points);
   while (points.length() < SCORE_DIGITS)
     points = "0" + points;
 
-  TextStream::instance().setText(title, TEXT_ROW,
-                                 TEXT_MIDDLE_COL - title.length() / 2);
-  TextStream::instance().setText(points, TEXT_ROW + 1,
-                                 TEXT_MIDDLE_COL - points.length() / 2);
+  BACKGROUND_write(SCORE_TITLE, TEXT_ROW);
+  BACKGROUND_write(points, TEXT_ROW + 1);
 }
 
 void DanceGradeScene::playSound() {
