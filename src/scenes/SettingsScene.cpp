@@ -125,6 +125,7 @@ void SettingsScene::processKeys(u16 keys) {
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
 
   if (keys & KEY_START) {
+    fxes_stop();
     engine->transitionIntoScene(new SelectionScene(engine, fs),
                                 new FadeOutScene(2));
   }
