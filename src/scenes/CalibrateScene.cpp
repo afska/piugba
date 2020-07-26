@@ -4,11 +4,12 @@
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
-#include "player/PlaybackState.h"
-// #include "scenes/SelectionScene.h"
 #include "gameplay/Key.h"
+#include "gameplay/save/SaveFile.h"
+#include "player/PlaybackState.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
+#include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -19,6 +20,8 @@ extern "C" {
 #define SUBTITLE2 "2) Wait 4 beats"
 #define SUBTITLE3 "3) Press on beat 5"
 #define MEASURE_TITLE "- Detected audio lag -"
+#define RESET_TEXT "RESET"
+#define SAVE_TEXT "SAVE"
 
 const u32 BPM = 120;
 const u32 BEATS_TOTAL = 16;
@@ -34,10 +37,14 @@ const u32 TEXT_ROW_SUBTITLE2 = 6;
 const u32 TEXT_ROW_SUBTITLE3 = 7;
 const u32 TEXT_ROW_MEASURE_TITLE = 12;
 const u32 TEXT_ROW_MEASURE_VALUE = 13;
+const u32 TEXT_ROW_BUTTONS = 17;
 const u32 TEXT_COL_SUBTITLE = 3;
+const u32 TEXT_COL_RESET = 1;
+const u32 TEXT_COL_SAVE = 19;
 const u32 TEXT_MIDDLE_COL = 12;
-const u32 SELECTOR_X = 112;
-const u32 SELECTOR_Y = 72;
+const u32 CALIBRATE_BUTTON_X = 112;
+const u32 CALIBRATE_BUTTON_Y = 72;
+const u32 BUTTON_MARGIN = 12;
 const u32 PIXEL_BLINK_LEVEL = 6;
 
 CalibrateScene::CalibrateScene(std::shared_ptr<GBAEngine> engine,
@@ -53,7 +60,9 @@ std::vector<Background*> CalibrateScene::backgrounds() {
 std::vector<Sprite*> CalibrateScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(selector->get());
+  sprites.push_back(calibrateButton->get());
+  sprites.push_back(resetButton->get());
+  sprites.push_back(saveButton->get());
 
   return sprites;
 }
@@ -69,9 +78,16 @@ void CalibrateScene::load() {
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
-  selector = std::unique_ptr<ArrowSelector>{
+  calibrateButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
-  selector->get()->moveTo(SELECTOR_X, SELECTOR_Y);
+  resetButton = std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::UPLEFT, true, true)};
+  saveButton = std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::UPRIGHT, true, true)};
+
+  calibrateButton->get()->moveTo(CALIBRATE_BUTTON_X, CALIBRATE_BUTTON_Y);
+  SPRITE_hide(resetButton->get());
+  SPRITE_hide(saveButton->get());
 
   printTitle();
 }
@@ -86,22 +102,26 @@ void CalibrateScene::tick(u16 keys) {
     hasStarted = true;
   }
 
-  selector->setIsPressed(KEY_CENTER(keys));
+  processKeys(keys);
 
-  if (selector->hasBeenPressedNow())
+  if (calibrateButton->hasBeenPressedNow())
     calibrate();
 
+  if (resetButton->hasBeenPressedNow()) {
+    measuredLag = 0;
+    save();
+  }
+
+  if (saveButton->hasBeenPressedNow())
+    save();
+
   pixelBlink->tick();
-  selector->tick();
+  calibrateButton->tick();
+  resetButton->tick();
+  saveButton->tick();
 
   if (isMeasuring && PlaybackState.hasFinished)
     finish();
-
-  // if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
-  //   player_stop();
-  //   engine->transitionIntoScene(new SelectionScene(engine, fs),
-  //                               new FadeOutScene(2));
-  // }
 }
 
 void CalibrateScene::setUpSpritesPalette() {
@@ -117,6 +137,12 @@ void CalibrateScene::setUpBackground() {
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
+}
+
+void CalibrateScene::processKeys(u16 keys) {
+  calibrateButton->setIsPressed(KEY_CENTER(keys));
+  resetButton->setIsPressed(KEY_UPLEFT(keys));
+  saveButton->setIsPressed(KEY_UPRIGHT(keys));
 }
 
 void CalibrateScene::printTitle() {
@@ -149,11 +175,21 @@ void CalibrateScene::calibrate() {
 void CalibrateScene::start() {
   isMeasuring = true;
   player_play(SOUND_CALIBRATE);
+  SPRITE_hide(resetButton->get());
+  SPRITE_hide(saveButton->get());
   printTitle();
 }
 
 void CalibrateScene::finish() {
   isMeasuring = false;
+
+  resetButton->get()->moveTo(BUTTON_MARGIN,
+                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
+  saveButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
+                            GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
+
+  TextStream::instance().setText(RESET_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_RESET);
+  TextStream::instance().setText(SAVE_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_SAVE);
 
   TextStream::instance().setText(
       MEASURE_TITLE, TEXT_ROW_MEASURE_TITLE,
@@ -162,4 +198,9 @@ void CalibrateScene::finish() {
   auto value = std::to_string(measuredLag);
   TextStream::instance().setText(value, TEXT_ROW_MEASURE_VALUE,
                                  TEXT_MIDDLE_COL - value.length() / 2);
+}
+
+void CalibrateScene::save() {
+  SAVEFILE_write32(SRAM->settings.audioLag, (u32)measuredLag);
+  // TODO: GO TO SETTINGS SCREEN
 }

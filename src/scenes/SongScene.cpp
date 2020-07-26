@@ -8,6 +8,7 @@
 #include "StageBreakScene.h"
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
+#include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"
 #include "utils/BackgroundUtils.h"
@@ -84,6 +85,7 @@ void SongScene::load() {
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
+  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         IFNOTTEST {
@@ -92,8 +94,8 @@ void SongScene::load() {
                                       new FadeOutScene(6));
         }
       }));
-  chartReader = std::unique_ptr<ChartReader>(
-      new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get()));
+  chartReader = std::unique_ptr<ChartReader>(new ChartReader(
+      chart, arrowPool.get(), judge.get(), pixelBlink.get(), audioLag));
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());

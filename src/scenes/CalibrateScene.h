@@ -29,17 +29,22 @@ class CalibrateScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
-  std::unique_ptr<ArrowSelector> selector;
+  std::unique_ptr<ArrowSelector> calibrateButton;
+  std::unique_ptr<ArrowSelector> resetButton;
+  std::unique_ptr<ArrowSelector> saveButton;
+
   bool isMeasuring = false;
   int measuredLag = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();
 
+  void processKeys(u16 keys);
   void printTitle();
   void calibrate();
   void start();
   void finish();
+  void save();
 };
 
 #endif  // CALIBRATE_SCENE_H

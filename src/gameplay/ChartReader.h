@@ -18,9 +18,10 @@
 class ChartReader : public TimingProvider {
  public:
   ChartReader(Chart* chart,
-              ObjectPool<Arrow>*,
+              ObjectPool<Arrow>* arrowPool,
               Judge* judge,
-              PixelBlink* pixelBlink);
+              PixelBlink* pixelBlink,
+              int audioLag);
 
   bool update(int msecs);
 
@@ -49,6 +50,7 @@ class ChartReader : public TimingProvider {
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   PixelBlink* pixelBlink;
+  int audioLag;
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
