@@ -52,9 +52,10 @@ void SettingsScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().clear();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+
+  printMenu();
 }
 
 void SettingsScene::tick(u16 keys) {
@@ -91,4 +92,28 @@ void SettingsScene::processKeys(u16 keys) {
   // calibrateButton->setIsPressed(KEY_CENTER(keys));
   // resetButton->setIsPressed(KEY_UPLEFT(keys));
   // saveButton->setIsPressed(KEY_UPRIGHT(keys));
+}
+
+void SettingsScene::printMenu() {
+  TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().clear();
+
+  BACKGROUND_write(TITLE, 2);
+
+  TextStream::instance().setText("Audio lag", 5, -2);
+  TextStream::instance().setText("<-1273>", 5, 18);
+
+  TextStream::instance().setText(">Show controls", 7, -3);
+  TextStream::instance().setText("<ON>", 7, 18);
+
+  TextStream::instance().setText("Arrows' position", 9, -2);
+  TextStream::instance().setText("<LEFT>", 9, 18);
+
+  TextStream::instance().setText("Background type", 11, -2);
+  TextStream::instance().setText("<HALF_DARK>", 11, 15);
+
+  TextStream::instance().setText("Background blink", 13, -2);
+  TextStream::instance().setText("<ON>", 13, 15);
+
+  TextStream::instance().setText("EXIT", 15, -2);
 }

@@ -1,10 +1,10 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
-#include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
+#include "scenes/SettingsScene.h"  // TODO: REMOVE
 
 extern "C" {
 #include "player/player.h"
@@ -20,8 +20,10 @@ int main() {
   player_init();
   SAVEFILE_initialize(fs);
 
-  IFTEST { engine->setScene(new SelectionScene(engine, fs)); }
-  IFNOTTEST { engine->setScene(new ControlsScene(engine, fs)); }
+  bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
+  // engine->setScene(showControls ? (Scene*)new ControlsScene(engine, fs)
+  //                               : (Scene*)new SelectionScene(engine, fs));
+  engine->setScene(new SettingsScene(engine, fs));
   player_forever([]() { engine->update(); });
 
   return 0;
