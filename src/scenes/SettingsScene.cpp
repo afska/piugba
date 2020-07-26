@@ -165,10 +165,12 @@ void SettingsScene::printMenu() {
                   ? "RAW"
                   : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
               11);
-  if (backgroundType > 0) {
+  if (backgroundType > 0)
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
                 bgaDarkBlink ? "ON" : "OFF", 13);
-  }
+  else
+    printOption(OPTION_BGA_DARK_BLINK, "----------------",
+                bgaDarkBlink ? "---" : "---", 13);
   printOption(OPTION_QUIT, "QUIT GAME", "", 15);
 }
 
@@ -229,6 +231,8 @@ void SettingsScene::select() {
       u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
       SAVEFILE_write8(SRAM->settings.backgroundType,
                       backgroundType == 0 ? 1 : backgroundType == 1 ? 2 : 0);
+      if (backgroundType == 0)
+        SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
       printMenu();
       break;
     }
