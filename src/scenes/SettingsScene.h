@@ -31,17 +31,19 @@ class SettingsScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
-  // TODO: ARROWS
-  // std::unique_ptr<ArrowSelector> calibrateButton;
-  // std::unique_ptr<ArrowSelector> resetButton;
-  // std::unique_ptr<ArrowSelector> saveButton;
+  std::unique_ptr<ArrowSelector> selectButton;
+  std::unique_ptr<ArrowSelector> backButton;
+  std::unique_ptr<ArrowSelector> nextButton;
+  u32 selected = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();
 
   void processKeys(u16 keys);
+  void processSelection();
   void printMenu();
-  void printOption(std::string name, std::string value, u32 row, bool selected);
+  void printOption(u32 id, std::string name, std::string value, u32 row);
+  void move(int direction);
 };
 
 #endif  // SETTINGS_SCENE_H
