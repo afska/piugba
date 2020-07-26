@@ -140,7 +140,8 @@ void SongScene::tick(u16 keys) {
   }
 
   blinkFrame = max(blinkFrame - 1, 0);
-  EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
+  if (SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
+    EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   pixelBlink->tick();
   updateFakeHeads();

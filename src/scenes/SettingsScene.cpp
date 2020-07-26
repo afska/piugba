@@ -166,8 +166,10 @@ void SettingsScene::printMenu() {
                   ? "RAW"
                   : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
               11);
-  printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-              bgaDarkBlink ? "ON" : "OFF", 13);
+  if (backgroundType > 0) {
+    printOption(OPTION_BGA_DARK_BLINK, "Background blink",
+                bgaDarkBlink ? "ON" : "OFF", 13);
+  }
   printOption(OPTION_QUIT, "QUIT GAME", "", 15);
 }
 
