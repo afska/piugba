@@ -100,20 +100,24 @@ void SettingsScene::printMenu() {
 
   BACKGROUND_write(TITLE, 2);
 
-  TextStream::instance().setText("Audio lag", 5, -2);
-  TextStream::instance().setText("<-1273>", 5, 18);
+  printOption("Audio lag", "1273", 5, false);
+  printOption("Show controls", "ON", 7, true);
+  printOption("Arrows' position", "LEFT", 9, false);
+  printOption("Background type", "HALF_DARK", 11, false);
+  printOption("Background blink", "ON", 13, false);
+  printOption("EXIT", "", 15, false);
+}
 
-  TextStream::instance().setText(">Show controls", 7, -3);
-  TextStream::instance().setText("<ON>", 7, 18);
+void SettingsScene::printOption(std::string name,
+                                std::string value,
+                                u32 row,
+                                bool selected) {
+  TextStream::instance().setText((selected ? ">" : "") + name, row,
+                                 selected ? -3 : -2);
 
-  TextStream::instance().setText("Arrows' position", 9, -2);
-  TextStream::instance().setText("<LEFT>", 9, 18);
-
-  TextStream::instance().setText("Background type", 11, -2);
-  TextStream::instance().setText("<HALF_DARK>", 11, 15);
-
-  TextStream::instance().setText("Background blink", 13, -2);
-  TextStream::instance().setText("<ON>", 13, 15);
-
-  TextStream::instance().setText("EXIT", 15, -2);
+  if (value.length() > 0) {
+    auto valueString = "<" + value + ">";
+    TextStream::instance().setText(valueString, row,
+                                   20 - valueString.length() / 2);
+  }
 }

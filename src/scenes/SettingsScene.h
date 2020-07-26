@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <string>
+
 #include "objects/ArrowSelector.h"
 #include "utils/PixelBlink.h"
 
@@ -39,6 +41,7 @@ class SettingsScene : public Scene {
 
   void processKeys(u16 keys);
   void printMenu();
+  void printOption(std::string name, std::string value, u32 row, bool selected);
 };
 
 #endif  // SETTINGS_SCENE_H
