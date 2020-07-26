@@ -10,7 +10,7 @@
 
 static bool isWarningVisible = false;
 inline void LOG_WARNING() {
-  IFTEST {
+  if (!ENABLE_BACKGROUND) {
     if (!isWarningVisible) {
       LOGSTR("!", 0);
       isWarningVisible = true;

@@ -44,7 +44,9 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
 }
 
 std::vector<Background*> SongScene::backgrounds() {
-  IFTEST { return {}; }
+  if (!ENABLE_BACKGROUND)
+    return {};
+
   return {bg.get()};
 }
 
@@ -78,7 +80,8 @@ void SongScene::load() {
   BACKGROUND_enable(false, false, false, false);
 
   setUpPalettes();
-  IFNOTTEST { setUpBackground(); }
+  if (ENABLE_BACKGROUND)
+    setUpBackground();
   setUpArrows();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
@@ -88,7 +91,7 @@ void SongScene::load() {
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
-        IFNOTTEST {
+        if (ENABLE_STAGE_BREAK) {
           unload();
           engine->transitionIntoScene(new StageBreakScene(engine, fs),
                                       new FadeOutScene(6));
@@ -106,11 +109,14 @@ void SongScene::tick(u16 keys) {
     return;
 
   if (init == 0) {
-    IFNOTTEST { darkener->initialize(); }
-    IFTEST { BACKGROUND_setColor(0, 127); }
+    if (ENABLE_BACKGROUND)
+      darkener->initialize();
+    else
+      BACKGROUND_setColor(0, 127);
     init++;
   } else if (init == 1) {
-    IFNOTTEST { BACKGROUND_enable(true, true, false, false); }
+    if (ENABLE_BACKGROUND)
+      BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     init++;
   }

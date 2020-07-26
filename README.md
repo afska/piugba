@@ -39,7 +39,7 @@ Charts are converted into a format created for this project called **PIUS**. The
 ```bash
 make import MODE=auto
 make assets
-make build ENV=production PLATFORM=gba
+make build ENV=production
 make package
 ```
 
@@ -94,9 +94,8 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 
 Name | Values | Description
 --- | --- | ---
-`MODE` | **`manual`** or `auto` | With `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
-`ENV` | **`development`** or `production` | With `development`, backgrounds are disabled and stage-break is OFF.
-`PLATFORM` | **`emulator`** or `gba` | With `emulator`, the game add a *180ms* offset to correct audio lag on the **mGBA** emulator.
+`MODE` | **`manual`** or `auto` | When using `auto`, the import process is not interactive anymore and tries to guess the missing data (e.g. difficulty levels).
+`ENV` | **`development`**, or `debug` or `production` |`debug`: backgrounds are disabled, stage-break is OFF and a *180ms* audio lag correction is added for the **mGBA** emulator.<br><br> `development`: the same, but including backgrounds.<br><br>`production`: backgrounds, stage-break ON and no audio lag corrections.
 
 ### Scripts
 

@@ -115,18 +115,13 @@ endif
 # --- Custom vars ? ---
 
 ENV ?= development
-PLATFORM ?= emulator
 
-ifeq ($(ENV), development)
-	CXXFLAGS += -DTEST_MODE=true
+ifeq ($(ENV), debug)
+	CXXFLAGS += -DENABLE_STAGE_BREAK=false -DENABLE_BACKGROUND=false -DAUDIO_LAG=180
+else ifeq ($(ENV), development)
+	CXXFLAGS += -DENABLE_STAGE_BREAK=false -DENABLE_BACKGROUND=true -DAUDIO_LAG=180
 else
-	CXXFLAGS += -DTEST_MODE=false
-endif
-
-ifeq ($(PLATFORM), emulator)
-	CXXFLAGS += -DAUDIO_LAG=180
-else
-	CXXFLAGS += -DAUDIO_LAG=0
+	CXXFLAGS += -DENABLE_STAGE_BREAK=true -DENABLE_BACKGROUND=true -DAUDIO_LAG=0
 endif
 
 # CXXFLAGS += -DCUSTOM_VAR_DEFINE
