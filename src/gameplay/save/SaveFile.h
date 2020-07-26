@@ -45,7 +45,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write32(SRAM->settings.audioLag, 0);
     SAVEFILE_write8(SRAM->settings.showControls, 1);
-    SAVEFILE_write8(SRAM->settings.holderPosition, HolderPosition::LEFT);
+    SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
     SAVEFILE_write8(SRAM->settings.backgroundType,
                     BackgroundType::HALF_BGA_DARK);
     SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);

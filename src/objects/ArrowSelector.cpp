@@ -26,8 +26,7 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
                .withAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY)
-               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-                             ARROW_FINAL_Y)
+               .withLocation(0, 0)
                .buildPtr();
 
   if (reuseTiles)

@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
+#include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
 const u32 MAX_COMBO = 999;
@@ -14,7 +15,8 @@ Combo::Combo() {
 
   for (u32 i = 0; i < 3; i++) {
     auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, DIGITS_POSITION_X, DIGITS_POSITION_Y, i)};
+        new Digit(DigitSize::BIG, GAME_POSITION() + DIGITS_POSITION_X,
+                  DIGITS_POSITION_Y, i)};
     digits.push_back(std::move(digit));
   }
 }

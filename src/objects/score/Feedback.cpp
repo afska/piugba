@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_feedback.h"
+#include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
 const u32 POSITION_X = 16;
@@ -11,7 +12,7 @@ const u32 POSITION_Y = 60;
 
 Feedback::Feedback() {
   type = FeedbackType::MISS;
-  animationPositionX = POSITION_X;
+  animationPositionX = GAME_POSITION() + POSITION_X;
   animationPositionY = POSITION_Y;
 
   SpriteBuilder<Sprite> builder;

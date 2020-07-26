@@ -14,7 +14,8 @@ ArrowHolder::ArrowHolder(ArrowDirection direction) {
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withSize(SIZE_16_16)
-               .withLocation(ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
+               .withLocation(GAME_POSITION() + ARROW_CORNER_MARGIN_X +
+                                 ARROW_MARGIN * direction,
                              ARROW_FINAL_Y)
                .buildPtr();
 

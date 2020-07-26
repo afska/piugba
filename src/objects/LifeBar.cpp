@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_lifebar.h"
+#include "objects/ArrowInfo.h"
 #include "utils/EffectUtils.h"
 
 const u32 POSITION_X = 15;
@@ -31,7 +32,7 @@ LifeBar::LifeBar() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
-               .withLocation(POSITION_X, POSITION_Y)
+               .withLocation(GAME_POSITION() + POSITION_X, POSITION_Y)
                .buildPtr();
 }
 

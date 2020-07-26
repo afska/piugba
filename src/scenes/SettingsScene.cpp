@@ -21,7 +21,7 @@ extern "C" {
 #define TITLE "SETTINGS"
 #define OPTION_AUDIO_LAG 0
 #define OPTION_SHOW_CONTROLS 1
-#define OPTION_HOLDER_POSITION 2
+#define OPTION_GAME_POSITION 2
 #define OPTION_BACKGROUND_TYPE 3
 #define OPTION_BGA_DARK_BLINK 4
 #define OPTION_QUIT 5
@@ -150,7 +150,7 @@ void SettingsScene::printMenu() {
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
-  u8 holderPosition = SAVEFILE_read8(SRAM->settings.holderPosition);
+  u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
@@ -158,9 +158,8 @@ void SettingsScene::printMenu() {
   printOption(OPTION_SHOW_CONTROLS, "Show controls",
               showControls ? "ON" : "OFF", 7);
   printOption(
-      OPTION_HOLDER_POSITION, "Arrows' position",
-      holderPosition == 0 ? "LEFT" : holderPosition == 1 ? "CENTER" : "RIGHT",
-      9);
+      OPTION_GAME_POSITION, "Game position",
+      gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 9);
   printOption(OPTION_BACKGROUND_TYPE, "Background type",
               backgroundType == 0
                   ? "RAW"
@@ -219,10 +218,10 @@ void SettingsScene::select() {
       printMenu();
       break;
     }
-    case OPTION_HOLDER_POSITION: {
-      u8 holderPosition = SAVEFILE_read8(SRAM->settings.holderPosition);
-      SAVEFILE_write8(SRAM->settings.holderPosition,
-                      holderPosition == 0 ? 1 : holderPosition == 1 ? 2 : 0);
+    case OPTION_GAME_POSITION: {
+      u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
+      SAVEFILE_write8(SRAM->settings.gamePosition,
+                      gamePosition == 0 ? 1 : gamePosition == 1 ? 2 : 0);
       printMenu();
       break;
     }
