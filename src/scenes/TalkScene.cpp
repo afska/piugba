@@ -12,12 +12,10 @@ const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_BLEND_ALPHA = 12;
-const u32 TEXT_MIDDLE_ROW = 9;
 
-const u32 INSTRUCTOR_X = 152;
-const u32 INSTRUCTOR_Y = 48;
-const u32 NEXT_X = 220;
-const u32 NEXT_Y = 140;
+const u32 INSTRUCTOR_X = 2;
+const u32 INSTRUCTOR_Y = 96;
+const u32 BUTTON_MARGIN = 3;
 
 TalkScene::TalkScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -56,14 +54,13 @@ void TalkScene::load() {
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
 
   instructor = std::unique_ptr<Instructor>{
-      new Instructor(InstructorType::Girl, INSTRUCTOR_X, INSTRUCTOR_Y)};
+      new Instructor(InstructorType::Boy, INSTRUCTOR_X, INSTRUCTOR_Y)};
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
-  nextButton->get()->moveTo(NEXT_X, NEXT_Y);
+  nextButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
+                            GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
 
-  TextStream::instance().setText("This is a test", 8, 0);
-  TextStream::instance().setText("message. Hehe,", TEXT_MIDDLE_ROW, 0);
-  TextStream::instance().setText("too many words!", 10, 0);
+  TextStream::instance().setText("Hello world!", 3, -1);
 }
 
 void TalkScene::tick(u16 keys) {
@@ -91,8 +88,8 @@ void TalkScene::setUpSpritesPalette() {
 }
 
 void TalkScene::setUpBackground() {
-  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_WALL_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_WALL_TILES, BG_WALL_MAP,
+  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_TALK_PALETTE);
+  bg = BACKGROUND_loadBackgroundFiles(fs, BG_TALK_TILES, BG_TALK_MAP,
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
