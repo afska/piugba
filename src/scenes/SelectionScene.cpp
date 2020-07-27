@@ -69,13 +69,12 @@ void SelectionScene::load() {
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
 
-  setUpSpritesPalette();
-  setUpPager();
-
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
+  setUpSpritesPalette();
+  setUpPager();
   setUpArrows();
 
   auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
