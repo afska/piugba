@@ -8,6 +8,7 @@
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
+#include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -54,6 +55,7 @@ void DanceGradeScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
+  SPRITE_disable();
 
   setUpSpritesPalette();
   setUpBackground();

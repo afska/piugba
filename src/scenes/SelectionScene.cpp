@@ -32,9 +32,9 @@ const u32 PAGE_SIZE = 4;
 const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
 const u32 CENTER_Y = 108;
-const u32 TEXT_ROW = 13;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
+const u32 TEXT_ROW = 13;
 const u32 PIXEL_BLINK_LEVEL = 4;
 
 static std::unique_ptr<Highlighter> highlighter{

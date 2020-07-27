@@ -72,6 +72,7 @@ void CalibrateScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
+  SPRITE_disable();
 
   setUpSpritesPalette();
   setUpBackground();

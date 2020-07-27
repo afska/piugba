@@ -26,9 +26,9 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
-const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 ALPHA_BLINK_TIME = 6;
 const u32 ALPHA_BLINK_LEVEL = 10;
+const u32 PIXEL_BLINK_LEVEL = 2;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -78,6 +78,7 @@ void SongScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
+  SPRITE_disable();
 
   setUpPalettes();
   if (ENABLE_BACKGROUND)

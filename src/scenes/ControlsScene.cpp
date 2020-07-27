@@ -8,6 +8,7 @@
 #include "scenes/SelectionScene.h"
 #include "utils/BackgroundUtils.h"
 #include "utils/EffectUtils.h"
+#include "utils/SpriteUtils.h"
 
 extern "C" {
 #include "player/fxes.h"
@@ -16,7 +17,6 @@ extern "C" {
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 RIGHT_CENTER = 5;
 const u32 INSTRUCTOR_X = 86;
 const u32 INSTRUCTOR_Y = 49;
@@ -24,6 +24,7 @@ const u32 START_COMBO_TOTAL = 5;
 const ArrowDirection START_COMBO[] = {
     ArrowDirection::UPLEFT, ArrowDirection::UPRIGHT, ArrowDirection::DOWNLEFT,
     ArrowDirection::DOWNRIGHT, ArrowDirection::CENTER};
+const u32 PIXEL_BLINK_LEVEL = 4;
 
 ControlsScene::ControlsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs)
@@ -56,6 +57,7 @@ void ControlsScene::load() {
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
+  SPRITE_disable();
 
   setUpSpritesPalette();
   setUpBackground();
