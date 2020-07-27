@@ -6,9 +6,7 @@
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/Key.h"
 #include "scenes/SelectionScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/fxes.h"
@@ -54,14 +52,10 @@ std::vector<Sprite*> ControlsScene::sprites() {
 }
 
 void ControlsScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().clear();
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
   setUpArrows();

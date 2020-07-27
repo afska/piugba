@@ -11,9 +11,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "scenes/SettingsScene.h"
 #include "scenes/SongScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/fxes.h"
@@ -31,10 +29,12 @@ const u32 BANK_BACKGROUND_MAP = 16;
 const u32 PAGE_SIZE = 4;
 const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
-const u32 CENTER_Y = 108;
+const u32 CENTER_Y = 110;
 const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_ROW = 13;
+const int TEXT_SCROLL_NORMAL = -6;
+const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
 
 static std::unique_ptr<Highlighter> highlighter{
@@ -64,10 +64,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
+
+  TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
@@ -295,14 +294,17 @@ void SelectionScene::confirm() {
   fxes_play(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
+  TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
-  BACKGROUND_write(CONFIRM_MESSAGE, TEXT_ROW + 1);
+  SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
 }
 
 void SelectionScene::unconfirm() {
-  SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
-  if (confirmed)
+  if (confirmed) {
+    SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
+    TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
     updateSelection();
+  }
   confirmed = false;
 }
 
@@ -328,7 +330,7 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::setNames(std::string title, std::string artist) {
   TextStream::instance().clear();
-  BACKGROUND_write(title, TEXT_ROW);
+  SCENE_write(title, TEXT_ROW);
   TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }

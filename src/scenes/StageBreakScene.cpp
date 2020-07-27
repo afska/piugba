@@ -6,9 +6,7 @@
 #include "data/content/_compiled_sprites/palette_break.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -62,14 +60,10 @@ std::vector<Sprite*> StageBreakScene::sprites() {
 }
 
 void StageBreakScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().clear();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);

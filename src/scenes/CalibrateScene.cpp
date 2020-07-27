@@ -9,9 +9,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "scenes/SettingsScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -69,14 +67,10 @@ std::vector<Sprite*> CalibrateScene::sprites() {
 }
 
 void CalibrateScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().clear();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
@@ -152,7 +146,7 @@ void CalibrateScene::printTitle() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
 
-  BACKGROUND_write(TITLE, TEXT_ROW_TITLE);
+  SCENE_write(TITLE, TEXT_ROW_TITLE);
   TextStream::instance().setText(SUBTITLE1, TEXT_ROW_SUBTITLE1,
                                  TEXT_COL_SUBTITLE);
   TextStream::instance().setText(SUBTITLE2, TEXT_ROW_SUBTITLE2,
@@ -193,10 +187,10 @@ void CalibrateScene::finish() {
   TextStream::instance().setText(RESET_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_RESET);
   TextStream::instance().setText(SAVE_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_SAVE);
 
-  BACKGROUND_write(MEASURE_TITLE, TEXT_ROW_MEASURE_TITLE);
+  SCENE_write(MEASURE_TITLE, TEXT_ROW_MEASURE_TITLE);
 
   auto value = std::to_string(measuredLag);
-  BACKGROUND_write(value, TEXT_ROW_MEASURE_VALUE);
+  SCENE_write(value, TEXT_ROW_MEASURE_VALUE);
 }
 
 void CalibrateScene::save() {

@@ -10,9 +10,7 @@
 #include "player/PlaybackState.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/SelectionScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/fxes.h"
@@ -59,10 +57,7 @@ std::vector<Sprite*> SettingsScene::sprites() {
 }
 
 void SettingsScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
@@ -147,7 +142,7 @@ void SettingsScene::printMenu() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
 
-  BACKGROUND_write(TITLE, 2);
+  SCENE_write(TITLE, 2);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   bool showControls = SAVEFILE_read8(SRAM->settings.showControls);

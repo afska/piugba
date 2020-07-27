@@ -11,9 +11,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -75,10 +73,7 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   player_play(song->audioPath.c_str());
 
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpPalettes();
   if (ENABLE_BACKGROUND)

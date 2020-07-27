@@ -5,15 +5,15 @@
 
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/Key.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_BLEND_ALPHA = 12;
+const u32 TEXT_MIDDLE_ROW = 9;
+
 const u32 INSTRUCTOR_X = 152;
 const u32 INSTRUCTOR_Y = 48;
 const u32 NEXT_X = 220;
@@ -41,14 +41,11 @@ std::vector<Sprite*> TalkScene::sprites() {
 }
 
 void TalkScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().clear();
+  TextStream::instance().scroll(0, -4);
 
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
@@ -59,9 +56,9 @@ void TalkScene::load() {
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
   nextButton->get()->moveTo(NEXT_X, NEXT_Y);
 
-  TextStream::instance().setText("This is a test", 9, 0);
-  TextStream::instance().setText("message. Hehe,", 10, 0);
-  TextStream::instance().setText("too much words!", 11, 0);
+  TextStream::instance().setText("This is a test", 8, 0);
+  TextStream::instance().setText("message. Hehe,", TEXT_MIDDLE_ROW, 0);
+  TextStream::instance().setText("too much words!", 10, 0);
 }
 
 void TalkScene::tick(u16 keys) {

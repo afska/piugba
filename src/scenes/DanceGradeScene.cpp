@@ -6,9 +6,7 @@
 #include "data/content/_compiled_sprites/palette_grade.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
-#include "utils/BackgroundUtils.h"
-#include "utils/EffectUtils.h"
-#include "utils/SpriteUtils.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -52,10 +50,7 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 }
 
 void DanceGradeScene::load() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
-  BACKGROUND_enable(false, false, false, false);
-  SPRITE_disable();
+  SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
@@ -109,14 +104,13 @@ void DanceGradeScene::setUpBackground() {
 
 void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
-  TextStream::instance().clear();
 
   auto points = std::to_string(evaluation->points);
   while (points.length() < SCORE_DIGITS)
     points = "0" + points;
 
-  BACKGROUND_write(SCORE_TITLE, TEXT_ROW);
-  BACKGROUND_write(points, TEXT_ROW + 1);
+  SCENE_write(SCORE_TITLE, TEXT_ROW);
+  SCENE_write(points, TEXT_ROW + 1);
 }
 
 void DanceGradeScene::playSound() {
