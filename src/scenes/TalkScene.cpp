@@ -13,10 +13,11 @@ const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
-const u32 INSTRUCTOR_X = 86;
-const u32 INSTRUCTOR_Y = 49;
-const u32 NEXT_X = 100;
-const u32 NEXT_Y = 100;
+const u32 TEXT_BLEND_ALPHA = 12;
+const u32 INSTRUCTOR_X = 152;
+const u32 INSTRUCTOR_Y = 48;
+const u32 NEXT_X = 220;
+const u32 NEXT_Y = 140;
 
 TalkScene::TalkScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -47,12 +48,20 @@ void TalkScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
+  TextStream::instance().clear();
+
+  EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
+  EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
 
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::Boy, INSTRUCTOR_X, INSTRUCTOR_Y)};
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
   nextButton->get()->moveTo(NEXT_X, NEXT_Y);
+
+  TextStream::instance().setText("This is a test", 9, 0);
+  TextStream::instance().setText("message. Hehe,", 10, 0);
+  TextStream::instance().setText("too much words!", 11, 0);
 }
 
 void TalkScene::tick(u16 keys) {
@@ -80,8 +89,8 @@ void TalkScene::setUpSpritesPalette() {
 }
 
 void TalkScene::setUpBackground() {
-  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_LINES_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_LINES_TILES, BG_LINES_MAP,
+  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_WALL_PALETTE);
+  bg = BACKGROUND_loadBackgroundFiles(fs, BG_WALL_TILES, BG_WALL_MAP,
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
