@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <functional>
 #include <string>
 
 #include "objects/ArrowSelector.h"
@@ -19,7 +20,8 @@ class TalkScene : public Scene {
  public:
   TalkScene(std::shared_ptr<GBAEngine> engine,
             const GBFS_FILE* fs,
-            std::string message);
+            std::string message,
+            std::function<void()> onComplete);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -35,6 +37,7 @@ class TalkScene : public Scene {
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<ArrowSelector> nextButton;
   std::string message;
+  std::function<void()> onComplete;
 
   void setUpSpritesPalette();
   void setUpBackground();

@@ -4,6 +4,28 @@
 #include <string.h>
 
 #include <string>
+#include <vector>
+
+inline std::vector<std::string> STRING_split(std::string str,
+                                             std::string delimiter) {
+  std::vector<std::string> output;
+
+  auto start = 0U;
+  auto end = str.find(delimiter);
+  while (end != std::string::npos) {
+    output.push_back(str.substr(start, end - start));
+    start = end + delimiter.length();
+    end = str.find(delimiter, start);
+  }
+
+  output.push_back(str.substr(start, end));
+
+  return output;
+}
+
+inline std::string STRING_removeFromEnd(std::string str, int length) {
+  return str.replace(str.length() - length, length, "");
+}
 
 inline bool STRING_endsWith(const char* str, const char* suffix) {
   if (!str || !suffix)
@@ -13,10 +35,6 @@ inline bool STRING_endsWith(const char* str, const char* suffix) {
   if (lensuffix > lenstr)
     return false;
   return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-}
-
-inline std::string STRING_removeFromEnd(std::string str, int length) {
-  return str.replace(str.length() - length, length, "");
 }
 
 #endif  // STRING_UTILS_H

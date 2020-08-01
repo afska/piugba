@@ -6,12 +6,18 @@
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/Key.h"
 #include "utils/SceneUtils.h"
+#include "utils/StringUtils.h"
+
+#define LINE_BREAK "\r\n"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_BLEND_ALPHA = 12;
+const int TEXT_OFFSET_X = 2;
+const int TEXT_BASE_OFFSET_Y = -3;
+const int TEXT_LINE_OFFSETS_Y[] = {0, -24, -16, -8, 0};
 
 const u32 INSTRUCTOR_X = 2;
 const u32 INSTRUCTOR_Y = 96;
@@ -19,10 +25,12 @@ const u32 BUTTON_MARGIN = 3;
 
 TalkScene::TalkScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
-                     std::string message)
+                     std::string message,
+                     std::function<void()> onComplete)
     : Scene(engine) {
   this->fs = fs;
   this->message = message;
+  this->onComplete = onComplete;
 }
 
 std::vector<Background*> TalkScene::backgrounds() {
@@ -43,12 +51,6 @@ void TalkScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
-  TextStream::instance().scroll(0, -4);
-  // If the lines number is odd, MIDDLE_POINT = 9th row + 4px
-  // If the lines number is even, MIDDLE_POINT = 9th & 10th rows
-  // LINE_START = 0
-  // MAX_LINE_COLS = 14
-  // TODO: Center between 0~14 and vertically around MIDDLE_POINT
 
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
@@ -60,7 +62,16 @@ void TalkScene::load() {
   nextButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
 
-  TextStream::instance().setText("Hello world!", 3, -1);
+  auto lines = STRING_split(message, LINE_BREAK);
+  auto offsetY = TEXT_BASE_OFFSET_Y + TEXT_LINE_OFFSETS_Y[lines.size()];
+  TextStream::instance().scroll(TEXT_OFFSET_X, offsetY);
+  // 25 cols, 7 rows (separated by blacks, so actually 4 of them are usable)
+
+  u32 row = 2;
+  for (auto& line : lines) {
+    TextStream::instance().setText(line, row, 0);
+    row += 2;
+  }
 }
 
 void TalkScene::tick(u16 keys) {
@@ -74,9 +85,8 @@ void TalkScene::tick(u16 keys) {
   }
 
   nextButton->setIsPressed(KEY_CENTER(keys));
-  if (nextButton->hasBeenPressedNow()) {
-    // TODO: Advance
-  }
+  if (nextButton->hasBeenPressedNow())
+    onComplete();
 
   nextButton->tick();
 }
