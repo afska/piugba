@@ -29,7 +29,7 @@ TalkScene::TalkScene(std::shared_ptr<GBAEngine> engine,
                      std::function<void()> onComplete)
     : Scene(engine) {
   this->fs = fs;
-  this->message = message;
+  this->lines = STRING_split(message, LINE_BREAK);
   this->onComplete = onComplete;
 }
 
@@ -62,16 +62,7 @@ void TalkScene::load() {
   nextButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
 
-  auto lines = STRING_split(message, LINE_BREAK);
-  auto offsetY = TEXT_BASE_OFFSET_Y + TEXT_LINE_OFFSETS_Y[lines.size()];
-  TextStream::instance().scroll(TEXT_OFFSET_X, offsetY);
-  // 25 cols, 7 rows (separated by blacks, so actually 4 of them are usable)
-
-  u32 row = 2;
-  for (auto& line : lines) {
-    TextStream::instance().setText(line, row, 0);
-    row += 2;
-  }
+  alignText();
 }
 
 void TalkScene::tick(u16 keys) {
@@ -85,10 +76,12 @@ void TalkScene::tick(u16 keys) {
   }
 
   nextButton->setIsPressed(KEY_CENTER(keys));
-  if (nextButton->hasBeenPressedNow())
+  if (nextButton->hasBeenPressedNow() && hasFinished())
     onComplete();
 
   nextButton->tick();
+
+  autoWrite();
 }
 
 void TalkScene::setUpSpritesPalette() {
@@ -103,4 +96,25 @@ void TalkScene::setUpBackground() {
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+}
+
+void TalkScene::alignText() {
+  auto offsetY = TEXT_BASE_OFFSET_Y + TEXT_LINE_OFFSETS_Y[lines.size()];
+  TextStream::instance().scroll(TEXT_OFFSET_X, offsetY);
+  // 25 cols, 7 rows (separated by blanks, so actually 4 of them are usable)
+}
+
+void TalkScene::autoWrite() {
+  wait = !wait;
+  if (wait || hasFinished())
+    return;
+
+  auto character = lines[row].substr(col, 1);
+  if (character != "") {
+    TextStream::instance().setText(character, 2 + row * 2, col);
+    col++;
+  } else {
+    row++;
+    col = 0;
+  }
 }

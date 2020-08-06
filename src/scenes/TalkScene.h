@@ -36,11 +36,19 @@ class TalkScene : public Scene {
 
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<ArrowSelector> nextButton;
-  std::string message;
+  std::vector<std::string> lines;
   std::function<void()> onComplete;
+  u32 col = 0;
+  u32 row = 0;
+  bool wait = true;
+
+  inline bool hasFinished() { return row == lines.size(); }
 
   void setUpSpritesPalette();
   void setUpBackground();
+
+  void alignText();
+  void autoWrite();
 };
 
 #endif  // TALK_SCENE_H
