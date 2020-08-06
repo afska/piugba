@@ -39,11 +39,17 @@ lifebar:
 numbers_mini:
 -> 30 colors
 
+difficulties:
+-> 109 colors
+
 grades:
 -> 225 colors
 
 instructors:
 -> 150 colors
+
+lock:
+-> 3 colors
 
 ===
 
