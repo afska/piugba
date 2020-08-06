@@ -18,7 +18,7 @@ void PixelBlink::blinkAndThen(std::function<void()> callback) {
   this->callback = callback;
 }
 
-void PixelBlink::tick() {
+void PixelBlink::tick(u8 minValue) {
   if (!isBlinking && step == 0)
     return;
 
@@ -34,5 +34,5 @@ void PixelBlink::tick() {
   } else
     step--;
 
-  EFFECT_setMosaic(step);
+  EFFECT_setMosaic(max(step, minValue));
 }

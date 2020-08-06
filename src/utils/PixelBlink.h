@@ -12,7 +12,8 @@ class PixelBlink {
   void blink();
   void blinkAndThen(std::function<void()> callback);
 
-  void tick();
+  inline void tick() { tick(0); }
+  void tick(u8 minValue);
 
  private:
   u32 targetValue;

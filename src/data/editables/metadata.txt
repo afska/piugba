@@ -47,6 +47,9 @@ instructors:
 
 ===
 
+screen_selection:
+  Image -> Mode -> Indexed...
+    -> 251 colors
 screen_controls:
   Image -> Mode -> Indexed...
     -> 254 colors

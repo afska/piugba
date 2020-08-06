@@ -13,6 +13,8 @@ class LifeBar {
  public:
   LifeBar();
 
+  inline u8 getMosaicValue() { return mosaicValue; }
+
   void setLife(int life);
   void blink(ForegroundPaletteManager* foregroundPalette);
 
@@ -22,8 +24,10 @@ class LifeBar {
  private:
   std::unique_ptr<Sprite> sprite;
   u32 value = Div(INITIAL_LIFE, 10);
+  u32 absLife = INITIAL_LIFE;
   u32 animatedValue = value;
   u32 wait = 0;
+  u8 mosaicValue = 0;
   bool animatedFlag = false;
 
   void paint(ForegroundPaletteManager* foregroundPalette);
@@ -35,5 +39,13 @@ const u8 LIFE_TO_VALUE_LUT[] = {
     4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6,
     6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8,
     8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10};
+
+const u8 LIFE_TO_MOSAIC_LUT[] = {
+    12, 12, 12, 12, 12, 11, 11, 11, 11, 11, 11, 11, 11, 10, 10, 10, 10,
+    10, 10, 10, 10, 9,  9,  9,  9,  9,  9,  9,  9,  9,  8,  8,  8,  8,
+    8,  8,  8,  8,  7,  7,  7,  7,  7,  7,  7,  7,  6,  6,  6,  6,  6,
+    6,  6,  6,  6,  5,  5,  5,  5,  5,  5,  5,  5,  4,  4,  4,  4,  4,
+    4,  4,  4,  3,  3,  3,  3,  3,  3,  3,  3,  3,  2,  2,  2,  2,  2,
+    2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0};
 
 #endif  // LIFE_BAR_H

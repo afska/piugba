@@ -145,7 +145,13 @@ void SongScene::tick(u16 keys) {
   if (SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
-  pixelBlink->tick();
+  u8 minMosaic = 0;
+  if (false) {  // TODO: Pixel mod
+    minMosaic = lifeBar->getMosaicValue();
+    EFFECT_setMosaic(minMosaic);
+  }
+
+  pixelBlink->tick(minMosaic);
   updateFakeHeads();
   updateArrows();
   score->tick();

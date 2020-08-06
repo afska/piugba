@@ -37,12 +37,9 @@ LifeBar::LifeBar() {
 }
 
 void LifeBar::setLife(int life) {
-  u32 absLife = life < 0 ? 0 : (u32)life;
+  u32 absLife = abs(life);
   value = LIFE_TO_VALUE_LUT[absLife];
-
-  if (false)
-    EFFECT_setMosaic((100 - absLife) * 15 /
-                     100);  // TODO: OPTIONAL PIXEL MOD --- AVOID DIVISION
+  mosaicValue = LIFE_TO_MOSAIC_LUT[absLife];
 }
 
 void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
