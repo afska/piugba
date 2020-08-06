@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 typedef struct {
+  u8 isPlaying;
   u8 pixelate;
 } State;
 

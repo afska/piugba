@@ -71,6 +71,7 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  SAVEFILE_write8(SRAM->state.isPlaying, 1);
   player_play(song->audioPath.c_str());
 
   SCENE_init();
@@ -311,6 +312,7 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::unload() {
+  SAVEFILE_write8(SRAM->state.isPlaying, 0);
   player_stopAll();
 }
 

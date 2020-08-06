@@ -19,7 +19,10 @@ int main() {
   player_init();
   SAVEFILE_initialize(fs);
 
-  bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
+  bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+  bool showControls = SAVEFILE_read8(SRAM->settings.showControls) && !isPlaying;
+  SAVEFILE_write8(SRAM->state.isPlaying, 0);
+
   engine->setScene(showControls ? (Scene*)new ControlsScene(engine, fs)
                                 : (Scene*)new SelectionScene(engine, fs));
   player_forever([]() { engine->update(); });
