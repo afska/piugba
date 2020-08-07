@@ -26,12 +26,24 @@ grit \
   spr_numbers.bmp \
   spr_difficulties.bmp \
   spr_of.bmp \
+  spr_multipliers.bmp \
+  spr_grades_mini.bmp \
+  spr_channels.bmp \
+  spr_lock.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
 mv \
   spr_difficulties.h \
   spr_difficulties.c \
   spr_of.h \
   spr_of.c \
+  spr_multipliers.h \
+  spr_multipliers.c \
+  spr_grades_mini.h \
+  spr_grades_mini.c \
+  spr_channels.h \
+  spr_channels.c \
+  spr_lock.h \
+  spr_lock.c \
   palette_selection.* \
   "$DESTINATION"
 

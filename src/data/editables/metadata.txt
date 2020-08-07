@@ -40,13 +40,22 @@ numbers_mini:
 -> 30 colors
 
 difficulties:
--> 109 colors
+-> 38 colors
 
 grades:
 -> 225 colors
 
+grades_mini:
+-> 38 colors
+
 instructors:
 -> 150 colors
+
+multipliers:
+-> 10 colors
+
+channels:
+-> 20 colors
 
 lock:
 -> 3 colors
