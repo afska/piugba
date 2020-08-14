@@ -139,5 +139,7 @@ void DanceGradeScene::playSound() {
       player_play(SOUND_RANK_F);
       break;
     }
+    default: {
+    }
   }
 }

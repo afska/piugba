@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-enum GradeType { S, A, B, C, D, F };
+enum GradeType { S, A, B, C, D, F, UNPLAYED };
 
 class Grade {
  public:

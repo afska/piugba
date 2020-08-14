@@ -9,20 +9,21 @@
 #include "Settings.h"
 #include "State.h"
 #include "assets.h"
+#include "objects/Difficulty.h"
 #include "utils/parse.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+const u32 PROGRESS_REGISTERS = 6;
+
 typedef struct {
   u32 romId;
 
   Settings settings;
   Memory memory;
-  Progress progressNormal;
-  Progress progressHard;
-  Progress progressCrazy;
+  Progress progress[PROGRESS_REGISTERS];
 
   State state;
 } SaveFile;
@@ -58,13 +59,34 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
 
-    SAVEFILE_write32(SRAM->progressNormal.completedSongs, 0);
-    SAVEFILE_write32(SRAM->progressHard.completedSongs, 0);
-    SAVEFILE_write32(SRAM->progressCrazy.completedSongs, 0);
+    u32 i;
+    for (i = 0; i < PROGRESS_REGISTERS; i++) {
+      SAVEFILE_write32(SRAM->progress[i].completedSongs, 0);
+    }
 
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
     SAVEFILE_write8(SRAM->state.pixelate, 0);
   }
+}
+
+inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
+  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].grades[songIndex]) - 1;
+  if (songIndex > lastIndex)
+    return GradeType::UNPLAYED;
+
+  return static_cast<GradeType>(
+      SAVEFILE_read8(SRAM->progress[level].grades[songIndex]));
+}
+
+inline void SAVEFILE_setGradeOf(u8 songIndex,
+                                DifficultyLevel level,
+                                GradeType grade) {
+  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].grades[songIndex]) - 1;
+  if (songIndex > lastIndex) {
+    SAVEFILE_write32(SRAM->progress[level].completedSongs, songIndex + 1);
+  }
+
+  SAVEFILE_write8(SRAM->progress[level].grades[songIndex], grade);
 }
 
 #endif  // SAVE_FILE_H
