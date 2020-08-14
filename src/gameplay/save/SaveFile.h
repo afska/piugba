@@ -70,7 +70,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
-  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].grades[songIndex]) - 1;
+  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
   if (songIndex > lastIndex)
     return GradeType::UNPLAYED;
 
@@ -81,7 +81,7 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
 inline void SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 GradeType grade) {
-  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].grades[songIndex]) - 1;
+  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
   if (songIndex > lastIndex) {
     SAVEFILE_write32(SRAM->progress[level].completedSongs, songIndex + 1);
   }

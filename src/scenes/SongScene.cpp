@@ -121,10 +121,7 @@ void SongScene::tick(u16 keys) {
   u32 songMsecs = PlaybackState.msecs;
 
   if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
-    unload();
-    engine->transitionIntoScene(
-        new DanceGradeScene(engine, fs, score->evaluate()),
-        new FadeOutScene(1));
+    finishAndGoToEvaluation();
     return;
   }
 
@@ -309,6 +306,16 @@ void SongScene::processKeys(u16 keys) {
                          false);
         });
   }
+}
+
+void SongScene::finishAndGoToEvaluation() {
+  auto evaluation = score->evaluate();
+  SAVEFILE_setGradeOf(song->id, chart->difficulty, evaluation->getGrade());
+
+  unload();
+  engine->transitionIntoScene(
+      new DanceGradeScene(engine, fs, std::move(evaluation)),
+      new FadeOutScene(1));
 }
 
 void SongScene::unload() {

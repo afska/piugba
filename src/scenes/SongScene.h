@@ -62,6 +62,7 @@ class SongScene : public Scene {
   void updateArrows();
   void updateFakeHeads();
   void processKeys(u16 keys);
+  void finishAndGoToEvaluation();
   void unload();
 };
 

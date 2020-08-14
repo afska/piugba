@@ -72,12 +72,12 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
+  auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+  difficulty->setValue(static_cast<DifficultyLevel>(level));
+
   setUpSpritesPalette();
   setUpPager();
   setUpArrows();
-
-  auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
-  difficulty->setValue(static_cast<DifficultyLevel>(level));
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -281,6 +281,8 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 
 void SelectionScene::updateSelection() {
   Song* song = Song_parse(fs, getSelectedSong(), false);
+  auto grade = SAVEFILE_getGradeOf(
+      song->id, difficulty->getValue());  // TODO: UPDATE GRADES
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);
