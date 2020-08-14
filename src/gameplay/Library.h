@@ -45,12 +45,12 @@ class Library {
       if (STRING_endsWith(fileName, METADATA_EXTENSION)) {
         if (count == 0 ||
             (discoveredCount >= start && processedCount < count)) {
-          processedCount++;
-
           auto name = STRING_removeFromEnd(std::string(fileName),
                                            sizeof(METADATA_EXTENSION) - 1);
-          action(name);
+          action(name, discoveredCount);
+          processedCount++;
         }
+
         if (processedCount == count)
           break;
 

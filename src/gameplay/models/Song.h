@@ -26,6 +26,7 @@ typedef struct {
   Chart* charts;  //       0x48 ("chartCount" times)
 
   // custom fields:
+  u32 id;
   std::string audioPath;
   std::string backgroundTilesPath;
   std::string backgroundPalettePath;

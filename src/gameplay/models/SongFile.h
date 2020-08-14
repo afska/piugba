@@ -1,6 +1,8 @@
 #ifndef SONG_FILE_H
 #define SONG_FILE_H
 
+#include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include <string>
 
 #define METADATA_EXTENSION ".pius"
@@ -10,9 +12,13 @@
 #define BACKGROUND_MAP_EXTENSION ".map.bin"
 
 typedef struct SongFile {
+  u32 id;
   std::string name;
 
-  SongFile(std::string name) { this->name = name; }
+  SongFile(std::string name, u32 id) {
+    this->id = id;
+    this->name = name;
+  }
 
   std::string getMetadataFile() { return name + METADATA_EXTENSION; }
   std::string getAudioFile() { return name + AUDIO_EXTENSION; }

@@ -58,6 +58,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
     }
   }
 
+  song->id = file->id;
   song->audioPath = file->getAudioFile();
   song->backgroundTilesPath = file->getBackgroundTilesFile();
   song->backgroundPalettePath = file->getBackgroundPaletteFile();

@@ -7,8 +7,8 @@ Library::Library(const GBFS_FILE* fs) {
 std::vector<std::unique_ptr<SongFile>> Library::getSongs(u32 start, u32 count) {
   std::vector<std::unique_ptr<SongFile>> files;
 
-  forEachSong(start, count, [&files](std::string name) {
-    files.push_back(std::unique_ptr<SongFile>{new SongFile(name)});
+  forEachSong(start, count, [&files](std::string name, u32 index) {
+    files.push_back(std::unique_ptr<SongFile>{new SongFile(name, index)});
   });
 
   return files;
@@ -16,6 +16,6 @@ std::vector<std::unique_ptr<SongFile>> Library::getSongs(u32 start, u32 count) {
 
 u32 Library::getCount() {
   u32 count = 0;
-  forEachSong([&count](std::string name) { count++; });
+  forEachSong([&count](std::string name, u32 index) { count++; });
   return count;
 }
