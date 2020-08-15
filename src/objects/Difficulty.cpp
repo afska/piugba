@@ -60,10 +60,6 @@ void Difficulty::setValue(DifficultyLevel value) {
   }
 }
 
-DifficultyLevel Difficulty::getValue() {
-  return value;
-}
-
 void Difficulty::render(std::vector<Sprite*>* sprites) {
   sprites->push_back(leftSprite.get());
   sprites->push_back(rightSprite.get());

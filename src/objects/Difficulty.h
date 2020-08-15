@@ -11,8 +11,9 @@ class Difficulty {
  public:
   Difficulty();
 
+  inline DifficultyLevel getValue() { return value; }
+
   void setValue(DifficultyLevel value);
-  DifficultyLevel getValue();
 
   void render(std::vector<Sprite*>* sprites);
 

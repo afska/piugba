@@ -22,6 +22,9 @@ void Highlighter::initialize(u8 selectedItem) {
 }
 
 void Highlighter::select(u8 option) {
+  if (selectedItem == option)
+    return;
+
   selectedItem = option;
   loadTiles();
 }

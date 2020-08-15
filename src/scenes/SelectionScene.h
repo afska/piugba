@@ -21,6 +21,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+const u32 PAGE_SIZE = 4;
+
 class SelectionScene : public Scene {
  public:
   SelectionScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
@@ -50,6 +52,14 @@ class SelectionScene : public Scene {
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
+  inline SongFile* getSelectedSong() { return songs[selected].get(); }
+  inline u32 getSelectedSongIndex() { return page * PAGE_SIZE + selected; }
+  inline u32 getPageStart() { return page * PAGE_SIZE; }
+  inline u32 getCompletedSongs() {
+    return SAVEFILE_read32(
+        SRAM->progress[difficulty->getValue()].completedSongs);
+  }
+
   void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
@@ -57,10 +67,8 @@ class SelectionScene : public Scene {
   void setUpGradeBadges();
   void setUpPager();
 
+  void scrollTo(u32 page, u32 selected);
   void goToSong();
-  SongFile* getSelectedSong();
-  u32 getSelectedSongIndex();
-  u32 getPageStart();
 
   void processKeys(u16 keys);
   void processDifficultyChangeEvents();

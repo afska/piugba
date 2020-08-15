@@ -26,7 +26,6 @@ const u32 ID_MAIN_BACKGROUND = 2;
 const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 PAGE_SIZE = 4;
 const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
 const u32 CENTER_Y = 110;
@@ -198,9 +197,13 @@ void SelectionScene::setUpGradeBadges() {
 
 void SelectionScene::setUpPager() {
   count = library->getCount();
+  scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
+           SAVEFILE_read8(SRAM->memory.songIndex));
+}
 
-  page = SAVEFILE_read8(SRAM->memory.pageIndex);
-  selected = SAVEFILE_read8(SRAM->memory.songIndex);
+void SelectionScene::scrollTo(u32 page, u32 selected) {
+  this->page = page;
+  this->selected = selected;
 
   setPage(page, 0);
   updateSelection();
@@ -216,18 +219,6 @@ void SelectionScene::goToSong() {
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(2));
-}
-
-SongFile* SelectionScene::getSelectedSong() {
-  return songs[selected].get();
-}
-
-u32 SelectionScene::getSelectedSongIndex() {
-  return page * PAGE_SIZE + selected;
-}
-
-u32 SelectionScene::getPageStart() {
-  return page * PAGE_SIZE;
 }
 
 void SelectionScene::processKeys(u16 keys) {
@@ -272,8 +263,17 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
     SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
 
     difficulty->setValue(newValue);
-    loadProgress();
     pixelBlink->blink();
+
+    u32 lastUnlockedSongIndex = min(getCompletedSongs(), count - 1);
+    if (lastUnlockedSongIndex >= getSelectedSongIndex())
+      loadProgress();
+    else {
+      player_stopAll();
+      scrollTo(Div(lastUnlockedSongIndex, PAGE_SIZE),
+               DivMod(lastUnlockedSongIndex, PAGE_SIZE));
+    }
+
     return true;
   }
 
@@ -303,7 +303,6 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
     } else {
       selected += direction;
       updateSelection();
-      highlighter->select(selected);
       pixelBlink->blink();
       fxes_play(SOUND_STEP);
     }
@@ -324,6 +323,7 @@ void SelectionScene::updateSelection() {
 
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
   SAVEFILE_write8(SRAM->memory.songIndex, selected);
+  highlighter->select(selected);
 }
 
 void SelectionScene::confirm() {
@@ -374,14 +374,11 @@ void SelectionScene::loadChannels() {
 }
 
 void SelectionScene::loadProgress() {
-  auto difficultyLevel = difficulty->getValue();
-  auto completedSongs =
-      SAVEFILE_read32(SRAM->progress[difficultyLevel].completedSongs);
-
-  progress->setValue(completedSongs, count);
+  progress->setValue(getCompletedSongs(), count);
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    auto grade = SAVEFILE_getGradeOf(page * PAGE_SIZE + i, difficultyLevel);
+    auto grade =
+        SAVEFILE_getGradeOf(page * PAGE_SIZE + i, difficulty->getValue());
     gradeBadges[i]->setType(grade);
   }
 }
