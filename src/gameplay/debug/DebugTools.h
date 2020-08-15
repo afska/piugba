@@ -13,6 +13,11 @@
 #define ENABLE_BACKGROUND true
 #endif
 
+#ifndef IGNORE_LOCKS
+// Defined in Makefile: Allow playing locked songs
+#define IGNORE_LOCKS false
+#endif
+
 #define STRESSTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFSTRESSTEST if (STRESSTEST_MODE)

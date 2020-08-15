@@ -251,8 +251,11 @@ void SelectionScene::processDifficultyChangeEvents() {
 }
 
 void SelectionScene::processSelectionChangeEvents() {
-  if (onSelectionChange(ArrowDirection::DOWNRIGHT,
-                        getSelectedSongIndex() == getLastUnlockedSongIndex(),
+  auto isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
+  if (IGNORE_LOCKS)
+    isOnListEdge = getSelectedSongIndex() == count - 1;
+
+  if (onSelectionChange(ArrowDirection::DOWNRIGHT, isOnListEdge,
                         selected == PAGE_SIZE - 1, 1))
     return;
 
