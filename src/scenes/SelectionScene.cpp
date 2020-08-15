@@ -85,7 +85,8 @@ void SelectionScene::load() {
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
-  multiplier = std::unique_ptr<Multiplier>{new Multiplier()};
+  multiplier = std::unique_ptr<Multiplier>{
+      new Multiplier(SAVEFILE_read8(SRAM->memory.multiplier))};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
@@ -219,7 +220,7 @@ void SelectionScene::goToSong() {
 
   Song* song = Song_parse(fs, getSelectedSong(), true);
   Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
-  SAVEFILE_write8(SRAM->state.pixelate, song->channel == Channel::BOSS);
+  SAVEFILE_write8(SRAM->state.isBoss, song->channel == Channel::BOSS);
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(2));
@@ -261,7 +262,7 @@ void SelectionScene::processSelectionChangeEvents() {
 void SelectionScene::processMultiplierChangeEvents() {
   if (multiplier->hasBeenPressedNow()) {
     fxes_playSolo(SOUND_MOD);
-    multiplier->change();
+    SAVEFILE_write8(SRAM->memory.multiplier, multiplier->change());
   }
 }
 

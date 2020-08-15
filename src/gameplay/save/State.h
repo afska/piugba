@@ -5,7 +5,7 @@
 
 typedef struct {
   u8 isPlaying;
-  u8 pixelate;
+  u8 isBoss;
 } State;
 
 #endif  // STATE_H

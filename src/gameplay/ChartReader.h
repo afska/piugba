@@ -21,7 +21,8 @@ class ChartReader : public TimingProvider {
               ObjectPool<Arrow>* arrowPool,
               Judge* judge,
               PixelBlink* pixelBlink,
-              int audioLag);
+              int audioLag,
+              u32 multiplier);
 
   bool update(int msecs);
 

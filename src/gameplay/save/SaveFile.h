@@ -65,7 +65,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     }
 
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
-    SAVEFILE_write8(SRAM->state.pixelate, 0);
+    SAVEFILE_write8(SRAM->state.isBoss, 0);
   }
 }
 

@@ -13,7 +13,8 @@ ChartReader::ChartReader(Chart* chart,
                          ObjectPool<Arrow>* arrowPool,
                          Judge* judge,
                          PixelBlink* pixelBlink,
-                         int audioLag) {
+                         int audioLag,
+                         u32 multiplier) {
   this->chart = chart;
   this->arrowPool = arrowPool;
   this->judge = judge;
@@ -29,7 +30,7 @@ ChartReader::ChartReader(Chart* chart,
     holdArrowStates[i].lastStartTime = 0;
   }
 
-  multiplier = ARROW_DEFAULT_MULTIPLIER;
+  this->multiplier = multiplier;
   targetArrowTime = ARROW_TIME[multiplier];
   syncArrowTime();
   frameSkipCount = FRAME_SKIP;

@@ -86,6 +86,7 @@ void SongScene::load() {
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  u32 multiplier = SAVEFILE_read8(SRAM->memory.multiplier);
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         if (ENABLE_STAGE_BREAK) {
@@ -94,8 +95,9 @@ void SongScene::load() {
                                       new FadeOutScene(6));
         }
       }));
-  chartReader = std::unique_ptr<ChartReader>(new ChartReader(
-      chart, arrowPool.get(), judge.get(), pixelBlink.get(), audioLag));
+  chartReader = std::unique_ptr<ChartReader>(
+      new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get(),
+                      audioLag, multiplier));
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
@@ -144,7 +146,7 @@ void SongScene::tick(u16 keys) {
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   u8 minMosaic = 0;
-  if (SAVEFILE_read8(SRAM->state.pixelate)) {
+  if (SAVEFILE_read8(SRAM->state.isBoss)) {
     minMosaic = lifeBar->getMosaicValue();
     EFFECT_setMosaic(minMosaic);
   }
