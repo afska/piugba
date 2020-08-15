@@ -263,6 +263,7 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
                                         DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
+    player_stop();
     fxes_play(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
@@ -285,9 +286,12 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
                                        int direction) {
   if (arrowSelectors[selector]->shouldFireEvent()) {
     unconfirm();
+
     if (isOnListEdge) {
-      if (arrowSelectors[selector]->hasBeenPressedNow())
+      if (arrowSelectors[selector]->hasBeenPressedNow()) {
+        player_stop();
         fxes_play(SOUND_STEP);
+      }
       return true;
     }
 
