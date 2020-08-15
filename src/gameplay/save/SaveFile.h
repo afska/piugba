@@ -1,6 +1,7 @@
 #ifndef SAVE_FILE_H
 #define SAVE_FILE_H
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
@@ -94,7 +95,10 @@ inline void SAVEFILE_setGradeOf(u8 songIndex,
                                 GradeType grade) {
   auto lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
   if (songIndex > lastIndex) {
-    SAVEFILE_write32(SRAM->progress[level].completedSongs, songIndex + 1);
+    auto nextSongIndex = songIndex + 1;
+    SAVEFILE_write32(SRAM->progress[level].completedSongs, nextSongIndex);
+    SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
+    SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
   }
 
   SAVEFILE_write8(SRAM->progress[level].grades[songIndex], grade);
