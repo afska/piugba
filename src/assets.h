@@ -3,6 +3,7 @@
 
 #define SOUND_STEP ((char*)"_aud_step.gsm")
 #define SOUND_MOD ((char*)"_aud_mod.gsm")
+#define SOUND_ENTER ((char*)"_aud_enter.gsm")
 #define SOUND_RANK_S ((char*)"_aud_rank-s.gsm")
 #define SOUND_RANK_A ((char*)"_aud_rank-a.gsm")
 #define SOUND_RANK_B ((char*)"_aud_rank-b.gsm")

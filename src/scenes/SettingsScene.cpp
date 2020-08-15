@@ -167,7 +167,7 @@ void SettingsScene::printMenu() {
   else
     printOption(OPTION_BGA_DARK_BLINK, "----------------",
                 bgaDarkBlink ? "---" : "---", 13);
-  printOption(OPTION_QUIT, "QUIT GAME", "", 15);
+  printOption(OPTION_QUIT, "QUIT TO MAIN MENU", "", 15);
 }
 
 void SettingsScene::printOption(u32 id,

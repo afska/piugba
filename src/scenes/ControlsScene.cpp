@@ -71,6 +71,7 @@ void ControlsScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     hasStarted = true;
+    fxes_play(SOUND_ENTER);
   }
 
   processKeys(keys);
