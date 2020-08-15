@@ -150,6 +150,7 @@ void SelectionScene::setUpBackground() {
   bg->persist();
 
   TextStream::instance().setFontColor(TEXT_COLOR);
+  loadProgress();
 }
 
 void SelectionScene::setUpArrows() {
@@ -325,7 +326,6 @@ void SelectionScene::unconfirm() {
 
 void SelectionScene::setPage(u32 page, int direction) {
   this->page = page;
-  loadProgress();
 
   songs.clear();
   songs = library->getSongs(page * PAGE_SIZE, PAGE_SIZE);
