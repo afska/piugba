@@ -8,6 +8,8 @@ typedef struct {
   u8 songIndex;
   u8 difficultyLevel;
   u8 multiplier;
+
+  u8 isAudioLagCalibrated;
 } Memory;
 
 #endif  // MEMORY_H

@@ -21,7 +21,7 @@ class TalkScene : public Scene {
   TalkScene(std::shared_ptr<GBAEngine> engine,
             const GBFS_FILE* fs,
             std::string message,
-            std::function<void()> onComplete);
+            std::function<void(u16 keys)> onKeyPress);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -37,7 +37,7 @@ class TalkScene : public Scene {
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<ArrowSelector> nextButton;
   std::vector<std::string> lines;
-  std::function<void()> onComplete;
+  std::function<void(u16 keys)> onKeyPress;
   u32 col = 0;
   u32 row = 0;
   bool wait = true;

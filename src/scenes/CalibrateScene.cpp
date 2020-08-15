@@ -1,7 +1,6 @@
 #include "CalibrateScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
@@ -47,9 +46,11 @@ const u32 BUTTON_MARGIN = 12;
 const u32 PIXEL_BLINK_LEVEL = 6;
 
 CalibrateScene::CalibrateScene(std::shared_ptr<GBAEngine> engine,
-                               const GBFS_FILE* fs)
+                               const GBFS_FILE* fs,
+                               std::function<void()> onFinish)
     : Scene(engine) {
   this->fs = fs;
+  this->onFinish = onFinish;
 }
 
 std::vector<Background*> CalibrateScene::backgrounds() {
@@ -196,6 +197,5 @@ void CalibrateScene::finish() {
 void CalibrateScene::save() {
   SAVEFILE_write32(SRAM->settings.audioLag, (u32)measuredLag);
   player_stop();
-  engine->transitionIntoScene(new SettingsScene(engine, fs),
-                              new FadeOutScene(2));
+  onFinish();
 }

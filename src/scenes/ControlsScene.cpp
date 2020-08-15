@@ -1,7 +1,5 @@
 #include "ControlsScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/Key.h"
@@ -25,9 +23,11 @@ const ArrowDirection START_COMBO[] = {
 const u32 PIXEL_BLINK_LEVEL = 4;
 
 ControlsScene::ControlsScene(std::shared_ptr<GBAEngine> engine,
-                             const GBFS_FILE* fs)
+                             const GBFS_FILE* fs,
+                             std::function<void()> onFinish)
     : Scene(engine) {
   this->fs = fs;
+  this->onFinish = onFinish;
 }
 
 std::vector<Background*> ControlsScene::backgrounds() {
@@ -157,8 +157,7 @@ void ControlsScene::advanceCombo() {
 
   if (comboStep == START_COMBO_TOTAL) {
     fxes_stop();
-    engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(1));
+    onFinish();
   }
 }
 

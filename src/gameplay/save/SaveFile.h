@@ -58,6 +58,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.songIndex, 0);
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
+    SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 0);
 
     u32 i;
     for (i = 0; i < PROGRESS_REGISTERS; i++) {

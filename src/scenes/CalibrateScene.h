@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <functional>
+
 #include "objects/ui/ArrowSelector.h"
 #include "utils/PixelBlink.h"
 
@@ -15,7 +17,9 @@ extern "C" {
 
 class CalibrateScene : public Scene {
  public:
-  CalibrateScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  CalibrateScene(std::shared_ptr<GBAEngine> engine,
+                 const GBFS_FILE* fs,
+                 std::function<void()> onFinish);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -28,6 +32,7 @@ class CalibrateScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  std::function<void()> onFinish;
 
   std::unique_ptr<ArrowSelector> calibrateButton;
   std::unique_ptr<ArrowSelector> resetButton;

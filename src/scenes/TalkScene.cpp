@@ -26,11 +26,11 @@ const u32 BUTTON_MARGIN = 3;
 TalkScene::TalkScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
                      std::string message,
-                     std::function<void()> onComplete)
+                     std::function<void(u16 keys)> onKeyPress)
     : Scene(engine) {
   this->fs = fs;
   this->lines = STRING_split(message, LINE_BREAK);
-  this->onComplete = onComplete;
+  this->onKeyPress = onKeyPress;
 }
 
 std::vector<Background*> TalkScene::backgrounds() {
@@ -76,8 +76,8 @@ void TalkScene::tick(u16 keys) {
   }
 
   nextButton->setIsPressed(KEY_CENTER(keys));
-  if (nextButton->hasBeenPressedNow() && hasFinished())
-    onComplete();
+  if ((keys & KEY_ANY) && hasFinished())
+    onKeyPress(keys);
 
   nextButton->tick();
 

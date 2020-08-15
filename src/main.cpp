@@ -1,30 +1,23 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
-#include "gameplay/save/SaveFile.h"
-#include "scenes/ControlsScene.h"
-#include "scenes/SelectionScene.h"
+#include "gameplay/Sequence.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
 void setUpInterrupts();
-static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 
+static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
   setUpInterrupts();
   player_init();
-  SAVEFILE_initialize(fs);
+  SEQUENCE_initialize(engine, fs);
 
-  bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
-  bool showControls = SAVEFILE_read8(SRAM->settings.showControls) && !isPlaying;
-  SAVEFILE_write8(SRAM->state.isPlaying, 0);
-
-  engine->setScene(showControls ? (Scene*)new ControlsScene(engine, fs)
-                                : (Scene*)new SelectionScene(engine, fs));
+  engine->setScene(SEQUENCE_getInitialScene());
   player_forever([]() { engine->update(); });
 
   return 0;

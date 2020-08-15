@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <functional>
+
 #include "objects/ui/ArrowSelector.h"
 #include "objects/ui/ArrowTutorial.h"
 #include "objects/ui/Instructor.h"
@@ -17,7 +19,9 @@ extern "C" {
 
 class ControlsScene : public Scene {
  public:
-  ControlsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  ControlsScene(std::shared_ptr<GBAEngine> engine,
+                const GBFS_FILE* fs,
+                std::function<void()> onFinish);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -30,6 +34,7 @@ class ControlsScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  std::function<void()> onFinish;
 
   std::unique_ptr<Instructor> instructor;
   std::vector<std::unique_ptr<ArrowSelector>> buttons;
