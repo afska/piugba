@@ -271,6 +271,7 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
     SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
 
     difficulty->setValue(newValue);
+    loadProgress();
     pixelBlink->blink();
     return true;
   }

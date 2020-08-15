@@ -6,7 +6,6 @@
 #include "utils/SpriteUtils.h"
 
 const u32 MAX_COMBO = 999;
-const u32 DIGITS = 3;
 const u32 DIGITS_POSITION_X = 8;
 const u32 DIGITS_POSITION_Y = 89;
 
@@ -26,9 +25,9 @@ void Combo::setValue(int value) {
   u32 absValue = min(abs(value), MAX_COMBO);
 
   this->value = absValue;
-  digits[0]->set(THREE_DIGITS_LUT[absValue * DIGITS], isRed);
-  digits[1]->set(THREE_DIGITS_LUT[absValue * DIGITS + 1], isRed);
-  digits[2]->set(THREE_DIGITS_LUT[absValue * DIGITS + 2], isRed);
+  digits[0]->set(THREE_DIGITS_LUT[absValue * LUT_DIGITS], isRed);
+  digits[1]->set(THREE_DIGITS_LUT[absValue * LUT_DIGITS + 1], isRed);
+  digits[2]->set(THREE_DIGITS_LUT[absValue * LUT_DIGITS + 2], isRed);
 
   // Without optimizations:
   // digits[0]->set(Div(absValue, 100), isRed);

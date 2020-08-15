@@ -30,11 +30,11 @@ NumericProgress::NumericProgress() {
 }
 
 void NumericProgress::setValue(u32 completed, u32 total) {
-  completedDigits[0]->set(Div(completed, 10), false);
-  completedDigits[1]->set(DivMod(completed, 10), false);
+  completedDigits[0]->set(THREE_DIGITS_LUT[completed * LUT_DIGITS + 1], false);
+  completedDigits[1]->set(THREE_DIGITS_LUT[completed * LUT_DIGITS + 2], false);
 
-  totalDigits[0]->set(Div(total, 10), false);
-  totalDigits[1]->set(DivMod(total, 10), false);
+  totalDigits[0]->set(THREE_DIGITS_LUT[total * LUT_DIGITS + 1], false);
+  totalDigits[1]->set(THREE_DIGITS_LUT[total * LUT_DIGITS + 2], false);
 }
 
 void NumericProgress::render(std::vector<Sprite*>* sprites) {
