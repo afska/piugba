@@ -6,7 +6,7 @@
 const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
+Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -67,7 +67,7 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   return song;
 }
 
-Channel Song_getChannel(const GBFS_FILE* fs, SongFile* file) {
+Channel SONG_getChannel(const GBFS_FILE* fs, SongFile* file) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -75,7 +75,7 @@ Channel Song_getChannel(const GBFS_FILE* fs, SongFile* file) {
   return static_cast<Channel>(parse_u8(data, &cursor));
 }
 
-Chart* Song_findChartByDifficultyLevel(Song* song,
+Chart* SONG_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel) {
   for (u32 i = 0; i < song->chartCount; i++) {
     if (song->charts[i].difficulty == difficultyLevel)
@@ -85,7 +85,7 @@ Chart* Song_findChartByDifficultyLevel(Song* song,
   return NULL;
 }
 
-Chart* Song_findChartByNumericLevel(Song* song, u8 level) {
+Chart* SONG_findChartByNumericLevel(Song* song, u8 level) {
   for (u32 i = 0; i < song->chartCount; i++) {
     if (song->charts[i].level == level)
       return song->charts + i;
@@ -94,7 +94,7 @@ Chart* Song_findChartByNumericLevel(Song* song, u8 level) {
   return NULL;
 }
 
-void Song_free(Song* song) {
+void SONG_free(Song* song) {
   free(song->title);
   free(song->artist);
 

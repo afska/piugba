@@ -33,11 +33,11 @@ typedef struct {
   std::string backgroundMapPath;
 } Song;
 
-Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full);
-Channel Song_getChannel(const GBFS_FILE* fs, SongFile* file);
-Chart* Song_findChartByNumericLevel(Song* song, u8 level);
-Chart* Song_findChartByDifficultyLevel(Song* song,
+Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full);
+Channel SONG_getChannel(const GBFS_FILE* fs, SongFile* file);
+Chart* SONG_findChartByNumericLevel(Song* song, u8 level);
+Chart* SONG_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel);
-void Song_free(Song* song);
+void SONG_free(Song* song);
 
 #endif  // SONG_H

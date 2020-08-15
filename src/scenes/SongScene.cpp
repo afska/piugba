@@ -328,5 +328,5 @@ void SongScene::unload() {
 SongScene::~SongScene() {
   arrowHolders.clear();
   fakeHeads.clear();
-  Song_free(song);
+  SONG_free(song);
 }

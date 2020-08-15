@@ -218,8 +218,8 @@ void SelectionScene::goToSong() {
   player_stopAll();
   confirmed = false;
 
-  Song* song = Song_parse(fs, getSelectedSong(), true);
-  Chart* chart = Song_findChartByDifficultyLevel(song, difficulty->getValue());
+  Song* song = SONG_parse(fs, getSelectedSong(), true);
+  Chart* chart = SONG_findChartByDifficultyLevel(song, difficulty->getValue());
   SAVEFILE_write8(SRAM->state.isBoss, song->channel == Channel::BOSS);
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
@@ -344,12 +344,12 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 }
 
 void SelectionScene::updateSelection() {
-  Song* song = Song_parse(fs, getSelectedSong(), false);
+  Song* song = SONG_parse(fs, getSelectedSong(), false);
 
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);
-  Song_free(song);
+  SONG_free(song);
 
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
   SAVEFILE_write8(SRAM->memory.songIndex, selected);
@@ -394,7 +394,7 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::loadChannels() {
   for (u32 i = 0; i < songs.size(); i++) {
-    auto channel = Song_getChannel(fs, songs[i].get());
+    auto channel = SONG_getChannel(fs, songs[i].get());
     channelBadges[i]->setType(channel);
   }
 
