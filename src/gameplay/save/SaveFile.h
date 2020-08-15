@@ -17,6 +17,7 @@ extern "C" {
 }
 
 const u32 PROGRESS_REGISTERS = 6;
+const u32 IMPOSSIBLE = 3;
 
 typedef struct __attribute__((__packed__)) {
   u32 romId;
@@ -60,10 +61,15 @@ inline bool SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 0);
 
-    u32 i;
-    for (i = 0; i < PROGRESS_REGISTERS; i++) {
-      SAVEFILE_write32(SRAM->progress[i].completedSongs, 0);
-    }
+    SAVEFILE_write32(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
+    SAVEFILE_write32(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
+    SAVEFILE_write32(SRAM->progress[DifficultyLevel::CRAZY].completedSongs, 0);
+    SAVEFILE_write32(
+        SRAM->progress[IMPOSSIBLE + DifficultyLevel::NORMAL].completedSongs, 0);
+    SAVEFILE_write32(
+        SRAM->progress[IMPOSSIBLE + DifficultyLevel::HARD].completedSongs, 0);
+    SAVEFILE_write32(
+        SRAM->progress[IMPOSSIBLE + DifficultyLevel::CRAZY].completedSongs, 0);
 
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
     SAVEFILE_write8(SRAM->state.isBoss, 0);
