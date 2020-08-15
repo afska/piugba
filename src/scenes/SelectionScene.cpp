@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/background/text_stream.h>
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <tonc_input.h>
 
 #include "assets.h"
@@ -72,6 +73,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
     sprites.push_back(locks[i]->get());
 
   difficulty->render(&sprites);
+  sprites.push_back(multiplier->get());
   progress->render(&sprites);
 
   return sprites;
@@ -83,6 +85,7 @@ void SelectionScene::load() {
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
 
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
+  multiplier = std::unique_ptr<Multiplier>{new Multiplier()};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
@@ -114,23 +117,14 @@ void SelectionScene::tick(u16 keys) {
   pixelBlink->tick();
   for (auto& it : arrowSelectors)
     it->tick();
+  multiplier->tick();
 
   processKeys(keys);
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
-
-  if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
-    if (confirmed)
-      goToSong();
-    else
-      confirm();
-  }
-
-  if (keys & KEY_START) {
-    player_stopAll();
-    engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(2));
-  }
+  processMultiplierChangeEvents();
+  processConfirmEvents();
+  processMenuEvents(keys);
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_BLEND),
                    HIGHLIGHTER_OPACITY);
@@ -237,6 +231,7 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
   arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
   arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  multiplier->setIsPressed(keys & KEY_SELECT);
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
@@ -263,12 +258,35 @@ void SelectionScene::processSelectionChangeEvents() {
                     selected == 0, -1);
 }
 
+void SelectionScene::processMultiplierChangeEvents() {
+  if (multiplier->hasBeenPressedNow()) {
+    fxes_playSolo(SOUND_MOD);
+    multiplier->change();
+  }
+}
+
+void SelectionScene::processConfirmEvents() {
+  if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
+    if (confirmed)
+      goToSong();
+    else
+      confirm();
+  }
+}
+
+void SelectionScene::processMenuEvents(u16 keys) {
+  if (keys & KEY_START) {
+    player_stopAll();
+    engine->transitionIntoScene(new SettingsScene(engine, fs),
+                                new FadeOutScene(2));
+  }
+}
+
 bool SelectionScene::onDifficultyChange(ArrowDirection selector,
                                         DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    player_stop();
-    fxes_play(SOUND_STEP);
+    fxes_playSolo(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -301,10 +319,8 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
     unconfirm();
 
     if (isOnListEdge) {
-      if (arrowSelectors[selector]->hasBeenPressedNow()) {
-        player_stop();
-        fxes_play(SOUND_STEP);
-      }
+      if (arrowSelectors[selector]->hasBeenPressedNow())
+        fxes_playSolo(SOUND_STEP);
       return true;
     }
 
@@ -340,8 +356,7 @@ void SelectionScene::updateSelection() {
 }
 
 void SelectionScene::confirm() {
-  player_stop();
-  fxes_play(SOUND_STEP);
+  fxes_playSolo(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);

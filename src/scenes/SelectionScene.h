@@ -14,6 +14,7 @@
 #include "objects/Difficulty.h"
 #include "objects/GradeBadge.h"
 #include "objects/Lock.h"
+#include "objects/Multiplier.h"
 #include "objects/NumericProgress.h"
 #include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
@@ -47,6 +48,7 @@ class SelectionScene : public Scene {
   std::vector<std::unique_ptr<GradeBadge>> gradeBadges;
   std::vector<std::unique_ptr<Lock>> locks;
   std::unique_ptr<Difficulty> difficulty;
+  std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
   u32 page = 0;
   u32 selected = 0;
@@ -79,6 +81,9 @@ class SelectionScene : public Scene {
   void processKeys(u16 keys);
   void processDifficultyChangeEvents();
   void processSelectionChangeEvents();
+  void processMultiplierChangeEvents();
+  void processConfirmEvents();
+  void processMenuEvents(u16 keys);
   bool onDifficultyChange(ArrowDirection selector, DifficultyLevel newValue);
   bool onSelectionChange(ArrowDirection selector,
                          bool isOnListEdge,

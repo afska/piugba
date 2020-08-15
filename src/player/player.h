@@ -8,4 +8,6 @@ void player_stop();
 void player_stopAll();
 void player_forever(void (*update)());
 
+void fxes_playSolo(const char* name);
+
 #endif  // PLAYER_H

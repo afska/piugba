@@ -84,3 +84,8 @@ void player_forever(void (*update)()) {
     fxes_postUpdate();
   }
 }
+
+void fxes_playSolo(const char* name) {
+  player_stop();
+  fxes_play(name);
+}
