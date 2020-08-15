@@ -36,6 +36,8 @@ const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
 const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
+const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
+const u32 GRADE_BADGE_Y = 84;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -57,6 +59,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     sprites.push_back(arrowSelectors[i]->get());
 
+  for (u32 i = 0; i < PAGE_SIZE; i++)
+    sprites.push_back(gradeBadges[i]->get());
+
   difficulty->render(&sprites);
   progress->render(&sprites);
 
@@ -76,8 +81,9 @@ void SelectionScene::load() {
   difficulty->setValue(static_cast<DifficultyLevel>(level));
 
   setUpSpritesPalette();
-  setUpPager();
   setUpArrows();
+  setUpGradeBadges();
+  setUpPager();
 }
 
 void SelectionScene::tick(u16 keys) {
@@ -164,6 +170,13 @@ void SelectionScene::setUpArrows() {
   arrowSelectors[ArrowDirection::DOWNRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
+}
+
+void SelectionScene::setUpGradeBadges() {
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    gradeBadges.push_back(std::unique_ptr<GradeBadge>{
+        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y)});
+  }
 }
 
 void SelectionScene::setUpPager() {
@@ -281,8 +294,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 
 void SelectionScene::updateSelection() {
   Song* song = Song_parse(fs, getSelectedSong(), false);
-  auto grade = SAVEFILE_getGradeOf(
-      song->id, difficulty->getValue());  // TODO: UPDATE GRADES
+
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);
@@ -312,9 +324,8 @@ void SelectionScene::unconfirm() {
 }
 
 void SelectionScene::setPage(u32 page, int direction) {
-  progress->setValue(0, count);  // TODO: Implement progress
-
   this->page = page;
+  loadProgress();
 
   songs.clear();
   songs = library->getSongs(page * PAGE_SIZE, PAGE_SIZE);
@@ -328,6 +339,19 @@ void SelectionScene::setPage(u32 page, int direction) {
       setUpBackground();
       updateSelection();
     });
+  }
+}
+
+void SelectionScene::loadProgress() {
+  auto difficultyLevel = difficulty->getValue();
+  auto completedSongs =
+      SAVEFILE_read32(SRAM->progress[difficultyLevel].completedSongs);
+
+  progress->setValue(completedSongs, count);
+
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    auto grade = SAVEFILE_getGradeOf(page * PAGE_SIZE + i, difficultyLevel);
+    gradeBadges[i]->setType(grade);
   }
 }
 

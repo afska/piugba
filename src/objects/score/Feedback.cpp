@@ -24,7 +24,7 @@ Feedback::Feedback() {
 
 void Feedback::setType(FeedbackType type) {
   this->type = type;
-  SPRITE_goToFrame(sprite.get(), (int)type);
+  SPRITE_goToFrame(sprite.get(), type);
 }
 
 Sprite* Feedback::get() {
