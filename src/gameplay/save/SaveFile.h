@@ -9,7 +9,7 @@
 #include "Settings.h"
 #include "State.h"
 #include "assets.h"
-#include "objects/ui/Difficulty.h"
+#include "gameplay/models/Chart.h"
 #include "utils/parse.h"
 
 extern "C" {
