@@ -16,10 +16,11 @@ const NORMALIZE_FILENAME = (it, prefix = "") =>
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
 const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
 
-const CONTENT_PATH = $path.join(__dirname, "../../../src/data/content");
+const DATA_PATH = $path.join(__dirname, "../../../src/data");
+const CONTENT_PATH = $path.join(DATA_PATH, "content");
+const AUDIO_PATH = $path.join(DATA_PATH, "assets/audio");
+const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
 const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
-const AUDIO_PATH = $path.join(CONTENT_PATH, "assets/audio");
-const IMAGES_PATH = $path.join(CONTENT_PATH, "assets/images");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const MAX_FILE_LENGTH = 15;
@@ -63,8 +64,6 @@ const GET_SONG_FILES = ({ path, name }) => {
 // -------
 
 mkdirp(SONGS_PATH);
-mkdirp(AUDIO_PATH);
-mkdirp(IMAGES_PATH);
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
 
