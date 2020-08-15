@@ -43,6 +43,7 @@ SRCDIRS		:= src \
 						 src/objects/base \
 						 src/objects/score \
 						 src/objects/score/combo \
+						 src/objects/ui \
 						 src/player \
 						 src/player/core \
 						 src/scenes \

@@ -3,9 +3,9 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "ArrowHolder.h"
-#include "ArrowInfo.h"
-#include "base/InputHandler.h"
+#include "objects/ArrowHolder.h"
+#include "objects/ArrowInfo.h"
+#include "objects/base/InputHandler.h"
 
 class ArrowSelector : public InputHandler {
  public:

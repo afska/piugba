@@ -3,8 +3,8 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "ArrowInfo.h"
-#include "base/InputHandler.h"
+#include "objects/ArrowInfo.h"
+#include "objects/base/InputHandler.h"
 
 class Multiplier : public InputHandler {
  public:

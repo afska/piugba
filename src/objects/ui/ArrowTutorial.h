@@ -3,8 +3,8 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "ArrowHolder.h"
-#include "ArrowInfo.h"
+#include "objects/ArrowHolder.h"
+#include "objects/ArrowInfo.h"
 
 class ArrowTutorial {
  public:

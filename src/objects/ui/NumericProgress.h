@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include "Digit.h"
 #include "Of.h"
+#include "objects/Digit.h"
 
 class NumericProgress {
  public:

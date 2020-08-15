@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "score/Grade.h"
+#include "objects/score/Grade.h"
 
 class GradeBadge {
  public:

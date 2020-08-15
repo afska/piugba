@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "objects/ArrowSelector.h"
+#include "objects/ui/ArrowSelector.h"
 #include "utils/PixelBlink.h"
 
 extern "C" {

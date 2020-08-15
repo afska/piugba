@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "gameplay/Library.h"
-#include "objects/ArrowSelector.h"
-#include "objects/ChannelBadge.h"
-#include "objects/Difficulty.h"
-#include "objects/GradeBadge.h"
-#include "objects/Lock.h"
-#include "objects/Multiplier.h"
-#include "objects/NumericProgress.h"
+#include "objects/ui/ArrowSelector.h"
+#include "objects/ui/ChannelBadge.h"
+#include "objects/ui/Difficulty.h"
+#include "objects/ui/GradeBadge.h"
+#include "objects/ui/Lock.h"
+#include "objects/ui/Multiplier.h"
+#include "objects/ui/NumericProgress.h"
 #include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
 

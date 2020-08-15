@@ -9,8 +9,8 @@
 #include <functional>
 #include <string>
 
-#include "objects/ArrowSelector.h"
-#include "objects/Instructor.h"
+#include "objects/ui/ArrowSelector.h"
+#include "objects/ui/Instructor.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"

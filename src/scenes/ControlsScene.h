@@ -6,9 +6,9 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-#include "objects/ArrowSelector.h"
-#include "objects/ArrowTutorial.h"
-#include "objects/Instructor.h"
+#include "objects/ui/ArrowSelector.h"
+#include "objects/ui/ArrowTutorial.h"
+#include "objects/ui/Instructor.h"
 #include "utils/PixelBlink.h"
 
 extern "C" {
