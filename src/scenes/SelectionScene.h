@@ -10,6 +10,7 @@
 
 #include "gameplay/Library.h"
 #include "objects/ArrowSelector.h"
+#include "objects/ChannelBadge.h"
 #include "objects/Difficulty.h"
 #include "objects/GradeBadge.h"
 #include "objects/NumericProgress.h"
@@ -39,6 +40,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
+  std::vector<std::unique_ptr<ChannelBadge>> channelBadges;
   std::vector<std::unique_ptr<GradeBadge>> gradeBadges;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
@@ -51,6 +53,7 @@ class SelectionScene : public Scene {
   void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
+  void setUpChannelBadges();
   void setUpGradeBadges();
   void setUpPager();
 
@@ -72,6 +75,7 @@ class SelectionScene : public Scene {
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);
+  void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
 };

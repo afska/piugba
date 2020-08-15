@@ -67,6 +67,14 @@ Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   return song;
 }
 
+Channel Song_getChannel(const GBFS_FILE* fs, SongFile* file) {
+  u32 length;
+  auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
+
+  u32 cursor = TITLE_LEN + ARTIST_LEN;
+  return static_cast<Channel>(parse_u8(data, &cursor));
+}
+
 Chart* Song_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel) {
   for (u32 i = 0; i < song->chartCount; i++) {

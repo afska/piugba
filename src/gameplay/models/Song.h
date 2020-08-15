@@ -34,6 +34,7 @@ typedef struct {
 } Song;
 
 Song* Song_parse(const GBFS_FILE* fs, SongFile* file, bool full);
+Channel Song_getChannel(const GBFS_FILE* fs, SongFile* file);
 Chart* Song_findChartByNumericLevel(Song* song, u8 level);
 Chart* Song_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel);

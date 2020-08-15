@@ -36,6 +36,8 @@ const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
 const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
+const u32 CHANNEL_BADGE_X[] = {22, 84, 142, 203};
+const u32 CHANNEL_BADGE_Y = 49;
 const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
 const u32 GRADE_BADGE_Y = 84;
 
@@ -60,6 +62,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
     sprites.push_back(arrowSelectors[i]->get());
 
   for (u32 i = 0; i < PAGE_SIZE; i++)
+    sprites.push_back(channelBadges[i]->get());
+
+  for (u32 i = 0; i < PAGE_SIZE; i++)
     sprites.push_back(gradeBadges[i]->get());
 
   difficulty->render(&sprites);
@@ -82,6 +87,7 @@ void SelectionScene::load() {
 
   setUpSpritesPalette();
   setUpArrows();
+  setUpChannelBadges();
   setUpGradeBadges();
   setUpPager();
 }
@@ -150,6 +156,8 @@ void SelectionScene::setUpBackground() {
   bg->persist();
 
   TextStream::instance().setFontColor(TEXT_COLOR);
+
+  loadChannels();
   loadProgress();
 }
 
@@ -173,10 +181,17 @@ void SelectionScene::setUpArrows() {
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
 }
 
+void SelectionScene::setUpChannelBadges() {
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    channelBadges.push_back(std::unique_ptr<ChannelBadge>{
+        new ChannelBadge(CHANNEL_BADGE_X[i], CHANNEL_BADGE_Y, i > 0)});
+  }
+}
+
 void SelectionScene::setUpGradeBadges() {
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     gradeBadges.push_back(std::unique_ptr<GradeBadge>{
-        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y)});
+        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
   }
 }
@@ -341,6 +356,16 @@ void SelectionScene::setPage(u32 page, int direction) {
       updateSelection();
     });
   }
+}
+
+void SelectionScene::loadChannels() {
+  for (u32 i = 0; i < songs.size(); i++) {
+    auto channel = Song_getChannel(fs, songs[i].get());
+    channelBadges[i]->setType(channel);
+  }
+
+  for (u32 i = songs.size(); i < PAGE_SIZE; i++)
+    channelBadges[i]->hide();
 }
 
 void SelectionScene::loadProgress() {
