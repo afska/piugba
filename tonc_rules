@@ -1,5 +1,5 @@
 #
-# Yes, this is almost, but not quite, completely like to 
+# Yes, this is almost, but not quite, completely like to
 # DKP's base_rules and gba_rules
 #
 
@@ -26,7 +26,7 @@ export OBJCOPY	:=	$(PREFIX)objcopy
 %.gba : %.elf
 	@$(OBJCOPY) -O binary $< $@
 	@echo built ... $(notdir $@)
-	@gbafix $@ -t$(TITLE)
+	@gbafix $@ -t$(GAMETITLE) -c$(GAMECODE) -mGAMEMAKER
 
 #----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ export OBJCOPY	:=	$(PREFIX)objcopy
 
 %.elf :
 	@echo Linking cartridge
-	$(LD) -specs=gba.specs $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@	
+	$(LD) -specs=gba.specs $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
 	$(NM) -Sn $@ > $(basename $(notdir $@)).map
 
 #----------------------------------------------------------------------
@@ -55,7 +55,7 @@ export OBJCOPY	:=	$(PREFIX)objcopy
 %.iwram.o : %.iwram.cpp
 	@echo $(notdir $<)
 	$(CXX) -MMD -MP -MF $(DEPSDIR)/$*.d $(CXXFLAGS) $(IARCH) -c $< -o $@
-	
+
 #----------------------------------------------------------------------
 %.iwram.o : %.iwram.c
 	@echo $(notdir $<)

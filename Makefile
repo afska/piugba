@@ -115,6 +115,9 @@ endif
 
 # --- Custom vars ? ---
 
+GAMETITLE=piugba
+GAMEMAKER=AGB
+GAMECODE=AABB
 ENV ?= development
 
 ifeq ($(ENV), debug)
