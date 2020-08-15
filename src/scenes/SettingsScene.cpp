@@ -206,14 +206,8 @@ void SettingsScene::select() {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
       fxes_stop();
-      engine->transitionIntoScene(
-          new CalibrateScene(engine, fs,
-                             [this]() {
-                               engine->transitionIntoScene(
-                                   new SettingsScene(engine, fs),
-                                   new FadeOutScene(2));
-                             }),
-          new FadeOutScene(2));
+      engine->transitionIntoScene(new CalibrateScene(engine, fs, NULL),
+                                  new FadeOutScene(2));
       break;
     }
     case OPTION_SHOW_CONTROLS: {

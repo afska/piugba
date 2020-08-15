@@ -223,7 +223,7 @@ void SelectionScene::goToSong() {
   SAVEFILE_write8(SRAM->state.isBoss, song->channel == Channel::BOSS);
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                              new FadeOutScene(2));
+                              new FadeOutScene(4));
 }
 
 void SelectionScene::processKeys(u16 keys) {
@@ -279,7 +279,7 @@ void SelectionScene::processMenuEvents(u16 keys) {
   if (keys & KEY_START) {
     player_stopAll();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(2));
+                                new FadeOutScene(4));
   }
 }
 

@@ -1,6 +1,7 @@
 #include "CalibrateScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
+#include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
@@ -107,7 +108,8 @@ void CalibrateScene::tick(u16 keys) {
   if (resetButton->hasBeenPressedNow() &&
       !SPRITE_isHidden(resetButton->get())) {
     measuredLag = 0;
-    save();
+    printTitle();
+    finish();
   }
 
   if (saveButton->hasBeenPressedNow() && !SPRITE_isHidden(saveButton->get()))
@@ -197,5 +199,10 @@ void CalibrateScene::finish() {
 void CalibrateScene::save() {
   SAVEFILE_write32(SRAM->settings.audioLag, (u32)measuredLag);
   player_stop();
-  onFinish();
+
+  if (onFinish != NULL)
+    onFinish();
+  else
+    engine->transitionIntoScene(new SettingsScene(engine, fs),
+                                new FadeOutScene(2));
 }
