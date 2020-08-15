@@ -13,6 +13,7 @@
 #include "objects/ChannelBadge.h"
 #include "objects/Difficulty.h"
 #include "objects/GradeBadge.h"
+#include "objects/Lock.h"
 #include "objects/NumericProgress.h"
 #include "ui/Highlighter.h"
 #include "utils/PixelBlink.h"
@@ -44,6 +45,7 @@ class SelectionScene : public Scene {
   std::vector<std::unique_ptr<ArrowSelector>> arrowSelectors;
   std::vector<std::unique_ptr<ChannelBadge>> channelBadges;
   std::vector<std::unique_ptr<GradeBadge>> gradeBadges;
+  std::vector<std::unique_ptr<Lock>> locks;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
   u32 page = 0;
@@ -55,6 +57,9 @@ class SelectionScene : public Scene {
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return page * PAGE_SIZE + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
+  inline u32 getLastUnlockedSongIndex() {
+    return min(getCompletedSongs(), count - 1);
+  }
   inline u32 getCompletedSongs() {
     return SAVEFILE_read32(
         SRAM->progress[difficulty->getValue()].completedSongs);
@@ -65,6 +70,7 @@ class SelectionScene : public Scene {
   void setUpArrows();
   void setUpChannelBadges();
   void setUpGradeBadges();
+  void setUpLocks();
   void setUpPager();
 
   void scrollTo(u32 page, u32 selected);

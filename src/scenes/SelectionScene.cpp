@@ -35,10 +35,12 @@ const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
 const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
-const u32 CHANNEL_BADGE_X[] = {22, 84, 142, 203};
+const u32 CHANNEL_BADGE_X[] = {22, 82, 142, 202};
 const u32 CHANNEL_BADGE_Y = 49;
 const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
 const u32 GRADE_BADGE_Y = 84;
+const u32 LOCK_X[] = {22, 82, 142, 202};
+const u32 LOCK_Y = 71;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -66,6 +68,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
   for (u32 i = 0; i < PAGE_SIZE; i++)
     sprites.push_back(gradeBadges[i]->get());
 
+  for (u32 i = 0; i < PAGE_SIZE; i++)
+    sprites.push_back(locks[i]->get());
+
   difficulty->render(&sprites);
   progress->render(&sprites);
 
@@ -88,6 +93,7 @@ void SelectionScene::load() {
   setUpArrows();
   setUpChannelBadges();
   setUpGradeBadges();
+  setUpLocks();
   setUpPager();
 }
 
@@ -181,10 +187,9 @@ void SelectionScene::setUpArrows() {
 }
 
 void SelectionScene::setUpChannelBadges() {
-  for (u32 i = 0; i < PAGE_SIZE; i++) {
+  for (u32 i = 0; i < PAGE_SIZE; i++)
     channelBadges.push_back(std::unique_ptr<ChannelBadge>{
         new ChannelBadge(CHANNEL_BADGE_X[i], CHANNEL_BADGE_Y, i > 0)});
-  }
 }
 
 void SelectionScene::setUpGradeBadges() {
@@ -193,6 +198,11 @@ void SelectionScene::setUpGradeBadges() {
         new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
   }
+}
+
+void SelectionScene::setUpLocks() {
+  for (u32 i = 0; i < PAGE_SIZE; i++)
+    locks.push_back(std::unique_ptr<Lock>{new Lock(LOCK_X[i], LOCK_Y, i > 0)});
 }
 
 void SelectionScene::setUpPager() {
@@ -242,7 +252,7 @@ void SelectionScene::processDifficultyChangeEvents() {
 
 void SelectionScene::processSelectionChangeEvents() {
   if (onSelectionChange(ArrowDirection::DOWNRIGHT,
-                        getSelectedSongIndex() == count - 1,
+                        getSelectedSongIndex() == getLastUnlockedSongIndex(),
                         selected == PAGE_SIZE - 1, 1))
     return;
 
@@ -265,7 +275,7 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
     difficulty->setValue(newValue);
     pixelBlink->blink();
 
-    u32 lastUnlockedSongIndex = min(getCompletedSongs(), count - 1);
+    u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
     if (lastUnlockedSongIndex >= getSelectedSongIndex())
       loadProgress();
     else {
@@ -377,9 +387,11 @@ void SelectionScene::loadProgress() {
   progress->setValue(getCompletedSongs(), count);
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    auto grade =
-        SAVEFILE_getGradeOf(page * PAGE_SIZE + i, difficulty->getValue());
+    auto songId = page * PAGE_SIZE + i;
+    auto grade = SAVEFILE_getGradeOf(songId, difficulty->getValue());
     gradeBadges[i]->setType(grade);
+    locks[i]->setVisible(songId > getLastUnlockedSongIndex() &&
+                         songId <= count - 1);
   }
 }
 
