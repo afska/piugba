@@ -7,7 +7,7 @@
 
 #define MAX_PROGRESS_REGISTERS 100
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
   u32 completedSongs;
   u8 grades[MAX_PROGRESS_REGISTERS];
 } Progress;

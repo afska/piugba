@@ -18,7 +18,7 @@ extern "C" {
 
 const u32 PROGRESS_REGISTERS = 6;
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
@@ -41,7 +41,7 @@ typedef struct {
   *(((char*)&DEST) + 2) = (((u32)VALUE) & 0x00ff0000) >> 16; \
   *(((char*)&DEST) + 3) = (((u32)VALUE) & 0xff000000) >> 24;
 
-inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
+inline bool SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
 
   if (SAVEFILE_read32(SRAM->romId) != romId) {
@@ -67,7 +67,11 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
     SAVEFILE_write8(SRAM->state.isBoss, 0);
+
+    return SAVEFILE_read32(SRAM->romId) == romId;
   }
+
+  return true;
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {

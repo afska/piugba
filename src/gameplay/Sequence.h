@@ -29,7 +29,6 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
                          const GBFS_FILE* fs) {
   _engine = engine;
   _fs = fs;
-  SAVEFILE_initialize(_fs);
 }
 
 Scene* SEQUENCE_getMainScene() {
@@ -58,6 +57,9 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 }
 
 Scene* SEQUENCE_getInitialScene() {
+  if (!SAVEFILE_initialize(_fs))
+    return new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
+
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   bool showControls = SAVEFILE_read8(SRAM->settings.showControls) && !isPlaying;
   SAVEFILE_write8(SRAM->state.isPlaying, 0);

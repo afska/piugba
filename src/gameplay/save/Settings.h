@@ -6,7 +6,7 @@
 enum GamePosition : u8 { LEFT, MIDDLE, RIGHT };
 enum BackgroundType : u8 { RAW, HALF_BGA_DARK, FULL_BGA_DARK };
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
   u32 audioLag;
   u8 showControls;
   u8 gamePosition;
