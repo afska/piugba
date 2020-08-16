@@ -60,6 +60,9 @@ channels:
 lock:
 -> 3 colors
 
+buttons:
+-> 151 colors
+
 ===
 
 screen_selection:

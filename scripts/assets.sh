@@ -47,6 +47,17 @@ mv \
   palette_selection.* \
   "$DESTINATION"
 
+# IntroScene
+grit \
+  spr_arrows.bmp \
+  spr_buttons.bmp \
+  -ftc -pS -gB8 -gT ff00ff -O palette_start.c
+mv \
+  spr_buttons.h \
+  spr_buttons.c \
+  palette_start.* \
+  "$DESTINATION"
+
 # ControlsScene
 grit \
   spr_arrows.bmp \

@@ -1,7 +1,7 @@
 #include "StartScene.h"
 
 #include "assets.h"
-#include "data/content/_compiled_sprites/palette_controls.h"  // TODO: CAMBIAR
+#include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
@@ -68,9 +68,8 @@ void StartScene::tick(u16 keys) {
 }
 
 void StartScene::setUpSpritesPalette() {
-  foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_controlsPal, sizeof(palette_controlsPal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
+      new ForegroundPaletteManager(palette_startPal, sizeof(palette_startPal)));
 }
 
 void StartScene::setUpBackground() {
