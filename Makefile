@@ -117,7 +117,7 @@ endif
 
 GAMETITLE=piugba
 GAMEMAKER=AGB
-GAMECODE=AABB
+GAMECODE=AZCE # Megaman Zero (SRAM - 64kb)
 ENV ?= development
 
 ifeq ($(ENV), debug)
