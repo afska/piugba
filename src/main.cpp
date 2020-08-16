@@ -2,13 +2,16 @@
 #include <tonc.h>
 
 #include "gameplay/Sequence.h"
+#include "gameplay/debug/DebugTools.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
-void setUpInterrupts();
+// Emulators and flashcarts use this string to autodetect the save type
+const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
+void setUpInterrupts();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -19,6 +22,8 @@ int main() {
 
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever([]() { engine->update(); });
+
+  LOGSTR(SAVEFILE_TYPE_HINT, 0);
 
   return 0;
 }
