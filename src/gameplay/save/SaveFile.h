@@ -43,10 +43,11 @@ typedef struct __attribute__((__packed__)) {
   *(((char*)&DEST) + 2) = (((u32)VALUE) & 0x00ff0000) >> 16; \
   *(((char*)&DEST) + 3) = (((u32)VALUE) & 0xff000000) >> 24;
 
-inline bool SAVEFILE_initialize(const GBFS_FILE* fs) {
+inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
+  bool isNew = SAVEFILE_read32(SRAM->romId) != romId;
 
-  if (SAVEFILE_read32(SRAM->romId) != romId) {
+  if (isNew) {
     SAVEFILE_write32(SRAM->romId, romId);
 
     SAVEFILE_write32(SRAM->settings.audioLag, 0);
@@ -74,11 +75,12 @@ inline bool SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
     SAVEFILE_write8(SRAM->state.isBoss, 0);
-
-    return SAVEFILE_read32(SRAM->romId) == romId;
   }
+}
 
-  return true;
+inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
+  u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
+  return SAVEFILE_read32(SRAM->romId) == romId;
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {

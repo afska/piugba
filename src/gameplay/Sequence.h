@@ -57,7 +57,8 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 }
 
 Scene* SEQUENCE_getInitialScene() {
-  if (!SAVEFILE_initialize(_fs))
+  SAVEFILE_initialize(_fs);
+  if (!SAVEFILE_isWorking(_fs))
     return new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
