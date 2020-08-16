@@ -5,6 +5,7 @@
 
 #include "CalibrateScene.h"
 #include "SelectionScene.h"
+#include "StartScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
@@ -240,9 +241,8 @@ void SettingsScene::select() {
     }
     case OPTION_QUIT: {
       fxes_stop();
-      engine->transitionIntoScene(
-          new SelectionScene(engine, fs),  // TODO: StartScene
-          new FadeOutScene(2));
+      engine->transitionIntoScene(new StartScene(engine, fs),
+                                  new FadeOutScene(2));
       break;
     }
   }
