@@ -102,7 +102,8 @@ void StartScene::setUpGameAnimation() {
 }
 
 void StartScene::animateBpm() {
-  u32 msecs = PlaybackState.msecs - 180;  // TODO: AUDIO LAG
+  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  u32 msecs = PlaybackState.msecs - AUDIO_LAG - audioLag;
   u32 beat = Div(msecs * BPM, MINUTE);
 
   if (beat != lastBeat) {

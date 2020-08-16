@@ -88,6 +88,8 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 - `make package`: Compiles and appends the GBFS file to the ROM
 - `make start`: Starts the compiled ROM
 - `make restart`: Recompiles and starts the ROM
+- `make reimport`: Reimport the songs and starts the ROM without recompiling
+
 
 #### Parameters
 

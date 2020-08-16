@@ -25,9 +25,9 @@ const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const MAX_FILE_LENGTH = 15;
 const SELECTOR_OPTIONS = 4;
-const FILE_METADATA = /\.ssc/i;
-const FILE_AUDIO = /\.mp3/i;
-const FILE_BACKGROUND = /\.png/i;
+const FILE_METADATA = /\.ssc$/i;
+const FILE_AUDIO = /\.mp3$/i;
+const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "manual";
 

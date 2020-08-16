@@ -220,4 +220,7 @@ start: package
 restart: clean package
 	start "$(TARGET).out.gba"
 
+reimport: import package
+	start "$(TARGET).out.gba"
+
 # EOF
