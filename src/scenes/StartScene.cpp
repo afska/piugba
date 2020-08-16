@@ -37,6 +37,7 @@ const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
 const u32 INPUT_SELECT = 2;
 const u32 GAME_X = 72;
+const u32 GAME_Y = 13;
 
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
@@ -134,6 +135,7 @@ void StartScene::setUpButtons() {
 void StartScene::setUpGameAnimation() {
   STATE_reset();
   GameState.positionX = GAME_X;
+  GameState.positionY = GAME_Y;
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{

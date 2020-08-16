@@ -10,6 +10,6 @@ void STATE_reset() {
   GameState.isBoss = false;
   GameState.positionX =
       GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
-  GameState.positionY = 51;       // TODO: 51
-  GameState.scorePositionY = 34;  // TODO: 34
+  GameState.positionY = 0;       // TODO: 51 - REDUCE MOD
+  GameState.scorePositionY = 0;  // TODO: 34 - REDUCE MOD
 }
