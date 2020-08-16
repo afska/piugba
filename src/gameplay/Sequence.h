@@ -12,6 +12,7 @@
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
+#include "scenes/StartScene.h"
 #include "scenes/TalkScene.h"
 
 static std::shared_ptr<GBAEngine> _engine;
@@ -32,7 +33,7 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 }
 
 Scene* SEQUENCE_getMainScene() {
-  return new SelectionScene(_engine, _fs);
+  return new StartScene(_engine, _fs);
 }
 
 Scene* SEQUENCE_getCalibrateOrMainScene() {

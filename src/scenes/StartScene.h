@@ -1,12 +1,10 @@
-#ifndef CALIBRATE_SCENE_H
-#define CALIBRATE_SCENE_H
+#ifndef START_SCENE_H
+#define START_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
-
-#include <functional>
 
 #include "objects/ui/ArrowSelector.h"
 #include "utils/PixelBlink.h"
@@ -15,11 +13,9 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-class CalibrateScene : public Scene {
+class StartScene : public Scene {
  public:
-  CalibrateScene(std::shared_ptr<GBAEngine> engine,
-                 const GBFS_FILE* fs,
-                 std::function<void()> onFinish);
+  StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -32,23 +28,14 @@ class CalibrateScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
-  std::function<void()> onFinish;
 
-  std::unique_ptr<ArrowSelector> calibrateButton;
-  std::unique_ptr<ArrowSelector> resetButton;
-  std::unique_ptr<ArrowSelector> saveButton;
-  bool isMeasuring = false;
-  int measuredLag = 0;
+  std::vector<std::unique_ptr<ArrowSelector>> buttons;
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void setUpArrows();
 
   void processKeys(u16 keys);
-  void printTitle();
-  void calibrate();
-  void start();
-  void finish();
-  void save();
 };
 
-#endif  // CALIBRATE_SCENE_H
+#endif  // START_SCENE_H

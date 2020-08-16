@@ -1,6 +1,7 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
+#define SOUND_LOOP ((char*)"_aud_loop.gsm")
 #define SOUND_STEP ((char*)"_aud_step.gsm")
 #define SOUND_MOD ((char*)"_aud_mod.gsm")
 #define SOUND_ENTER ((char*)"_aud_enter.gsm")
@@ -15,6 +16,9 @@
 #define BG_CONTROLS_TILES ((char*)"_img_controls.img.bin")
 #define BG_CONTROLS_PALETTE ((char*)"_img_controls.pal.bin")
 #define BG_CONTROLS_MAP ((char*)"_img_controls.map.bin")
+#define BG_START_TILES ((char*)"_img_start.img.bin")
+#define BG_START_PALETTE ((char*)"_img_start.pal.bin")
+#define BG_START_MAP ((char*)"_img_start.map.bin")
 #define BG_WALL_TILES ((char*)"_img_wall.img.bin")
 #define BG_WALL_PALETTE ((char*)"_img_wall.pal.bin")
 #define BG_WALL_MAP ((char*)"_img_wall.map.bin")

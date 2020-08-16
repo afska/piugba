@@ -3,7 +3,6 @@
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/Key.h"
-#include "scenes/SelectionScene.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {

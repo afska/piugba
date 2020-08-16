@@ -35,11 +35,11 @@ class TalkScene : public Scene {
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
+  std::function<void(u16 keys)> onKeyPress;
 
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<ArrowSelector> nextButton;
   std::vector<std::string> lines;
-  std::function<void(u16 keys)> onKeyPress;
   u32 col = 0;
   u32 row = 0;
   bool wait = true;
