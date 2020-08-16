@@ -6,11 +6,13 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/base/InputHandler.h"
 #include "objects/ui/Button.h"
 #include "ui/Darkener.h"
 #include "utils/PixelBlink.h"
+#include "utils/pool/ObjectPool.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
@@ -36,7 +38,8 @@ class StartScene : public Scene {
   std::vector<std::unique_ptr<Button>> buttons;
   std::vector<std::unique_ptr<InputHandler>> inputHandlers;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
-  u32 lastBeat = 0;
+  std::unique_ptr<ObjectPool<Arrow>> arrowPool;
+  int lastBeat = 0;
   u32 selectedMode = 0;
   u32 darkenerOpacity;
 
@@ -46,9 +49,12 @@ class StartScene : public Scene {
   void setUpGameAnimation();
 
   void animateBpm();
+  void animateArrows();
+
   void printTitle();
   void processKeys(u16 keys);
   void processSelectionChange();
+  void goToGame();
 
   ~StartScene();
 };

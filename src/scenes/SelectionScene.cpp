@@ -5,13 +5,13 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <tonc_input.h>
 
+#include "SettingsScene.h"
+#include "SongScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
-#include "scenes/SettingsScene.h"
-#include "scenes/SongScene.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {

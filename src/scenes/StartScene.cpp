@@ -1,15 +1,17 @@
 #include "StartScene.h"
 
+#include <libgba-sprite-engine/background/text_stream.h>
+#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
+#include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"
 #include "gameplay/TimingProvider.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
-#include "scenes/SelectionScene.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
@@ -20,6 +22,9 @@ extern "C" {
 const std::string TITLES[] = {"Campaign", "Arcade", "Impossible"};
 
 const u32 BPM = 145;
+const u32 ARROW_POOL_SIZE = 10;
+const u32 ARROW_SPEED = 3;
+const u32 DEMO_ARROW_INITIAL_Y = 78;
 
 const u32 ID_DARKENER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
@@ -56,6 +61,11 @@ std::vector<Sprite*> StartScene::sprites() {
 
   for (auto& it : buttons)
     sprites.push_back(it->get());
+
+  arrowPool->forEach([&sprites](Arrow* it) {
+    it->index = sprites.size();
+    sprites.push_back(it->get());
+  });
 
   for (auto& it : arrowHolders)
     sprites.push_back(it->get());
@@ -94,9 +104,7 @@ void StartScene::tick(u16 keys) {
 
   pixelBlink->tick();
   animateBpm();
-
-  for (auto& it : arrowHolders)
-    it->tick();
+  animateArrows();
 
   processKeys(keys);
   processSelectionChange();
@@ -134,24 +142,51 @@ void StartScene::setUpGameAnimation() {
   GameState.positionX = GAME_X;
   GameState.positionY = GAME_Y;
 
+  arrowPool = std::unique_ptr<ObjectPool<Arrow>>{
+      new ObjectPool<Arrow>(ARROW_POOL_SIZE, [](u32 id) -> Arrow* {
+        return new Arrow(ARROW_TILEMAP_LOADING_ID + id);
+      })};
+
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i), i > 0)});
+        new ArrowHolder(static_cast<ArrowDirection>(i), true)});
   }
 }
 
 void StartScene::animateBpm() {
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  u32 msecs = PlaybackState.msecs - AUDIO_LAG - audioLag;
-  u32 beat = Div(msecs * BPM, MINUTE);
+  int msecs = PlaybackState.msecs - AUDIO_LAG - audioLag;
+  int beat = Div(msecs * BPM, MINUTE);
 
   if (beat != lastBeat && beat != 0) {
     lastBeat = beat;
     darkenerOpacity = 0;
 
+    pixelBlink->blink();
+
     for (auto& it : arrowHolders)
       it->blink();
+
+    arrowPool->create([this](Arrow* it) {
+      it->initialize(ArrowType::UNIQUE,
+                     static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
+                     0, false);
+      it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
+      it->press();
+    });
   }
+}
+
+void StartScene::animateArrows() {
+  for (auto& it : arrowHolders)
+    it->tick();
+
+  arrowPool->forEachActive([this](Arrow* arrow) {
+    int newY = arrow->get()->getY() - ARROW_SPEED;
+
+    if (arrow->tick(newY, false) == ArrowState::OUT)
+      arrowPool->discard(arrow->id - ARROW_TILEMAP_LOADING_ID);
+  });
 }
 
 void StartScene::printTitle() {
@@ -181,13 +216,17 @@ void StartScene::processSelectionChange() {
     printTitle();
   }
 
-  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow()) {
-    // TODO: SELECT MODE
-    // TODO: GO TO SELECTION SCREEN
-  }
+  if (inputHandlers[INPUT_SELECT]->hasBeenPressedNow())
+    goToGame();
 
   for (u32 i = 0; i < BUTTONS_TOTAL; i++)
     buttons[i]->setSelected(selectedMode == i);
+}
+
+void StartScene::goToGame() {
+  player_stop();
+  engine->transitionIntoScene(new SelectionScene(engine, fs),
+                              new FadeOutScene(2));
 }
 
 StartScene::~StartScene() {
