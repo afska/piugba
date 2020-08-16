@@ -117,12 +117,12 @@ bool ChartReader::isAboutToResume() {
 }
 
 int ChartReader::getYFor(int timestamp) {
-  // arrowTime ms           -> ARROW_DISTANCE px
-  // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE / arrowTime
+  // arrowTime ms           -> ARROW_DISTANCE() px
+  // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE() / arrowTime
   int now = hasStopped ? stopStart : msecs;
   int timeLeft = timestamp - now;
 
-  return min(ARROW_FINAL_Y + MATH_div(timeLeft * ARROW_DISTANCE, arrowTime),
+  return min(ARROW_FINAL_Y() + MATH_div(timeLeft * ARROW_DISTANCE(), arrowTime),
              ARROW_INITIAL_Y);
 }
 
@@ -285,8 +285,8 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrow->updateLastPress(topY);
     int screenTopY =
         topY <= holdArrow->lastPressTopY
-            ? HOLD_FILL_FINAL_Y -
-                  min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y)
+            ? HOLD_FILL_FINAL_Y() -
+                  min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y())
             : 0;
     int bottomY = holdArrow->hasEndTime() ? getFillBottomY(holdArrow, topY)
                                           : ARROW_INITIAL_Y;

@@ -49,7 +49,7 @@ FeedbackType Arrow::getResult(FeedbackType partialResult,
 }
 
 void Arrow::press() {
-  if (sprite->getY() <= (int)ARROW_FINAL_Y)
+  if (sprite->getY() <= (int)ARROW_FINAL_Y())
     animatePress();
   else {
     markAsPressed();
@@ -119,16 +119,15 @@ void Arrow::animatePress() {
 
   hasEnded = true;
   endAnimationFrame = 0;
-  sprite->moveTo(
-      GameState.positionX + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-      ARROW_FINAL_Y);
+  sprite->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction,
+                 ARROW_FINAL_Y());
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }
 
 bool Arrow::isAligned() {
-  return abs(sprite->getY() - (int)ARROW_FINAL_Y) < ARROW_QUARTER_SIZE;
+  return abs(sprite->getY() - (int)ARROW_FINAL_Y()) < ARROW_QUARTER_SIZE;
 }
 
 bool Arrow::isNearEnd(int newY) {
-  return newY <= (int)ARROW_FINAL_Y;
+  return newY <= (int)ARROW_FINAL_Y();
 }

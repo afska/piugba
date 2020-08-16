@@ -14,7 +14,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
     activeSprites++;
     if (activeSprites > maxSprites)
       maxSprites = activeSprites;
-    bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y;
+    bool isActive = it->get()->getY() >= (int)ARROW_FINAL_Y();
 
     if (isActive && (min == NULL || it->timestamp < minTimestamp)) {
       min = it;
@@ -31,7 +31,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
   LOGSTR("NEXT -> MS:", 6);
   LOGN(min == NULL ? -1 : min->timestamp, 7);
   LOGSTR("NEXT -> Y:", 8);
-  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y, 9);
+  LOGN(min == NULL ? -1 : min->get()->getY() - (int)ARROW_FINAL_Y(), 9);
 
   std::string typeStr;
   u32 currentIndex = eventIndex;

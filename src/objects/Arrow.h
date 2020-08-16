@@ -62,9 +62,8 @@ class Arrow : public IPoolable {
     this->flip = flip;
 
     sprite->enabled = true;
-    sprite->moveTo(
-        GameState.positionX + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
-        ARROW_INITIAL_Y);
+    sprite->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction,
+                   ARROW_INITIAL_Y);
 
     if (isHoldFill || isHoldTail) {
       u32 tileOffset = isHoldFill ? ARROW_HOLD_FILL_TILE : ARROW_HOLD_TAIL_TILE;

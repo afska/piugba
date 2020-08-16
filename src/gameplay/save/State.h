@@ -11,6 +11,7 @@ typedef struct {
   bool isBoss;
   int positionX;
   int positionY;
+  int scorePositionY;
 } RAMState;
 
 extern RAMState GameState;

@@ -12,7 +12,7 @@ const u32 POSITION_Y = 70;
 
 ComboTitle::ComboTitle() {
   animationPositionX = GameState.positionX + POSITION_X;
-  animationPositionY = POSITION_Y;
+  animationPositionY = GameState.scorePositionY + POSITION_Y;
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;

@@ -16,7 +16,7 @@ Combo::Combo() {
   for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{
         new Digit(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
-                  DIGITS_POSITION_Y, i)};
+                  GameState.scorePositionY + DIGITS_POSITION_Y, i)};
     digits.push_back(std::move(digit));
   }
 }
