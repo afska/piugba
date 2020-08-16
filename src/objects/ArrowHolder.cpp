@@ -16,7 +16,7 @@ ArrowHolder::ArrowHolder(ArrowDirection direction, bool reuseTiles) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
-               .withLocation(GAME_POSITION() + ARROW_CORNER_MARGIN_X +
+               .withLocation(GameState.positionX + ARROW_CORNER_MARGIN_X +
                                  ARROW_MARGIN * direction,
                              ARROW_FINAL_Y)
                .buildPtr();

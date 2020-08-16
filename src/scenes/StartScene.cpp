@@ -7,6 +7,7 @@
 #include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"
 #include "gameplay/TimingProvider.h"
+#include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
 #include "utils/SceneUtils.h"
@@ -35,6 +36,7 @@ const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
 const u32 INPUT_SELECT = 2;
+const u32 GAME_X = 72;
 
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
@@ -130,6 +132,9 @@ void StartScene::setUpButtons() {
 }
 
 void StartScene::setUpGameAnimation() {
+  STATE_reset();
+  GameState.positionX = GAME_X;
+
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
         new ArrowHolder(static_cast<ArrowDirection>(i), i > 0)});

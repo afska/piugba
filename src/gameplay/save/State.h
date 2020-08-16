@@ -9,12 +9,12 @@ typedef struct __attribute__((__packed__)) {
 
 typedef struct {
   bool isBoss;
+  int positionX;
+  int positionY;
 } RAMState;
 
 extern RAMState GameState;
 
-inline void STATE_reset() {
-  GameState.isBoss = false;
-}
+void STATE_reset();
 
 #endif  // STATE_H

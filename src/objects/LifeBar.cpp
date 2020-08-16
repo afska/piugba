@@ -32,7 +32,7 @@ LifeBar::LifeBar() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
-               .withLocation(GAME_POSITION() + POSITION_X, POSITION_Y)
+               .withLocation(GameState.positionX + POSITION_X, POSITION_Y)
                .buildPtr();
 }
 

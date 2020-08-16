@@ -12,7 +12,7 @@ const u32 POSITION_Y = 60;
 
 Feedback::Feedback() {
   type = FeedbackType::MISS;
-  animationPositionX = GAME_POSITION() + POSITION_X;
+  animationPositionX = GameState.positionX + POSITION_X;
   animationPositionY = POSITION_Y;
 
   SpriteBuilder<Sprite> builder;

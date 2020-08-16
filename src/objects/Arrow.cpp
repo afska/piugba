@@ -120,7 +120,7 @@ void Arrow::animatePress() {
   hasEnded = true;
   endAnimationFrame = 0;
   sprite->moveTo(
-      GAME_POSITION() + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
+      GameState.positionX + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
       ARROW_FINAL_Y);
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }

@@ -63,7 +63,7 @@ class Arrow : public IPoolable {
 
     sprite->enabled = true;
     sprite->moveTo(
-        GAME_POSITION() + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
+        GameState.positionX + ARROW_CORNER_MARGIN_X + ARROW_MARGIN * direction,
         ARROW_INITIAL_Y);
 
     if (isHoldFill || isHoldTail) {

@@ -220,6 +220,8 @@ void SelectionScene::goToSong() {
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
   Chart* chart = SONG_findChartByDifficultyLevel(song, difficulty->getValue());
+
+  STATE_reset();
   GameState.isBoss = song->channel == Channel::BOSS;
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),

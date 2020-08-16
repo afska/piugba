@@ -11,7 +11,7 @@ const u32 POSITION_X = 16;
 const u32 POSITION_Y = 70;
 
 ComboTitle::ComboTitle() {
-  animationPositionX = GAME_POSITION() + POSITION_X;
+  animationPositionX = GameState.positionX + POSITION_X;
   animationPositionY = POSITION_Y;
   animationDirection = -1;
 

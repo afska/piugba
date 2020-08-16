@@ -7,12 +7,6 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 
-const u32 GAME_POSITION_OFFSETS[] = {0, 72, 144};
-
-inline u32 GAME_POSITION() {
-  return GAME_POSITION_OFFSETS[SAVEFILE_read8(SRAM->settings.gamePosition)];
-}
-
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
