@@ -1,4 +1,4 @@
-# piugba
+# piuGBA
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 

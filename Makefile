@@ -115,7 +115,7 @@ endif
 
 # --- Custom vars ? ---
 
-GAMETITLE=piugba
+GAMETITLE=piuGBA
 GAMEMAKER=AGB
 GAMECODE=AZCE # Megaman Zero (SRAM - 64kb)
 ENV ?= development
