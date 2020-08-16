@@ -220,7 +220,7 @@ void SelectionScene::goToSong() {
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
   Chart* chart = SONG_findChartByDifficultyLevel(song, difficulty->getValue());
-  SAVEFILE_write8(SRAM->state.isBoss, song->channel == Channel::BOSS);
+  GameState.isBoss = song->channel == Channel::BOSS;
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(4));

@@ -149,7 +149,7 @@ void SongScene::tick(u16 keys) {
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   u8 minMosaic = 0;
-  if (SAVEFILE_read8(SRAM->state.isBoss)) {
+  if (GameState.isBoss) {
     minMosaic = lifeBar->getMosaicValue();
     EFFECT_setMosaic(minMosaic);
   }

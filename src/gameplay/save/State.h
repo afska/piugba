@@ -5,7 +5,16 @@
 
 typedef struct __attribute__((__packed__)) {
   u8 isPlaying;
-  u8 isBoss;
 } State;
+
+typedef struct {
+  bool isBoss;
+} RAMState;
+
+extern RAMState GameState;
+
+inline void STATE_reset() {
+  GameState.isBoss = false;
+}
 
 #endif  // STATE_H
