@@ -13,7 +13,7 @@ class ArrowHolder : public InputHandler {
  public:
   ArrowDirection direction;
 
-  ArrowHolder(ArrowDirection direction);
+  ArrowHolder(ArrowDirection direction, bool reuseTiles);
 
   void blink();
 

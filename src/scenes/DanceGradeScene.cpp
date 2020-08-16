@@ -41,8 +41,8 @@ std::vector<Background*> DanceGradeScene::backgrounds() {
 std::vector<Sprite*> DanceGradeScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 i = 0; i < totals.size(); i++)
-    totals[i]->render(&sprites);
+  for (auto& it : totals)
+    it->render(&sprites);
   maxComboTotal->render(&sprites);
   sprites.push_back(grade->get());
 

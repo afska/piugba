@@ -9,7 +9,7 @@ const u32 DIGITS = 3;
 const u32 DIGITS_POSITION_X = 160;
 
 Total::Total(u32 y, bool isFirst) {
-  for (u32 i = 0; i < 3; i++) {
+  for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{
         new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i)};
     digit->showAt(0);
@@ -31,8 +31,8 @@ void Total::setValue(u32 value) {
 }
 
 void Total::render(std::vector<Sprite*>* sprites) {
-  for (auto& digit : digits)
-    sprites->push_back(digit->get());
+  for (auto& it : digits)
+    sprites->push_back(it->get());
 }
 
 Total::~Total() {

@@ -64,8 +64,8 @@ std::vector<Sprite*> SongScene::sprites() {
     sprites.push_back(it->get());
   });
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    sprites.push_back(arrowHolders[i]->get());
+  for (auto& it : arrowHolders)
+    sprites.push_back(it->get());
 
   return sprites;
 }
@@ -187,7 +187,7 @@ void SongScene::setUpArrows() {
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i))});
+        new ArrowHolder(static_cast<ArrowDirection>(i), true)});
 
     auto fakeHead =
         std::unique_ptr<Arrow>{new Arrow(ARROW_TILEMAP_LOADING_ID + i)};

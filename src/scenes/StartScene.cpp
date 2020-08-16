@@ -31,6 +31,7 @@ const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
 const u32 BUTTONS_X[] = {141, 175, 209};
 const u32 BUTTONS_Y = 128;
+const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
 const u32 INPUT_SELECT = 2;
@@ -50,8 +51,11 @@ std::vector<Background*> StartScene::backgrounds() {
 std::vector<Sprite*> StartScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (auto& button : buttons)
-    sprites.push_back(button->get());
+  for (auto& it : buttons)
+    sprites.push_back(it->get());
+
+  for (auto& it : arrowHolders)
+    sprites.push_back(it->get());
 
   return sprites;
 }
@@ -91,6 +95,9 @@ void StartScene::tick(u16 keys) {
   pixelBlink->tick();
   animateBpm();
 
+  for (auto& it : arrowHolders)
+    it->tick();
+
   processKeys(keys);
   processSelectionChange();
 }
@@ -116,14 +123,17 @@ void StartScene::setUpButtons() {
         new Button(type, BUTTONS_X[i], BUTTONS_Y, type != ButtonType::BLUE)});
   }
 
-  for (u32 i = 0; i < 3; i++)
+  for (u32 i = 0; i < INPUTS; i++)
     inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
 
   buttons[ButtonType::BLUE]->setSelected(true);
 }
 
 void StartScene::setUpGameAnimation() {
-  // TODO: Implement
+  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
+        new ArrowHolder(static_cast<ArrowDirection>(i), i > 0)});
+  }
 }
 
 void StartScene::animateBpm() {

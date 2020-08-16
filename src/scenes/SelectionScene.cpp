@@ -60,17 +60,17 @@ std::vector<Background*> SelectionScene::backgrounds() {
 std::vector<Sprite*> SelectionScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    sprites.push_back(arrowSelectors[i]->get());
+  for (auto& it : arrowSelectors)
+    sprites.push_back(it->get());
 
-  for (u32 i = 0; i < PAGE_SIZE; i++)
-    sprites.push_back(channelBadges[i]->get());
+  for (auto& it : channelBadges)
+    sprites.push_back(it->get());
 
-  for (u32 i = 0; i < PAGE_SIZE; i++)
-    sprites.push_back(gradeBadges[i]->get());
+  for (auto& it : gradeBadges)
+    sprites.push_back(it->get());
 
-  for (u32 i = 0; i < PAGE_SIZE; i++)
-    sprites.push_back(locks[i]->get());
+  for (auto& it : locks)
+    sprites.push_back(it->get());
 
   difficulty->render(&sprites);
   sprites.push_back(multiplier->get());
