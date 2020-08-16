@@ -1,8 +1,11 @@
 #include "StartScene.h"
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
+
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"
+#include "gameplay/TimingProvider.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
 #include "utils/SceneUtils.h"
@@ -12,10 +15,14 @@ extern "C" {
 #include "player/player.h"
 }
 
+const u32 BPM = 145;
+
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 20;
 const u32 PIXEL_BLINK_LEVEL = 4;
+const u32 BUTTONS_X[] = {141, 175, 209};
+const u32 BUTTONS_Y = 128;
 
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
@@ -29,11 +36,8 @@ std::vector<Background*> StartScene::backgrounds() {
 std::vector<Sprite*> StartScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  // sprites.push_back(buttons[ArrowDirection::UPLEFT]->get());
-  // sprites.push_back(buttons[ArrowDirection::DOWNLEFT]->get());
-  // sprites.push_back(buttons[ArrowDirection::CENTER]->get());
-  // sprites.push_back(buttons[ArrowDirection::UPRIGHT]->get());
-  // sprites.push_back(buttons[ArrowDirection::DOWNRIGHT]->get());
+  for (auto& button : buttons)
+    sprites.push_back(button->get());
 
   return sprites;
 }
@@ -45,7 +49,8 @@ void StartScene::load() {
   setUpBackground();
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
-  setUpArrows();
+  setUpButtons();
+  setUpGameAnimation();
 }
 
 void StartScene::tick(u16 keys) {
@@ -65,6 +70,7 @@ void StartScene::tick(u16 keys) {
     player_play(SOUND_LOOP);
 
   pixelBlink->tick();
+  animateBpm();
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -81,15 +87,28 @@ void StartScene::setUpBackground() {
   bg->setMosaic(true);
 }
 
-void StartScene::setUpArrows() {
-  // for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-  //   auto direction = static_cast<ArrowDirection>(i);
-  //   buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-  //       direction, direction != ArrowDirection::UPLEFT, true)});
-  // }
+void StartScene::setUpButtons() {
+  for (u32 i = 0; i < BUTTONS_TOTAL; i++) {
+    auto type = static_cast<ButtonType>(i);
+    buttons.push_back(std::unique_ptr<Button>{
+        new Button(type, BUTTONS_X[i], BUTTONS_Y, type != ButtonType::BLUE)});
+  }
 
-  // buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-  //     static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
+  buttons[ButtonType::BLUE]->setSelected(true);
+}
+
+void StartScene::setUpGameAnimation() {
+  // TODO: Implement
+}
+
+void StartScene::animateBpm() {
+  u32 msecs = PlaybackState.msecs - 180;  // TODO: AUDIO LAG
+  u32 beat = Div(msecs * BPM, MINUTE);
+
+  if (beat != lastBeat) {
+    lastBeat = beat;
+    pixelBlink->blink();
+  }
 }
 
 void StartScene::processKeys(u16 keys) {

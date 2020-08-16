@@ -47,7 +47,7 @@ mv \
   palette_selection.* \
   "$DESTINATION"
 
-# IntroScene
+# StartScene
 grit \
   spr_arrows.bmp \
   spr_buttons.bmp \
