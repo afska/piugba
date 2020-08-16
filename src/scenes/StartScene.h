@@ -49,6 +49,8 @@ class StartScene : public Scene {
   void printTitle();
   void processKeys(u16 keys);
   void processSelectionChange();
+
+  ~StartScene();
 };
 
 #endif  // START_SCENE_H

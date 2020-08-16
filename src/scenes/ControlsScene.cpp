@@ -171,3 +171,8 @@ void ControlsScene::resetCombo() {
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
     comboArrows[i]->off();
 }
+
+ControlsScene::~ControlsScene() {
+  buttons.clear();
+  comboArrows.clear();
+}

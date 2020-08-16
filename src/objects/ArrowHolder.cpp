@@ -23,8 +23,8 @@ ArrowHolder::ArrowHolder(ArrowDirection direction, bool reuseTiles) {
 
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
+
   SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
-  sprite->setPriority(ARROW_LAYER_BACK);
 }
 
 void ArrowHolder::blink() {

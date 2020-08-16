@@ -97,6 +97,8 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
+
+  ~SelectionScene();
 };
 
 #endif  // SELECTION_SCENE_H

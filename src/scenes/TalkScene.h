@@ -51,6 +51,8 @@ class TalkScene : public Scene {
 
   void alignText();
   void autoWrite();
+
+  ~TalkScene();
 };
 
 #endif  // TALK_SCENE_H

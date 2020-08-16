@@ -121,3 +121,7 @@ void TalkScene::autoWrite() {
     col = 0;
   }
 }
+
+TalkScene::~TalkScene() {
+  lines.clear();
+}

@@ -49,6 +49,8 @@ class ControlsScene : public Scene {
   void processCombo();
   void advanceCombo();
   void resetCombo();
+
+  ~ControlsScene();
 };
 
 #endif  // CONTROLS_SCENE_H

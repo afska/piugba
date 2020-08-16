@@ -420,3 +420,11 @@ void SelectionScene::setNames(std::string title, std::string artist) {
   TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
+
+SelectionScene::~SelectionScene() {
+  songs.clear();
+  arrowSelectors.clear();
+  channelBadges.clear();
+  gradeBadges.clear();
+  locks.clear();
+}

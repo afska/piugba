@@ -188,6 +188,7 @@ void SongScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
         new ArrowHolder(static_cast<ArrowDirection>(i), true)});
+    arrowHolders[i]->get()->setPriority(ARROW_LAYER_BACK);
 
     auto fakeHead =
         std::unique_ptr<Arrow>{new Arrow(ARROW_TILEMAP_LOADING_ID + i)};

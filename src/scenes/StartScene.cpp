@@ -182,3 +182,9 @@ void StartScene::processSelectionChange() {
   for (u32 i = 0; i < BUTTONS_TOTAL; i++)
     buttons[i]->setSelected(selectedMode == i);
 }
+
+StartScene::~StartScene() {
+  buttons.clear();
+  inputHandlers.clear();
+  arrowHolders.clear();
+}
