@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include "objects/base/InputHandler.h"
 #include "objects/ui/Button.h"
 #include "ui/Darkener.h"
 #include "utils/PixelBlink.h"
@@ -32,7 +33,9 @@ class StartScene : public Scene {
 
   std::unique_ptr<Darkener> darkener;
   std::vector<std::unique_ptr<Button>> buttons;
+  std::vector<std::unique_ptr<InputHandler>> inputHandlers;
   u32 lastBeat = 0;
+  u32 selectedMode = 0;
   u32 darkenerOpacity;
 
   void setUpSpritesPalette();
@@ -43,6 +46,7 @@ class StartScene : public Scene {
   void animateBpm();
 
   void processKeys(u16 keys);
+  void processSelectionChange();
 };
 
 #endif  // START_SCENE_H

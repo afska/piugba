@@ -24,9 +24,12 @@ const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 20;
 const u32 PIXEL_BLINK_LEVEL = 4;
-const u32 ALPHA_BLINK_LEVEL = 10;
+const u32 ALPHA_BLINK_LEVEL = 8;
 const u32 BUTTONS_X[] = {141, 175, 209};
 const u32 BUTTONS_Y = 128;
+const u32 INPUT_LEFT = 0;
+const u32 INPUT_RIGHT = 1;
+const u32 INPUT_SELECT = 2;
 
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
@@ -72,8 +75,6 @@ void StartScene::tick(u16 keys) {
     player_play(SOUND_LOOP);
   }
 
-  processKeys(keys);
-
   if (PlaybackState.hasFinished)
     player_play(SOUND_LOOP);
 
@@ -82,6 +83,9 @@ void StartScene::tick(u16 keys) {
 
   pixelBlink->tick();
   animateBpm();
+
+  processKeys(keys);
+  processSelectionChange();
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -105,6 +109,9 @@ void StartScene::setUpButtons() {
         new Button(type, BUTTONS_X[i], BUTTONS_Y, type != ButtonType::BLUE)});
   }
 
+  for (u32 i = 0; i < 3; i++)
+    inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
+
   buttons[ButtonType::BLUE]->setSelected(true);
 }
 
@@ -124,9 +131,28 @@ void StartScene::animateBpm() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  // buttons[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  // buttons[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-  // buttons[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-  // buttons[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-  // buttons[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  inputHandlers[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+  inputHandlers[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  inputHandlers[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+}
+
+void StartScene::processSelectionChange() {
+  if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && selectedMode > 0) {
+    selectedMode--;
+    pixelBlink->blink();
+  }
+
+  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() &&
+      selectedMode < BUTTONS_TOTAL - 1) {
+    selectedMode++;
+    pixelBlink->blink();
+  }
+
+  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow()) {
+    // TODO: SELECT MODE
+    // TODO: GO TO SELECTION SCREEN
+  }
+
+  for (u32 i = 0; i < BUTTONS_TOTAL; i++)
+    buttons[i]->setSelected(selectedMode == i);
 }
