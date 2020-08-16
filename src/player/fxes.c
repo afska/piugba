@@ -35,7 +35,7 @@ void fxes_stop() {
 }
 
 void fxes_preUpdate() {
-  PLAYER_PRE_UPDATE({});
+  PLAYER_PRE_UPDATE({ fxes_stop(); });
 }
 
 void fxes_postUpdate() {

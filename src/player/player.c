@@ -36,6 +36,12 @@ void player_play(const char* name) {
   PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
+  PlaybackState.isLooping = false;
+}
+
+void player_loop(const char* name) {
+  player_play(name);
+  PlaybackState.isLooping = true;
 }
 
 void player_seek(unsigned int msecs) {
@@ -56,6 +62,7 @@ void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
+  PlaybackState.isLooping = false;
 }
 
 void player_stopAll() {
@@ -71,8 +78,10 @@ void player_forever(void (*update)()) {
     update();
 
     PLAYER_PRE_UPDATE({
-      PlaybackState.msecs = 0;
-      PlaybackState.hasFinished = true;
+      if (PlaybackState.isLooping)
+        player_seek(0);
+      else
+        player_stop();
     });
     fxes_preUpdate();
 

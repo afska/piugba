@@ -113,7 +113,6 @@
       last_sample = cur_sample;                       \
     }                                                 \
   } else if (src_pos != NULL) {                       \
-    PLAYER_STOP();                                    \
     ON_STOP;                                          \
   }
 

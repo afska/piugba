@@ -4,6 +4,7 @@
 typedef struct {
   unsigned int msecs;
   bool hasFinished;
+  bool isLooping;
 } Playback;
 
 extern Playback PlaybackState;

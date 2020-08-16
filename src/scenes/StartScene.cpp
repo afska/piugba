@@ -86,11 +86,8 @@ void StartScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     hasStarted = true;
-    player_play(SOUND_LOOP);
+    player_loop(SOUND_LOOP);
   }
-
-  if (PlaybackState.hasFinished)
-    player_play(SOUND_LOOP);
 
   darkenerOpacity = min(darkenerOpacity + 1, ALPHA_BLINK_LEVEL);
   EFFECT_setBlendAlpha(darkenerOpacity);
@@ -151,6 +148,9 @@ void StartScene::animateBpm() {
   if (beat != lastBeat && beat != 0) {
     lastBeat = beat;
     darkenerOpacity = 0;
+
+    for (auto& it : arrowHolders)
+      it->blink();
   }
 }
 
