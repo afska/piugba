@@ -18,7 +18,7 @@ extern "C" {
 
 #define TITLE "SETTINGS"
 #define OPTION_AUDIO_LAG 0
-#define OPTION_SHOW_CONTROLS 1
+#define OPTION_STAGE_BREAK 1
 #define OPTION_GAME_POSITION 2
 #define OPTION_BACKGROUND_TYPE 3
 #define OPTION_BGA_DARK_BLINK 4
@@ -145,14 +145,14 @@ void SettingsScene::printMenu() {
   SCENE_write(TITLE, 2);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
+  bool stageBreak = SAVEFILE_read8(SRAM->settings.stageBreak);
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
   printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
-  printOption(OPTION_SHOW_CONTROLS, "Show controls",
-              showControls ? "ON" : "OFF", 7);
+  printOption(OPTION_STAGE_BREAK, "Stage break",
+              stageBreak ? "ON" : "ARCADE_OFF", 7);
   printOption(
       OPTION_GAME_POSITION, "Game position",
       gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 9);
@@ -210,9 +210,9 @@ void SettingsScene::select() {
                                   new FadeOutScene(2));
       break;
     }
-    case OPTION_SHOW_CONTROLS: {
-      bool showControls = SAVEFILE_read8(SRAM->settings.showControls);
-      SAVEFILE_write8(SRAM->settings.showControls, !showControls);
+    case OPTION_STAGE_BREAK: {
+      bool stageBreak = SAVEFILE_read8(SRAM->settings.stageBreak);
+      SAVEFILE_write8(SRAM->settings.stageBreak, !stageBreak);
       printMenu();
       break;
     }

@@ -51,7 +51,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write32(SRAM->romId, romId);
 
     SAVEFILE_write32(SRAM->settings.audioLag, 0);
-    SAVEFILE_write8(SRAM->settings.showControls, 1);
+    SAVEFILE_write8(SRAM->settings.stageBreak, 1);
     SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
     SAVEFILE_write8(SRAM->settings.backgroundType,
                     BackgroundType::HALF_BGA_DARK);

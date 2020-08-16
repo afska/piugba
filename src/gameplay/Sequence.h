@@ -58,18 +58,18 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 
 Scene* SEQUENCE_getInitialScene() {
   SAVEFILE_initialize(_fs);
+
   if (!SAVEFILE_isWorking(_fs))
     return new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
-  bool showControls = SAVEFILE_read8(SRAM->settings.showControls) && !isPlaying;
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
-  if (showControls)
-    return new ControlsScene(
-        _engine, _fs, []() { goTo(SEQUENCE_getCalibrateOrMainScene()); });
+  if (isPlaying)
+    return new SelectionScene(_engine, _fs);
 
-  return SEQUENCE_getCalibrateOrMainScene();
+  return new ControlsScene(_engine, _fs,
+                           []() { goTo(SEQUENCE_getCalibrateOrMainScene()); });
 }
 
 #endif  // SEQUENCE_H
