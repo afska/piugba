@@ -108,9 +108,12 @@ void SongScene::tick(u16 keys) {
     return;
 
   if (init == 0) {
-    if (ENABLE_BACKGROUND)
-      darkener->initialize();
-    else
+    if (ENABLE_BACKGROUND) {
+      auto gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
+      auto type = static_cast<BackgroundType>(
+          SAVEFILE_read8(SRAM->settings.backgroundType));
+      darkener->initialize(gamePosition, type);
+    } else
       BACKGROUND_setColor(0, 127);
     init++;
   } else if (init == 1) {

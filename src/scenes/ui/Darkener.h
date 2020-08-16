@@ -3,11 +3,13 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include "gameplay/save/Settings.h"
+
 class Darkener {
  public:
   Darkener(u8 id, u8 priority);
 
-  void initialize();
+  void initialize(u8 gamePosition, BackgroundType type);
 
  private:
   u8 id;

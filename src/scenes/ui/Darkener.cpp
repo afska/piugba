@@ -20,12 +20,8 @@ Darkener::Darkener(u8 id, u8 priority) {
   this->priority = priority;
 }
 
-void Darkener::initialize() {
+void Darkener::initialize(u8 gamePosition, BackgroundType type) {
   BACKGROUND_setup(id, BANK_TILES, BANK_MAP, priority);
-
-  auto gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
-  auto type = static_cast<BackgroundType>(
-      SAVEFILE_read8(SRAM->settings.backgroundType));
 
   BACKGROUND_setColor(COLOR_INDEX, 0);
   BACKGROUND_createSolidTile(BANK_TILES, TRANSPARENT_TILE, 0);

@@ -7,6 +7,7 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "objects/ui/Button.h"
+#include "ui/Darkener.h"
 #include "utils/PixelBlink.h"
 
 extern "C" {
@@ -29,6 +30,7 @@ class StartScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
 
+  std::unique_ptr<Darkener> darkener;
   std::vector<std::unique_ptr<Button>> buttons;
   u32 lastBeat = 0;
 

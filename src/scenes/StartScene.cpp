@@ -17,7 +17,8 @@ extern "C" {
 
 const u32 BPM = 145;
 
-const u32 ID_MAIN_BACKGROUND = 1;
+const u32 ID_DARKENER = 1;
+const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 20;
 const u32 PIXEL_BLINK_LEVEL = 4;
@@ -27,6 +28,7 @@ const u32 BUTTONS_Y = 128;
 StartScene::StartScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
   this->fs = fs;
+  darkener = std::unique_ptr<Darkener>{new Darkener(ID_DARKENER, ID_DARKENER)};
 }
 
 std::vector<Background*> StartScene::backgrounds() {
@@ -58,7 +60,8 @@ void StartScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
+    darkener->initialize(0, BackgroundType::FULL_BGA_DARK);
+    BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     hasStarted = true;
     player_play(SOUND_LOOP);
