@@ -33,6 +33,7 @@ class StartScene : public Scene {
   std::unique_ptr<Darkener> darkener;
   std::vector<std::unique_ptr<Button>> buttons;
   u32 lastBeat = 0;
+  u32 darkenerOpacity;
 
   void setUpSpritesPalette();
   void setUpBackground();
