@@ -80,8 +80,10 @@ void player_forever(void (*update)()) {
     PLAYER_PRE_UPDATE({
       if (PlaybackState.isLooping)
         player_seek(0);
-      else
+      else {
         player_stop();
+        PlaybackState.hasFinished = true;
+      }
     });
     fxes_preUpdate();
 
