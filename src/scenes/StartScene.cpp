@@ -9,7 +9,6 @@
 #include "gameplay/TimingProvider.h"
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
-#include "utils/EffectUtils.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
@@ -17,12 +16,17 @@ extern "C" {
 #include "player/player.h"
 }
 
+const std::string TITLES[] = {"Campaign", "Arcade", "Impossible"};
+
 const u32 BPM = 145;
 
 const u32 ID_DARKENER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 20;
+const u32 TEXT_COLOR = 0x6DEF;
+const u32 TEXT_ROW = 12;
+const int TEXT_OFFSET_Y = -4;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
 const u32 BUTTONS_X[] = {141, 175, 209};
@@ -61,6 +65,8 @@ void StartScene::load() {
 
   setUpButtons();
   setUpGameAnimation();
+
+  TextStream::instance().scroll(0, TEXT_OFFSET_Y);
 }
 
 void StartScene::tick(u16 keys) {
@@ -68,7 +74,8 @@ void StartScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    darkener->initialize(0, BackgroundType::FULL_BGA_DARK);
+    darkener->initialize(0, BackgroundType::FULL_BGA_DARK, 254);
+    printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     hasStarted = true;
@@ -130,6 +137,13 @@ void StartScene::animateBpm() {
   }
 }
 
+void StartScene::printTitle() {
+  TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().clear();
+
+  SCENE_write(TITLES[selectedMode], TEXT_ROW);
+}
+
 void StartScene::processKeys(u16 keys) {
   inputHandlers[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
   inputHandlers[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
@@ -140,12 +154,14 @@ void StartScene::processSelectionChange() {
   if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && selectedMode > 0) {
     selectedMode--;
     pixelBlink->blink();
+    printTitle();
   }
 
   if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() &&
       selectedMode < BUTTONS_TOTAL - 1) {
     selectedMode++;
     pixelBlink->blink();
+    printTitle();
   }
 
   if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow()) {

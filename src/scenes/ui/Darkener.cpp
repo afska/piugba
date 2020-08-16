@@ -11,7 +11,7 @@ const u32 BGA_DARK_FULL_END_COL = 30;
 const u32 OPACITY = 10;
 const u32 BANK_TILES = 3;
 const u32 BANK_MAP = 28;
-const u32 COLOR_INDEX = 255;
+const u8 COLOR_INDEX = 255;
 const u8 TRANSPARENT_TILE = 254;
 const u8 BLACK_TILE = 255;
 
@@ -21,11 +21,15 @@ Darkener::Darkener(u8 id, u8 priority) {
 }
 
 void Darkener::initialize(u8 gamePosition, BackgroundType type) {
+  initialize(gamePosition, type, COLOR_INDEX);
+}
+
+void Darkener::initialize(u8 gamePosition, BackgroundType type, u8 colorIndex) {
   BACKGROUND_setup(id, BANK_TILES, BANK_MAP, priority);
 
-  BACKGROUND_setColor(COLOR_INDEX, 0);
+  BACKGROUND_setColor(colorIndex, 0);
   BACKGROUND_createSolidTile(BANK_TILES, TRANSPARENT_TILE, 0);
-  BACKGROUND_createSolidTile(BANK_TILES, BLACK_TILE, COLOR_INDEX);
+  BACKGROUND_createSolidTile(BANK_TILES, BLACK_TILE, colorIndex);
   BACKGROUND_fillMap(BANK_MAP, [&gamePosition, &type](u8 row, u8 col) {
     switch (type) {
       case BackgroundType::RAW:

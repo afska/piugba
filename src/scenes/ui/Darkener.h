@@ -10,6 +10,7 @@ class Darkener {
   Darkener(u8 id, u8 priority);
 
   void initialize(u8 gamePosition, BackgroundType type);
+  void initialize(u8 gamePosition, BackgroundType type, u8 colorIndex);
 
  private:
   u8 id;

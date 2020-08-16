@@ -44,7 +44,7 @@ class StartScene : public Scene {
   void setUpGameAnimation();
 
   void animateBpm();
-
+  void printTitle();
   void processKeys(u16 keys);
   void processSelectionChange();
 };
