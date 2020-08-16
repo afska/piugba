@@ -62,6 +62,9 @@ void TalkScene::load() {
   nextButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
 
+  if (!withButton)
+    SPRITE_hide(nextButton->get());
+
   alignText();
 }
 

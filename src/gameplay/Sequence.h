@@ -39,7 +39,7 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
   bool isAudioLagCalibrated = SAVEFILE_read8(SRAM->memory.isAudioLagCalibrated);
 
   if (!isAudioLagCalibrated) {
-    return new TalkScene(_engine, _fs, CALIBRATE_AUDIO_LAG, [](u16 keys) {
+    auto scene = new TalkScene(_engine, _fs, CALIBRATE_AUDIO_LAG, [](u16 keys) {
       if (keys & KEY_START) {
         SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 1);
         goTo(new CalibrateScene(_engine, _fs,
@@ -51,6 +51,8 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
         goTo(SEQUENCE_getMainScene());
       }
     });
+    scene->withButton = false;
+    return scene;
   }
 
   return SEQUENCE_getMainScene();
@@ -59,8 +61,11 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 Scene* SEQUENCE_getInitialScene() {
   SAVEFILE_initialize(_fs);
 
-  if (!SAVEFILE_isWorking(_fs))
-    return new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
+  if (!SAVEFILE_isWorking(_fs)) {
+    auto scene = new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
+    scene->withButton = false;
+    return scene;
+  }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   SAVEFILE_write8(SRAM->state.isPlaying, 0);

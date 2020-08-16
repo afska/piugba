@@ -18,6 +18,8 @@ extern "C" {
 
 class TalkScene : public Scene {
  public:
+  bool withButton = true;
+
   TalkScene(std::shared_ptr<GBAEngine> engine,
             const GBFS_FILE* fs,
             std::string message,

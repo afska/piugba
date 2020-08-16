@@ -32,8 +32,8 @@ class CalibrateScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
-  std::function<void()> onFinish;
 
+  std::function<void()> onFinish;
   std::unique_ptr<ArrowSelector> calibrateButton;
   std::unique_ptr<ArrowSelector> resetButton;
   std::unique_ptr<ArrowSelector> saveButton;
