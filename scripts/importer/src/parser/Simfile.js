@@ -1,6 +1,7 @@
 const Chart = require("./Chart");
 const Channels = require("./Channels");
 const DifficultyLevels = require("./DifficultyLevels");
+const utils = require("../utils");
 const _ = require("lodash");
 
 // StepMania 5 format (*.ssc)
@@ -45,7 +46,11 @@ module.exports = class Simfile {
             DifficultyLevels,
             rawChart
           ) || "NUMERIC";
-        const level = this._getSingleMatch(REGEXPS.chart.level, rawChart, true);
+        const level = utils.restrictTo(
+          this._getSingleMatch(REGEXPS.chart.level, rawChart, true),
+          0,
+          99
+        );
         if (!_.isFinite(level)) throw new Error("no_level_info");
 
         let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);

@@ -38,4 +38,7 @@ module.exports = {
       input.slice(end)
     );
   },
+  restrictTo(value, min, max) {
+    return Math.max(Math.min(value, max), min);
+  },
 };
