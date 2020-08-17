@@ -30,6 +30,7 @@ grit \
   spr_grades_mini.bmp \
   spr_channels.bmp \
   spr_lock.bmp \
+  spr_level.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
 mv \
   spr_difficulties.h \
@@ -44,6 +45,8 @@ mv \
   spr_channels.c \
   spr_lock.h \
   spr_lock.c \
+  spr_level.h \
+  spr_level.c \
   palette_selection.* \
   "$DESTINATION"
 
