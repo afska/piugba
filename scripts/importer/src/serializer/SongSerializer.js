@@ -44,12 +44,12 @@ module.exports = class SongSerializer {
       write: function (chart) {
         const eventChunkSize = _.sumBy(
           chart.events,
-          (it) => EVENT_SERIALIZERS.get(it).size
+          (it) => 4 /* (timestamp) */ + EVENT_SERIALIZERS.get(it).size
         );
 
         this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
-          .UInt32LE(4 + eventChunkSize)
+          .UInt32LE(4 /* (eventCount) */ + eventChunkSize)
           .EventArray(chart.events);
       },
     });

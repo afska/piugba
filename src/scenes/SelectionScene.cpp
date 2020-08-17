@@ -46,6 +46,12 @@ const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_Y = 19;
 const u32 NUMERIC_DIFFICULTY_LEVEL_ROW = 3;
 
 // TODO: Select last unlocked arcade song
+// TODO: Calculate available songs
+// TODO: Don't save grades on arcade mode
+// TODO: Preserve numeric level on confirmations
+// TODO: Actually use the level to play the right chart
+// TODO: Don't restart song preview when calling updateSelection() after
+// changing level
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
