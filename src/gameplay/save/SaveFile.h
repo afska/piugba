@@ -51,7 +51,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write32(SRAM->romId, romId);
 
     SAVEFILE_write32(SRAM->settings.audioLag, 0);
-    SAVEFILE_write8(SRAM->settings.stageBreak, 1);
+    SAVEFILE_write8(SRAM->settings.stageBreak, true);
     SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
     SAVEFILE_write8(SRAM->settings.backgroundType,
                     BackgroundType::HALF_BGA_DARK);
@@ -61,7 +61,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.songIndex, 0);
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
-    SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 0);
+    SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
@@ -73,7 +73,8 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write32(
         SRAM->progress[IMPOSSIBLE + DifficultyLevel::CRAZY].completedSongs, 0);
 
-    SAVEFILE_write8(SRAM->state.isPlaying, 0);
+    SAVEFILE_write8(SRAM->state.isPlaying, false);
+    SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
   }
 }
 

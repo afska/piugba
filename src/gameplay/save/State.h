@@ -3,8 +3,11 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE };
+
 typedef struct __attribute__((__packed__)) {
   u8 isPlaying;
+  u8 gameMode;
 } State;
 
 typedef struct {
