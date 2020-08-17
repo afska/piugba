@@ -61,10 +61,12 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.pageIndex, 0);
     SAVEFILE_write8(SRAM->memory.songIndex, 0);
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
+    SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
-    SAVEFILE_write8(SRAM->globalProgress.isArcadeModeUnlocked, false);
+    SAVEFILE_write8(SRAM->globalProgress.isArcadeModeUnlocked,
+                    true);  // TODO: RESTORE false
     SAVEFILE_write8(SRAM->globalProgress.isImpossibleModeUnlocked, false);
 
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);

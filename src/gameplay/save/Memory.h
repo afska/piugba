@@ -7,6 +7,7 @@ typedef struct __attribute__((__packed__)) {
   u8 pageIndex;
   u8 songIndex;
   u8 difficultyLevel;
+  u8 numericDifficultyLevel;
   u8 multiplier;
 
   u8 isAudioLagCalibrated;

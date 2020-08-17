@@ -25,7 +25,8 @@ Button::Button(ButtonType type, u32 x, u32 y, bool reuseTiles) {
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
 
-  SPRITE_goToFrame(sprite.get(), type);
+  if (type != ButtonType::LEVEL_METER)
+    SPRITE_goToFrame(sprite.get(), type);
 }
 
 void Button::setSelected(bool isSelected) {

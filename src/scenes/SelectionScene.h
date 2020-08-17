@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "gameplay/Library.h"
+#include "gameplay/save/SaveFile.h"
 #include "objects/ui/ArrowSelector.h"
+#include "objects/ui/Button.h"
 #include "objects/ui/ChannelBadge.h"
 #include "objects/ui/Difficulty.h"
 #include "objects/ui/GradeBadge.h"
@@ -50,14 +52,17 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
+  std::unique_ptr<Button> numericLevelBadge;
   std::vector<u8> numericLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
-  u8 selectedNumericLevel = 0;
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
+  inline GameMode getGameMode() {
+    return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  }
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return page * PAGE_SIZE + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
@@ -67,6 +72,24 @@ class SelectionScene : public Scene {
   inline u32 getCompletedSongs() {
     return SAVEFILE_read32(
         SRAM->progress[difficulty->getValue()].completedSongs);
+  }
+  inline u8 getSelectedNumericLevel() {
+    return SAVEFILE_read8(SRAM->memory.numericDifficultyLevel);
+  }
+  inline void setClosestNumericLevel() {
+    auto level = getSelectedNumericLevel();
+
+    u32 min = numericLevels[0];
+    u32 minDiff = abs((int)min - (int)level);
+    for (auto& availableLevel : numericLevels) {
+      u32 diff = (u32)abs((int)availableLevel - (int)level);
+      if (diff < minDiff) {
+        min = availableLevel;
+        minDiff = diff;
+      }
+    }
+
+    SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, min);
   }
 
   void setUpSpritesPalette();
@@ -87,6 +110,7 @@ class SelectionScene : public Scene {
   void processConfirmEvents();
   void processMenuEvents(u16 keys);
   bool onDifficultyChange(ArrowDirection selector, DifficultyLevel newValue);
+  bool onNumericDifficultyChange(ArrowDirection selector, u8 newValue);
   bool onSelectionChange(ArrowDirection selector,
                          bool isOnListEdge,
                          bool isOnPageEdge,
