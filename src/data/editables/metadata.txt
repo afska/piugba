@@ -63,6 +63,9 @@ lock:
 buttons:
 -> 151 colors
 
+level:
+-> 17 colors
+
 ===
 
 screen_selection:
