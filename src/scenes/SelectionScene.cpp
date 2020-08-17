@@ -348,6 +348,11 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 void SelectionScene::updateSelection() {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
+  numericLevels.clear();
+  for (u32 i = 0; i < song->chartCount; i++)
+    numericLevels.push_back(song->charts[i].level);
+  selectedNumericLevel = numericLevels[0];  // TODO: DETECT CLOSEST
+
   setNames(song->title, song->artist);
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);

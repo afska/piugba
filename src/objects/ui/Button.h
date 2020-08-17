@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-enum ButtonType { BLUE, GREEN, ORANGE };
+enum ButtonType { BLUE, GREEN, ORANGE, LEVEL_METER };
 
 const u32 BUTTONS_TOTAL = 3;
 

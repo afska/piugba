@@ -50,9 +50,11 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
+  std::vector<u8> numericLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
+  u8 selectedNumericLevel = 0;
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
