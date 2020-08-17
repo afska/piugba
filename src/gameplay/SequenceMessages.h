@@ -15,4 +15,16 @@ const std::string SRAM_TEST_FAILED =
     "or flashcart to SRAM mode\r\n"
     "and restart the game.";
 
+const std::string ARCADE_MODE_LOCKED =
+    "         LOCKED          \r\n"
+    "Win at least one song in\r\n"
+    "  the CAMPAIGN mode to\r\n"
+    "      unlock this.\r\n";
+
+const std::string IMPOSSIBLE_MODE_LOCKED =
+    "         LOCKED          \r\n"
+    "  Complete the CAMPAIGN\r\n"
+    "  mode in any difficulty\r\n"
+    "  level to unlock this.\r\n";
+
 #endif  // SEQUENCE_MESSAGES_H

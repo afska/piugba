@@ -40,8 +40,8 @@ class StartScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   int lastBeat = 0;
-  u32 selectedMode = 0;
-  u32 darkenerOpacity;
+  u8 selectedMode = 0;
+  u8 darkenerOpacity;
 
   void setUpSpritesPalette();
   void setUpBackground();

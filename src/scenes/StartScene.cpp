@@ -5,10 +5,10 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
-#include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/TimingProvider.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
@@ -225,8 +225,9 @@ void StartScene::processSelectionChange() {
 
 void StartScene::goToGame() {
   player_stop();
-  engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new FadeOutScene(2));
+
+  auto gameMode = static_cast<GameMode>(selectedMode);
+  SEQUENCE_goToGameMode(gameMode);
 }
 
 StartScene::~StartScene() {

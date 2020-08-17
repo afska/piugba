@@ -18,13 +18,14 @@ extern "C" {
 }
 
 const u32 PROGRESS_REGISTERS = 6;
-const u32 IMPOSSIBLE = 3;
+const u32 PROGRESS_IMPOSSIBLE = 3;
 
 typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
   Memory memory;
+  GlobalProgress globalProgress;
   Progress progress[PROGRESS_REGISTERS];
 
   State state;
@@ -63,15 +64,23 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
+    SAVEFILE_write8(SRAM->globalProgress.isArcadeModeUnlocked, false);
+    SAVEFILE_write8(SRAM->globalProgress.isImpossibleModeUnlocked, false);
+
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
     SAVEFILE_write32(SRAM->progress[DifficultyLevel::CRAZY].completedSongs, 0);
     SAVEFILE_write32(
-        SRAM->progress[IMPOSSIBLE + DifficultyLevel::NORMAL].completedSongs, 0);
+        SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::NORMAL]
+            .completedSongs,
+        0);
+    SAVEFILE_write32(SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::HARD]
+                         .completedSongs,
+                     0);
     SAVEFILE_write32(
-        SRAM->progress[IMPOSSIBLE + DifficultyLevel::HARD].completedSongs, 0);
-    SAVEFILE_write32(
-        SRAM->progress[IMPOSSIBLE + DifficultyLevel::CRAZY].completedSongs, 0);
+        SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::CRAZY]
+            .completedSongs,
+        0);
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
