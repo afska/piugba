@@ -123,6 +123,7 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
+  void printNumericDifficultyLevel();
 
   ~SelectionScene();
 };

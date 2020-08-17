@@ -45,6 +45,8 @@ const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_X = 104;
 const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_Y = 19;
 const u32 NUMERIC_DIFFICULTY_LEVEL_ROW = 3;
 
+// TODO: Select last unlocked arcade song
+
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
 
@@ -259,14 +261,16 @@ void SelectionScene::processDifficultyChangeEvents() {
         currentLevelIndex = i;
         break;
       }
+    auto previousIndex = max(currentLevelIndex - 1, 0);
+    auto nextIndex =
+        min(currentLevelIndex + 1, numericDifficultyLevels.size() - 1);
 
-    if (onNumericDifficultyChange(
-            ArrowDirection::UPRIGHT,
-            min(currentLevelIndex + 1, numericDifficultyLevels.size() - 1)))
+    if (onNumericDifficultyChange(ArrowDirection::UPRIGHT,
+                                  numericDifficultyLevels[nextIndex]))
       return;
 
     onNumericDifficultyChange(ArrowDirection::UPLEFT,
-                              max(currentLevelIndex - 1, 0));
+                              numericDifficultyLevels[previousIndex]);
   } else {
     if (onDifficultyChange(
             ArrowDirection::UPRIGHT,
@@ -360,10 +364,6 @@ bool SelectionScene::onNumericDifficultyChange(ArrowDirection selector,
 
     SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, newValue);
     updateSelection();
-    auto levelText = std::to_string(getSelectedNumericLevel());
-    if (levelText.size() == 1)
-      levelText = "0" + levelText;
-    SCENE_write(levelText, NUMERIC_DIFFICULTY_LEVEL_ROW);
     pixelBlink->blink();
 
     return true;
@@ -410,8 +410,8 @@ void SelectionScene::updateSelection() {
   for (u32 i = 0; i < song->chartCount; i++)
     numericDifficultyLevels.push_back(song->charts[i].level);
   setClosestNumericLevel();
-
   setNames(song->title, song->artist);
+  printNumericDifficultyLevel();
   player_play(song->audioPath.c_str());
   player_seek(song->sampleStart);
   SONG_free(song);
@@ -484,6 +484,16 @@ void SelectionScene::setNames(std::string title, std::string artist) {
   SCENE_write(title, TEXT_ROW);
   TextStream::instance().setText("- " + artist + " -", TEXT_ROW + 1,
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
+}
+
+void SelectionScene::printNumericDifficultyLevel() {
+  if (getGameMode() != GameMode::ARCADE)
+    return;
+
+  auto levelText = std::to_string(getSelectedNumericLevel());
+  if (levelText.size() == 1)
+    levelText = "0" + levelText;
+  SCENE_write(levelText, NUMERIC_DIFFICULTY_LEVEL_ROW);
 }
 
 SelectionScene::~SelectionScene() {
