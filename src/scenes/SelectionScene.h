@@ -52,8 +52,8 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
-  std::unique_ptr<Button> numericLevelBadge;
-  std::vector<u8> numericLevels;
+  std::unique_ptr<Button> numericDifficultyLevelBadge;
+  std::vector<u8> numericDifficultyLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
@@ -79,9 +79,9 @@ class SelectionScene : public Scene {
   inline void setClosestNumericLevel() {
     auto level = getSelectedNumericLevel();
 
-    u32 min = numericLevels[0];
+    u32 min = numericDifficultyLevels[0];
     u32 minDiff = abs((int)min - (int)level);
-    for (auto& availableLevel : numericLevels) {
+    for (auto& availableLevel : numericDifficultyLevels) {
       u32 diff = (u32)abs((int)availableLevel - (int)level);
       if (diff < minDiff) {
         min = availableLevel;
