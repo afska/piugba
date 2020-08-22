@@ -116,7 +116,8 @@ class SelectionScene : public Scene {
                          bool isOnPageEdge,
                          int direction);
 
-  void updateSelection();
+  void updateSelection() { updateSelection(true); }
+  void updateSelection(bool withMusic);
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);

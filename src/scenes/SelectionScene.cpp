@@ -47,11 +47,7 @@ const u32 NUMERIC_DIFFICULTY_LEVEL_ROW = 3;
 
 // TODO: Select last unlocked arcade song
 // TODO: Calculate available songs
-// TODO: Don't save grades on arcade mode
-// TODO: Preserve numeric level on confirmations
 // TODO: Actually use the level to play the right chart
-// TODO: Don't restart song preview when calling updateSelection() after
-// changing level
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -369,7 +365,7 @@ bool SelectionScene::onNumericDifficultyChange(ArrowDirection selector,
       return true;
 
     SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, newValue);
-    updateSelection();
+    updateSelection(false);
     pixelBlink->blink();
 
     return true;
@@ -409,7 +405,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
   return false;
 }
 
-void SelectionScene::updateSelection() {
+void SelectionScene::updateSelection(bool withMusic) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
   numericDifficultyLevels.clear();
@@ -418,8 +414,10 @@ void SelectionScene::updateSelection() {
   setClosestNumericLevel();
   setNames(song->title, song->artist);
   printNumericDifficultyLevel();
-  player_play(song->audioPath.c_str());
-  player_seek(song->sampleStart);
+  if (withMusic) {
+    player_play(song->audioPath.c_str());
+    player_seek(song->sampleStart);
+  }
   SONG_free(song);
 
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
@@ -433,6 +431,7 @@ void SelectionScene::confirm() {
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
+  printNumericDifficultyLevel();
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
 }
 
