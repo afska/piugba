@@ -52,8 +52,8 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
-  std::unique_ptr<Button> numericDifficultyLevelBadge;
-  std::vector<u8> numericDifficultyLevels;
+  std::unique_ptr<Button> numericLevelBadge;
+  std::vector<u8> numericLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
@@ -74,14 +74,14 @@ class SelectionScene : public Scene {
         SRAM->progress[difficulty->getValue()].completedSongs);
   }
   inline u8 getSelectedNumericLevel() {
-    return SAVEFILE_read8(SRAM->memory.numericDifficultyLevel);
+    return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
   inline void setClosestNumericLevel() {
     auto level = getSelectedNumericLevel();
 
-    u32 min = numericDifficultyLevels[0];
+    u32 min = numericLevels[0];
     u32 minDiff = abs((int)min - (int)level);
-    for (auto& availableLevel : numericDifficultyLevels) {
+    for (auto& availableLevel : numericLevels) {
       u32 diff = (u32)abs((int)availableLevel - (int)level);
       if (diff < minDiff) {
         min = availableLevel;
@@ -89,7 +89,7 @@ class SelectionScene : public Scene {
       }
     }
 
-    SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, min);
+    SAVEFILE_write8(SRAM->memory.numericLevel, min);
   }
 
   void setUpSpritesPalette();
@@ -109,8 +109,9 @@ class SelectionScene : public Scene {
   void processMultiplierChangeEvents();
   void processConfirmEvents();
   void processMenuEvents(u16 keys);
-  bool onDifficultyChange(ArrowDirection selector, DifficultyLevel newValue);
-  bool onNumericDifficultyChange(ArrowDirection selector, u8 newValue);
+  bool onDifficultyLevelChange(ArrowDirection selector,
+                               DifficultyLevel newValue);
+  bool onNumericLevelChange(ArrowDirection selector, u8 newValue);
   bool onSelectionChange(ArrowDirection selector,
                          bool isOnListEdge,
                          bool isOnPageEdge,
@@ -124,8 +125,8 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
-  void printNumericDifficultyLevel() { printNumericDifficultyLevel(0); }
-  void printNumericDifficultyLevel(s8 offset);
+  void printNumericLevel() { printNumericLevel(0); }
+  void printNumericLevel(s8 offset);
 
   ~SelectionScene();
 };

@@ -41,11 +41,11 @@ const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
 const u32 GRADE_BADGE_Y = 84;
 const u32 LOCK_X[] = {22, 82, 142, 202};
 const u32 LOCK_Y = 71;
-const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_X = 104;
-const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_Y = 19;
-const u32 NUMERIC_DIFFICULTY_LEVEL_ROW = 3;
-const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_OFFSET_Y = 43;
-const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_OFFSET_ROW = 5;
+const u32 NUMERIC_LEVEL_BADGE_X = 104;
+const u32 NUMERIC_LEVEL_BADGE_Y = 19;
+const u32 NUMERIC_LEVEL_ROW = 3;
+const u32 NUMERIC_LEVEL_BADGE_OFFSET_Y = 43;
+const u32 NUMERIC_LEVEL_BADGE_OFFSET_ROW = 5;
 
 // TODO: Select last unlocked arcade song
 // TODO: Calculate available songs
@@ -84,7 +84,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
   progress->render(&sprites);
 
   if (getGameMode() == GameMode::ARCADE)
-    sprites.push_back(numericDifficultyLevelBadge->get());
+    sprites.push_back(numericLevelBadge->get());
 
   return sprites;
 }
@@ -101,10 +101,10 @@ void SelectionScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
   if (getGameMode() == GameMode::ARCADE) {
-    numericDifficultyLevelBadge = std::unique_ptr<Button>{
-        new Button(ButtonType::LEVEL_METER, NUMERIC_DIFFICULTY_LEVEL_BADGE_X,
-                   NUMERIC_DIFFICULTY_LEVEL_BADGE_Y, false)};
-    numericDifficultyLevelBadge->get()->setPriority(ID_HIGHLIGHTER);
+    numericLevelBadge = std::unique_ptr<Button>{
+        new Button(ButtonType::LEVEL_METER, NUMERIC_LEVEL_BADGE_X,
+                   NUMERIC_LEVEL_BADGE_Y, false)};
+    numericLevelBadge->get()->setPriority(ID_HIGHLIGHTER);
 
     difficulty->setValue(DifficultyLevel::NUMERIC);
     SPRITE_hide(multiplier->get());
@@ -264,29 +264,26 @@ void SelectionScene::processDifficultyChangeEvents() {
   if (getGameMode() == GameMode::ARCADE) {
     auto level = getSelectedNumericLevel();
     auto currentLevelIndex = 0;
-    for (u32 i = 0; i < numericDifficultyLevels.size(); i++)
-      if (numericDifficultyLevels[i] == level) {
+    for (u32 i = 0; i < numericLevels.size(); i++)
+      if (numericLevels[i] == level) {
         currentLevelIndex = i;
         break;
       }
     auto previousIndex = max(currentLevelIndex - 1, 0);
-    auto nextIndex =
-        min(currentLevelIndex + 1, numericDifficultyLevels.size() - 1);
+    auto nextIndex = min(currentLevelIndex + 1, numericLevels.size() - 1);
 
-    if (onNumericDifficultyChange(ArrowDirection::UPRIGHT,
-                                  numericDifficultyLevels[nextIndex]))
+    if (onNumericLevelChange(ArrowDirection::UPRIGHT, numericLevels[nextIndex]))
       return;
 
-    onNumericDifficultyChange(ArrowDirection::UPLEFT,
-                              numericDifficultyLevels[previousIndex]);
+    onNumericLevelChange(ArrowDirection::UPLEFT, numericLevels[previousIndex]);
   } else {
-    if (onDifficultyChange(
+    if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
             static_cast<DifficultyLevel>(
                 min((int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
       return;
 
-    onDifficultyChange(
+    onDifficultyLevelChange(
         ArrowDirection::UPLEFT,
         static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
   }
@@ -332,8 +329,8 @@ void SelectionScene::processMenuEvents(u16 keys) {
   }
 }
 
-bool SelectionScene::onDifficultyChange(ArrowDirection selector,
-                                        DifficultyLevel newValue) {
+bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
+                                             DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
     fxes_playSolo(SOUND_STEP);
@@ -361,8 +358,8 @@ bool SelectionScene::onDifficultyChange(ArrowDirection selector,
   return false;
 }
 
-bool SelectionScene::onNumericDifficultyChange(ArrowDirection selector,
-                                               u8 newValue) {
+bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
+                                          u8 newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
     fxes_playSolo(SOUND_STEP);
@@ -370,7 +367,7 @@ bool SelectionScene::onNumericDifficultyChange(ArrowDirection selector,
     if (newValue == getSelectedNumericLevel())
       return true;
 
-    SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, newValue);
+    SAVEFILE_write8(SRAM->memory.numericLevel, newValue);
     updateSelection(false);
     pixelBlink->blink();
 
@@ -414,12 +411,12 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 void SelectionScene::updateSelection(bool withMusic) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
-  numericDifficultyLevels.clear();
+  numericLevels.clear();
   for (u32 i = 0; i < song->chartCount; i++)
-    numericDifficultyLevels.push_back(song->charts[i].level);
+    numericLevels.push_back(song->charts[i].level);
   setClosestNumericLevel();
   setNames(song->title, song->artist);
-  printNumericDifficultyLevel();
+  printNumericLevel();
   if (withMusic) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
@@ -433,25 +430,24 @@ void SelectionScene::updateSelection(bool withMusic) {
 
 void SelectionScene::confirm() {
   if (getGameMode() == GameMode::ARCADE)
-    numericDifficultyLevelBadge->get()->moveTo(
-        NUMERIC_DIFFICULTY_LEVEL_BADGE_X,
-        NUMERIC_DIFFICULTY_LEVEL_BADGE_Y +
-            NUMERIC_DIFFICULTY_LEVEL_BADGE_OFFSET_Y);
+    numericLevelBadge->get()->moveTo(
+        NUMERIC_LEVEL_BADGE_X,
+        NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
 
   fxes_playSolo(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
-  printNumericDifficultyLevel(NUMERIC_DIFFICULTY_LEVEL_BADGE_OFFSET_ROW);
+  printNumericLevel(NUMERIC_LEVEL_BADGE_OFFSET_ROW);
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
 }
 
 void SelectionScene::unconfirm() {
   if (confirmed) {
     if (getGameMode() == GameMode::ARCADE)
-      numericDifficultyLevelBadge->get()->moveTo(
-          NUMERIC_DIFFICULTY_LEVEL_BADGE_X, NUMERIC_DIFFICULTY_LEVEL_BADGE_Y);
+      numericLevelBadge->get()->moveTo(NUMERIC_LEVEL_BADGE_X,
+                                       NUMERIC_LEVEL_BADGE_Y);
 
     SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
     TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
@@ -507,14 +503,14 @@ void SelectionScene::setNames(std::string title, std::string artist) {
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
 
-void SelectionScene::printNumericDifficultyLevel(s8 offset) {
+void SelectionScene::printNumericLevel(s8 offset) {
   if (getGameMode() != GameMode::ARCADE)
     return;
 
   auto levelText = std::to_string(getSelectedNumericLevel());
   if (levelText.size() == 1)
     levelText = "0" + levelText;
-  SCENE_write(levelText, NUMERIC_DIFFICULTY_LEVEL_ROW + offset);
+  SCENE_write(levelText, NUMERIC_LEVEL_ROW + offset);
 }
 
 SelectionScene::~SelectionScene() {

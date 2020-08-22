@@ -62,7 +62,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.pageIndex, 0);
     SAVEFILE_write8(SRAM->memory.songIndex, 0);
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
-    SAVEFILE_write8(SRAM->memory.numericDifficultyLevel, 0);
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
