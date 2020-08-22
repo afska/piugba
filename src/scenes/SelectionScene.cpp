@@ -222,7 +222,7 @@ void SelectionScene::setUpLocks() {
 }
 
 void SelectionScene::setUpPager() {
-  count = library->getCount();
+  count = SAVEFILE_getLibrarySize();
   scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
            SAVEFILE_read8(SRAM->memory.songIndex));
 }

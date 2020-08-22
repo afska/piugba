@@ -13,9 +13,3 @@ std::vector<std::unique_ptr<SongFile>> Library::getSongs(u32 start, u32 count) {
 
   return files;
 }
-
-u32 Library::getCount() {
-  u32 count = 0;
-  forEachSong([&count](std::string name, u32 index) { count++; });
-  return count;
-}

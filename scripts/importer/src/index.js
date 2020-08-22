@@ -24,6 +24,7 @@ const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const MAX_FILE_LENGTH = 15;
+const MAX_SONGS = 99;
 const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc$/i;
 const FILE_AUDIO = /\.(mp3|flac)$/i;
@@ -66,14 +67,6 @@ const GET_SONG_FILES = ({ path, name }) => {
 mkdirp(SONGS_PATH);
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
-
-// -------
-// ROM ID
-// -------
-
-const romIdBuffer = Buffer.alloc(4);
-romIdBuffer.writeUInt32LE(Math.floor(Math.random() * 0xffffffff));
-fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // ------------
 // AUDIO ASSETS
@@ -126,6 +119,8 @@ const songs = _(fs.readdirSync(SONGS_PATH))
 // SONGS IMPORT
 // ------------
 
+if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
+
 let lastSelectorBuilt = -1;
 const simfiles = songs.map((song, i) => {
   const { outputName } = song;
@@ -174,6 +169,14 @@ const simfiles = songs.map((song, i) => {
 
   return simfile;
 });
+
+// -------
+// ROM ID
+// -------
+
+const romIdBuffer = Buffer.alloc(4);
+romIdBuffer.writeUInt32LE(((Math.random() * 0xffffffff) << 8) + songs.length);
+fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // -------
 // SUMMARY

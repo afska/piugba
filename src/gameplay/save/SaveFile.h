@@ -19,6 +19,7 @@ extern "C" {
 
 const u32 PROGRESS_REGISTERS = 6;
 const u32 PROGRESS_IMPOSSIBLE = 3;
+const u32 LIBRARY_SIZE_MASK = 0x000000FF;
 
 typedef struct __attribute__((__packed__)) {
   u32 romId;
@@ -92,6 +93,10 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   return SAVEFILE_read32(SRAM->romId) == romId;
+}
+
+inline u8 SAVEFILE_getLibrarySize() {
+  return SAVEFILE_read32(SRAM->romId) & LIBRARY_SIZE_MASK;
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {

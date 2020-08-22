@@ -20,7 +20,6 @@ class Library {
   Library(const GBFS_FILE* fs);
 
   std::vector<std::unique_ptr<SongFile>> getSongs(u32 start, u32 count);
-  u32 getCount();
 
  private:
   const GBFS_FILE* fs;
