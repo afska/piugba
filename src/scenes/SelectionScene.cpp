@@ -49,7 +49,6 @@ const u32 NUMERIC_DIFFICULTY_LEVEL_BADGE_OFFSET_ROW = 5;
 
 // TODO: Select last unlocked arcade song
 // TODO: Calculate available songs
-// TODO: Actually use the level to play the right chart
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -240,7 +239,10 @@ void SelectionScene::goToSong() {
   confirmed = false;
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
-  Chart* chart = SONG_findChartByDifficultyLevel(song, difficulty->getValue());
+  Chart* chart =
+      getGameMode() == GameMode::ARCADE
+          ? SONG_findChartByNumericLevel(song, getSelectedNumericLevel())
+          : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
   STATE_reset();
   GameState.isBoss = song->channel == Channel::BOSS;
