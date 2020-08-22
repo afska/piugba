@@ -100,7 +100,8 @@ inline u8 SAVEFILE_getLibrarySize() {
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
-  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+  int lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+
   if (songIndex > lastIndex)
     return GradeType::UNPLAYED;
 
@@ -111,10 +112,13 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
 inline void SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 GradeType grade) {
-  auto lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+  int lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+  u8 librarySize = SAVEFILE_getLibrarySize();
+
   if (songIndex > lastIndex) {
-    auto nextSongIndex = songIndex + 1;
-    SAVEFILE_write32(SRAM->progress[level].completedSongs, nextSongIndex);
+    auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);
+    auto completedSongs = (u8)min(songIndex + 1, librarySize);
+    SAVEFILE_write32(SRAM->progress[level].completedSongs, completedSongs);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
   }
