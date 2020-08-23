@@ -350,6 +350,18 @@ void SongScene::processModsBeat() {
 
   if (GameState.mods.randomSpeed)
     chartReader->setMultiplier(qran_range(2, 5 + 1));
+
+  if (GameState.mods.reduce == ReduceOpts::rRANDOM) {
+    int random = qran_range(0, REDUCE_MOD_POSITION_Y);
+    GameState.positionY = REDUCE_MOD_POSITION_Y - random;
+
+    lifeBar->get()->moveTo(lifeBar->get()->getX(),
+                           GameState.positionY + LIFEBAR_POSITION_Y);
+    for (auto& it : arrowHolders)
+      it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
+
+    pixelBlink->blink();
+  }
 }
 
 u8 SongScene::processPixelateMod() {

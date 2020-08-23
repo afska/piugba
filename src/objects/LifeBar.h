@@ -8,6 +8,7 @@
 const int INITIAL_LIFE = 60;
 const int MAX_LIFE = 100;
 const int MIN_LIFE = -13;
+const int LIFEBAR_POSITION_Y = -11 + 2;
 
 class LifeBar {
  public:

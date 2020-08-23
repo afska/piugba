@@ -30,9 +30,8 @@ void STATE_reset() {
   GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
   GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
 
-  if (GameState.mods.reduce == ReduceOpts::rFIXED) {
-    GameState.positionY = 51;
-    GameState.scorePositionY = 34;
-    // TODO: MOVE
+  if (GameState.mods.reduce != ReduceOpts::rOFF) {
+    GameState.positionY = REDUCE_MOD_POSITION_Y;
+    GameState.scorePositionY = REDUCE_MOD_SCORE_POSITION_Y;
   }
 }

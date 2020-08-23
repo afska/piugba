@@ -5,6 +5,9 @@
 
 #include "Mods.h"
 
+const int REDUCE_MOD_POSITION_Y = 51;
+const int REDUCE_MOD_SCORE_POSITION_Y = 34;
+
 enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE };
 
 typedef struct __attribute__((__packed__)) {
