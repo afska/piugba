@@ -69,14 +69,13 @@ bool SettingsScene::selectOption(u32 selected) {
     }
     case OPTION_GAME_POSITION: {
       u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
-      SAVEFILE_write8(SRAM->settings.gamePosition,
-                      gamePosition == 0 ? 1 : gamePosition == 1 ? 2 : 0);
+      SAVEFILE_write8(SRAM->settings.gamePosition, increment(gamePosition, 3));
       return true;
     }
     case OPTION_BACKGROUND_TYPE: {
       u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
       SAVEFILE_write8(SRAM->settings.backgroundType,
-                      backgroundType == 0 ? 1 : backgroundType == 1 ? 2 : 0);
+                      increment(backgroundType, 3));
       if (backgroundType == 0)
         SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
       return true;

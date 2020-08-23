@@ -41,26 +41,105 @@ void ModsScene::loadBackground(u32 id) {
 void ModsScene::printOptions() {
   SCENE_write(TITLE, 2);
 
-  // int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  // u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
-  // u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
-  // bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+  u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
+  bool stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+  u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
+  bool jump = SAVEFILE_read8(SRAM->mods.jump);
+  u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
+  u8 negative = SAVEFILE_read8(SRAM->mods.negative);
+  bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
+  bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
+  bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
+  bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
 
-  printOption(OPTION_MULTIPLIER, "Multiplier", "3x", 4);
-  printOption(OPTION_STAGE_BREAK, "Stage break", "ON", 5);
-  printOption(OPTION_PIXELATE, "Pixelate", "RANDOM", 6);
-  printOption(OPTION_JUMP, "Jump", "OFF", 7);
-  printOption(OPTION_REDUCE, "Reduce", "OFF", 8);
-  printOption(OPTION_NEGATIVE_COLORS, "Negative colors", "TOGGLE", 9);
-  printOption(OPTION_RANDOM_SPEED, "Random speed", "OFF", 10);
-  printOption(OPTION_MIRROR_STEPS, "Mirror steps", "OFF", 11);
-  printOption(OPTION_RANDOM_STEPS, "Random steps", "OFF", 12);
-  printOption(OPTION_EXTRA_JUDGEMENT, "Extra judgement", "OFF", 13);
+  printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
+              4);
+  printOption(OPTION_STAGE_BREAK, "Stage break", stageBreak ? "ON" : "OFF", 5);
+  printOption(
+      OPTION_PIXELATE, "Pixelate",
+      pixelate == 0
+          ? "OFF"
+          : pixelate == 1
+                ? "LIFE"
+                : pixelate == 2 ? "FIXED" : pixelate == 3 ? "BLINK" : "RANDOM",
+      6);
+  printOption(OPTION_JUMP, "Jump", jump ? "ON" : "OFF", 7);
+  printOption(OPTION_REDUCE, "Reduce",
+              reduce == 0 ? "OFF" : reduce == 1 ? "FIXED" : "RANDOM", 8);
+  printOption(OPTION_NEGATIVE_COLORS, "Negative colors",
+              negative == 0 ? "OFF" : negative == 1 ? "FIXED" : "TOGGLE", 9);
+  printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
+              10);
+  printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
+              11);
+  printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
+              12);
+  printOption(OPTION_EXTRA_JUDGEMENT, "Extra judgement",
+              extraJudgement ? "ON" : "OFF", 13);
   printOption(OPTION_RESET, "[RESET MODS]", "", 15);
 }
 
 bool ModsScene::selectOption(u32 selected) {
-  switch (selected) {}
+  switch (selected) {
+    case OPTION_MULTIPLIER: {
+      u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
+      if (multiplier == ARROW_MAX_MULTIPLIER)
+        multiplier = 0;
+      multiplier++;
+
+      SAVEFILE_write8(SRAM->mods.multiplier, multiplier);
+      return true;
+    }
+    case OPTION_STAGE_BREAK: {
+      bool stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+      SAVEFILE_write8(SRAM->mods.stageBreak, !stageBreak);
+      return true;
+    }
+    case OPTION_PIXELATE: {
+      u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
+      SAVEFILE_write8(SRAM->mods.pixelate, increment(pixelate, 5));
+      return true;
+    }
+    case OPTION_JUMP: {
+      bool jump = SAVEFILE_read8(SRAM->mods.jump);
+      SAVEFILE_write8(SRAM->mods.jump, !jump);
+      return true;
+    }
+    case OPTION_REDUCE: {
+      u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
+      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 3));
+      return true;
+    }
+    case OPTION_NEGATIVE_COLORS: {
+      u8 negative = SAVEFILE_read8(SRAM->mods.negative);
+      SAVEFILE_write8(SRAM->mods.negative, increment(negative, 3));
+      return true;
+    }
+    case OPTION_RANDOM_SPEED: {
+      bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
+      SAVEFILE_write8(SRAM->mods.randomSpeed, !randomSpeed);
+      return true;
+    }
+    case OPTION_MIRROR_STEPS: {
+      bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
+      SAVEFILE_write8(SRAM->mods.mirrorSteps, !mirrorSteps);
+      return true;
+    }
+    case OPTION_RANDOM_STEPS: {
+      bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
+      SAVEFILE_write8(SRAM->mods.randomSteps, !randomSteps);
+      return true;
+    }
+    case OPTION_EXTRA_JUDGEMENT: {
+      bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+      SAVEFILE_write8(SRAM->mods.extraJudgement, !extraJudgement);
+      return true;
+    }
+    case OPTION_RESET: {
+      SAVEFILE_resetMods();
+      return true;
+    }
+  }
 
   return true;
 }

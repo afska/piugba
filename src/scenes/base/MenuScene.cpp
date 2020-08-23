@@ -89,6 +89,26 @@ void MenuScene::tick(u16 keys) {
   nextButton->tick();
 }
 
+void MenuScene::printOption(u32 id,
+                            std::string name,
+                            std::string value,
+                            u32 row) {
+  bool isActive = selected == id;
+  TextStream::instance().setText(
+      (isActive ? ">" : "") + name, row,
+      isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
+
+  if (value.length() > 0) {
+    auto valueString = "<" + value + ">";
+    TextStream::instance().setText(
+        valueString, row, TEXT_COL_VALUE_MIDDLE - valueString.length() / 2);
+  }
+}
+
+u8 MenuScene::increment(u8 value, u8 optionsCount) {
+  return value == optionsCount - 1 ? 0 : value + 1;
+}
+
 void MenuScene::setUpSpritesPalette() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
@@ -131,22 +151,6 @@ void MenuScene::printMenu() {
   TextStream::instance().clear();
 
   printOptions();
-}
-
-void MenuScene::printOption(u32 id,
-                            std::string name,
-                            std::string value,
-                            u32 row) {
-  bool isActive = selected == id;
-  TextStream::instance().setText(
-      (isActive ? ">" : "") + name, row,
-      isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
-
-  if (value.length() > 0) {
-    auto valueString = "<" + value + ">";
-    TextStream::instance().setText(
-        valueString, row, TEXT_COL_VALUE_MIDDLE - valueString.length() / 2);
-  }
 }
 
 void MenuScene::move(int direction) {
