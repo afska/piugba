@@ -10,6 +10,7 @@
 
 #include "gameplay/Library.h"
 #include "gameplay/save/SaveFile.h"
+#include "objects/base/InputHandler.h"
 #include "objects/ui/ArrowSelector.h"
 #include "objects/ui/Button.h"
 #include "objects/ui/ChannelBadge.h"
@@ -52,6 +53,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<NumericProgress> progress;
+  std::unique_ptr<InputHandler> settingsMenuInput;
   std::unique_ptr<Button> numericLevelBadge;
   std::vector<u8> numericLevels;
   u32 page = 0;

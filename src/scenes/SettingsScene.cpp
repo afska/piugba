@@ -71,6 +71,7 @@ void SettingsScene::load() {
       new ArrowSelector(ArrowDirection::DOWNLEFT, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)};
+  closeInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   selectButton->get()->moveTo(112,
                               GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
@@ -120,8 +121,9 @@ void SettingsScene::processKeys(u16 keys) {
   selectButton->setIsPressed(KEY_CENTER(keys));
   backButton->setIsPressed(KEY_DOWNLEFT(keys));
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
+  closeInput->setIsPressed(keys & KEY_START);
 
-  if (keys & KEY_START) {
+  if (closeInput->hasBeenPressedNow()) {
     fxes_stop();
     engine->transitionIntoScene(new SelectionScene(engine, fs),
                                 new FadeOutScene(2));

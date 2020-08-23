@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "objects/base/InputHandler.h"
 #include "objects/ui/ArrowSelector.h"
 #include "utils/PixelBlink.h"
 
@@ -34,6 +35,7 @@ class SettingsScene : public Scene {
   std::unique_ptr<ArrowSelector> selectButton;
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
+  std::unique_ptr<InputHandler> closeInput;
   u32 selected = 0;
 
   void setUpSpritesPalette();

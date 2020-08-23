@@ -91,11 +91,12 @@ void SelectionScene::load() {
 
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
 
+  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   multiplier = std::unique_ptr<Multiplier>{
       new Multiplier(SAVEFILE_read8(SRAM->memory.multiplier))};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   if (getGameMode() == GameMode::ARCADE) {
     numericLevelBadge = std::unique_ptr<Button>{
@@ -264,6 +265,7 @@ void SelectionScene::processKeys(u16 keys) {
   arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
   arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
   multiplier->setIsPressed(keys & KEY_SELECT);
+  settingsMenuInput->setIsPressed(keys & KEY_START);
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
@@ -328,7 +330,7 @@ void SelectionScene::processConfirmEvents() {
 }
 
 void SelectionScene::processMenuEvents(u16 keys) {
-  if (keys & KEY_START) {
+  if (settingsMenuInput->hasBeenPressedNow()) {
     player_stopAll();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new FadeOutScene(4));
