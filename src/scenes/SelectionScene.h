@@ -125,7 +125,6 @@ class SelectionScene : public Scene {
   void processKeys(u16 keys);
   void processDifficultyChangeEvents();
   void processSelectionChangeEvents();
-  void processMultiplierChangeEvents();
   void processConfirmEvents();
   void processMenuEvents(u16 keys);
   bool onDifficultyLevelChange(ArrowDirection selector,

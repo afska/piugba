@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <tonc_input.h>
 
+#include "ModsScene.h"
 #include "SettingsScene.h"
 #include "SongScene.h"
 #include "assets.h"
@@ -141,7 +142,6 @@ void SelectionScene::tick(u16 keys) {
   processKeys(keys);
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
-  processMultiplierChangeEvents();
   processConfirmEvents();
   processMenuEvents(keys);
 
@@ -310,16 +310,6 @@ void SelectionScene::processSelectionChangeEvents() {
                     selected == 0, -1);
 }
 
-void SelectionScene::processMultiplierChangeEvents() {
-  if (getGameMode() == GameMode::ARCADE)
-    return;
-
-  if (multiplier->hasBeenPressedNow()) {
-    fxes_playSolo(SOUND_MOD);
-    SAVEFILE_write8(SRAM->memory.multiplier, multiplier->change());
-  }
-}
-
 void SelectionScene::processConfirmEvents() {
   if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
     if (confirmed)
@@ -330,6 +320,17 @@ void SelectionScene::processConfirmEvents() {
 }
 
 void SelectionScene::processMenuEvents(u16 keys) {
+  if (multiplier->hasBeenPressedNow()) {
+    if (getGameMode() == GameMode::ARCADE) {
+      player_stopAll();
+      engine->transitionIntoScene(new ModsScene(engine, fs),
+                                  new FadeOutScene(4));
+    } else {
+      fxes_playSolo(SOUND_MOD);
+      SAVEFILE_write8(SRAM->memory.multiplier, multiplier->change());
+    }
+  }
+
   if (settingsMenuInput->hasBeenPressedNow()) {
     player_stopAll();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
