@@ -117,8 +117,7 @@ void SongScene::tick(u16 keys) {
       BACKGROUND_setColor(0, 127);
     init++;
   } else if (init == 1) {
-    if (ENABLE_BACKGROUND)
-      BACKGROUND_enable(true, true, false, false);
+    BACKGROUND_enable(true, ENABLE_BACKGROUND, false, false);
     SPRITE_enable();
     processModsLoad();
     init++;
