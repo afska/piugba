@@ -89,7 +89,7 @@ void SongScene::load() {
   u32 multiplier = GameState.mods.multiplier;
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
-        if (ENABLE_STAGE_BREAK) {
+        if (ENABLE_STAGE_BREAK && GameState.mods.stageBreak) {
           unload();
           engine->transitionIntoScene(new StageBreakScene(engine, fs),
                                       new FadeOutScene(6));

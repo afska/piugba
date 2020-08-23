@@ -10,10 +10,10 @@ enum NegativeOpts : u8 { nOFF, nFIXED, tTOGGLE };
 typedef struct __attribute__((__packed__)) {
   u8 multiplier;
   u8 stageBreak;
-  u8 pixelate;
+  PixelateOpts pixelate;
   u8 jump;
-  u8 reduce;
-  u8 negative;
+  ReduceOpts reduce;
+  NegativeOpts negative;
   u8 randomSpeed;
   u8 mirrorSteps;
   u8 randomSteps;
