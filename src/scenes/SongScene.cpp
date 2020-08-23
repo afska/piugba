@@ -326,6 +326,9 @@ void SongScene::processModsLoad() {
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
       GameState.mods.pixelate == PixelateOpts::pBLINK)
     targetMosaic = 6;
+
+  if (GameState.mods.negative == NegativeOpts::nFIXED)
+    SCENE_invert(foregroundPalette.get());
 }
 
 void SongScene::processModsBeat() {
@@ -337,6 +340,9 @@ void SongScene::processModsBeat() {
     if (previousTargetMosaic == targetMosaic)
       mosaic = 0;
   }
+
+  if (GameState.mods.negative == NegativeOpts::nTOGGLE)
+    SCENE_invert(foregroundPalette.get());
 }
 
 u8 SongScene::processPixelateMod() {

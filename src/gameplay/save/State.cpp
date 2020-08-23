@@ -12,8 +12,8 @@ void STATE_reset() {
 
   GameState.positionX =
       GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
-  GameState.positionY = 0;       // TODO: 51 - REDUCE MOD
-  GameState.scorePositionY = 0;  // TODO: 34 - REDUCE MOD
+  GameState.positionY = 0;
+  GameState.scorePositionY = 0;
 
   // TODO: Set mods for campaign and impossible
 
@@ -30,4 +30,10 @@ void STATE_reset() {
   GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
   GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+
+  if (GameState.mods.reduce == ReduceOpts::rFIXED) {
+    GameState.positionY = 51;
+    GameState.scorePositionY = 34;
+    // TODO: MOVE
+  }
 }

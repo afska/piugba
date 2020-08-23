@@ -5,7 +5,7 @@
 
 enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK, pRANDOM };
 enum ReduceOpts : u8 { rOFF, rFIXED, rRANDOM };
-enum NegativeOpts : u8 { nOFF, nFIXED, tTOGGLE };
+enum NegativeOpts : u8 { nOFF, nFIXED, nTOGGLE };
 
 typedef struct __attribute__((__packed__)) {
   u8 multiplier;
