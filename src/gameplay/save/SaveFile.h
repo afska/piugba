@@ -66,9 +66,6 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
-    SAVEFILE_write8(SRAM->globalProgress.isArcadeModeUnlocked,
-                    true);  // TODO: RESTORE false
-    SAVEFILE_write8(SRAM->globalProgress.isImpossibleModeUnlocked, false);
     SAVEFILE_write8(SRAM->globalProgress.completedSongs, 0);
 
     SAVEFILE_write8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
@@ -97,6 +94,18 @@ inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
 
 inline u8 SAVEFILE_getLibrarySize() {
   return SAVEFILE_read32(SRAM->romId) & LIBRARY_SIZE_MASK;
+}
+
+inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
+  u8 completedSongs = SAVEFILE_read8(SRAM->globalProgress.completedSongs);
+
+  if (gameMode == GameMode::ARCADE)
+    return completedSongs >= 1;
+
+  if (gameMode == GameMode::IMPOSSIBLE)
+    return completedSongs == SAVEFILE_getLibrarySize();
+
+  return true;
 }
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {

@@ -8,8 +8,6 @@
 #define MAX_PROGRESS_REGISTERS 100
 
 typedef struct __attribute__((__packed__)) {
-  u8 isArcadeModeUnlocked;
-  u8 isImpossibleModeUnlocked;
   u8 completedSongs;
 } GlobalProgress;
 

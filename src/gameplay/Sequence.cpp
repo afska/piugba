@@ -74,10 +74,8 @@ Scene* SEQUENCE_getMainScene() {
 }
 
 void SEQUENCE_goToGameMode(GameMode gameMode) {
-  bool isArcadeModeUnlocked =
-      SAVEFILE_read8(SRAM->globalProgress.isArcadeModeUnlocked);
-  bool isImpossibleModeUnlocked =
-      SAVEFILE_read8(SRAM->globalProgress.isImpossibleModeUnlocked);
+  bool isArcadeModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
+  bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
 
   if (gameMode == GameMode::ARCADE && !isArcadeModeUnlocked) {
     goTo(new TalkScene(_engine, _fs, ARCADE_MODE_LOCKED, [](u16 keys) {
