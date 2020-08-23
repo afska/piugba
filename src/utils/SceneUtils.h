@@ -24,11 +24,11 @@ inline void SCENE_write(std::string text, u32 row) {
                                  TEXT_MIDDLE_COL - text.length() / 2);
 }
 
-inline void SCENE_invert(ForegroundPaletteManager* foregroundPalette) {
+inline void SCENE_invert(PaletteManager* palette) {
   for (int bank = 0; bank < PALETTE_BANK_SIZE; bank++) {
     for (int index = 0; index < PALETTE_BANK_SIZE; index++) {
-      auto color = foregroundPalette->get(bank, index);
-      foregroundPalette->change(bank, index, 0xffff - color);
+      auto color = palette->get(bank, index);
+      palette->change(bank, index, 0xffff - color);
     }
   }
 }

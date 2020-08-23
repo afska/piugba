@@ -101,8 +101,6 @@ void SongScene::load() {
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
-
-  processModsLoad();
 }
 
 void SongScene::tick(u16 keys) {
@@ -122,6 +120,7 @@ void SongScene::tick(u16 keys) {
     if (ENABLE_BACKGROUND)
       BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
+    processModsLoad();
     init++;
   }
 
@@ -328,8 +327,13 @@ void SongScene::processModsLoad() {
       GameState.mods.pixelate == PixelateOpts::pBLINK)
     targetMosaic = 6;
 
-  if (GameState.mods.negative == NegativeOpts::nFIXED)
+  if (GameState.mods.negative == NegativeOpts::nFIXED) {
+    SCENE_invert(backgroundPalette.get());
     SCENE_invert(foregroundPalette.get());
+  } else if (GameState.mods.negative == NegativeOpts::nTOGGLE) {
+    SCENE_invert(backgroundPalette.get());
+    BACKGROUND_setColor(255, 0);
+  }
 }
 
 void SongScene::processModsBeat() {
