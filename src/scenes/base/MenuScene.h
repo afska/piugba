@@ -27,10 +27,12 @@ class MenuScene : public Scene {
   void tick(u16 keys) override;
 
  protected:
+  std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
 
   virtual u16 getCloseKey() = 0;
   virtual u32 getOptionsCount() = 0;
+  virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;
   virtual bool selectOption(u32 selected) = 0;
 
@@ -38,7 +40,6 @@ class MenuScene : public Scene {
 
  private:
   bool hasStarted = false;
-  std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
 
   std::unique_ptr<ArrowSelector> selectButton;

@@ -12,6 +12,7 @@ class ModsScene : public MenuScene {
  protected:
   u16 getCloseKey() override;
   u32 getOptionsCount() override;
+  void loadBackground(u32 id) override;
   void printOptions() override;
   bool selectOption(u32 selected) override;
 };

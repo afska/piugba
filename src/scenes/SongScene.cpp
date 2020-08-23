@@ -86,7 +86,7 @@ void SongScene::load() {
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  u32 multiplier = SAVEFILE_read8(SRAM->memory.multiplier);
+  u32 multiplier = GameState.mods.multiplier;
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         if (ENABLE_STAGE_BREAK) {
@@ -149,7 +149,7 @@ void SongScene::tick(u16 keys) {
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   u8 minMosaic = 0;
-  if (GameState.isBoss) {
+  if (GameState.mods.pixelate) {
     minMosaic = lifeBar->getMosaicValue();
     EFFECT_setMosaic(minMosaic);
   }

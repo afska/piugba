@@ -8,8 +8,6 @@ typedef struct __attribute__((__packed__)) {
   u8 songIndex;
   u8 difficultyLevel;
   u8 numericLevel;
-  u8 multiplier;
-
   u8 isAudioLagCalibrated;
 } Memory;
 

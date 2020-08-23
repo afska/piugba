@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
 #include "Memory.h"
+#include "Mods.h"
 #include "Progress.h"
 #include "Settings.h"
 #include "State.h"
@@ -25,6 +26,7 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
+  Mods mods;
   Memory memory;
   GlobalProgress globalProgress;
   Progress progress[PROGRESS_REGISTERS];
@@ -52,6 +54,19 @@ inline void SAVEFILE_resetSettings() {
   SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
 }
 
+inline void SAVEFILE_resetMods() {
+  SAVEFILE_write8(SRAM->mods.multiplier, 3);
+  SAVEFILE_write8(SRAM->mods.stageBreak, true);
+  SAVEFILE_write8(SRAM->mods.pixelate, PixelateOpts::pOFF);
+  SAVEFILE_write8(SRAM->mods.jump, false);
+  SAVEFILE_write8(SRAM->mods.reduce, ReduceOpts::rOFF);
+  SAVEFILE_write8(SRAM->mods.negative, NegativeOpts::nOFF);
+  SAVEFILE_write8(SRAM->mods.randomSpeed, false);
+  SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
+  SAVEFILE_write8(SRAM->mods.randomSteps, false);
+  SAVEFILE_write8(SRAM->mods.extraJudgement, false);
+}
+
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   bool isNew = SAVEFILE_read32(SRAM->romId) != romId;
@@ -60,12 +75,12 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write32(SRAM->romId, romId);
 
     SAVEFILE_resetSettings();
+    SAVEFILE_resetMods();
 
     SAVEFILE_write8(SRAM->memory.pageIndex, 0);
     SAVEFILE_write8(SRAM->memory.songIndex, 0);
     SAVEFILE_write8(SRAM->memory.difficultyLevel, 0);
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
-    SAVEFILE_write8(SRAM->memory.multiplier, 3);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
     SAVEFILE_write8(SRAM->globalProgress.completedSongs, 0);

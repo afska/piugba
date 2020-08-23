@@ -96,9 +96,7 @@ void MenuScene::setUpSpritesPalette() {
 }
 
 void MenuScene::setUpBackground() {
-  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_LINES_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_LINES_TILES, BG_LINES_MAP,
-                                      ID_MAIN_BACKGROUND);
+  loadBackground(ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);

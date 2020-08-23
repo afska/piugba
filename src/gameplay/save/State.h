@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include "Mods.h"
+
 enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE };
 
 typedef struct __attribute__((__packed__)) {
@@ -11,10 +13,11 @@ typedef struct __attribute__((__packed__)) {
 } State;
 
 typedef struct {
-  bool isBoss;
   int positionX;
   int positionY;
   int scorePositionY;
+
+  Mods mods;
 } RAMState;
 
 extern RAMState GameState;

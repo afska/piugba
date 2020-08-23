@@ -95,7 +95,7 @@ void SelectionScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   multiplier = std::unique_ptr<Multiplier>{
-      new Multiplier(SAVEFILE_read8(SRAM->memory.multiplier))};
+      new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
@@ -252,7 +252,8 @@ void SelectionScene::goToSong() {
           : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
   STATE_reset();
-  GameState.isBoss = song->channel == Channel::BOSS;
+  bool isBoss = song->channel == Channel::BOSS;
+  GameState.mods.pixelate = isBoss ? PixelateOpts::pLIFE : PixelateOpts::pOFF;
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(4));
@@ -327,7 +328,7 @@ void SelectionScene::processMenuEvents(u16 keys) {
                                   new FadeOutScene(4));
     } else {
       fxes_playSolo(SOUND_MOD);
-      SAVEFILE_write8(SRAM->memory.multiplier, multiplier->change());
+      SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     }
   }
 

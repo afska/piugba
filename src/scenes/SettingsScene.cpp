@@ -28,6 +28,11 @@ u32 SettingsScene::getOptionsCount() {
   return OPTIONS_COUNT;
 }
 
+void SettingsScene::loadBackground(u32 id) {
+  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_LINES_PALETTE);
+  bg = BACKGROUND_loadBackgroundFiles(fs, BG_LINES_TILES, BG_LINES_MAP, id);
+}
+
 void SettingsScene::printOptions() {
   SCENE_write(TITLE, 2);
 
