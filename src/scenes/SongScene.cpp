@@ -143,8 +143,9 @@ void SongScene::tick(u16 keys) {
       lifeBar->blink(foregroundPalette.get());
       if (!KEY_ANY_PRESSED(keys))
         arrowHolder->blink();
-      processModsBeat();
     }
+
+    processModsBeat();
   }
 
   blinkFrame = max(blinkFrame - 1, 0);
@@ -357,14 +358,10 @@ u8 SongScene::processPixelateMod() {
     case PixelateOpts::pFIXED:
     case PixelateOpts::pBLINK:
     case PixelateOpts::pRANDOM:
-      waitMosaic = !waitMosaic;
-
-      if (!waitMosaic || GameState.mods.pixelate == PixelateOpts::pRANDOM) {
-        if (targetMosaic > mosaic)
-          mosaic++;
-        else if (mosaic > targetMosaic)
-          mosaic--;
-      }
+      if (targetMosaic > mosaic)
+        mosaic++;
+      else if (mosaic > targetMosaic)
+        mosaic--;
 
       minMosaic = mosaic;
       break;

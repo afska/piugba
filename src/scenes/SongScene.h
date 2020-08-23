@@ -55,7 +55,6 @@ class SongScene : public Scene {
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
   u8 mosaic = 0;
-  bool waitMosaic = true;
 
   void setUpPalettes();
   void setUpBackground();
