@@ -47,6 +47,7 @@ SRCDIRS		:= src \
 						 src/player \
 						 src/player/core \
 						 src/scenes \
+						 src/scenes/base \
 						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gbfs \
