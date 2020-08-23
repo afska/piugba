@@ -223,9 +223,18 @@ void SelectionScene::setUpPager() {
            SAVEFILE_read8(SRAM->memory.songIndex));
 }
 
+void SelectionScene::scrollTo(u32 songIndex) {
+  scrollTo(Div(songIndex, PAGE_SIZE), DivMod(songIndex, PAGE_SIZE));
+}
+
 void SelectionScene::scrollTo(u32 page, u32 selected) {
   this->page = page;
   this->selected = selected;
+
+  if (getSelectedSongIndex() > getLastUnlockedSongIndex()) {
+    scrollTo(getLastUnlockedSongIndex());
+    return;
+  }
 
   setPage(page, 0);
   updateSelection();
@@ -345,8 +354,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
       loadProgress();
     else {
       player_stopAll();
-      scrollTo(Div(lastUnlockedSongIndex, PAGE_SIZE),
-               DivMod(lastUnlockedSongIndex, PAGE_SIZE));
+      scrollTo(lastUnlockedSongIndex);
     }
 
     return true;

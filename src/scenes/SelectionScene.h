@@ -114,6 +114,7 @@ class SelectionScene : public Scene {
   void setUpLocks();
   void setUpPager();
 
+  void scrollTo(u32 songIndex);
   void scrollTo(u32 page, u32 selected);
   void goToSong();
 
