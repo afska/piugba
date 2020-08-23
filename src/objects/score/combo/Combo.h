@@ -16,6 +16,7 @@ class Combo {
   inline u32 getValue() { return value; }
   void show();
   void hide();
+  void relocate();
 
   void tick();
   void render(std::vector<Sprite*>* sprites);

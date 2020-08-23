@@ -9,6 +9,8 @@ class ComboTitle : public AnimatedIndicator {
  public:
   ComboTitle();
 
+  void relocate();
+
   Sprite* get() override;
 
  private:

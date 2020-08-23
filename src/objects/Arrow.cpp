@@ -99,7 +99,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     return end();
   } else
-    sprite->moveTo(sprite->getX(), newY);
+    sprite->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction, newY);
 
   return ArrowState::ACTIVE;
 }

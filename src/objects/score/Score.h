@@ -17,6 +17,7 @@ class Score {
 
   bool update(FeedbackType feedbackType, bool isLong);
   std::unique_ptr<Evaluation> evaluate();
+  void relocate();
 
   void tick();
   void render(std::vector<Sprite*>* sprites);

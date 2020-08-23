@@ -4,8 +4,6 @@
 
 RAMState GameState;
 
-const u32 GAME_POSITION_X[] = {0, 72, 144};
-
 void STATE_reset() {
   // auto gameMode =
   // static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));

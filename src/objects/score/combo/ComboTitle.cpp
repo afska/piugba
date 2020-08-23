@@ -11,8 +11,7 @@ const u32 POSITION_X = 16;
 const u32 POSITION_Y = 70;
 
 ComboTitle::ComboTitle() {
-  animationPositionX = GameState.positionX + POSITION_X;
-  animationPositionY = GameState.scorePositionY + POSITION_Y;
+  relocate();
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
@@ -20,6 +19,11 @@ ComboTitle::ComboTitle() {
                .withSize(SIZE_64_32)
                .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
+}
+
+void ComboTitle::relocate() {
+  animationPositionX = GameState.positionX + POSITION_X;
+  animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 
 Sprite* ComboTitle::get() {

@@ -50,6 +50,14 @@ void Combo::hide() {
     SPRITE_hide(it->get());
 }
 
+void Combo::relocate() {
+  title->relocate();
+
+  for (u32 i = 0; i < DIGITS; i++)
+    digits[i]->relocate(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
+                        GameState.scorePositionY + DIGITS_POSITION_Y, i);
+}
+
 void Combo::tick() {
   title->tick();
 

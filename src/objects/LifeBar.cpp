@@ -8,7 +8,6 @@
 #include "objects/ArrowInfo.h"
 #include "utils/EffectUtils.h"
 
-const u32 POSITION_X = 15;
 const u32 ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
 const u32 MIN_VALUE = 0;
@@ -31,7 +30,7 @@ LifeBar::LifeBar() {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
-               .withLocation(GameState.positionX + POSITION_X,
+               .withLocation(GameState.positionX + LIFEBAR_POSITION_X,
                              GameState.positionY + LIFEBAR_POSITION_Y)
                .buildPtr();
 }

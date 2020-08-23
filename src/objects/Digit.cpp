@@ -11,8 +11,7 @@ const u32 DIGIT_WIDTHS[] = {26, 19};
 const u32 RED_OFFSET = 10;
 
 Digit::Digit(DigitSize size, u32 x, u32 y, u32 index) {
-  animationPositionX = x + index * DIGIT_WIDTHS[size];
-  animationPositionY = y;
+  relocate(size, x, y, index);
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
@@ -31,6 +30,11 @@ Digit::Digit(DigitSize size, u32 x, u32 y, u32 index) {
 
 void Digit::set(u32 value, bool isRed) {
   SPRITE_goToFrame(sprite.get(), value + (isRed ? RED_OFFSET : 0));
+}
+
+void Digit::relocate(DigitSize size, u32 x, u32 y, u32 index) {
+  animationPositionX = x + index * DIGIT_WIDTHS[size];
+  animationPositionY = y;
 }
 
 Sprite* Digit::get() {

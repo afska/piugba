@@ -48,6 +48,11 @@ std::unique_ptr<Evaluation> Score::evaluate() {
   return std::unique_ptr<Evaluation>(evaluation);
 }
 
+void Score::relocate() {
+  feedback->relocate();
+  combo->relocate();
+}
+
 void Score::tick() {
   feedback->tick();
   combo->tick();

@@ -348,8 +348,21 @@ void SongScene::processModsBeat() {
       mosaic = 0;
   }
 
-  if (GameState.mods.randomSpeed)
-    chartReader->setMultiplier(qran_range(2, 5 + 1));
+  if (GameState.mods.jump) {
+    int random = qran_range(0, GAME_POSITION_X[GamePosition::RIGHT] + 1);
+    GameState.positionX = random;
+
+    lifeBar->get()->moveTo(GameState.positionX + LIFEBAR_POSITION_X,
+                           lifeBar->get()->getY());
+    for (auto& it : arrowHolders)
+      it->get()->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * it->direction,
+                        it->get()->getY());
+    score->relocate();
+
+    REG_BG_OFS[DARKENER_ID].x = -random;
+
+    pixelBlink->blink();
+  }
 
   if (GameState.mods.reduce == ReduceOpts::rRANDOM) {
     int random = qran_range(0, REDUCE_MOD_POSITION_Y);
@@ -362,6 +375,9 @@ void SongScene::processModsBeat() {
 
     pixelBlink->blink();
   }
+
+  if (GameState.mods.randomSpeed)
+    chartReader->setMultiplier(qran_range(2, 5 + 1));
 }
 
 u8 SongScene::processPixelateMod() {

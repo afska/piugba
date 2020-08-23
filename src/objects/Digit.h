@@ -12,6 +12,7 @@ class Digit : public AnimatedIndicator {
   Digit(DigitSize size, u32 x, u32 y, u32 index);
 
   void set(u32 value, bool isRed);
+  void relocate(DigitSize size, u32 x, u32 y, u32 index);
 
   Sprite* get() override;
 

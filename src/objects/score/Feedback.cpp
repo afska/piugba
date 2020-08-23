@@ -12,8 +12,7 @@ const u32 POSITION_Y = 60;
 
 Feedback::Feedback() {
   type = FeedbackType::MISS;
-  animationPositionX = GameState.positionX + POSITION_X;
-  animationPositionY = GameState.scorePositionY + POSITION_Y;
+  relocate();
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
@@ -25,6 +24,11 @@ Feedback::Feedback() {
 void Feedback::setType(FeedbackType type) {
   this->type = type;
   SPRITE_goToFrame(sprite.get(), type);
+}
+
+void Feedback::relocate() {
+  animationPositionX = GameState.positionX + POSITION_X;
+  animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 
 Sprite* Feedback::get() {
