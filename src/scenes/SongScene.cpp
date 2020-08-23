@@ -341,7 +341,7 @@ void SongScene::processModsBeat() {
     mosaic = 0;
   else if (GameState.mods.pixelate == PixelateOpts::pRANDOM) {
     auto previousTargetMosaic = targetMosaic;
-    targetMosaic = qran_range(2, 14);
+    targetMosaic = qran_range(2, 12);
     if (previousTargetMosaic == targetMosaic)
       mosaic = 0;
   }
@@ -362,10 +362,14 @@ u8 SongScene::processPixelateMod() {
     case PixelateOpts::pFIXED:
     case PixelateOpts::pBLINK:
     case PixelateOpts::pRANDOM:
-      if (targetMosaic > mosaic)
-        mosaic++;
-      else if (mosaic > targetMosaic)
-        mosaic--;
+      waitMosaic = !waitMosaic;
+
+      if (!waitMosaic) {
+        if (targetMosaic > mosaic)
+          mosaic++;
+        else if (mosaic > targetMosaic)
+          mosaic--;
+      }
 
       minMosaic = mosaic;
       break;
