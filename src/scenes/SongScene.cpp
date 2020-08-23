@@ -291,14 +291,16 @@ void SongScene::processKeys(u16 keys) {
   speedUpInput->setIsPressed(keys & KEY_START);
   speedDownInput->setIsPressed(keys & KEY_SELECT);
 
-  if (speedUpInput->hasBeenPressedNow()) {
-    if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
-      pixelBlink->blink();
-  }
+  if (!GameState.mods.randomSpeed) {
+    if (speedUpInput->hasBeenPressedNow()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        pixelBlink->blink();
+    }
 
-  if (speedDownInput->hasBeenPressedNow()) {
-    if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
-      pixelBlink->blink();
+    if (speedDownInput->hasBeenPressedNow()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
+    }
   }
 
   IFSTRESSTEST {
@@ -346,6 +348,9 @@ void SongScene::processModsBeat() {
     if (previousTargetMosaic == targetMosaic)
       mosaic = 0;
   }
+
+  if (GameState.mods.randomSpeed)
+    chartReader->setMultiplier(qran_range(2, 5 + 1));
 }
 
 u8 SongScene::processPixelateMod() {
