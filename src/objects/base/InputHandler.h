@@ -7,6 +7,12 @@
 
 class InputHandler {
  public:
+  InputHandler() {
+    this->isPressed = true;
+    // it starts as `true` to avoid firing events if the
+    // key is already pressed when the scene starts
+  }
+
   inline bool getIsPressed() { return isPressed; }
 
   inline bool hasBeenPressedNow() { return isNewPressEvent; }

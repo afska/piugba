@@ -86,6 +86,8 @@ class SelectionScene : public Scene {
                 .completedSongs);
       }
     }
+
+    return 0;
   }
   inline u8 getSelectedNumericLevel() {
     return SAVEFILE_read8(SRAM->memory.numericLevel);
