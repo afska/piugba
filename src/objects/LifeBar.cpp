@@ -38,7 +38,7 @@ LifeBar::LifeBar() {
 }
 
 void LifeBar::setLife(int life) {
-  u32 absLife = abs(life);
+  u32 absLife = max(life, 0);
   value = LIFE_TO_VALUE_LUT[absLife];
   mosaicValue = LIFE_TO_MOSAIC_LUT[absLife];
 }
