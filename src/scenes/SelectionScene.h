@@ -67,7 +67,9 @@ class SelectionScene : public Scene {
   inline u32 getSelectedSongIndex() { return page * PAGE_SIZE + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
   inline u32 getLastUnlockedSongIndex() {
-    return min(getCompletedSongs(), count - 1);
+    return getGameMode() == GameMode::ARCADE
+               ? min(getCompletedSongs() - 1, count - 1)
+               : min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
     switch (getGameMode()) {
