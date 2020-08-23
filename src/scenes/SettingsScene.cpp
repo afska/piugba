@@ -10,10 +10,10 @@
 #define TITLE "SETTINGS"
 #define OPTIONS_COUNT 6
 #define OPTION_AUDIO_LAG 0
-#define OPTION_STAGE_BREAK 1
-#define OPTION_GAME_POSITION 2
-#define OPTION_BACKGROUND_TYPE 3
-#define OPTION_BGA_DARK_BLINK 4
+#define OPTION_GAME_POSITION 1
+#define OPTION_BACKGROUND_TYPE 2
+#define OPTION_BGA_DARK_BLINK 3
+#define OPTION_RESET 4
 #define OPTION_QUIT 5
 
 SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
@@ -32,29 +32,27 @@ void SettingsScene::printOptions() {
   SCENE_write(TITLE, 2);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  bool stageBreak = SAVEFILE_read8(SRAM->settings.stageBreak);
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
   printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
-  printOption(OPTION_STAGE_BREAK, "Stage break",
-              stageBreak ? "ON" : "ARCADE_OFF", 7);
   printOption(
       OPTION_GAME_POSITION, "Game position",
-      gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 9);
+      gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 7);
   printOption(OPTION_BACKGROUND_TYPE, "Background type",
               backgroundType == 0
                   ? "RAW"
                   : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
-              11);
+              9);
   if (backgroundType > 0)
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                bgaDarkBlink ? "ON" : "OFF", 13);
+                bgaDarkBlink ? "ON" : "OFF", 11);
   else
     printOption(OPTION_BGA_DARK_BLINK, "----------------",
-                bgaDarkBlink ? "---" : "---", 13);
-  printOption(OPTION_QUIT, "QUIT TO MAIN MENU", "", 15);
+                bgaDarkBlink ? "---" : "---", 11);
+  printOption(OPTION_RESET, "<RESET OPTIONS>", "", 13);
+  printOption(OPTION_QUIT, "<QUIT TO MAIN MENU>", "", 15);
 }
 
 bool SettingsScene::selectOption(u32 selected) {
@@ -63,11 +61,6 @@ bool SettingsScene::selectOption(u32 selected) {
       engine->transitionIntoScene(new CalibrateScene(engine, fs, NULL),
                                   new FadeOutScene(2));
       return false;
-    }
-    case OPTION_STAGE_BREAK: {
-      bool stageBreak = SAVEFILE_read8(SRAM->settings.stageBreak);
-      SAVEFILE_write8(SRAM->settings.stageBreak, !stageBreak);
-      return true;
     }
     case OPTION_GAME_POSITION: {
       u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
@@ -86,6 +79,10 @@ bool SettingsScene::selectOption(u32 selected) {
     case OPTION_BGA_DARK_BLINK: {
       bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
       SAVEFILE_write8(SRAM->settings.bgaDarkBlink, !bgaDarkBlink);
+      return true;
+    }
+    case OPTION_RESET: {
+      SAVEFILE_resetSettings();
       return true;
     }
     case OPTION_QUIT: {

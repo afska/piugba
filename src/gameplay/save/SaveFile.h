@@ -45,6 +45,13 @@ typedef struct __attribute__((__packed__)) {
   *(((char*)&DEST) + 2) = (((u32)VALUE) & 0x00ff0000) >> 16; \
   *(((char*)&DEST) + 3) = (((u32)VALUE) & 0xff000000) >> 24;
 
+inline void SAVEFILE_resetSettings() {
+  SAVEFILE_write32(SRAM->settings.audioLag, 0);
+  SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
+  SAVEFILE_write8(SRAM->settings.backgroundType, BackgroundType::HALF_BGA_DARK);
+  SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
+}
+
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   bool isNew = SAVEFILE_read32(SRAM->romId) != romId;
@@ -52,12 +59,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   if (isNew) {
     SAVEFILE_write32(SRAM->romId, romId);
 
-    SAVEFILE_write32(SRAM->settings.audioLag, 0);
-    SAVEFILE_write8(SRAM->settings.stageBreak, true);
-    SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
-    SAVEFILE_write8(SRAM->settings.backgroundType,
-                    BackgroundType::HALF_BGA_DARK);
-    SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
+    SAVEFILE_resetSettings();
 
     SAVEFILE_write8(SRAM->memory.pageIndex, 0);
     SAVEFILE_write8(SRAM->memory.songIndex, 0);

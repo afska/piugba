@@ -8,7 +8,6 @@ enum BackgroundType : u8 { RAW, HALF_BGA_DARK, FULL_BGA_DARK };
 
 typedef struct __attribute__((__packed__)) {
   u32 audioLag;
-  u8 stageBreak;
   u8 gamePosition;
   u8 backgroundType;
   u8 bgaDarkBlink;
