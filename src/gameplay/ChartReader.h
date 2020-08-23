@@ -15,7 +15,7 @@
 #include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
-const u32 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
+const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
 
 class ChartReader : public TimingProvider {
  public:
@@ -165,5 +165,15 @@ class ChartReader : public TimingProvider {
 };
 
 class CHART_DEBUG;
+
+const u8 STOMP_SIZE_BY_DATA[] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2,
+                                 3, 2, 3, 3, 4, 1, 2, 2, 3, 2, 3,
+                                 3, 4, 2, 3, 3, 4, 3, 4, 4, 5};
+const u8 DATA_BY_STOMP_SIZE[][10] = {{1, 2, 4, 8, 16},
+                                     {3, 5, 6, 9, 10, 12, 17, 18, 20, 24},
+                                     {7, 11, 13, 14, 19, 21, 22, 25, 26, 28},
+                                     {15, 23, 27, 29, 30},
+                                     {31}};
+const u8 DATA_BY_STOMP_SIZE_COUNTS[] = {5, 10, 10, 5, 1};
 
 #endif  // CHART_READER_H

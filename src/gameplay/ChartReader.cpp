@@ -210,6 +210,13 @@ void ChartReader::processNextEvents() {
 void ChartReader::processUniqueNote(Event* event) {
   std::vector<Arrow*> arrows;
 
+  if (GameState.mods.randomSteps) {
+    u8 stompSize = STOMP_SIZE_BY_DATA[event->data >> 3] - 1;
+    event->data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
+                      0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
+                  << 3;
+  }
+
   forEachDirection(
       event->data, [event, &arrows, this](ArrowDirection direction) {
         arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
