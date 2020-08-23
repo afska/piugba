@@ -324,20 +324,21 @@ void SongScene::finishAndGoToEvaluation() {
 
 void SongScene::processModsLoad() {
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
-      GameState.mods.pixelate == PixelateOpts::pBLINK)
+      GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
     targetMosaic = 6;
+  else if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
+    targetMosaic = 0;
 
-  if (GameState.mods.negative == NegativeOpts::nFIXED) {
+  if (GameState.mods.negative) {
     SCENE_invert(backgroundPalette.get());
     SCENE_invert(foregroundPalette.get());
-  } else if (GameState.mods.negative == NegativeOpts::nTOGGLE) {
-    SCENE_invert(backgroundPalette.get());
-    BACKGROUND_setColor(255, 0);
   }
 }
 
 void SongScene::processModsBeat() {
-  if (GameState.mods.pixelate == PixelateOpts::pBLINK)
+  if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
+    mosaic = 6;
+  else if (GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
     mosaic = 0;
   else if (GameState.mods.pixelate == PixelateOpts::pRANDOM) {
     auto previousTargetMosaic = targetMosaic;
@@ -345,9 +346,6 @@ void SongScene::processModsBeat() {
     if (previousTargetMosaic == targetMosaic)
       mosaic = 0;
   }
-
-  if (GameState.mods.negative == NegativeOpts::nTOGGLE)
-    SCENE_invert(foregroundPalette.get());
 }
 
 u8 SongScene::processPixelateMod() {
@@ -360,7 +358,8 @@ u8 SongScene::processPixelateMod() {
       minMosaic = lifeBar->getMosaicValue();
       break;
     case PixelateOpts::pFIXED:
-    case PixelateOpts::pBLINK:
+    case PixelateOpts::pBLINK_IN:
+    case PixelateOpts::pBLINK_OUT:
     case PixelateOpts::pRANDOM:
       waitMosaic = !waitMosaic;
 

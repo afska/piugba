@@ -24,8 +24,7 @@ void STATE_reset() {
   GameState.mods.jump = SAVEFILE_read8(SRAM->mods.jump);
   GameState.mods.reduce =
       static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
-  GameState.mods.negative =
-      static_cast<NegativeOpts>(SAVEFILE_read8(SRAM->mods.negative));
+  GameState.mods.negative = SAVEFILE_read8(SRAM->mods.negative);
   GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);

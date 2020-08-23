@@ -3,9 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK, pRANDOM };
+enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK_IN, pBLINK_OUT, pRANDOM };
 enum ReduceOpts : u8 { rOFF, rFIXED, rRANDOM };
-enum NegativeOpts : u8 { nOFF, nFIXED, nTOGGLE };
 
 typedef struct __attribute__((__packed__)) {
   u8 multiplier;
@@ -13,7 +12,7 @@ typedef struct __attribute__((__packed__)) {
   PixelateOpts pixelate;
   u8 jump;
   ReduceOpts reduce;
-  NegativeOpts negative;
+  bool negative;
   u8 randomSpeed;
   u8 mirrorSteps;
   u8 randomSteps;
