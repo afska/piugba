@@ -53,6 +53,9 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> speedUpInput;
   std::unique_ptr<InputHandler> speedDownInput;
   u32 blinkFrame = 0;
+  u8 targetMosaic = 0;
+  u8 mosaic = 0;
+  bool waitMosaic = true;
 
   void setUpPalettes();
   void setUpBackground();
@@ -63,6 +66,11 @@ class SongScene : public Scene {
   void updateFakeHeads();
   void processKeys(u16 keys);
   void finishAndGoToEvaluation();
+
+  void processModsLoad();
+  void processModsBeat();
+  u8 processPixelateMod();
+
   void unload();
 };
 

@@ -252,8 +252,10 @@ void SelectionScene::goToSong() {
           : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
   STATE_reset();
-  bool isBoss = song->channel == Channel::BOSS;
-  GameState.mods.pixelate = isBoss ? PixelateOpts::pLIFE : PixelateOpts::pOFF;
+  // bool isBoss = song->channel == Channel::BOSS;
+  // GameState.mods.pixelate = isBoss ? PixelateOpts::pLIFE :
+  // PixelateOpts::pOFF;
+  // TODO: Implement bosses
 
   engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
                               new FadeOutScene(4));

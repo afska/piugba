@@ -101,6 +101,8 @@ void SongScene::load() {
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
+
+  processModsLoad();
 }
 
 void SongScene::tick(u16 keys) {
@@ -141,6 +143,7 @@ void SongScene::tick(u16 keys) {
       lifeBar->blink(foregroundPalette.get());
       if (!KEY_ANY_PRESSED(keys))
         arrowHolder->blink();
+      processModsBeat();
     }
   }
 
@@ -148,12 +151,7 @@ void SongScene::tick(u16 keys) {
   if (SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
-  u8 minMosaic = 0;
-  if (GameState.mods.pixelate) {
-    minMosaic = lifeBar->getMosaicValue();
-    EFFECT_setMosaic(minMosaic);
-  }
-
+  u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
   updateFakeHeads();
   updateArrows();
@@ -322,6 +320,52 @@ void SongScene::finishAndGoToEvaluation() {
   engine->transitionIntoScene(
       new DanceGradeScene(engine, fs, std::move(evaluation)),
       new FadeOutScene(1));
+}
+
+void SongScene::processModsLoad() {
+  if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
+      GameState.mods.pixelate == PixelateOpts::pBLINK)
+    targetMosaic = 6;
+}
+
+void SongScene::processModsBeat() {
+  if (GameState.mods.pixelate == PixelateOpts::pBLINK)
+    mosaic = 0;
+  else if (GameState.mods.pixelate == PixelateOpts::pRANDOM) {
+    auto previousTargetMosaic = targetMosaic;
+    targetMosaic = qran_range(2, 14);
+    if (previousTargetMosaic == targetMosaic)
+      mosaic = 0;
+  }
+}
+
+u8 SongScene::processPixelateMod() {
+  u8 minMosaic = 0;
+
+  switch (GameState.mods.pixelate) {
+    case PixelateOpts::pOFF:
+      return 0;
+    case PixelateOpts::pLIFE:
+      minMosaic = lifeBar->getMosaicValue();
+      break;
+    case PixelateOpts::pFIXED:
+    case PixelateOpts::pBLINK:
+    case PixelateOpts::pRANDOM:
+      waitMosaic = !waitMosaic;
+
+      if (!waitMosaic || GameState.mods.pixelate == PixelateOpts::pRANDOM) {
+        if (targetMosaic > mosaic)
+          mosaic++;
+        else if (mosaic > targetMosaic)
+          mosaic--;
+      }
+
+      minMosaic = mosaic;
+      break;
+  }
+
+  EFFECT_setMosaic(minMosaic);
+  return minMosaic;
 }
 
 void SongScene::unload() {
