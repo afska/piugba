@@ -47,9 +47,6 @@ const u32 NUMERIC_LEVEL_ROW = 3;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_Y = 43;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_ROW = 5;
 
-// TODO: Select last unlocked arcade song
-// TODO: Calculate available songs
-
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
 

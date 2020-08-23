@@ -70,8 +70,20 @@ class SelectionScene : public Scene {
     return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
-    return SAVEFILE_read32(
-        SRAM->progress[difficulty->getValue()].completedSongs);
+    switch (getGameMode()) {
+      case GameMode::CAMPAIGN: {
+        return SAVEFILE_read8(
+            SRAM->progress[difficulty->getValue()].completedSongs);
+      }
+      case GameMode::ARCADE: {
+        return SAVEFILE_read8(SRAM->globalProgress.completedSongs);
+      }
+      case GameMode::IMPOSSIBLE: {
+        return SAVEFILE_read8(
+            SRAM->progress[PROGRESS_IMPOSSIBLE + difficulty->getValue()]
+                .completedSongs);
+      }
+    }
   }
   inline u8 getSelectedNumericLevel() {
     return SAVEFILE_read8(SRAM->memory.numericLevel);

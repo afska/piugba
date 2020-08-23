@@ -10,10 +10,11 @@
 typedef struct __attribute__((__packed__)) {
   u8 isArcadeModeUnlocked;
   u8 isImpossibleModeUnlocked;
+  u8 completedSongs;
 } GlobalProgress;
 
 typedef struct __attribute__((__packed__)) {
-  u32 completedSongs;
+  u8 completedSongs;
   u8 grades[MAX_PROGRESS_REGISTERS];
 } Progress;
 

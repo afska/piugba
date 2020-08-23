@@ -69,21 +69,21 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->globalProgress.isArcadeModeUnlocked,
                     true);  // TODO: RESTORE false
     SAVEFILE_write8(SRAM->globalProgress.isImpossibleModeUnlocked, false);
+    SAVEFILE_write8(SRAM->globalProgress.completedSongs, 0);
 
-    SAVEFILE_write32(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
-    SAVEFILE_write32(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
-    SAVEFILE_write32(SRAM->progress[DifficultyLevel::CRAZY].completedSongs, 0);
-    SAVEFILE_write32(
+    SAVEFILE_write8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
+    SAVEFILE_write8(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
+    SAVEFILE_write8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs, 0);
+    SAVEFILE_write8(
         SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::NORMAL]
             .completedSongs,
         0);
-    SAVEFILE_write32(SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::HARD]
-                         .completedSongs,
-                     0);
-    SAVEFILE_write32(
-        SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::CRAZY]
-            .completedSongs,
-        0);
+    SAVEFILE_write8(SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::HARD]
+                        .completedSongs,
+                    0);
+    SAVEFILE_write8(SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::CRAZY]
+                        .completedSongs,
+                    0);
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
@@ -101,35 +101,44 @@ inline u8 SAVEFILE_getLibrarySize() {
 
 inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  if (gameMode != GameMode::CAMPAIGN)
+  if (gameMode == GameMode::ARCADE)
     return GradeType::UNPLAYED;
 
-  int lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+  u32 index =
+      (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
+  int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
   if (songIndex > lastIndex)
     return GradeType::UNPLAYED;
 
   return static_cast<GradeType>(
-      SAVEFILE_read8(SRAM->progress[level].grades[songIndex]));
+      SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
 }
 
 inline void SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 GradeType grade) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  if (gameMode != GameMode::CAMPAIGN)
+  if (gameMode == GameMode::ARCADE)
     return;
 
-  int lastIndex = SAVEFILE_read8(SRAM->progress[level].completedSongs) - 1;
+  u32 index =
+      (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
+  int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
+  int lastGlobalIndex = SAVEFILE_read8(SRAM->globalProgress.completedSongs) - 1;
   u8 librarySize = SAVEFILE_getLibrarySize();
   if (songIndex > lastIndex) {
     auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);
     auto completedSongs = (u8)min(songIndex + 1, librarySize);
-    SAVEFILE_write32(SRAM->progress[level].completedSongs, completedSongs);
+    SAVEFILE_write8(SRAM->progress[index].completedSongs, completedSongs);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
   }
+  if (songIndex > lastGlobalIndex) {
+    auto completedSongs = (u8)min(songIndex + 1, librarySize);
+    SAVEFILE_write8(SRAM->globalProgress.completedSongs, completedSongs);
+  };
 
-  SAVEFILE_write8(SRAM->progress[level].grades[songIndex], grade);
+  SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
 }
 
 #endif  // SAVE_FILE_H
