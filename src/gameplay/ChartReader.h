@@ -15,6 +15,8 @@
 #include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
+const u32 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
+
 class ChartReader : public TimingProvider {
  public:
   ChartReader(Chart* chart,
@@ -133,9 +135,11 @@ class ChartReader : public TimingProvider {
 
   template <typename F>
   inline void forEachDirection(u8 data, F action) {
+    u32 start = GameState.mods.mirrorSteps * ARROWS_TOTAL;
+
     for (u32 i = 0; i < ARROWS_TOTAL; i++) {
       if (data & EVENT_ARROW_MASKS[i])
-        action(static_cast<ArrowDirection>(i));
+        action(static_cast<ArrowDirection>(ARROW_MIRROR_INDEXES[start + i]));
     }
   }
 
