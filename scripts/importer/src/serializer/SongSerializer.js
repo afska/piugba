@@ -2,6 +2,7 @@ const Protocol = require("bin-protocol");
 const Events = require("../parser/Events");
 const DifficultyLevels = require("../parser/DifficultyLevels");
 const Channels = require("../parser/Channels");
+const Mods = require("../parser/Mods");
 const _ = require("lodash");
 
 module.exports = class SongSerializer {
@@ -23,6 +24,7 @@ module.exports = class SongSerializer {
       .UInt32LE(metadata.lastMillisecond)
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
+      .Config(metadata.config)
       .ChartArray(charts).result;
   }
 
@@ -37,6 +39,18 @@ module.exports = class SongSerializer {
         this.loop(characters, this.UInt8);
         const padding = size - characters.length;
         for (let i = 0; i < padding; i++) this.UInt8(0);
+      },
+    });
+
+    this.protocol.define("Config", {
+      write: function (config) {
+        _.forEach(Mods, (v, k) => {
+          this.UInt8(v[config[k]]);
+        });
+
+        const hasMessage = config.MESSAGE !== "";
+        this.UInt8(hasMessage);
+        if (hasMessage) this.String(config.MESSAGE, MESSAGE_LEN);
       },
     });
 
@@ -133,8 +147,9 @@ const normalizeUInt = (number) => {
   return Math.round(number);
 };
 
-const TITLE_LEN = 31;
-const ARTIST_LEN = 27;
+const TITLE_LEN = 30 + 1; // +1 = \0;
+const ARTIST_LEN = 26 + 1; // +1 = \0;
+const MESSAGE_LEN = 25 + 2 + 25 + 2 + 25 + 2 + 25 + 1; // +2 = \r\n ; +1 = \0
 const INFINITY = 0xffffffff;
 
 const ARROW_MASKS = [

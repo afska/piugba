@@ -5,6 +5,7 @@
 
 const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
+const u32 MESSAGE_LEN = 107;
 
 Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   u32 length;
@@ -23,6 +24,19 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   song->lastMillisecond = parse_u32le(data, &cursor);
   song->sampleStart = parse_u32le(data, &cursor);
   song->sampleLength = parse_u32le(data, &cursor);
+
+  song->pixelate = parse_u8(data, &cursor);
+  song->jump = parse_u8(data, &cursor);
+  song->reduce = parse_u8(data, &cursor);
+  song->negativeColors = parse_u8(data, &cursor);
+  song->randomSpeed = parse_u8(data, &cursor);
+  song->extraJudgement = parse_u8(data, &cursor);
+  song->hasMessage = parse_u8(data, &cursor);
+
+  if (song->hasMessage) {
+    song->message = (char*)malloc(MESSAGE_LEN);
+    parse_array(data, &cursor, song->message, MESSAGE_LEN);
+  }
 
   song->chartCount = parse_u8(data, &cursor);
   song->charts = (Chart*)malloc(sizeof(Chart) * song->chartCount);
@@ -97,6 +111,9 @@ Chart* SONG_findChartByNumericLevel(Song* song, u8 level) {
 void SONG_free(Song* song) {
   free(song->title);
   free(song->artist);
+
+  if (song->hasMessage)
+    free(song->message);
 
   for (u32 i = 0; i < song->chartCount; i++) {
     if ((song->charts + i)->eventCount > 0)

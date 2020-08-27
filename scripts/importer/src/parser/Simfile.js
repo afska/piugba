@@ -1,6 +1,7 @@
 const Chart = require("./Chart");
 const Channels = require("./Channels");
 const DifficultyLevels = require("./DifficultyLevels");
+const Mods = require("./Mods");
 const utils = require("../utils");
 const _ = require("lodash");
 
@@ -15,6 +16,14 @@ module.exports = class Simfile {
   get metadata() {
     const title = this._getSingleMatch(REGEXPS.metadata.title);
     const subtitle = this._getSingleMatch(REGEXPS.metadata.subtitle);
+    const custom = this._getSingleMatch(REGEXPS.metadata.custom);
+
+    const config = {
+      ..._.mapValues(Mods, (v, k) =>
+        _.isFinite(v[custom[k]]) ? custom[k] : _.findKey(v, (it) => it === 0)
+      ),
+      MESSAGE: custom.MESSAGE || "",
+    };
 
     return {
       title: subtitle || title,
@@ -31,6 +40,7 @@ module.exports = class Simfile {
       sampleLength: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleLength)
       ),
+      config,
     };
   }
 
@@ -168,6 +178,22 @@ const DICTIONARY = (name, elements = 2) => ({
       .value(),
 });
 
+const OBJECT = (name, elements = 2) => ({
+  exp: PROPERTY(name),
+  parse: (content) =>
+    _(content)
+      .split(",")
+      .map((it) => it.trim().split("="))
+      .filter((it) => it.length === elements)
+      .map(([key, value]) => ({
+        key,
+        value: _.trim(value),
+      }))
+      .keyBy("key")
+      .mapValues("value")
+      .value(),
+});
+
 const REGEXPS = {
   limit: /((.|(\r|\n))*?);/,
   metadata: {
@@ -178,6 +204,7 @@ const REGEXPS = {
     lastSecondHint: PROPERTY_FLOAT("LASTSECONDHINT"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
+    custom: OBJECT("PIUGBA"),
   },
   chart: {
     start: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
