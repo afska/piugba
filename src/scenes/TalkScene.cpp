@@ -79,7 +79,7 @@ void TalkScene::tick(u16 keys) {
   }
 
   nextButton->setIsPressed(KEY_CENTER(keys));
-  if ((keys & KEY_ANY) && hasFinished())
+  if ((keys & KEY_ANY) && (hasFinished() || skippable))
     onKeyPress(keys);
 
   nextButton->tick();

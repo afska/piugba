@@ -25,6 +25,15 @@ class TalkScene : public Scene {
             std::string message,
             std::function<void(u16 keys)> onKeyPress);
 
+  TalkScene(std::shared_ptr<GBAEngine> engine,
+            const GBFS_FILE* fs,
+            std::string message,
+            std::function<void(u16 keys)> onKeyPress,
+            bool skippable)
+      : TalkScene(engine, fs, message, onKeyPress) {
+    this->skippable = skippable;
+  };
+
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
 
@@ -36,6 +45,7 @@ class TalkScene : public Scene {
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
   std::function<void(u16 keys)> onKeyPress;
+  bool skippable = false;
 
   std::unique_ptr<Instructor> instructor;
   std::unique_ptr<ArrowSelector> nextButton;

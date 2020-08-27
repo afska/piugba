@@ -53,8 +53,8 @@ const std::string MODE_IMPOSSIBLE_2 =
 const std::string WIN =
     "  *YOU'VE WON THE GAME*  \r\n"
     "\r\n"
-    " Now, I challenge you to \r\n"
-    " play the IMPOSSIBLE MODE";
+    "Now, I challenge you to \r\n"
+    "play the IMPOSSIBLE MODE";
 
 const std::string WIN_IMPOSSIBLE =
     "   WHAT?! You did it??   \r\n"
