@@ -19,13 +19,36 @@ const std::string ARCADE_MODE_LOCKED =
     "         LOCKED          \r\n"
     "Win at least one song in\r\n"
     "  the CAMPAIGN mode to\r\n"
-    "      unlock this.\r\n";
+    "      unlock this.";
 
 const std::string IMPOSSIBLE_MODE_LOCKED =
     "         LOCKED          \r\n"
     "  Complete the CAMPAIGN\r\n"
     "  mode in any difficulty\r\n"
-    "  level to unlock this.\r\n";
+    "  level to unlock this.";
+
+const std::string MODE_CAMPAIGN =
+    "Play the CAMPAIGN MODE to\r\n"
+    "make progress in the game\r\n"
+    "and unlock new songs.";
+
+const std::string MODE_ARCADE =
+    "In ARCADE MODE, you are\r\n"
+    "free to play the songs in\r\n"
+    "any difficulty level.\r\n"
+    "Use SELECT to add mods!";
+
+const std::string MODE_IMPOSSIBLE_1 =
+    "In IMPOSSIBLE MODE...\r\n"
+    "the game area JUMPS,\r\n"
+    "the patterns are MIRRORED\r\n"
+    "and it's all PIXELATED.";
+
+const std::string MODE_IMPOSSIBLE_2 =
+    "Also, you have to be more\r\n"
+    "PRECISE to hit the notes.\r\n"
+    "That's called EXTRA\r\n"
+    "JUDGEMENT. Best of luck!";
 
 const std::string WIN =
     "  *YOU'VE WON THE GAME*  \r\n"

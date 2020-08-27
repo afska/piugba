@@ -95,7 +95,21 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
-  goTo(new SelectionScene(_engine, _fs));
+  auto message =
+      gameMode == GameMode::CAMPAIGN
+          ? MODE_CAMPAIGN
+          : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE_1;
+  goTo(new TalkScene(_engine, _fs, message, [&gameMode](u16 keys) {
+    if (KEY_CENTER(keys)) {
+      if (gameMode == GameMode::IMPOSSIBLE)
+        goTo(new TalkScene(_engine, _fs, MODE_IMPOSSIBLE_2, [](u16 keys) {
+          if (KEY_CENTER(keys))
+            goTo(new SelectionScene(_engine, _fs));
+        }));
+      else
+        goTo(new SelectionScene(_engine, _fs));
+    }
+  }));
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
