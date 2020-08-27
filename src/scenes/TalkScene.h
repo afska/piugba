@@ -45,6 +45,7 @@ class TalkScene : public Scene {
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
   std::function<void(u16 keys)> onKeyPress;
+  bool canTriggerInput = false;
   bool skippable = false;
 
   std::unique_ptr<Instructor> instructor;
