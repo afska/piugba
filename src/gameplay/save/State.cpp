@@ -4,28 +4,55 @@
 
 RAMState GameState;
 
-void STATE_reset() {
-  // auto gameMode =
-  // static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+void STATE_reset(Song* song) {
+  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
   GameState.positionX = 0;
   GameState.positionY = 0;
   GameState.scorePositionY = 0;
 
-  // TODO: Set mods for campaign and impossible
-
   GameState.mods.multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
-  GameState.mods.stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
-  GameState.mods.pixelate =
-      static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
-  GameState.mods.jump = SAVEFILE_read8(SRAM->mods.jump);
-  GameState.mods.reduce =
-      static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
-  GameState.mods.negative = SAVEFILE_read8(SRAM->mods.negative);
-  GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
-  GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
-  GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
-  GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+
+  switch (gameMode) {
+    case GameMode::CAMPAIGN: {
+      GameState.mods.stageBreak = true;
+      GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
+      GameState.mods.jump = song->jump;
+      GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
+      GameState.mods.negative = song->negativeColors;
+      GameState.mods.randomSpeed = song->randomSpeed;
+      GameState.mods.mirrorSteps = false;
+      GameState.mods.randomSteps = false;
+      GameState.mods.extraJudgement = false;
+      break;
+    }
+    case GameMode::ARCADE: {
+      GameState.mods.stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+      GameState.mods.pixelate =
+          static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
+      GameState.mods.jump = SAVEFILE_read8(SRAM->mods.jump);
+      GameState.mods.reduce =
+          static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
+      GameState.mods.negative = SAVEFILE_read8(SRAM->mods.negative);
+      GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
+      GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
+      GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
+      GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+      break;
+    }
+    case GameMode::IMPOSSIBLE: {
+      GameState.mods.stageBreak = true;
+      GameState.mods.pixelate = PixelateOpts::pRANDOM;
+      GameState.mods.jump = true;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.negative = true;
+      GameState.mods.randomSpeed = false;
+      GameState.mods.mirrorSteps = true;
+      GameState.mods.randomSteps = false;
+      GameState.mods.extraJudgement = true;
+      break;
+    }
+  }
 
   if (!GameState.mods.jump)
     GameState.positionX =

@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 #include "Mods.h"
+#include "gameplay/models/Song.h"
 
 const int REDUCE_MOD_POSITION_Y = 51;
 const int REDUCE_MOD_SCORE_POSITION_Y = 34;
@@ -26,6 +27,6 @@ typedef struct {
 
 extern RAMState GameState;
 
-void STATE_reset();
+void STATE_reset(Song* song);
 
 #endif  // STATE_H
