@@ -2,8 +2,6 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-⚠️ Under development ⚠️
-
 ![demo](demo.gif)
 
 ## Key features
@@ -14,8 +12,20 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   * Scroll speed changes
   * Stops/Delays and async-stops
   * Warps and fast-BPM warps
-- **Speed multiplier** can be changed in-game
-- **BGA DARK** mode with blink effect
+- Multiple **game modes**:
+  * Campaign: Play, unlock songs and defeat bosses
+  * Arcade: Play songs in any numerical difficulty level
+  * Impossible: Hardcore charts with insane mods
+- **Speed multipliers** can be changed in-game
+- **Mods** support:
+  * Stage break
+  * Pixelation: Mosaic effect
+  * Jump/Reduce: Moves game area
+  * Negative: Inverts palette
+  * Random speed
+  * Mirror and random steps
+  * Extra judgement
+- **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~60 songs per ROM file.
 
