@@ -4,8 +4,10 @@
 
 RAMState GameState;
 
-void STATE_reset(Song* song) {
+void STATE_setup(Song* song) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  if (song == NULL)
+    gameMode = GameMode::ARCADE;
 
   GameState.positionX = 0;
   GameState.positionY = 0;

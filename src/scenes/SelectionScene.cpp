@@ -251,12 +251,7 @@ void SelectionScene::goToSong() {
           ? SONG_findChartByNumericLevel(song, getSelectedNumericLevel())
           : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
-  STATE_reset();
-  // bool isBoss = song->channel == Channel::BOSS;
-  // GameState.mods.pixelate = isBoss ? PixelateOpts::pLIFE :
-  // PixelateOpts::pOFF;
-  // TODO: Implement bosses
-
+  STATE_setup(song);
   SEQUENCE_goToMessageOrSong(song, chart);
 }
 

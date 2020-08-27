@@ -99,7 +99,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
-  if (song->hasMessage)
+  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+
+  if (gameMode == GameMode::CAMPAIGN && song->hasMessage)
     goTo(new TalkScene(_engine, _fs, std::string(song->message),
                        [song, chart](u16 keys) {
                          if (KEY_CENTER(keys))

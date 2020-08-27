@@ -138,7 +138,7 @@ void StartScene::setUpButtons() {
 }
 
 void StartScene::setUpGameAnimation() {
-  STATE_reset();
+  STATE_setup(NULL);
   GameState.positionX = GAME_X;
   GameState.positionY = GAME_Y;
 
