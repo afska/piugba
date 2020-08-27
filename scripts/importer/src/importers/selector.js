@@ -1,4 +1,5 @@
 const buildSelector = require("./selector/buildSelector");
+const { FIX_FILE_PATH } = require("./background");
 const utils = require("../utils");
 const $path = require("path");
 const $tmp = require("tmp");
@@ -25,10 +26,17 @@ module.exports = (name, options, outputPath, selectorDir) => {
     $path.join(tempDir.name, SELECTOR_BMP)
   );
   options.forEach(({ files }, i) => {
-    fs.copyFileSync(
-      files.backgroundFile,
-      $path.join(tempDir.name, `song${i + 1}.png`)
-    );
+    try {
+      fs.copyFileSync(
+        FIX_FILE_PATH(files.backgroundFile),
+        $path.join(tempDir.name, `song${i + 1}.png`)
+      );
+    } catch (e) {
+      fs.copyFileSync(
+        files.backgroundFile,
+        $path.join(tempDir.name, `song${i + 1}.png`)
+      );
+    }
   });
 
   const outputImage = $path.join(tempDir.name, `${name}.bmp`);

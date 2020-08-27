@@ -11,6 +11,9 @@ const EXTENSION_TMP1 = "bmp";
 const EXTENSION_TMP2 = "h";
 const EXTENSION_FIXED = "-fixed.png";
 
+const FIX_FILE_PATH = (path) =>
+  (_.endsWith(path, ".png") ? path.slice(0, -4) : path) + EXTENSION_FIXED;
+
 module.exports = (name, filePath, outputPath) => {
   const tempFile1 = $path.join(outputPath, `${name}.${EXTENSION_TMP1}`);
   const tempFile2 = $path.join(outputPath, `${name}.${EXTENSION_TMP2}`);
@@ -19,11 +22,11 @@ module.exports = (name, filePath, outputPath) => {
   } catch (e) {
     console.log("  ⚠️  fixing background...");
     utils.run(COMMAND_FIX(filePath));
-    const fixedFilePath =
-      (_.endsWith(filePath, ".png") ? filePath.slice(0, -4) : filePath) +
-      EXTENSION_FIXED;
+    const fixedFilePath = FIX_FILE_PATH(filePath);
     utils.run(COMMAND_1(fixedFilePath, tempFile1));
   }
   utils.run(COMMAND_2(tempFile1), { cwd: outputPath });
   utils.run(COMMAND_3(tempFile1, tempFile2));
 };
+
+module.exports.FIX_FILE_PATH = FIX_FILE_PATH;
