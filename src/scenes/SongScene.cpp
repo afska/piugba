@@ -323,11 +323,12 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::finishAndGoToEvaluation() {
   auto evaluation = score->evaluate();
-  SAVEFILE_setGradeOf(song->id, chart->difficulty, evaluation->getGrade());
+  bool isLastSong =
+      SAVEFILE_setGradeOf(song->id, chart->difficulty, evaluation->getGrade());
 
   unload();
   engine->transitionIntoScene(
-      new DanceGradeScene(engine, fs, std::move(evaluation)),
+      new DanceGradeScene(engine, fs, std::move(evaluation), isLastSong),
       new FadeOutScene(1));
 }
 

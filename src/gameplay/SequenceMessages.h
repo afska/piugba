@@ -27,4 +27,16 @@ const std::string IMPOSSIBLE_MODE_LOCKED =
     "  mode in any difficulty\r\n"
     "  level to unlock this.\r\n";
 
+const std::string WIN =
+    "  *YOU'VE WON THE GAME*  \r\n"
+    "\r\n"
+    " Now, I challenge you to \r\n"
+    " play the IMPOSSIBLE MODE";
+
+const std::string WIN_IMPOSSIBLE =
+    "   WHAT?! You did it??   \r\n"
+    "\r\n"
+    "  What about the other   \r\n"
+    "   difficulty levels?    ";
+
 #endif  // SEQUENCE_MESSAGES_H

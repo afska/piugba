@@ -2,9 +2,9 @@
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
-#include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
+#include "gameplay/Sequence.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
@@ -28,10 +28,12 @@ const u32 GRADE_Y = 52;
 
 DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs,
-                                 std::unique_ptr<Evaluation> evaluation)
+                                 std::unique_ptr<Evaluation> evaluation,
+                                 bool isLastSong)
     : Scene(engine) {
   this->fs = fs;
   this->evaluation = std::move(evaluation);
+  this->isLastSong = isLastSong;
 }
 
 std::vector<Background*> DanceGradeScene::backgrounds() {
@@ -84,8 +86,7 @@ void DanceGradeScene::tick(u16 keys) {
 
   if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
     player_stop();
-    engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(2));
+    SEQUENCE_goToWinOrSelection(isLastSong);
   }
 }
 

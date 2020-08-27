@@ -140,12 +140,12 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
       SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
 }
 
-inline void SAVEFILE_setGradeOf(u8 songIndex,
+inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 GradeType grade) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   if (gameMode == GameMode::ARCADE)
-    return;
+    return false;
 
   u32 index =
       (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
@@ -165,6 +165,8 @@ inline void SAVEFILE_setGradeOf(u8 songIndex,
   };
 
   SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
+
+  return songIndex == SAVEFILE_getLibrarySize() - 1;
 }
 
 #endif  // SAVE_FILE_H

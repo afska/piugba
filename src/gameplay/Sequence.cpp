@@ -111,3 +111,18 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
   else
     goTo(new SongScene(_engine, _fs, song, chart), 4);
 }
+
+void SEQUENCE_goToWinOrSelection(bool isLastSong) {
+  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+
+  if (gameMode != GameMode::ARCADE && isLastSong)
+    goTo(new TalkScene(_engine, _fs,
+                       gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
+                       [](u16 keys) {
+                         if (KEY_CENTER(keys))
+                           goTo(new SelectionScene(_engine, _fs));
+                       }),
+         4);
+  else
+    goTo(new SelectionScene(_engine, _fs));
+}

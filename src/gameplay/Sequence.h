@@ -19,5 +19,6 @@ Scene* SEQUENCE_getCalibrateOrMainScene();
 Scene* SEQUENCE_getMainScene();
 void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart);
+void SEQUENCE_goToWinOrSelection(bool isLastSong);
 
 #endif  // SEQUENCE_H

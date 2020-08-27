@@ -19,7 +19,8 @@ class DanceGradeScene : public Scene {
  public:
   DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                   const GBFS_FILE* fs,
-                  std::unique_ptr<Evaluation> evaluation);
+                  std::unique_ptr<Evaluation> evaluation,
+                  bool isLastSong);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -36,6 +37,7 @@ class DanceGradeScene : public Scene {
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
+  bool isLastSong;
 
   void setUpSpritesPalette();
   void setUpBackground();
