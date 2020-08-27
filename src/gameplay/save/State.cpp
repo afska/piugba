@@ -8,8 +8,7 @@ void STATE_reset() {
   // auto gameMode =
   // static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
-  GameState.positionX =
-      GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
+  GameState.positionX = 0;
   GameState.positionY = 0;
   GameState.scorePositionY = 0;
 
@@ -27,6 +26,10 @@ void STATE_reset() {
   GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
   GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+
+  if (!GameState.mods.jump)
+    GameState.positionX =
+        GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {
     GameState.positionY = REDUCE_MOD_POSITION_Y;

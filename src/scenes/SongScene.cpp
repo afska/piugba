@@ -109,13 +109,21 @@ void SongScene::tick(u16 keys) {
 
   if (init == 0) {
     if (ENABLE_BACKGROUND) {
-      auto gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
+      auto gamePosition =
+          GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
       auto type = static_cast<BackgroundType>(
           SAVEFILE_read8(SRAM->settings.backgroundType));
       darkener->initialize(gamePosition, type);
     } else
       BACKGROUND_setColor(0, 127);
+
+    if (GameState.mods.negative) {
+      SCENE_invert(backgroundPalette.get());
+      SCENE_invert(foregroundPalette.get());
+    }
+
     init++;
+    return;
   } else if (init == 1) {
     BACKGROUND_enable(true, ENABLE_BACKGROUND, false, false);
     SPRITE_enable();
@@ -329,11 +337,6 @@ void SongScene::processModsLoad() {
     targetMosaic = 6;
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     targetMosaic = 0;
-
-  if (GameState.mods.negative) {
-    SCENE_invert(backgroundPalette.get());
-    SCENE_invert(foregroundPalette.get());
-  }
 }
 
 void SongScene::processModsBeat() {
@@ -359,7 +362,10 @@ void SongScene::processModsBeat() {
                         it->get()->getY());
     score->relocate();
 
-    REG_BG_OFS[DARKENER_ID].x = -random;
+    auto backgroundType = static_cast<BackgroundType>(
+        SAVEFILE_read8(SRAM->settings.backgroundType));
+    if (backgroundType == HALF_BGA_DARK)
+      REG_BG_OFS[DARKENER_ID].x = -random;
 
     pixelBlink->blink();
   }
