@@ -7,10 +7,10 @@
 
 #include "ModsScene.h"
 #include "SettingsScene.h"
-#include "SongScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/models/Song.h"
 #include "utils/SceneUtils.h"
 
@@ -257,8 +257,7 @@ void SelectionScene::goToSong() {
   // PixelateOpts::pOFF;
   // TODO: Implement bosses
 
-  engine->transitionIntoScene(new SongScene(engine, fs, song, chart),
-                              new FadeOutScene(4));
+  SEQUENCE_goToMessageOrSong(song, chart);
 }
 
 void SelectionScene::processKeys(u16 keys) {

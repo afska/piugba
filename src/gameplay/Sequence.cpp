@@ -7,6 +7,7 @@
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
+#include "scenes/SongScene.h"
 #include "scenes/StartScene.h"
 #include "scenes/TalkScene.h"
 
@@ -95,4 +96,16 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   goTo(new SelectionScene(_engine, _fs));
+}
+
+void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
+  if (song->hasMessage)
+    goTo(new TalkScene(_engine, _fs, std::string(song->message),
+                       [song, chart](u16 keys) {
+                         if (KEY_CENTER(keys))
+                           goTo(new SongScene(_engine, _fs, song, chart), 2);
+                       }),
+         4);
+  else
+    goTo(new SongScene(_engine, _fs, song, chart), 4);
 }
