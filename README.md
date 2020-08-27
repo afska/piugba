@@ -2,7 +2,7 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo](demo.gif)
+![demo1](img/1.gif)![demo2](img/2.gif)![demo3](img/3.gif)![demo4](img/4.gif)![demo5](img/5.gif)![demo6](img/6.gif)![demo7](img/7.gif)![demo8](img/8.gif)![demo9](img/9.gif)![demo10](img/10.gif)![demo11](img/11.gif)![demo12](img/12.gif)
 
 ## Key features
 
@@ -19,7 +19,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
 - **Speed multipliers** can be changed in-game
 - **Mods** support:
   * Stage break
-  * Pixelation: Mosaic effect
+  * Pixelate: Mosaic effect
   * Jump/Reduce: Moves game area
   * Negative: Inverts palette
   * Random speed
