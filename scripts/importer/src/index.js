@@ -14,7 +14,7 @@ const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
 
-const CREATE_ID = (i) => _.padStart(i, 3, "0");
+const CREATE_ID = (i) => _.padStart(i, ID_SIZE, "0");
 const ROM_ID_FILE = "_rom_id.u32";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
@@ -29,6 +29,7 @@ const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
 const SORT_BY = "CRAZY";
+const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
 const MAX_SONGS = 99;
 const SELECTOR_OPTIONS = 4;
@@ -172,7 +173,12 @@ const processedSongs = _(songs)
     );
     return crazyChart.header.level;
   }, "ASC")
+  .map((it, i) => ({ ...it, id: CREATE_ID(i) }))
   .value();
+
+// ---------
+// SELECTORS
+// ---------
 
 processedSongs.forEach((___, i) => {
   if (i === 0) console.log(`${"Importing".bold} selectors...`);
@@ -198,6 +204,24 @@ processedSongs.forEach((___, i) => {
 });
 
 // -------
+// SORTING
+// -------
+
+const outputFiles = fs.readdirSync(OUTPUT_PATH);
+outputFiles.forEach((file, i) => {
+  const matchingSong = _.find(processedSongs, ({ song }) =>
+    _.startsWith(file, song.outputName)
+  );
+  if (!matchingSong) return;
+
+  newName = matchingSong.id + file.substring(ID_SIZE);
+  fs.renameSync(
+    $path.join(OUTPUT_PATH, file),
+    $path.join(OUTPUT_PATH, newName)
+  );
+});
+
+// -------
 // ROM ID
 // -------
 
@@ -211,8 +235,8 @@ fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 // -------
 
 printTable(
-  processedSongs.map(({ simfile: it }, i) => ({
-    id: CREATE_ID(i),
+  processedSongs.map(({ simfile: it, id }) => ({
+    id,
     title: it.metadata.title,
     artist: it.metadata.artist,
     channel: it.metadata.channel,
