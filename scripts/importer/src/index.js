@@ -133,53 +133,64 @@ const songs = _(fs.readdirSync(SONGS_PATH))
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 
 let lastSelectorBuilt = -1;
-const simfiles = songs.map((song, i) => {
-  const { outputName } = song;
-  const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
+const simfiles = _.chain(songs)
+  .map((song, i) => {
+    const { outputName } = song;
+    const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
 
-  console.log(
-    `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
-      "Importing".bold
-    } ${song.name.cyan}...`
-  );
-
-  // metadata
-  const simfile = utils.report(
-    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
-    "charts"
-  );
-
-  // audio
-  utils.report(
-    () => importers.audio(outputName, audioFile, OUTPUT_PATH),
-    "audio"
-  );
-
-  // background
-  utils.report(
-    () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
-    "background"
-  );
-
-  // selector
-  let options = [];
-  if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
-    const from = lastSelectorBuilt + 1;
-    const to = i;
-    options = _.range(from, to + 1).map((j) => {
-      return { song: songs[j], files: GET_SONG_FILES(songs[j]) };
-    });
-    lastSelectorBuilt = i;
-
-    const name = `_sel_${from}`;
-    utils.report(
-      () => importers.selector(name, options, OUTPUT_PATH, IMAGES_PATH),
-      "selector"
+    console.log(
+      `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
+        "Importing".bold
+      } ${song.name.cyan}...`
     );
-  }
 
-  return simfile;
-});
+    // metadata
+    const simfile = utils.report(
+      () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
+      "charts"
+    );
+
+    // audio
+    utils.report(
+      () => importers.audio(outputName, audioFile, OUTPUT_PATH),
+      "audio"
+    );
+
+    // background
+    utils.report(
+      () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
+      "background"
+    );
+
+    return simfile;
+  })
+  .orderBy((simfile) => {
+    const crazyChart = _.find(
+      simfile.charts,
+      (it) => it.header.difficulty === "CRAZY"
+    );
+    return crazyChart.header.level;
+  }, "ASC")
+  .forEach((___, i) => {
+    if (i === 0) console.log(`${"Importing".bold} selectors...`);
+
+    // selector
+    let options = [];
+    if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
+      const from = lastSelectorBuilt + 1;
+      const to = i;
+      options = _.range(from, to + 1).map((j) => {
+        return { song: songs[j], files: GET_SONG_FILES(songs[j]) };
+      });
+      lastSelectorBuilt = i;
+      const name = `_sel_${from}`;
+      utils.report(
+        () => importers.selector(name, options, OUTPUT_PATH, IMAGES_PATH),
+        `[${from}-${to}]`
+      );
+    }
+  })
+  .value();
 
 // -------
 // ROM ID
