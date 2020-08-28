@@ -202,7 +202,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-MODE ?= manual
+MODE ?= auto
 .PHONY: clean assets start restart
 
 assets:

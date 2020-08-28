@@ -37,7 +37,7 @@ const FILE_METADATA = /\.ssc$/i;
 const FILE_AUDIO = /\.(mp3|flac)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
-const MODE_DEFAULT = "manual";
+const MODE_DEFAULT = "auto";
 
 const printTable = (rows) => {
   let table = new TableInternal();
@@ -52,7 +52,7 @@ const printTable = (rows) => {
 
 const opt = getopt
   .create([
-    ["d", "mode=MODE", "how to complete missing data (one of: auto|*manual*)"],
+    ["d", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["j", "json", "generate JSON debug files"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])

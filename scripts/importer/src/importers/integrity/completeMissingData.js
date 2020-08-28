@@ -32,15 +32,15 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   }
 
-  if (GLOBAL_OPTIONS.mode === "auto")
+  if (GLOBAL_OPTIONS.mode === "manual")
     charts.forEach((it) => {
       it.header.mode = "NUMERIC";
     });
 
   NON_NUMERIC_LEVELS.forEach((difficulty) => {
-    if (GLOBAL_OPTIONS.mode === "auto") {
+    if (!hasDifficulty(charts, difficulty) && GLOBAL_OPTIONS.mode === "auto")
       autoSetDifficulty(charts, difficulty);
-    } else {
+    else {
       if (setDifficulty(charts, difficulty)) isDirty = true;
     }
   });
@@ -132,7 +132,7 @@ const setDifficulty = (charts, difficultyName) => {
   );
   const levels = numericDifficultyCharts.map(createId);
 
-  if (!_.some(charts, (it) => it.header.difficulty === difficultyName)) {
+  if (!hasDifficulty(charts, difficultyName)) {
     console.log("-> levels: ".bold + `(${levels.join(", ")})`.cyan);
     const chartName = utils.insistentChoice(
       `Which one is ${difficultyName}?`,
@@ -148,4 +148,8 @@ const setDifficulty = (charts, difficultyName) => {
   }
 
   return false;
+};
+
+const hasDifficulty = (charts, difficultyName) => {
+  return _.some(charts, (it) => it.header.difficulty === difficultyName);
 };
