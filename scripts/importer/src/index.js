@@ -4,7 +4,12 @@ const fs = require("fs");
 const mkdirp = require("mkdirp");
 const $path = require("path");
 const utils = require("./utils");
-const { printTable } = require("console-table-printer");
+const {
+  printTableAndGetConsoleOutput,
+} = require("console-table-printer/dist/src/internalTable/internal-table-printer");
+const {
+  TableInternal,
+} = require("console-table-printer/dist/src/internalTable/internal-table");
 const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
@@ -31,6 +36,13 @@ const FILE_AUDIO = /\.(mp3|flac)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "manual";
+
+const printTable = (rows) => {
+  let table = new TableInternal();
+  table.addRows(rows);
+  table.sortFunction = (a, b) => a.id - b.id;
+  printTableAndGetConsoleOutput(table);
+};
 
 // ------------
 // COMMAND LINE
