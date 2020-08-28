@@ -29,6 +29,7 @@ class Score {
 
   int life = INITIAL_LIFE;
   bool hasMissCombo = false;
+  bool halfLifeBonus = 0;
   u32 maxCombo = 0;
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;

@@ -64,7 +64,14 @@ void Score::render(std::vector<Sprite*>* sprites) {
 }
 
 bool Score::updateLife(FeedbackType feedbackType) {
-  life = min(life + LIFE_DIFFS[feedbackType], MAX_LIFE);
+  u32 bonus = 0;
+  if (feedbackType == FeedbackType::PERFECT) {
+    halfLifeBonus = !halfLifeBonus;
+    if (halfLifeBonus)
+      bonus = 1;
+  }
+
+  life = min(life + LIFE_DIFFS[feedbackType] + bonus, MAX_LIFE);
   bool isAlive = life >= MIN_LIFE;
   if (!isAlive)
     life = MIN_LIFE;
