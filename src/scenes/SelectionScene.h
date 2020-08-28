@@ -92,17 +92,18 @@ class SelectionScene : public Scene {
     return 0;
   }
   inline u8 getSelectedNumericLevel() {
+    return numericLevels[getSelectedNumericLevelIndex()];
+  }
+  inline u8 getSelectedNumericLevelIndex() {
     return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
-  inline void setClosestNumericLevel() {
-    auto level = getSelectedNumericLevel();
-
-    u32 min = numericLevels[0];
-    u32 minDiff = abs((int)min - (int)level);
-    for (auto& availableLevel : numericLevels) {
-      u32 diff = (u32)abs((int)availableLevel - (int)level);
+  inline void setClosestNumericLevel(u8 level) {
+    u32 min = 0;
+    u32 minDiff = abs((int)numericLevels[0] - (int)level);
+    for (u32 i = 0; i < numericLevels.size(); i++) {
+      u32 diff = (u32)abs((int)numericLevels[i] - (int)level);
       if (diff < minDiff) {
-        min = availableLevel;
+        min = i;
         minDiff = diff;
       }
     }
@@ -135,8 +136,8 @@ class SelectionScene : public Scene {
                          bool isOnPageEdge,
                          int direction);
 
-  void updateSelection() { updateSelection(true); }
-  void updateSelection(bool withMusic);
+  void updateSelection() { updateSelection(false); }
+  void updateSelection(bool isChangingLevel);
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);

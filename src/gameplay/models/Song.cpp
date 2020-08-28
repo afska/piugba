@@ -99,11 +99,9 @@ Chart* SONG_findChartByDifficultyLevel(Song* song,
   return NULL;
 }
 
-Chart* SONG_findChartByNumericLevel(Song* song, u8 level) {
-  for (u32 i = 0; i < song->chartCount; i++) {
-    if (song->charts[i].level == level)
-      return song->charts + i;
-  }
+Chart* SONG_findChartByNumericLevelIndex(Song* song, u8 levelIndex) {
+  if (levelIndex < song->chartCount)
+    return song->charts + levelIndex;
 
   return NULL;
 }

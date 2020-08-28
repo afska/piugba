@@ -248,7 +248,8 @@ void SelectionScene::goToSong() {
   Song* song = SONG_parse(fs, getSelectedSong(), true);
   Chart* chart =
       getGameMode() == GameMode::ARCADE
-          ? SONG_findChartByNumericLevel(song, getSelectedNumericLevel())
+          ? SONG_findChartByNumericLevelIndex(song,
+                                              getSelectedNumericLevelIndex())
           : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
   STATE_setup(song);
@@ -267,20 +268,14 @@ void SelectionScene::processKeys(u16 keys) {
 
 void SelectionScene::processDifficultyChangeEvents() {
   if (getGameMode() == GameMode::ARCADE) {
-    auto level = getSelectedNumericLevel();
-    auto currentLevelIndex = 0;
-    for (u32 i = 0; i < numericLevels.size(); i++)
-      if (numericLevels[i] == level) {
-        currentLevelIndex = i;
-        break;
-      }
-    auto previousIndex = max(currentLevelIndex - 1, 0);
-    auto nextIndex = min(currentLevelIndex + 1, numericLevels.size() - 1);
+    auto currentIndex = getSelectedNumericLevelIndex();
+    auto previousIndex = max(currentIndex - 1, 0);
+    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
 
-    if (onNumericLevelChange(ArrowDirection::UPRIGHT, numericLevels[nextIndex]))
+    if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
       return;
 
-    onNumericLevelChange(ArrowDirection::UPLEFT, numericLevels[previousIndex]);
+    onNumericLevelChange(ArrowDirection::UPLEFT, previousIndex);
   } else {
     if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
@@ -369,11 +364,11 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     unconfirm();
     fxes_playSolo(SOUND_STEP);
 
-    if (newValue == getSelectedNumericLevel())
+    if (newValue == getSelectedNumericLevelIndex())
       return true;
 
     SAVEFILE_write8(SRAM->memory.numericLevel, newValue);
-    updateSelection(false);
+    updateSelection(true);
     pixelBlink->blink();
 
     return true;
@@ -413,16 +408,24 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
   return false;
 }
 
-void SelectionScene::updateSelection(bool withMusic) {
+void SelectionScene::updateSelection(bool isChangingLevel) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
-  numericLevels.clear();
+  bool canUpdateLevel = false;
+  u8 currentLevel;
+  if (!numericLevels.empty()) {
+    canUpdateLevel = false;
+    currentLevel = getSelectedNumericLevel();
+    numericLevels.clear();
+  }
   for (u32 i = 0; i < song->chartCount; i++)
     numericLevels.push_back(song->charts[i].level);
-  setClosestNumericLevel();
+  if (canUpdateLevel && !isChangingLevel)
+    setClosestNumericLevel(currentLevel);
+
   setNames(song->title, song->artist);
   printNumericLevel();
-  if (withMusic) {
+  if (!isChangingLevel) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
   }

@@ -209,7 +209,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/index.js --mode $(MODE) --all
+	node ./scripts/importer/src/importer.js --mode $(MODE) --all
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)
