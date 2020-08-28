@@ -2,7 +2,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
-const int LIFE_DIFFS[] = {2, 1, 0, -6, -12};
+const int LIFE_DIFFS[] = {1, 1, 0, -6, -12};
 const int POINT_DIFFS[] = {1000, 500, 100, -200, -500};
 
 const u32 ANIMATION_FRAMES = 3;
