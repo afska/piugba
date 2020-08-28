@@ -28,6 +28,7 @@ const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
 const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
+const SORT_BY = "CRAZY";
 const MAX_FILE_LENGTH = 15;
 const MAX_SONGS = 99;
 const SELECTOR_OPTIONS = 4;
@@ -167,7 +168,7 @@ const simfiles = _.chain(songs)
   .orderBy((simfile) => {
     const crazyChart = _.find(
       simfile.charts,
-      (it) => it.header.difficulty === "CRAZY"
+      (it) => it.header.difficulty === SORT_BY
     );
     return crazyChart.header.level;
   }, "ASC")
