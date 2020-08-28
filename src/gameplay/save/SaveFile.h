@@ -110,7 +110,7 @@ inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
 }
 
 inline u8 SAVEFILE_getLibrarySize() {
-  return SAVEFILE_read32(SRAM->romId) & LIBRARY_SIZE_MASK;
+  return (SAVEFILE_read32(SRAM->romId)) & LIBRARY_SIZE_MASK;
 }
 
 inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {

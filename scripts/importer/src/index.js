@@ -227,7 +227,7 @@ outputFiles.forEach((file, i) => {
 
 const romIdBuffer = Buffer.alloc(4);
 romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
-romIdBuffer.writeUInt8(songs.length, 3);
+romIdBuffer.writeUInt8(songs.length);
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // -------
