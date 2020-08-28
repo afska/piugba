@@ -40,7 +40,6 @@ const opt = getopt
   .create([
     ["d", "mode=MODE", "how to complete missing data (one of: auto|*manual*)"],
     ["j", "json", "generate JSON debug files"],
-    ["f", "force", "ignore errors"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()
@@ -175,7 +174,8 @@ const simfiles = songs.map((song, i) => {
 // -------
 
 const romIdBuffer = Buffer.alloc(4);
-romIdBuffer.writeUInt32LE(((Math.random() * 0xffffffff) << 8) + songs.length);
+romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
+romIdBuffer.writeUInt8(songs.length, 3);
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // -------

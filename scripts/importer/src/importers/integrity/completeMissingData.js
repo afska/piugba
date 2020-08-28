@@ -4,7 +4,7 @@ const fs = require("fs");
 const _ = require("lodash");
 
 const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD", "BOSS"];
-const NON_NUMERIC_LEVELS = ["NORMAL", "HARD", "CRAZY"];
+const NON_NUMERIC_LEVELS = ["CRAZY", "HARD", "NORMAL"];
 const PROP_REGEXP = (name) => `#${name}:((.|(\r|\n))*?);`;
 const GLOBAL_PROPERTY = (name) => new RegExp(PROP_REGEXP(name), "g");
 const PROPERTY = (name) => new RegExp(PROP_REGEXP(name));
@@ -86,9 +86,9 @@ const writeIfNeeded = (metadata, charts, content, filePath) => {
 
 const autoSetDifficulty = (charts, difficultyName) => {
   const HEURISTICS = {
-    NORMAL: [6, 5, 4, 3, 2, 1],
-    HARD: [11, 10, 9, 8, 7],
-    CRAZY: [16, 15, 14, 13, 12],
+    NORMAL: [6, 5, 4, 3, 2, 1, 7],
+    HARD: [11, 10, 9, 8, 7, 12],
+    CRAZY: [16, 15, 14, 13, 12, 17, 18, 19, 20, 11],
   };
   const INSANE_LEVEL = 17;
 
@@ -115,8 +115,6 @@ const autoSetDifficulty = (charts, difficultyName) => {
       (it) =>
         it.header.difficulty === "NUMERIC" && it.header.level >= INSANE_LEVEL
     );
-
-  if (!chart && GLOBAL_OPTIONS.force) chart = _.sample(numericDifficultyCharts);
 
   if (!chart)
     throw new Error(
