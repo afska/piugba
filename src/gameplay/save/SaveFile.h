@@ -11,6 +11,7 @@
 #include "Settings.h"
 #include "State.h"
 #include "assets.h"
+#include "gameplay/debug/DebugTools.h"
 #include "gameplay/models/Chart.h"
 #include "utils/parse.h"
 
@@ -114,6 +115,9 @@ inline u8 SAVEFILE_getLibrarySize() {
 }
 
 inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
+  if (IGNORE_LOCKS)
+    return true;
+
   u8 completedSongs = SAVEFILE_read8(SRAM->globalProgress.completedSongs);
 
   if (gameMode == GameMode::ARCADE)
