@@ -44,7 +44,7 @@ void STATE_setup(Song* song) {
     }
     case GameMode::IMPOSSIBLE: {
       GameState.mods.stageBreak = true;
-      GameState.mods.pixelate = PixelateOpts::pBLINK_OUT;
+      GameState.mods.pixelate = PixelateOpts::pBLINK_IN;
       GameState.mods.jump = true;
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.negative = true;
