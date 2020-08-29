@@ -347,7 +347,7 @@ void SongScene::processModsBeat() {
     mosaic = 0;
   else if (GameState.mods.pixelate == PixelateOpts::pRANDOM) {
     auto previousTargetMosaic = targetMosaic;
-    targetMosaic = qran_range(2, 12);
+    targetMosaic = qran_range(0, 7);
     if (previousTargetMosaic == targetMosaic)
       mosaic = 0;
   }
@@ -384,7 +384,7 @@ void SongScene::processModsBeat() {
   }
 
   if (GameState.mods.randomSpeed)
-    chartReader->setMultiplier(qran_range(2, 5 + 1));
+    chartReader->setMultiplier(qran_range(3, 6));
 }
 
 u8 SongScene::processPixelateMod() {
