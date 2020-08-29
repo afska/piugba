@@ -156,7 +156,9 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
   int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
   int lastGlobalIndex = SAVEFILE_read8(SRAM->globalProgress.completedSongs) - 1;
   u8 librarySize = SAVEFILE_getLibrarySize();
-  if (songIndex > lastIndex) {
+  bool firstTime = songIndex > lastIndex;
+
+  if (firstTime) {
     auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);
     auto completedSongs = (u8)min(songIndex + 1, librarySize);
     SAVEFILE_write8(SRAM->progress[index].completedSongs, completedSongs);
@@ -168,7 +170,9 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
     SAVEFILE_write8(SRAM->globalProgress.completedSongs, completedSongs);
   };
 
-  SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
+  if (firstTime ||
+      grade < SAVEFILE_read8(SRAM->progress[index].grades[songIndex]))
+    SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
 
   return songIndex == SAVEFILE_getLibrarySize() - 1;
 }
