@@ -208,7 +208,7 @@ processedSongs.forEach((___, i) => {
 // -------
 
 const outputFiles = fs.readdirSync(OUTPUT_PATH);
-outputFiles.forEach((file, i) => {
+outputFiles.forEach((file) => {
   const matchingSong = _.find(processedSongs, ({ song }) =>
     _.startsWith(file, song.outputName)
   );
