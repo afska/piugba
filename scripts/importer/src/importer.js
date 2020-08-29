@@ -78,6 +78,18 @@ const GET_SONG_FILES = ({ path, name }) => {
 // -------
 
 mkdirp(SONGS_PATH);
+let reuseRomId = null;
+try {
+  reuseRomId = fs
+    .readFileSync($path.join(OUTPUT_PATH, "../romid.u32"))
+    .readUInt32LE();
+  console.log(
+    `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
+  );
+  console.log(
+    "To stop reusing rom ids, remove src/data/content/romid.u32".yellow
+  );
+} catch (e) {}
 utils.run(`rm -rf ${OUTPUT_PATH}`);
 mkdirp.sync(OUTPUT_PATH);
 
@@ -228,8 +240,11 @@ outputFiles.forEach((file) => {
 // -------
 
 const romIdBuffer = Buffer.alloc(4);
-romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
-romIdBuffer.writeUInt8(songs.length);
+if (reuseRomId !== null) romIdBuffer.writeUInt32LE(reuseRomId);
+else {
+  romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
+  romIdBuffer.writeUInt8(songs.length);
+}
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 
 // -------

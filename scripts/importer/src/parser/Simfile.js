@@ -183,7 +183,7 @@ const OBJECT = (name, elements = 2) => ({
   exp: PROPERTY(name),
   parse: (content) =>
     _(content)
-      .split(",")
+      .split(",,,")
       .map((it) => it.trim().split("="))
       .filter((it) => it.length === elements)
       .map(([key, value]) => ({
