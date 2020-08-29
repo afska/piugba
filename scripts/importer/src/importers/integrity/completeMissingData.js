@@ -11,6 +11,13 @@ const PROPERTY = (name) => new RegExp(PROP_REGEXP(name));
 const CHANNEL_PROP = "SONGCATEGORY";
 const DIFFICULTY_PROP = "DIFFICULTY";
 
+const HEURISTICS = {
+  NORMAL: [6, 5, 4, 3, 2, 1, 7],
+  HARD: [11, 10, 9, 8, 7, 12],
+  CRAZY: [16, 15, 14, 13, 12, 17, 18, 19, 20],
+};
+const TAGS = ["new", "ucs", "hidden", "sp", "quest", "another"];
+
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
 
@@ -85,36 +92,24 @@ const writeIfNeeded = (metadata, charts, content, filePath) => {
 };
 
 const autoSetDifficulty = (charts, difficultyName) => {
-  const HEURISTICS = {
-    NORMAL: [6, 5, 4, 3, 2, 1, 7],
-    HARD: [11, 10, 9, 8, 7, 12],
-    CRAZY: [16, 15, 14, 13, 12, 17, 18, 19, 20, 11],
-  };
-  const INSANE_LEVEL = 17;
-
   const numericDifficultyCharts = charts.filter(
     (it) => it.header.difficulty === "NUMERIC"
   );
 
-  let chart;
+  let chart = null;
   for (let level of HEURISTICS[difficultyName]) {
     const candidate = _.find(
       numericDifficultyCharts,
       (it) => it.header.difficulty === "NUMERIC" && it.header.level === level
     );
 
-    if (candidate) {
-      chart = candidate;
-      break;
-    }
+    if (candidate) chart = getBestChartBetween(candidate, chart);
   }
 
   if (!chart && difficultyName === "CRAZY")
-    chart = _.find(
-      numericDifficultyCharts,
-      (it) =>
-        it.header.difficulty === "NUMERIC" && it.header.level >= INSANE_LEVEL
-    );
+    chart = _.last(numericDifficultyCharts);
+  if (!chart && difficultyName === "NORMAL")
+    chart = _.first(numericDifficultyCharts);
 
   if (!chart)
     throw new Error(
@@ -123,6 +118,30 @@ const autoSetDifficulty = (charts, difficultyName) => {
         .join("|")})`
     );
   chart.header.difficulty = difficultyName;
+};
+
+const getBestChartBetween = (candidate, currentChart) => {
+  if (currentChart === null) return candidate;
+
+  return getChartAffinityLevel(candidate) < getChartAffinityLevel(currentChart)
+    ? candidate
+    : currentChart;
+};
+
+const getChartAffinityLevel = (chart) => {
+  const name = chart.header.name.toLowerCase();
+  let affinity = -1;
+
+  for (let i = 0; i < TAGS.length; i++) {
+    const tag = TAGS[i];
+
+    if (_.includes(name, tag)) {
+      affinity = i;
+      break;
+    }
+  }
+
+  return affinity;
 };
 
 const setDifficulty = (charts, difficultyName) => {

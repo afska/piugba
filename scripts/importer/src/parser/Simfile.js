@@ -49,7 +49,8 @@ module.exports = class Simfile {
       this.content.match(REGEXPS.chart.start).map((rawChart) => {
         const startIndex = this.content.indexOf(rawChart);
 
-        const name = this._getSingleMatch(REGEXPS.chart.name, rawChart, true);
+        const name =
+          this._getSingleMatch(REGEXPS.chart.name, rawChart, true) || "";
         const difficulty =
           this._getSingleMatchFromEnum(
             REGEXPS.chart.difficulty,
