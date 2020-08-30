@@ -106,7 +106,7 @@ const autoSetDifficulty = (charts, difficultyName) => {
     if (candidate) chart = getBestChartBetween(candidate, chart);
   }
 
-  if (!chart && difficultyName === "CRAZY")
+  if (!chart && (difficultyName === "CRAZY" || difficultyName === "HARD"))
     chart = _.last(numericDifficultyCharts);
   if (!chart && difficultyName === "NORMAL")
     chart = _.first(numericDifficultyCharts);
