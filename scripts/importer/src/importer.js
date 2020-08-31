@@ -37,6 +37,8 @@ const FILE_AUDIO = /\.(mp3|flac)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "auto";
+const SORTING_OPTIONS = ["level", "dir"];
+const SORTING_DEFAULT = "level";
 const SELECTOR_PREFIXES = {
   NORMAL: "_snm_",
   HARD: "_shd_",
@@ -59,6 +61,7 @@ const printTable = (rows) => {
 const opt = getopt
   .create([
     ["d", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
+    ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
     ["j", "json", "generate JSON debug files"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
@@ -68,6 +71,8 @@ const opt = getopt
 global.GLOBAL_OPTIONS = opt.options;
 if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
+if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
+  GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
@@ -188,24 +193,29 @@ const processedSongs = songs.map((song, i) => {
 // ------------
 
 const sortedSongsByLevel = CAMPAIGN_LEVELS.map((difficultyLevel) => {
+  const withIds = (songs) =>
+    songs.map((it, i) => ({ ...it, id: CREATE_ID(i) }));
+
   return {
     difficultyLevel,
-    songs: _(processedSongs)
-      .orderBy(
-        [
-          ({ simfile }) => {
-            const chart = simfile.getChartByDifficulty(difficultyLevel);
-            return chart.header.level;
-          },
-          ({ simfile }) => {
-            const chart = simfile.getChartByDifficulty(difficultyLevel);
-            return _.sumBy(chart.events, "complexity");
-          },
-        ],
-        ["ASC", "ASC"]
-      )
-      .map((it, i) => ({ ...it, id: CREATE_ID(i) }))
-      .value(),
+    songs: withIds(
+      GLOBAL_OPTIONS.sort === "dir"
+        ? processedSongs
+        : _.orderBy(
+            processedSongs,
+            [
+              ({ simfile }) => {
+                const chart = simfile.getChartByDifficulty(difficultyLevel);
+                return chart.header.level;
+              },
+              ({ simfile }) => {
+                const chart = simfile.getChartByDifficulty(difficultyLevel);
+                return _.sumBy(chart.events, "complexity");
+              },
+            ],
+            ["ASC", "ASC"]
+          )
+    ),
   };
 });
 

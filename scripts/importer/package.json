@@ -1,7 +1,7 @@
 {
   "name": "importer",
   "version": "1.0.0",
-  "description": "PIUGBA Steps Importer",
+  "description": "piuGBA Steps Importer",
   "main": "src/importer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
