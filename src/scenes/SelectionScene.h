@@ -115,14 +115,14 @@ class SelectionScene : public Scene {
     if (getGameMode() != GameMode::ARCADE)
       return difficulty->getValue();
 
-    DifficultyLevel maxLevel = static_cast<DifficultyLevel>(MAX_DIFFICULTY);
+    DifficultyLevel maxLevel;
     u32 max = 0;
 
     for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
       auto difficultyLevel = static_cast<DifficultyLevel>(i);
       auto completedSongs = getCompletedSongsOf(difficultyLevel);
 
-      if (completedSongs > max) {
+      if (completedSongs >= max) {
         maxLevel = difficultyLevel;
         max = completedSongs;
       }
