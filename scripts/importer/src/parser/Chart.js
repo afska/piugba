@@ -2,7 +2,8 @@ const Events = require("./Events");
 const _ = require("lodash");
 
 module.exports = class Chart {
-  constructor(header, content) {
+  constructor(metadata, header, content) {
+    this.metadata = metadata;
     this.header = header;
     this.content = content;
   }
@@ -43,8 +44,10 @@ module.exports = class Chart {
             const isJump = _.sumBy(activeArrows) > 1;
             const isHold = type === Events.HOLD_START;
             const complexity =
-              type === Events.NOTE || isHold
-                ? (1 - subdivision) * (isJump ? 2 : 1) * (isHold ? 1.3 : 1)
+              (type === Events.NOTE || isHold) &&
+              this.metadata.lastMillisecond < 999999
+                ? ((1 - subdivision) * (isJump ? 2 : 1) * (isHold ? 1.3 : 1)) /
+                  (this.metadata.lastMillisecond / SECOND)
                 : null;
 
             return {

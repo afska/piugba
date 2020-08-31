@@ -283,10 +283,12 @@ printTable(
     const hard = it.getChartByDifficulty("HARD");
     const crazy = it.getChartByDifficulty("CRAZY");
 
+    const print = (n, digits) => _.padStart(n, digits, 0);
+
     const levelOf = (chart) => {
       const level = chart.header.level;
-      const complexity = Math.round(_.sumBy(chart.events, "complexity"));
-      return `${level} (Ω ${complexity})`;
+      const complexity = Math.round(_.sumBy(chart.events, "complexity") * 100);
+      return `${print(level, 2)} (Ω ${print(complexity, 3)})`;
     };
 
     return {
