@@ -3,7 +3,15 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK_IN, pBLINK_OUT, pRANDOM };
+enum PixelateOpts : u8 {
+  pOFF,
+  pLIFE_MIN,
+  pLIFE_MAX,
+  pFIXED,
+  pBLINK_IN,
+  pBLINK_OUT,
+  pRANDOM
+};
 enum ReduceOpts : u8 { rOFF, rFIXED, rRANDOM };
 
 typedef struct __attribute__((__packed__)) {
