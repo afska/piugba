@@ -22,6 +22,11 @@ module.exports = class Simfile {
       ..._.mapValues(Mods, (v, k) =>
         _.isFinite(v[custom[k]]) ? custom[k] : _.findKey(v, (it) => it === 0)
       ),
+      APPLY_TO:
+        _.isString(custom.APPLY_TO) && custom.APPLY_TO.length === 3
+          ? custom.APPLY_TO.split("").map((c) => c === "1")
+          : [false, false, false],
+      IS_BOSS: custom.IS_BOSS === "TRUE",
       MESSAGE: custom.MESSAGE || "",
     };
 
