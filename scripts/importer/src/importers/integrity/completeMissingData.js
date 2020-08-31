@@ -3,7 +3,7 @@ const utils = require("../../utils");
 const fs = require("fs");
 const _ = require("lodash");
 
-const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD", "BOSS"];
+const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["CRAZY", "HARD", "NORMAL"];
 const PROP_REGEXP = (name) => `#${name}:((.|(\r|\n))*?);`;
 const GLOBAL_PROPERTY = (name) => new RegExp(PROP_REGEXP(name), "g");
@@ -61,6 +61,12 @@ module.exports = (metadata, charts, content, filePath) => {
       : charts.filter((it) =>
           _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
         ),
+    getChartByDifficulty(difficulty) {
+      return _.find(
+        this.charts,
+        (chart) => chart.header.difficulty === difficulty
+      );
+    },
   };
 };
 

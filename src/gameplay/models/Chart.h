@@ -6,6 +6,7 @@
 #include "Event.h"
 
 enum DifficultyLevel { NORMAL, HARD, CRAZY, NUMERIC };
+const u32 MAX_DIFFICULTY = 2;
 
 typedef struct {
   DifficultyLevel difficulty;  // u8

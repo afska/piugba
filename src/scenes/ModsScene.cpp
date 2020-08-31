@@ -55,17 +55,20 @@ void ModsScene::printOptions() {
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
               4);
   printOption(OPTION_STAGE_BREAK, "Stage break", stageBreak ? "ON" : "OFF", 5);
-  printOption(OPTION_PIXELATE, "Pixelate",
-              pixelate == 0
-                  ? "OFF"  // ° ͜ʖ ͡°)
-                  : pixelate == 1
-                        ? "LIFE"  // ° ͜ʖ ͡°)
-                        : pixelate == 2
-                              ? "FIXED"  // ° ͜ʖ ͡°)
-                              : pixelate == 3
-                                    ? "BLINK_IN"  // ° ͜ʖ ͡°)
-                                    : pixelate == 4 ? "BLINK_OUT" : "RANDOM",
-              6);
+  printOption(
+      OPTION_PIXELATE, "Pixelate",
+      pixelate == 0
+          ? "OFF"  // ° ͜ʖ ͡°)
+          : pixelate == 1
+                ? "LIFE_MIN"  // ° ͜ʖ ͡°)
+                : pixelate == 2
+                      ? "LIFE_MAX"  // ° ͜ʖ ͡°)
+                      : pixelate == 3
+                            ? "FIXED"  // ° ͜ʖ ͡°)
+                            : pixelate == 4
+                                  ? "BLINK_IN"  // ° ͜ʖ ͡°)
+                                  : pixelate == 5 ? "BLINK_OUT" : "RANDOM",
+      6);
   printOption(OPTION_JUMP, "Jump", jump ? "ON" : "OFF", 7);
   printOption(OPTION_REDUCE, "Reduce",
               reduce == 0 ? "OFF" : reduce == 1 ? "FIXED" : "RANDOM", 8);
@@ -100,7 +103,7 @@ bool ModsScene::selectOption(u32 selected) {
     }
     case OPTION_PIXELATE: {
       u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
-      SAVEFILE_write8(SRAM->mods.pixelate, increment(pixelate, 6));
+      SAVEFILE_write8(SRAM->mods.pixelate, increment(pixelate, 7));
       return true;
     }
     case OPTION_JUMP: {

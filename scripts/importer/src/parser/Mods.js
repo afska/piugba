@@ -1,11 +1,12 @@
 module.exports = {
   PIXELATE: {
     OFF: 0,
-    LIFE: 1,
-    FIXED: 2,
-    BLINK_IN: 3,
-    BLINK_OUT: 4,
-    RANDOM: 5,
+    LIFE_MIN: 1,
+    LIFE_MAX: 2,
+    FIXED: 3,
+    BLINK_IN: 4,
+    BLINK_OUT: 5,
+    RANDOM: 6,
   },
   JUMP: {
     OFF: 0,

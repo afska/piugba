@@ -203,13 +203,14 @@ endif		# End BUILD switch
 # --- More targets ----------------------------------------------------
 
 MODE ?= auto
+SORT ?= level
 .PHONY: clean assets start restart
 
 assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/importer.js --mode $(MODE) --all
+	node ./scripts/importer/src/importer.js --mode $(MODE) --sort $(SORT) --all
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)

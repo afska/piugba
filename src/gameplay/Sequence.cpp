@@ -127,15 +127,30 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
-  if (gameMode == GameMode::CAMPAIGN && song->hasMessage)
+  if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
+      song->hasMessage) {
     goTo(new TalkScene(_engine, _fs, std::string(song->message),
                        [song, chart](u16 keys) {
                          if (KEY_CENTER(keys))
                            goTo(new SongScene(_engine, _fs, song, chart), 2);
                        }),
          4);
-  else
-    goTo(new SongScene(_engine, _fs, song, chart), 4);
+    return;
+  }
+
+  if (gameMode == GameMode::CAMPAIGN && song->id == 1) {
+    goTo(new TalkScene(
+             _engine, _fs, KEYS_HINT,
+             [song, chart](u16 keys) {
+               if (KEY_CENTER(keys))
+                 goTo(new SongScene(_engine, _fs, song, chart), 2);
+             },
+             true),
+         4);
+    return;
+  }
+
+  goTo(new SongScene(_engine, _fs, song, chart), 4);
 }
 
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {

@@ -393,8 +393,11 @@ u8 SongScene::processPixelateMod() {
   switch (GameState.mods.pixelate) {
     case PixelateOpts::pOFF:
       return 0;
-    case PixelateOpts::pLIFE:
-      minMosaic = lifeBar->getMosaicValue();
+    case PixelateOpts::pLIFE_MIN:
+      minMosaic = lifeBar->getMosaicMinLife();
+      break;
+    case PixelateOpts::pLIFE_MAX:
+      minMosaic = lifeBar->getMosaicMaxLife();
       break;
     case PixelateOpts::pFIXED:
     case PixelateOpts::pBLINK_IN:

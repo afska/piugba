@@ -25,6 +25,10 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   song->sampleStart = parse_u32le(data, &cursor);
   song->sampleLength = parse_u32le(data, &cursor);
 
+  song->applyTo[DifficultyLevel::NORMAL] = parse_u8(data, &cursor);
+  song->applyTo[DifficultyLevel::HARD] = parse_u8(data, &cursor);
+  song->applyTo[DifficultyLevel::CRAZY] = parse_u8(data, &cursor);
+  song->isBoss = parse_u8(data, &cursor);
   song->pixelate = parse_u8(data, &cursor);
   song->jump = parse_u8(data, &cursor);
   song->reduce = parse_u8(data, &cursor);
@@ -81,12 +85,32 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   return song;
 }
 
-Channel SONG_getChannel(const GBFS_FILE* fs, SongFile* file) {
+Channel SONG_getChannel(const GBFS_FILE* fs,
+                        SongFile* file,
+                        DifficultyLevel difficultyLevel) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
   u32 cursor = TITLE_LEN + ARTIST_LEN;
-  return static_cast<Channel>(parse_u8(data, &cursor));
+  auto channel = static_cast<Channel>(parse_u8(data, &cursor));
+
+  cursor +=
+      4 /* lastMillisecond */ + 4 /* sampleStart */ + 4 /* sampleLength */;
+
+  bool applyToNormal = parse_u8(data, &cursor);
+  if (difficultyLevel == DifficultyLevel::NORMAL && !applyToNormal)
+    return channel;
+
+  bool applyToHard = parse_u8(data, &cursor);
+  if (difficultyLevel == DifficultyLevel::HARD && !applyToHard)
+    return channel;
+
+  bool applyToCrazy = parse_u8(data, &cursor);
+  if (difficultyLevel == DifficultyLevel::CRAZY && !applyToCrazy)
+    return channel;
+
+  bool isBoss = parse_u8(data, &cursor);
+  return isBoss ? Channel::BOSS : channel;
 }
 
 Chart* SONG_findChartByDifficultyLevel(Song* song,

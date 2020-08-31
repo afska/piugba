@@ -15,7 +15,8 @@ class LifeBar {
  public:
   LifeBar();
 
-  inline u8 getMosaicValue() { return mosaicValue; }
+  inline u8 getMosaicMinLife() { return mosaicMinLife; }
+  inline u8 getMosaicMaxLife() { return mosaicMaxLife; }
 
   void setLife(int life);
   void blink(ForegroundPaletteManager* foregroundPalette);
@@ -29,7 +30,8 @@ class LifeBar {
   u32 absLife = INITIAL_LIFE;
   u32 animatedValue = value;
   u32 wait = 0;
-  u8 mosaicValue = 0;
+  u8 mosaicMinLife = 0;
+  u8 mosaicMaxLife = 0;
   bool animatedFlag = false;
 
   void paint(ForegroundPaletteManager* foregroundPalette);

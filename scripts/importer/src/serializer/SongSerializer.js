@@ -44,6 +44,9 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Config", {
       write: function (config) {
+        config.APPLY_TO.forEach((it) => this.UInt8(it));
+        this.UInt8(config.IS_BOSS);
+
         _.forEach(Mods, (v, k) => {
           this.UInt8(v[config[k]]);
         });
