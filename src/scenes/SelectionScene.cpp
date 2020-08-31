@@ -339,17 +339,12 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
       return true;
 
     SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
-
     difficulty->setValue(newValue);
     pixelBlink->blink();
 
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
-    if (lastUnlockedSongIndex >= getSelectedSongIndex())
-      loadProgress();
-    else {
-      player_stopAll();
-      scrollTo(lastUnlockedSongIndex);
-    }
+    player_stopAll();
+    scrollTo(lastUnlockedSongIndex);
 
     return true;
   }

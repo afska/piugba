@@ -167,10 +167,6 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 GradeType grade) {
-  if (level > DifficultyLevel::NORMAL)
-    SAVEFILE_setGradeOf(songIndex, static_cast<DifficultyLevel>(level - 1),
-                        GradeType::UNPLAYED);
-
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   if (gameMode == GameMode::ARCADE)
     return false;

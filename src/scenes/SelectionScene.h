@@ -64,7 +64,7 @@ class SelectionScene : public Scene {
     return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   }
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
-  inline u32 getSelectedSongIndex() { return page * PAGE_SIZE + selected; }
+  inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
   inline u32 getLastUnlockedSongIndex() {
     return getGameMode() == GameMode::ARCADE
