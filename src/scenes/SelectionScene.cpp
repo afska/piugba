@@ -30,7 +30,6 @@ const u32 BANK_BACKGROUND_MAP = 16;
 const u32 SELECTOR_MARGIN = 3;
 const u32 CENTER_X = 96;
 const u32 CENTER_Y = 110;
-const u32 MAX_DIFFICULTY = 2;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
@@ -157,7 +156,7 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
-  auto backgroundFile = "_sel_" + std::to_string(getPageStart());
+  auto backgroundFile = library->getPrefix() + std::to_string(getPageStart());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
   auto backgroundMapFile = backgroundFile + BACKGROUND_MAP_EXTENSION;
@@ -468,7 +467,7 @@ void SelectionScene::setPage(u32 page, int direction) {
   this->page = page;
 
   songs.clear();
-  songs = library->getSongs(page * PAGE_SIZE, PAGE_SIZE);
+  songs = library->loadSongs(getLibraryType(), page);
 
   if (direction == 0)
     setUpBackground();

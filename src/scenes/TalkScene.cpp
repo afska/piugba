@@ -8,8 +8,6 @@
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
 
-#define LINE_BREAK "\r\n"
-
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;

@@ -26,8 +26,6 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
-const u32 PAGE_SIZE = 4;
-
 class SelectionScene : public Scene {
  public:
   SelectionScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
@@ -74,17 +72,19 @@ class SelectionScene : public Scene {
                : min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
+    return getCompletedSongsOf(difficulty->getValue());
+  }
+  inline u32 getCompletedSongsOf(DifficultyLevel difficultyLevel) {
     switch (getGameMode()) {
       case GameMode::CAMPAIGN: {
-        return SAVEFILE_read8(
-            SRAM->progress[difficulty->getValue()].completedSongs);
+        return SAVEFILE_read8(SRAM->progress[difficultyLevel].completedSongs);
       }
       case GameMode::ARCADE: {
         return SAVEFILE_read8(SRAM->globalProgress.completedSongs);
       }
       case GameMode::IMPOSSIBLE: {
         return SAVEFILE_read8(
-            SRAM->progress[PROGRESS_IMPOSSIBLE + difficulty->getValue()]
+            SRAM->progress[PROGRESS_IMPOSSIBLE + difficultyLevel]
                 .completedSongs);
       }
     }
@@ -109,6 +109,26 @@ class SelectionScene : public Scene {
     }
 
     SAVEFILE_write8(SRAM->memory.numericLevel, min);
+  }
+
+  inline DifficultyLevel getLibraryType() {
+    if (getGameMode() != GameMode::ARCADE)
+      return difficulty->getValue();
+
+    DifficultyLevel maxLevel = static_cast<DifficultyLevel>(MAX_DIFFICULTY);
+    u32 max = 0;
+
+    for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
+      auto difficultyLevel = static_cast<DifficultyLevel>(i);
+      auto completedSongs = getCompletedSongsOf(difficultyLevel);
+
+      if (completedSongs > max) {
+        maxLevel = difficultyLevel;
+        max = completedSongs;
+      }
+    }
+
+    return maxLevel;
   }
 
   void setUpSpritesPalette();

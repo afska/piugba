@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#define LINE_BREAK "\r\n"
+
 inline std::vector<std::string> STRING_split(std::string str,
                                              std::string delimiter) {
   std::vector<std::string> output;
