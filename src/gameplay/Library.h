@@ -27,7 +27,7 @@ class Library {
   Library(const GBFS_FILE* fs);
 
   std::vector<std::unique_ptr<SongFile>> loadSongs(DifficultyLevel libraryType,
-                                                   u32 page);
+                                                   u32 pageStart);
 
   inline std::string getPrefix() {
     switch (libraryType) {
