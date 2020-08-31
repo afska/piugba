@@ -1,9 +1,12 @@
 #include "Sequence.h"
 
+#include <libgba-sprite-engine/gba/tonc_bios.h>
+
 #include <functional>
 
 #include "Key.h"
 #include "SequenceMessages.h"
+#include "gameplay/Library.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/SelectionScene.h"
@@ -98,6 +101,15 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
         },
         true));
     return;
+  }
+
+  auto lastGameMode =
+      static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  if (lastGameMode != gameMode) {
+    auto songIndex =
+        gameMode == GameMode::ARCADE ? 0 : SAVEFILE_getLibrarySize() - 1;
+    SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
+    SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
