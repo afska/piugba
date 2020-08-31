@@ -16,13 +16,13 @@ const std::string SRAM_TEST_FAILED =
     "and restart the game.";
 
 const std::string ARCADE_MODE_LOCKED =
-    "         LOCKED          \r\n"
+    "         LOCKED\r\n"
     "Win at least one song in\r\n"
     "  the CAMPAIGN mode to\r\n"
     "      unlock this.";
 
 const std::string IMPOSSIBLE_MODE_LOCKED =
-    "         LOCKED          \r\n"
+    "         LOCKED\r\n"
     "  Complete the CAMPAIGN\r\n"
     "  mode in any difficulty\r\n"
     "  level to unlock this.";
@@ -50,16 +50,22 @@ const std::string MODE_IMPOSSIBLE_2 =
     "That's called EXTRA\r\n"
     "JUDGEMENT. Best of luck!";
 
+const std::string KEYS_HINT =
+    "To change the speed, use:\r\n"
+    "      START/SELECT\r\n"
+    "To cancel the song, use: \r\n"
+    "    A+B+START+SELECT";
+
 const std::string WIN =
-    "  *YOU'VE WON THE GAME*  \r\n"
+    "  *YOU'VE WON THE GAME*\r\n"
     "\r\n"
     "Now, I challenge you to \r\n"
     "play the IMPOSSIBLE MODE";
 
 const std::string WIN_IMPOSSIBLE =
-    "   WHAT?! You did it??   \r\n"
+    "   WHAT?! You did it??\r\n"
     "\r\n"
-    "  What about the other   \r\n"
+    "  What about the other\r\n"
     "   difficulty levels?    ";
 
 #endif  // SEQUENCE_MESSAGES_H
