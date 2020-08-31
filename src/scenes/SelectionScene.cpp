@@ -416,6 +416,8 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
     numericLevels.push_back(song->charts[i].level);
   if (canUpdateLevel && !isChangingLevel)
     setClosestNumericLevel(currentLevel);
+  if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
+    setClosestNumericLevel(0);
 
   setNames(song->title, song->artist);
   printNumericLevel();
