@@ -12,11 +12,11 @@ const CHANNEL_PROP = "SONGCATEGORY";
 const DIFFICULTY_PROP = "DIFFICULTY";
 
 const HEURISTICS = {
-  NORMAL: [6, 5, 4, 3, 2, 1, 7],
+  NORMAL: [6, 5, 4, 3, 2, 1, 7, 8],
   HARD: [11, 10, 9, 8, 7, 12, 6],
   CRAZY: [16, 15, 14, 13, 12, 17, 18, 19, 20, 11],
 };
-const TAGS = ["new", "ucs", "hidden", "sp", "quest", "another"];
+const TAGS = ["pro", "new", "ucs", "hidden", "sp", "quest", "another"];
 
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
