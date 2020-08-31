@@ -42,6 +42,7 @@ const SELECTOR_PREFIXES = {
   HARD: "_shd_",
   CRAZY: "_scz_",
 };
+const LIBRARY_SUFFIX = "_list.txt";
 const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
 
 const printTable = (rows) => {
@@ -220,17 +221,22 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
       console.log(`${"Importing".bold} ${difficultyLevel.cyan} selectors...`);
 
     let options = [];
-    if ((i + 1) % SELECTOR_OPTIONS === 0 || i === processedSongs.length - 1) {
+    if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
       const from = lastSelectorBuilt + 1;
       const to = i;
       options = _.range(from, to + 1).map((j) => {
         return {
-          song: processedSongs[j].song,
-          files: GET_SONG_FILES(processedSongs[j].song),
+          song: songs[j].song,
+          files: GET_SONG_FILES(songs[j].song),
         };
       });
-      lastSelectorBuilt = i;
+
       const name = SELECTOR_PREFIXES[difficultyLevel] + from;
+      const library =
+        options.map(({ song }) => song.outputName).join("\r\n") + "\0";
+      fs.writeFileSync($path.join(OUTPUT_PATH, name + LIBRARY_SUFFIX), library);
+
+      lastSelectorBuilt = i;
       utils.report(
         () => importers.selector(name, options, OUTPUT_PATH, IMAGES_PATH),
         `[${from}-${to}]`
@@ -238,24 +244,6 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
     }
   });
 });
-
-// ------------
-// FILE SORTING
-// ------------
-
-// const outputFiles = fs.readdirSync(OUTPUT_PATH);
-// outputFiles.forEach((file) => {
-//   const matchingSong = _.find(processedSongs, ({ song }) =>
-//     _.startsWith(file, song.outputName)
-//   );
-//   if (!matchingSong) return;
-
-//   newName = matchingSong.id + file.substring(ID_SIZE);
-//   fs.renameSync(
-//     $path.join(OUTPUT_PATH, file),
-//     $path.join(OUTPUT_PATH, newName)
-//   );
-// });
 
 // -------
 // ROM ID
