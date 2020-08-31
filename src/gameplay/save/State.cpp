@@ -4,7 +4,7 @@
 
 RAMState GameState;
 
-void STATE_setup(Song* song) {
+void STATE_setup(Song* song, Chart* chart) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   if (song == NULL)
     gameMode = GameMode::ARCADE;
@@ -18,14 +18,23 @@ void STATE_setup(Song* song) {
   switch (gameMode) {
     case GameMode::CAMPAIGN: {
       GameState.mods.stageBreak = true;
-      GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
-      GameState.mods.jump = song->jump;
-      GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
-      GameState.mods.negative = song->negativeColors;
-      GameState.mods.randomSpeed = song->randomSpeed;
+      GameState.mods.pixelate = PixelateOpts::pOFF;
+      GameState.mods.jump = false;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.negative = false;
+      GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
       GameState.mods.extraJudgement = false;
+
+      if (song->applyTo[chart->difficulty]) {
+        GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
+        GameState.mods.jump = song->jump;
+        GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
+        GameState.mods.negative = song->negativeColors;
+        GameState.mods.randomSpeed = song->randomSpeed;
+      }
+
       break;
     }
     case GameMode::ARCADE: {

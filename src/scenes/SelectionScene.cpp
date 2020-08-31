@@ -251,7 +251,7 @@ void SelectionScene::goToSong() {
                                               getSelectedNumericLevelIndex())
           : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
 
-  STATE_setup(song);
+  STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart);
 }
 
@@ -478,7 +478,7 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::loadChannels() {
   for (u32 i = 0; i < songs.size(); i++) {
-    auto channel = SONG_getChannel(fs, songs[i].get());
+    auto channel = SONG_getChannel(fs, songs[i].get(), getLibraryType());
     channelBadges[i]->setType(channel);
   }
 

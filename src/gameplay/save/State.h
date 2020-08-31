@@ -27,6 +27,6 @@ typedef struct {
 
 extern RAMState GameState;
 
-void STATE_setup(Song* song);
+void STATE_setup(Song* song, Chart* chart);
 
 #endif  // STATE_H
