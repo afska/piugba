@@ -408,7 +408,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   bool canUpdateLevel = false;
   u8 currentLevel;
   if (!numericLevels.empty()) {
-    canUpdateLevel = false;
+    canUpdateLevel = true;
     currentLevel = getSelectedNumericLevel();
     numericLevels.clear();
   }
