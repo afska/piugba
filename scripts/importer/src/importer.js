@@ -28,7 +28,6 @@ const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
 const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
-const SORT_BY = null;
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
 const MAX_SONGS = 99;
@@ -38,6 +37,7 @@ const FILE_AUDIO = /\.(mp3|flac)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "auto";
+const CAMPAIGN_LEVELS = ["NORMAL", "HARD", "CRAZY"];
 
 const printTable = (rows) => {
   let table = new TableInternal();
@@ -147,46 +147,72 @@ const songs = _(fs.readdirSync(SONGS_PATH))
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 
 let lastSelectorBuilt = -1;
-const processedSongs = _(songs)
-  .map((song, i) => {
-    const { outputName } = song;
-    const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
+let processedSongs = songs.map((song, i) => {
+  // TODO: const
+  const { outputName } = song;
+  const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
 
-    console.log(
-      `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
-        "Importing".bold
-      } ${song.name.cyan}...`
-    );
+  console.log(
+    `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
+      "Importing".bold
+    } ${song.name.cyan}...`
+  );
 
-    // metadata
-    const simfile = utils.report(
-      () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
-      "charts"
-    );
+  // metadata
+  const simfile = utils.report(
+    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
+    "charts"
+  );
 
-    // audio
-    utils.report(
-      () => importers.audio(outputName, audioFile, OUTPUT_PATH),
-      "audio"
-    );
+  // audio
+  utils.report(
+    () => importers.audio(outputName, audioFile, OUTPUT_PATH),
+    "audio"
+  );
 
-    // background
-    utils.report(
-      () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
-      "background"
-    );
+  // background
+  utils.report(
+    () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
+    "background"
+  );
 
-    return { song, simfile };
-  })
-  .orderBy(({ simfile }, i) => {
-    if (SORT_BY === null) return i;
+  return { song, simfile };
+});
 
-    const crazyChart = _.find(
-      simfile.charts,
-      (it) => it.header.difficulty === SORT_BY
-    );
-    return crazyChart.header.level;
-  }, "ASC")
+// -------
+// SORTING
+// -------
+
+// processedSongs = CAMPAIGN_LEVELS.map((difficultyLevel) => {
+//   return {
+//     difficultyLevel,
+//     songs: _(processedSongs)
+//       .orderBy(({ simfile }, i) => {
+//         const chart = _.find(
+//           simfile.charts,
+//           (it) => it.header.difficulty === difficultyLevel
+//         );
+//         return chart.header.level;
+//       }, "ASC")
+//       .map((it, i) => ({ ...it, id: CREATE_ID(i) }))
+//       .value(),
+//   };
+// });
+
+processedSongs = _(processedSongs)
+  .orderBy(
+    [
+      ({ simfile }) => {
+        const crazyChart = simfile.getChartByDifficulty("CRAZY");
+        return crazyChart.header.level;
+      },
+      ({ simfile }) => {
+        const crazyChart = simfile.getChartByDifficulty("CRAZY");
+        return _.sumBy(crazyChart.events, "complexity");
+      },
+    ],
+    ["ASC", "ASC"]
+  )
   .map((it, i) => ({ ...it, id: CREATE_ID(i) }))
   .value();
 
@@ -217,9 +243,9 @@ processedSongs.forEach((___, i) => {
   }
 });
 
-// -------
-// SORTING
-// -------
+// ------------
+// FILE SORTING
+// ------------
 
 const outputFiles = fs.readdirSync(OUTPUT_PATH);
 outputFiles.forEach((file) => {
@@ -252,18 +278,27 @@ fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 // -------
 
 printTable(
-  processedSongs.map(({ simfile: it, id }) => ({
-    id,
-    title: it.metadata.title,
-    artist: it.metadata.artist,
-    channel: it.metadata.channel,
-    normal: _.find(it.charts, (chart) => chart.header.difficulty === "NORMAL")
-      .header.level,
-    hard: _.find(it.charts, (chart) => chart.header.difficulty === "HARD")
-      .header.level,
-    crazy: _.find(it.charts, (chart) => chart.header.difficulty === "CRAZY")
-      .header.level,
-  }))
+  processedSongs.map(({ simfile: it, id }) => {
+    const normal = it.getChartByDifficulty("NORMAL");
+    const hard = it.getChartByDifficulty("HARD");
+    const crazy = it.getChartByDifficulty("CRAZY");
+
+    const levelOf = (chart) => {
+      const level = chart.header.level;
+      const complexity = Math.round(_.sumBy(chart.events, "complexity"));
+      return `${level} (Ω ${complexity})`;
+    };
+
+    return {
+      id,
+      title: it.metadata.title,
+      artist: it.metadata.artist,
+      channel: it.metadata.channel,
+      normal: levelOf(normal),
+      hard: levelOf(hard),
+      crazy: levelOf(crazy),
+    };
+  })
 );
 
 _.forEach(Channels, (v, k) => {
