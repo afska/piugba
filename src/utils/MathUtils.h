@@ -41,4 +41,9 @@ inline int MATH_divCeil(int numerator, int denominator) {
   return result * denominator < numerator ? result + 1 : result;
 }
 
+inline u8 MATH_max(u8 a, u8 b, u8 c) {
+  u8 max = (b > a) ? b : a;
+  return (c > max) ? c : max;
+}
+
 #endif  // MATH_UTILS_H

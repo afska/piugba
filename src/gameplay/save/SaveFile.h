@@ -13,6 +13,7 @@
 #include "assets.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/models/Chart.h"
+#include "utils/MathUtils.h"
 #include "utils/parse.h"
 
 extern "C" {
@@ -29,7 +30,6 @@ typedef struct __attribute__((__packed__)) {
   Settings settings;
   Mods mods;
   Memory memory;
-  GlobalProgress globalProgress;
   Progress progress[PROGRESS_REGISTERS];
 
   State state;
@@ -84,8 +84,6 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, false);
 
-    SAVEFILE_write8(SRAM->globalProgress.completedSongs, 0);
-
     SAVEFILE_write8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs, 0);
     SAVEFILE_write8(SRAM->progress[DifficultyLevel::HARD].completedSongs, 0);
     SAVEFILE_write8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs, 0);
@@ -134,11 +132,19 @@ inline u8 SAVEFILE_getLibrarySize() {
   return (SAVEFILE_read32(SRAM->romId)) & LIBRARY_SIZE_MASK;
 }
 
+inline u8 SAVEFILE_getCompletedSongs() {
+  u8 a = SAVEFILE_read8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs);
+  u8 b = SAVEFILE_read8(SRAM->progress[DifficultyLevel::HARD].completedSongs);
+  u8 c = SAVEFILE_read8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs);
+
+  return MATH_max(a, b, c);
+}
+
 inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
   if (IGNORE_LOCKS)
     return true;
 
-  u8 completedSongs = SAVEFILE_read8(SRAM->globalProgress.completedSongs);
+  u8 completedSongs = SAVEFILE_getCompletedSongs();
 
   if (gameMode == GameMode::ARCADE)
     return completedSongs >= 1;
@@ -174,7 +180,6 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
   u32 index =
       (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
   int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
-  int lastGlobalIndex = SAVEFILE_read8(SRAM->globalProgress.completedSongs) - 1;
   u8 librarySize = SAVEFILE_getLibrarySize();
   bool firstTime = songIndex > lastIndex;
 
@@ -185,10 +190,6 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
   }
-  if (songIndex > lastGlobalIndex) {
-    auto completedSongs = (u8)min(songIndex + 1, librarySize);
-    SAVEFILE_write8(SRAM->globalProgress.completedSongs, completedSongs);
-  };
 
   if (firstTime ||
       grade < SAVEFILE_read8(SRAM->progress[index].grades[songIndex]))

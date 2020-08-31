@@ -72,15 +72,15 @@ class SelectionScene : public Scene {
                : min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
-    return getCompletedSongsOf(difficulty->getValue());
+    return getGameMode() == GameMode::ARCADE
+               ? SAVEFILE_getCompletedSongs()
+               : getCompletedSongsOf(difficulty->getValue());
   }
   inline u32 getCompletedSongsOf(DifficultyLevel difficultyLevel) {
     switch (getGameMode()) {
-      case GameMode::CAMPAIGN: {
-        return SAVEFILE_read8(SRAM->progress[difficultyLevel].completedSongs);
-      }
+      case GameMode::CAMPAIGN:
       case GameMode::ARCADE: {
-        return SAVEFILE_read8(SRAM->globalProgress.completedSongs);
+        return SAVEFILE_read8(SRAM->progress[difficultyLevel].completedSongs);
       }
       case GameMode::IMPOSSIBLE: {
         return SAVEFILE_read8(
