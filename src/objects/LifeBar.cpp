@@ -38,8 +38,7 @@ LifeBar::LifeBar() {
 void LifeBar::setLife(int life) {
   u32 absLife = max(life, 0);
   value = LIFE_TO_VALUE_LUT[absLife];
-  mosaicMinLife = LIFE_TO_MOSAIC_LUT[absLife];
-  mosaicMaxLife = LIFE_TO_MOSAIC_LUT[sizeof(LIFE_TO_MOSAIC_LUT) - 1 - absLife];
+  mosaicValue = LIFE_TO_MOSAIC_LUT[absLife];
 }
 
 void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
