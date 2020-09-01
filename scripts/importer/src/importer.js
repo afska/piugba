@@ -204,16 +204,16 @@ const sortedSongsByLevel = CAMPAIGN_LEVELS.map((difficultyLevel) => {
         : _.orderBy(
             processedSongs,
             [
-              ({ simfile }) => {
-                const chart = simfile.getChartByDifficulty(difficultyLevel);
-                return chart.header.level;
-              },
+              // ({ simfile }) => {
+              //   const chart = simfile.getChartByDifficulty(difficultyLevel);
+              //   return chart.header.level;
+              // },
               ({ simfile }) => {
                 const chart = simfile.getChartByDifficulty(difficultyLevel);
                 return _.sumBy(chart.events, "complexity");
               },
             ],
-            ["ASC", "ASC"]
+            ["ASC" /*, "ASC"*/]
           )
     ),
   };
@@ -287,7 +287,7 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
         const complexity = Math.round(
           _.sumBy(chart.events, "complexity") * 100
         );
-        return `${print(level, 2)} (Ω ${print(complexity, 3)})`;
+        return `${print(level, 2)} (Ω ${print(complexity, 4)})`;
       };
 
       return {
