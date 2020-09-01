@@ -481,7 +481,9 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::loadChannels() {
   for (u32 i = 0; i < songs.size(); i++) {
-    auto channel = SONG_getChannel(fs, songs[i].get(), getLibraryType());
+    auto channel = getGameMode() == GameMode::IMPOSSIBLE
+                       ? Channel::BOSS
+                       : SONG_getChannel(fs, songs[i].get(), getLibraryType());
     channelBadges[i]->setType(channel);
   }
 
