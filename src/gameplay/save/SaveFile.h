@@ -57,7 +57,7 @@ inline void SAVEFILE_resetSettings() {
 
 inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.multiplier, 3);
-  SAVEFILE_write8(SRAM->mods.stageBreak, true);
+  SAVEFILE_write8(SRAM->mods.stageBreak, StageBreakOpts::sON);
   SAVEFILE_write8(SRAM->mods.pixelate, PixelateOpts::pOFF);
   SAVEFILE_write8(SRAM->mods.jump, false);
   SAVEFILE_write8(SRAM->mods.reduce, ReduceOpts::rOFF);

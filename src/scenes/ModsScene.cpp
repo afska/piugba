@@ -42,7 +42,7 @@ void ModsScene::printOptions() {
   SCENE_write(TITLE, 2);
 
   u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
-  bool stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+  u8 stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
   u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
   bool jump = SAVEFILE_read8(SRAM->mods.jump);
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
@@ -54,7 +54,9 @@ void ModsScene::printOptions() {
 
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
               4);
-  printOption(OPTION_STAGE_BREAK, "Stage break", stageBreak ? "ON" : "OFF", 5);
+  printOption(OPTION_STAGE_BREAK, "Stage break",
+              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN_DEATH",
+              5);
   printOption(OPTION_PIXELATE, "Pixelate",
               pixelate == 0
                   ? "OFF"  // ° ͜ʖ ͡°)
@@ -94,8 +96,8 @@ bool ModsScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_STAGE_BREAK: {
-      bool stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
-      SAVEFILE_write8(SRAM->mods.stageBreak, !stageBreak);
+      u8 stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+      SAVEFILE_write8(SRAM->mods.stageBreak, increment(stageBreak, 3));
       return true;
     }
     case OPTION_PIXELATE: {

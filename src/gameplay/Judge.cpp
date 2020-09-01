@@ -94,7 +94,13 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
 }
 
 void Judge::updateScore(FeedbackType result, bool isLong) {
+  if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH &&
+      result == FeedbackType::MISS) {
+    onStageBreak();
+    return;
+  }
+
   bool isAlive = score->update(result, isLong);
   if (!isAlive)
-    this->onStageBreak();
+    onStageBreak();
 }

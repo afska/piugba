@@ -17,7 +17,7 @@ void STATE_setup(Song* song, Chart* chart) {
 
   switch (gameMode) {
     case GameMode::CAMPAIGN: {
-      GameState.mods.stageBreak = true;
+      GameState.mods.stageBreak = StageBreakOpts::sON;
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = false;
       GameState.mods.reduce = ReduceOpts::rOFF;
@@ -38,7 +38,8 @@ void STATE_setup(Song* song, Chart* chart) {
       break;
     }
     case GameMode::ARCADE: {
-      GameState.mods.stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
+      GameState.mods.stageBreak =
+          static_cast<StageBreakOpts>(SAVEFILE_read8(SRAM->mods.stageBreak));
       GameState.mods.pixelate =
           static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
       GameState.mods.jump = SAVEFILE_read8(SRAM->mods.jump);
@@ -52,7 +53,7 @@ void STATE_setup(Song* song, Chart* chart) {
       break;
     }
     case GameMode::IMPOSSIBLE: {
-      GameState.mods.stageBreak = true;
+      GameState.mods.stageBreak = StageBreakOpts::sON;
       GameState.mods.pixelate = PixelateOpts::pBLINK_IN;
       GameState.mods.jump = true;
       GameState.mods.reduce = ReduceOpts::rOFF;
