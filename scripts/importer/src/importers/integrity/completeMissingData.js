@@ -16,7 +16,7 @@ const HEURISTICS = {
   HARD: [11, 10, 9, 8, 7, 12, 6],
   CRAZY: [16, 15, 14, 13, 12, 17, 18, 19, 20, 11],
 };
-const TAGS = ["pro", "new", "ucs", "hidden", "sp", "quest", "another"];
+const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
 module.exports = (metadata, charts, content, filePath) => {
   let isDirty = false;
