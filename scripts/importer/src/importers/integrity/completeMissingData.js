@@ -102,7 +102,7 @@ const autoSetDifficulty = (charts, difficultyName) => {
     (it) => it.header.difficulty === "NUMERIC"
   );
   const sortedNumericDifficultyCharts = _.orderBy(
-    charts,
+    numericDifficultyCharts,
     (it) => it.header.level
   );
 
