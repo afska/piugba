@@ -101,6 +101,10 @@ const autoSetDifficulty = (charts, difficultyName) => {
   const numericDifficultyCharts = charts.filter(
     (it) => it.header.difficulty === "NUMERIC"
   );
+  const sortedNumericDifficultyCharts = _.orderBy(
+    charts,
+    (it) => it.header.level
+  );
 
   let chart = null;
   for (let level of HEURISTICS[difficultyName]) {
@@ -112,10 +116,17 @@ const autoSetDifficulty = (charts, difficultyName) => {
     if (candidate) chart = getBestChartBetween(candidate, chart);
   }
 
-  if (!chart && (difficultyName === "CRAZY" || difficultyName === "HARD"))
-    chart = _.last(numericDifficultyCharts);
+  if (!chart && difficultyName === "CRAZY")
+    chart = _.last(sortedNumericDifficultyCharts);
+  if (!chart && difficultyName === "HARD") {
+    const crazyChart = _.find(charts, (it) => it.header.difficulty === "CRAZY");
+    chart = _.findLast(
+      sortedNumericDifficultyCharts,
+      (it) => it.header.level < crazyChart.header.level
+    );
+  }
   if (!chart && difficultyName === "NORMAL")
-    chart = _.first(numericDifficultyCharts);
+    chart = _.first(sortedNumericDifficultyCharts);
 
   if (!chart)
     throw new Error(
