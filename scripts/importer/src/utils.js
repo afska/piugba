@@ -1,5 +1,11 @@
 const childProcess = require("child_process");
 const readlineSync = require("readline-sync");
+const {
+  printTableAndGetConsoleOutput,
+} = require("console-table-printer/dist/src/internalTable/internal-table-printer");
+const {
+  TableInternal,
+} = require("console-table-printer/dist/src/internalTable/internal-table");
 const _ = require("lodash");
 
 module.exports = {
@@ -40,5 +46,11 @@ module.exports = {
   },
   restrictTo(value, min, max) {
     return Math.max(Math.min(value, max), min);
+  },
+  printTable(rows) {
+    const table = new TableInternal();
+    table.addRows(rows);
+    table.sortFunction = (a, b) => a.id - b.id;
+    printTableAndGetConsoleOutput(table);
   },
 };

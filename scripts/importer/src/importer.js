@@ -4,12 +4,6 @@ const fs = require("fs");
 const mkdirp = require("mkdirp");
 const $path = require("path");
 const utils = require("./utils");
-const {
-  printTableAndGetConsoleOutput,
-} = require("console-table-printer/dist/src/internalTable/internal-table-printer");
-const {
-  TableInternal,
-} = require("console-table-printer/dist/src/internalTable/internal-table");
 const getopt = require("node-getopt");
 const _ = require("lodash");
 require("colors");
@@ -46,13 +40,6 @@ const SELECTOR_PREFIXES = {
 };
 const LIBRARY_SUFFIX = "_list.txt";
 const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
-
-const printTable = (rows) => {
-  let table = new TableInternal();
-  table.addRows(rows);
-  table.sortFunction = (a, b) => a.id - b.id;
-  printTableAndGetConsoleOutput(table);
-};
 
 // ------------
 // COMMAND LINE
@@ -283,7 +270,7 @@ fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
   console.log(`\n${"SONG LIST".bold} - ${difficultyLevel.cyan}:`);
 
-  printTable(
+  utils.printTable(
     songs.map(({ simfile: it, id }) => {
       const normal = it.getChartByDifficulty("NORMAL");
       const hard = it.getChartByDifficulty("HARD");
