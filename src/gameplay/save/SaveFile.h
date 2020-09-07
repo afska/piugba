@@ -98,26 +98,6 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
                         .completedSongs,
                     0);
 
-    for (u32 i = 0; i < MAX_PROGRESS_REGISTERS; i++) {
-      SAVEFILE_write8(SRAM->progress[DifficultyLevel::NORMAL].grades[i],
-                      GradeType::UNPLAYED);
-      SAVEFILE_write8(SRAM->progress[DifficultyLevel::HARD].grades[i],
-                      GradeType::UNPLAYED);
-      SAVEFILE_write8(SRAM->progress[DifficultyLevel::CRAZY].grades[i],
-                      GradeType::UNPLAYED);
-      SAVEFILE_write8(
-          SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::NORMAL]
-              .grades[i],
-          GradeType::UNPLAYED);
-      SAVEFILE_write8(
-          SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::HARD].grades[i],
-          GradeType::UNPLAYED);
-      SAVEFILE_write8(
-          SRAM->progress[PROGRESS_IMPOSSIBLE + DifficultyLevel::CRAZY]
-              .grades[i],
-          GradeType::UNPLAYED);
-    }
-
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
   }
