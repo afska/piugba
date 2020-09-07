@@ -68,6 +68,9 @@ module.exports = class Simfile {
           99
         );
         if (!_.isFinite(level)) throw new Error("no_level_info");
+        const order =
+          this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
+          level;
 
         let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
         if (!_.isFinite(chartOffset)) chartOffset = 0;
@@ -95,6 +98,7 @@ module.exports = class Simfile {
           name,
           difficulty,
           level,
+          order,
           offset,
           bpms,
           speeds,
@@ -217,6 +221,7 @@ const REGEXPS = {
     name: PROPERTY("DESCRIPTION"),
     difficulty: PROPERTY("DIFFICULTY"),
     level: PROPERTY_INT("METER"),
+    customOrder: PROPERTY_INT("PIUGBA_ORDER"),
     offset: PROPERTY_FLOAT("OFFSET"),
     bpms: DICTIONARY("BPMS"),
     speeds: DICTIONARY("SPEEDS", 4),

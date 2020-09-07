@@ -10,6 +10,7 @@ require("colors");
 
 const CREATE_ID = (i) => _.padStart(i, ID_SIZE, "0");
 const ROM_ID_FILE = "_rom_id.u32";
+const ROM_ID_FILE_REUSE = "romid.u32";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
@@ -79,13 +80,13 @@ mkdirp(SONGS_PATH);
 let reuseRomId = null;
 try {
   reuseRomId = fs
-    .readFileSync($path.join(OUTPUT_PATH, "../romid.u32"))
+    .readFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE))
     .readUInt32LE();
   console.log(
     `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
   );
   console.log(
-    "To stop reusing rom ids, remove src/data/content/romid.u32".yellow
+    "To stop reusing rom ids, remove src/data/content/songs/romid.u32".yellow
   );
 } catch (e) {}
 utils.run(`rm -rf ${OUTPUT_PATH}`);
@@ -125,6 +126,7 @@ fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
 
 const songs = _(fs.readdirSync(SONGS_PATH))
   .sortBy()
+  .filter((it) => it != ROM_ID_FILE_REUSE)
   .map((directory) => {
     const name = directory;
     const outputName = NORMALIZE_FILENAME(name);
@@ -193,16 +195,7 @@ const sortedSongsByLevel = CAMPAIGN_LEVELS.map((difficultyLevel) => {
             [
               ({ simfile }) => {
                 const chart = simfile.getChartByDifficulty(difficultyLevel);
-                const is = (it, level) =>
-                  _.includes(simfile.metadata.title.toLowerCase(), it) &&
-                  difficultyLevel.toLowerCase() === level.toLowerCase();
-
-                // reorder
-                // if (is("extra", "normal")) return 8;
-                // if (is("curio", "hard")) return 12;
-                // if (is("soli", "crazy")) return 17;
-
-                return chart.header.level;
+                return chart.header.order;
               },
               ({ simfile }) => {
                 const chart = simfile.getChartByDifficulty(difficultyLevel);
@@ -262,6 +255,7 @@ else {
   romIdBuffer.writeUInt8(songs.length);
 }
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
+fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
 
 // ----------
 // SONG LISTS
