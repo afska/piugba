@@ -86,13 +86,20 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
 }
 
 Channel SONG_getChannel(const GBFS_FILE* fs,
+                        GameMode gameMode,
                         SongFile* file,
                         DifficultyLevel difficultyLevel) {
+  if (gameMode == GameMode::IMPOSSIBLE)
+    return Channel::BOSS;
+
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
   u32 cursor = TITLE_LEN + ARTIST_LEN;
   auto channel = static_cast<Channel>(parse_u8(data, &cursor));
+
+  if (gameMode == GameMode::ARCADE)
+    return channel;
 
   cursor +=
       4 /* lastMillisecond */ + 4 /* sampleStart */ + 4 /* sampleLength */;

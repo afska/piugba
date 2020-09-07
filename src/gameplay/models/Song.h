@@ -6,6 +6,7 @@
 #include "Chart.h"
 #include "Event.h"
 #include "SongFile.h"
+#include "gameplay/save/GameMode.h"
 #include "utils/parse.h"
 
 extern "C" {
@@ -46,6 +47,7 @@ typedef struct {
 
 Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full);
 Channel SONG_getChannel(const GBFS_FILE* fs,
+                        GameMode gameMode,
                         SongFile* file,
                         DifficultyLevel difficultyLevel);
 Chart* SONG_findChartByNumericLevelIndex(Song* song, u8 levelIndex);
