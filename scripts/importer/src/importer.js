@@ -305,3 +305,4 @@ _.forEach(Channels, (v, k) => {
   );
   console.log(`${k}: `.bold + count.toString().cyan);
 });
+console.log("TOTAL: ".bold + processedSongs.length.toString().cyan);
