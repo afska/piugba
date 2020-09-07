@@ -73,7 +73,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.Int32LE(event.timestamp);
+        this.Int32LE(normalizeUInt(event.timestamp));
 
         const { write } = EVENT_SERIALIZERS.get(event);
         write.bind(this)(event);

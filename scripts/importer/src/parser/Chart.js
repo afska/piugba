@@ -238,7 +238,7 @@ module.exports = class Chart {
   _applyOffset(events) {
     return events.map((it) => ({
       ...it,
-      timestamp: Math.round(this.header.offset + it.timestamp),
+      timestamp: this.header.offset + it.timestamp,
     }));
   }
 
