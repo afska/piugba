@@ -23,13 +23,14 @@ module.exports = class Chart {
     const measures = this._getMeasures();
     let cursor = 0;
 
-    return _.flatMap(measures, (measure) => {
+    return _.flatMap(measures, (measure, measureIndex) => {
       // 1 measure = 1 whole note = BEAT_UNIT beats
       const lines = this._getMeasureLines(measure);
       const subdivision = 1 / lines.length;
 
-      return _.flatMap(lines, (line) => {
-        const bpm = this._getBpmByTimestamp(cursor, timingEvents);
+      return _.flatMap(lines, (line, noteIndex) => {
+        const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
+        const bpm = this._getBpmByBeat(beat, timingEvents);
         const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
         const noteDuration = subdivision * wholeNoteLength;
         const timestamp = cursor;
@@ -348,15 +349,6 @@ module.exports = class Chart {
     if (!bpm) return 0;
 
     return bpm.value;
-  }
-
-  _getBpmByTimestamp(timestamp, timingEvents) {
-    const event = _.findLast(
-      timingEvents,
-      (event) => event.type === Events.SET_TEMPO && timestamp >= event.timestamp
-    );
-
-    return (event && event.bpm) || 0;
   }
 
   _getRangeDuration(startBeat, endBeat) {
