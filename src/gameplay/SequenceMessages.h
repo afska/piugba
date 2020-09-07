@@ -40,8 +40,8 @@ const std::string MODE_ARCADE =
 
 const std::string MODE_IMPOSSIBLE_1 =
     "In IMPOSSIBLE MODE...\r\n"
-    "the game area JUMPS,\r\n"
-    "the patterns are MIRRORED\r\n"
+    "the colors are INVERTED,\r\n"
+    "the arrows are MIRRORED,\r\n"
     "and it's all PIXELATED.";
 
 const std::string MODE_IMPOSSIBLE_2 =

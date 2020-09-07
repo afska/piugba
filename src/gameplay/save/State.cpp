@@ -54,8 +54,8 @@ void STATE_setup(Song* song, Chart* chart) {
     }
     case GameMode::IMPOSSIBLE: {
       GameState.mods.stageBreak = StageBreakOpts::sON;
-      GameState.mods.pixelate = PixelateOpts::pBLINK_IN;
-      GameState.mods.jump = true;
+      GameState.mods.pixelate = PixelateOpts::pRANDOM;
+      GameState.mods.jump = false;
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.negative = true;
       GameState.mods.randomSpeed = false;
