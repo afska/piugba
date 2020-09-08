@@ -16,6 +16,7 @@ module.exports = class Simfile {
   get metadata() {
     const title = this._getSingleMatch(REGEXPS.metadata.title);
     const subtitle = this._getSingleMatch(REGEXPS.metadata.subtitle);
+    const artist = this._getSingleMatch(REGEXPS.metadata.artist);
     const custom = this._getSingleMatch(REGEXPS.metadata.custom);
 
     const config = {
@@ -31,8 +32,8 @@ module.exports = class Simfile {
     };
 
     return {
-      title: subtitle || title,
-      artist: this._getSingleMatch(REGEXPS.metadata.artist),
+      title: this._unescape(subtitle || title || ""),
+      artist: this._unescape(artist),
       channel:
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
         "UNKNOWN",
@@ -156,6 +157,10 @@ module.exports = class Simfile {
 
   _toMilliseconds(float) {
     return Math.round(float * 1000);
+  }
+
+  _unescape(string) {
+    return string.replace(/\:/g, ":").replace(/\=/g, "=");
   }
 };
 
