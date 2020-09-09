@@ -291,7 +291,7 @@ void SelectionScene::processDifficultyChangeEvents() {
 
 void SelectionScene::processSelectionChangeEvents() {
   auto isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
-  if (IGNORE_LOCKS)
+  if (ENV_DEVELOPMENT)
     isOnListEdge = getSelectedSongIndex() == count - 1;
 
   if (onSelectionChange(ArrowDirection::DOWNRIGHT, isOnListEdge,

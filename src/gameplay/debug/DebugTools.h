@@ -3,19 +3,14 @@
 
 #include <libgba-sprite-engine/background/text_stream.h>
 
-#ifndef ENABLE_STAGE_BREAK
-// Defined in Makefile: Show fail screen when lifebar is empty
-#define ENABLE_STAGE_BREAK true
+#ifndef ENV_DEBUG
+// Defined in Makefile
+#define ENV_DEBUG false
 #endif
 
-#ifndef ENABLE_BACKGROUND
-// Defined in Makefile: Show background in game
-#define ENABLE_BACKGROUND true
-#endif
-
-#ifndef IGNORE_LOCKS
-// Defined in Makefile: Allow playing locked songs
-#define IGNORE_LOCKS false
+#ifndef ENV_DEVELOPMENT
+// Defined in Makefile
+#define ENV_DEVELOPMENT false
 #endif
 
 #define STRESSTEST_MODE false

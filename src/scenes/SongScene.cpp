@@ -17,6 +17,8 @@ extern "C" {
 #include "player/player.h"
 }
 
+#define DEBUG_OFFSET_CORRECTION 8
+
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
 const u32 MAIN_BACKGROUND_ID = 1;
@@ -42,7 +44,7 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
 }
 
 std::vector<Background*> SongScene::backgrounds() {
-  if (!ENABLE_BACKGROUND)
+  if (ENV_DEBUG)
     return {};
 
   return {bg.get()};
@@ -77,7 +79,7 @@ void SongScene::load() {
   SCENE_init();
 
   setUpPalettes();
-  if (ENABLE_BACKGROUND)
+  if (!ENV_DEBUG)
     setUpBackground();
   setUpArrows();
 
@@ -89,7 +91,7 @@ void SongScene::load() {
   u32 multiplier = GameState.mods.multiplier;
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
-        if (ENABLE_STAGE_BREAK &&
+        if (!ENV_DEVELOPMENT &&
             GameState.mods.stageBreak != StageBreakOpts::sOFF) {
           unload();
           engine->transitionIntoScene(new StageBreakScene(engine, fs),
@@ -109,7 +111,7 @@ void SongScene::tick(u16 keys) {
     return;
 
   if (init == 0) {
-    if (ENABLE_BACKGROUND) {
+    if (!ENV_DEBUG) {
       auto gamePosition =
           GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
       auto type = static_cast<BackgroundType>(
@@ -126,7 +128,7 @@ void SongScene::tick(u16 keys) {
     init++;
     return;
   } else if (init == 1) {
-    BACKGROUND_enable(true, ENABLE_BACKGROUND, false, false);
+    BACKGROUND_enable(true, !ENV_DEBUG, false, false);
     SPRITE_enable();
     processModsLoad();
     init++;
@@ -165,6 +167,9 @@ void SongScene::tick(u16 keys) {
   updateArrows();
   score->tick();
   lifeBar->tick(foregroundPalette.get());
+
+  if (ENV_DEVELOPMENT && chartReader->offset)
+    score->log(chartReader->offset);
 
   IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
 }
@@ -301,13 +306,25 @@ void SongScene::processKeys(u16 keys) {
 
   if (!GameState.mods.randomSpeed) {
     if (speedUpInput->hasBeenPressedNow()) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
-        pixelBlink->blink();
+      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
+        chartReader->offset -= DEBUG_OFFSET_CORRECTION;
+        if (chartReader->offset == 0)
+          score->log(0);
+      } else {
+        if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+          pixelBlink->blink();
+      }
     }
 
     if (speedDownInput->hasBeenPressedNow()) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
-        pixelBlink->blink();
+      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
+        chartReader->offset += DEBUG_OFFSET_CORRECTION;
+        if (chartReader->offset == 0)
+          score->log(0);
+      } else {
+        if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+          pixelBlink->blink();
+      }
     }
   }
 

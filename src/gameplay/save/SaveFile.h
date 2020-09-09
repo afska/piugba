@@ -121,7 +121,7 @@ inline u8 SAVEFILE_getCompletedSongs() {
 }
 
 inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
-  if (IGNORE_LOCKS)
+  if (ENV_DEVELOPMENT)
     return true;
 
   u8 completedSongs = SAVEFILE_getCompletedSongs();

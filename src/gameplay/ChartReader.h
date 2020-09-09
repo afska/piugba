@@ -19,6 +19,8 @@ const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
 
 class ChartReader : public TimingProvider {
  public:
+  int offset = 0;
+
   ChartReader(Chart* chart,
               ObjectPool<Arrow>* arrowPool,
               Judge* judge,

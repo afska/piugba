@@ -107,14 +107,13 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 - `make restart`: Recompiles and starts the ROM
 - `make reimport`: Reimport the songs and starts the ROM without recompiling
 
-
 #### Parameters
 
 Name | Values | Description
 --- | --- | ---
 `MODE` | **`auto`** or `manual` | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/rodri042/piugba/wiki/Autoimporting-songs).
 `SORT` | **`level`** or `dir` | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/rodri042/piugba/wiki/Song-order).
-`ENV` | **`development`**, or `debug` or `production` |`debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br><br> `development`: the same, but including backgrounds.<br><br>`production`: backgrounds, stage-break ON, and working locks.
+`ENV` | **`development`**, or `debug` or `production` |`debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br><br> `development`: the same, but including backgrounds.<br><br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a *debug menu* to correct songs' offsets. Use `B+START` and `B+SELECT` to apply -8 and +8 offsets (which will make arrows appear later and earlier, respectively). Then, you can add this value (divided by 1000, so it's in seconds) to the `OFFSET` property in SSC files.
 
 ### Scripts
 

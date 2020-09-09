@@ -22,6 +22,11 @@ class Score {
   void tick();
   void render(std::vector<Sprite*>* sprites);
 
+  void log(int number) {
+    combo->setValue(number);
+    combo->show();
+  }
+
  private:
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
