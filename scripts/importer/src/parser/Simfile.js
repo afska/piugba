@@ -160,7 +160,7 @@ module.exports = class Simfile {
   }
 
   _unescape(string) {
-    return string.replace(/\:/g, ":").replace(/\=/g, "=");
+    return string.replace(/\\:/g, ":").replace(/\\=/g, "=");
   }
 };
 
