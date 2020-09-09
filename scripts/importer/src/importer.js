@@ -11,6 +11,8 @@ require("colors");
 const CREATE_ID = (i) => _.padStart(i, ID_SIZE, "0");
 const ROM_ID_FILE = "_rom_id.u32";
 const ROM_ID_FILE_REUSE = "romid.u32";
+const ROM_NAME_FILE = "_rom_name.txt";
+const ROM_NAME_FILE_SOURCE = "romname.txt";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
@@ -124,9 +126,10 @@ fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
 // SONG DETECTION
 // --------------
 
-const songs = _(fs.readdirSync(SONGS_PATH))
+const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
   .sortBy()
-  .filter((it) => it != ROM_ID_FILE_REUSE)
+  .filter((it) => it.isDirectory())
+  .map("name")
   .map((directory) => {
     const name = directory;
     const outputName = NORMALIZE_FILENAME(name);
@@ -256,6 +259,19 @@ else {
 }
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
 fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
+
+// --------
+// ROM NAME
+// --------
+
+let name = "";
+try {
+  const romName = fs
+    .readFileSync($path.join(SONGS_PATH, ROM_NAME_FILE_SOURCE))
+    .toString();
+  name = _.padEnd(romName.substring(0, 12), 13, "\0");
+} catch (e) {}
+fs.writeFileSync($path.join(OUTPUT_PATH, ROM_NAME_FILE), name);
 
 // ----------
 // SONG LISTS

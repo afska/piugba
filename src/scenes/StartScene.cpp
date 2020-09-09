@@ -194,6 +194,7 @@ void StartScene::printTitle() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
 
+  SCENE_write(std::string((char*)gbfs_get_obj(fs, ROM_NAME_FILE, NULL)), 0);
   SCENE_write(TITLES[selectedMode], TEXT_ROW);
 }
 

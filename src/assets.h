@@ -32,5 +32,6 @@
 #define BG_GRADE_PALETTE ((char*)"_img_grade.pal.bin")
 #define BG_GRADE_MAP ((char*)"_img_grade.map.bin")
 #define ROM_ID_FILE ((char*)"_rom_id.u32")
+#define ROM_NAME_FILE ((char*)"_rom_name.txt")
 
 #endif  // ASSETS_H
