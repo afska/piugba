@@ -40,11 +40,12 @@ Charts are converted into a format created for this project called **PIUS**. The
 ## How to a build a ROM
 
 - Install everything (read the section below).
-- Create in `src/data/content` one folder per song, including:
+- Create in `src/data/content/songs` one folder per song, including:
   - one `.mp3` file with the song
   - one `.png` file with the background
   - one `.ssc` file with the charts
     * this can contain a `#PIUGBA` tag to customize the song, see [Wiki: SSC format](https://github.com/rodri042/piugba/wiki/SSC-format)
+- *Optionally, add a ROM name to `src/data/content/songs/romname.txt` and it'll appear on the start screen (maximum is 12 characters).*
 - Run:
 ```bash
 make import
@@ -55,9 +56,10 @@ make package
 
 ### Updating a ROM
 
-The import process generates a file in `src/data/content/_compiled_files/_rom_id.u32`.
+The import process generates a file in `src/data/content/songs/romid.u32`.
+Next time you run `make import`, it'll reuse that file and the generated ROM will be savefile-compatible.
 
-If you want to make small changes (without altering the song count or order), save that file in `src/data/content/romid.u32` and the generated ROM will be savefile-compatible!
+:warning: If you change the number of songs or its order, you must delete it since it contains the encoded song count.
 
 ## Install
 
