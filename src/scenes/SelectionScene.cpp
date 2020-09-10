@@ -421,7 +421,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
     setClosestNumericLevel(0);
 
   setNames(song->title, song->artist);
-  printNumericLevel();
+  printNumericLevel(song->charts[getSelectedNumericLevelIndex()].difficulty);
   if (!isChangingLevel) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
@@ -444,7 +444,7 @@ void SelectionScene::confirm() {
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
-  printNumericLevel(NUMERIC_LEVEL_BADGE_OFFSET_ROW);
+  printNumericLevel(DifficultyLevel::NUMERIC, NUMERIC_LEVEL_BADGE_OFFSET_ROW);
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
 }
 
@@ -509,9 +509,18 @@ void SelectionScene::setNames(std::string title, std::string artist) {
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
 
-void SelectionScene::printNumericLevel(s8 offset) {
+void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
   if (getGameMode() != GameMode::ARCADE)
     return;
+
+  if (difficulty == DifficultyLevel::NORMAL)
+    return SCENE_write("NM", NUMERIC_LEVEL_ROW + offset);
+
+  if (difficulty == DifficultyLevel::HARD)
+    return SCENE_write("HD", NUMERIC_LEVEL_ROW + offset);
+
+  if (difficulty == DifficultyLevel::CRAZY)
+    return SCENE_write("CZ", NUMERIC_LEVEL_ROW + offset);
 
   auto levelText = std::to_string(getSelectedNumericLevel());
   if (levelText.size() == 1)

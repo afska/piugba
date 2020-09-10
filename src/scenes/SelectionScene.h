@@ -164,8 +164,10 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
-  void printNumericLevel() { printNumericLevel(0); }
-  void printNumericLevel(s8 offset);
+  void printNumericLevel(DifficultyLevel difficulty) {
+    printNumericLevel(difficulty, 0);
+  }
+  void printNumericLevel(DifficultyLevel difficulty, s8 offset);
 
   ~SelectionScene();
 };
