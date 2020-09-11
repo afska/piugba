@@ -185,15 +185,27 @@ const setDifficulty = (charts, difficultyName) => {
 };
 
 const checkLevelOrder = (charts) => {
-  const normalLevel = getChartByDifficulty(charts, "NORMAL").header.level;
-  const hardLevel = getChartByDifficulty(charts, "HARD").header.level;
-  const crazyLevel = getChartByDifficulty(charts, "CRAZY").header.level;
+  const normal = getChartByDifficulty(charts, "NORMAL");
+  const hard = getChartByDifficulty(charts, "HARD");
+  const crazy = getChartByDifficulty(charts, "CRAZY");
+  const level = (chart) => chart.header.level;
+
   if (
-    normalLevel > hardLevel ||
-    normalLevel > crazyLevel ||
-    hardLevel > crazyLevel
-  )
-    throw new Error("difficulties_are_in_the_wrong_order");
+    level(normal) > level(hard) ||
+    level(normal) > level(crazy) ||
+    level(hard) > level(crazy)
+  ) {
+    console.error(
+      `  ⚠️  sorting difficulties... (${level(normal)}, ${level(hard)}, ${level(
+        crazy
+      )})`.yellow
+    );
+
+    const charts = _.orderBy([normal, hard, crazy], level);
+    charts[0].header.difficulty = "NORMAL";
+    charts[1].header.difficulty = "HARD";
+    charts[2].header.difficulty = "CRAZY";
+  }
 };
 
 const hasDifficulty = (charts, difficultyName) => {
