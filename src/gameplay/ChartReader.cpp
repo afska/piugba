@@ -166,8 +166,11 @@ void ChartReader::processNextEvents() {
             syncScrollSpeed();
 
             if (oldBpm > 0) {
-              lastBpmChange = event->timestamp;
-              subtick = 0;
+              if (oldBpm != bpm) {
+                lastBpmChange = event->timestamp;
+                lastTick = 0;
+                subtick = 0;
+              }
 
               if (event->param3 > 0) {
                 u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
@@ -327,11 +330,13 @@ void ChartReader::orchestrateHoldArrows() {
 }
 
 bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
+  if (bpm == 0)
+    return false;
+
   // 60000 ms           -> BPM beats
   // rythmMsecs ms      -> beat = msecs * BPM / 60000
   int tick =
       MATH_fracumul(rythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
-
   bool hasChanged = tick != lastTick;
 
   if (hasChanged) {
@@ -366,7 +371,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
 
   lastTick = tick;
 
-  return hasChanged && subtick == 1 && bpm > 0;
+  return hasChanged && subtick == 1;
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {

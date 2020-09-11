@@ -68,7 +68,7 @@ class ChartReader : public TimingProvider {
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
   bool fake = false;
-  int lastTick = 0;
+  int lastTick = -1;
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
   u32 frameSkipCount = 0;
