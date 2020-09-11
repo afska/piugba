@@ -52,6 +52,7 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   });
 
+  checkLevelOrder(charts);
   if (isDirty) writeIfNeeded(metadata, charts, content, filePath);
 
   return {
@@ -62,10 +63,7 @@ module.exports = (metadata, charts, content, filePath) => {
           _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
         ),
     getChartByDifficulty(difficulty) {
-      return _.find(
-        this.charts,
-        (chart) => chart.header.difficulty === difficulty
-      );
+      return getChartByDifficulty(this.charts, difficulty);
     },
   };
 };
@@ -186,6 +184,22 @@ const setDifficulty = (charts, difficultyName) => {
   return false;
 };
 
+const checkLevelOrder = (charts) => {
+  const normalLevel = getChartByDifficulty(charts, "NORMAL").header.level;
+  const hardLevel = getChartByDifficulty(charts, "HARD").header.level;
+  const crazyLevel = getChartByDifficulty(charts, "CRAZY").header.level;
+  if (
+    normalLevel > hardLevel ||
+    normalLevel > crazyLevel ||
+    hardLevel > crazyLevel
+  )
+    throw new Error("difficulties_are_in_the_wrong_order");
+};
+
 const hasDifficulty = (charts, difficultyName) => {
   return _.some(charts, (it) => it.header.difficulty === difficultyName);
+};
+
+const getChartByDifficulty = (charts, difficulty) => {
+  return _.find(charts, (chart) => chart.header.difficulty === difficulty);
 };
