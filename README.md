@@ -44,22 +44,14 @@ Charts are converted into a format created for this project called **PIUS**. The
   - one `.mp3` file with the song
   - one `.png` file with the background
   - one `.ssc` file with the charts
-    * this can contain a `#PIUGBA` tag to customize the song, see [Wiki: SSC format](https://github.com/rodri042/piugba/wiki/SSC-format)
-- *Optionally, add a ROM name to `src/data/content/songs/romname.txt` and it'll appear on the start screen (maximum is 12 characters).*
 - Run:
 ```bash
 make import
 make assets
-make build ENV=production
-make package
+make restart ENV=production
 ```
 
-### Updating a ROM
-
-The import process generates a file in `src/data/content/songs/romid.u32`.
-Next time you run `make import`, it'll reuse that file and the generated ROM will be savefile-compatible.
-
-:warning: If you change the number of songs or its order, you must delete it since it contains the encoded song count.
+Full guide -> [Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Building-a-ROM).
 
 ## Install
 
@@ -115,7 +107,7 @@ Name | Values | Description
 --- | --- | ---
 `MODE` | **`auto`** or `manual` | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/rodri042/piugba/wiki/Autoimporting-songs).
 `SORT` | **`level`** or `dir` | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/rodri042/piugba/wiki/Song-order).
-`ENV` | **`development`**, or `debug` or `production` |`debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br><br> `development`: the same, but including backgrounds.<br><br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a *debug menu* to correct songs' offsets. Use `B+START` and `B+SELECT` to apply -8 and +8 offsets (which will make arrows appear later and earlier, respectively). Then, you can add this value (divided by 1000, so it's in seconds) to the `OFFSET` property in SSC files.
+`ENV` | **`development`**, or `debug` or `production` |`debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br><br> `development`: the same, but including backgrounds.<br><br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a *debug menu* to correct songs' offsets. See [Wiki: Correcting offsets](https://github.com/rodri042/piugba/wiki/Building-a-ROM#correcting-offsets).
 
 ### Scripts
 
