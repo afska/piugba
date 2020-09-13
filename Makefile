@@ -119,6 +119,9 @@ endif
 GAMETITLE=piuGBA
 GAMEMAKER=AGB
 GAMECODE=AZCE # Megaman Zero (SRAM - 64kb)
+MODE ?= auto
+SORT ?= level
+SONGS ?= src/data/content/songs
 ENV ?= development
 
 ifeq ($(ENV), debug)
@@ -202,15 +205,13 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-MODE ?= auto
-SORT ?= level
 .PHONY: clean assets start restart
 
 assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/importer.js --mode $(MODE) --sort $(SORT) --all
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --all
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)

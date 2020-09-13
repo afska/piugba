@@ -23,8 +23,9 @@ const CONTENT_PATH = $path.join(DATA_PATH, "content");
 const AUDIO_PATH = $path.join(DATA_PATH, "assets/audio");
 const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
 const BLACK_DOT_FILE = $path.join(IMAGES_PATH, "black.bmp");
-const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
+
+const DEFAULT_SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -51,7 +52,12 @@ const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
 
 const opt = getopt
   .create([
-    ["d", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
+    [
+      "d",
+      "directory=DIRECTORY",
+      "songs directory (defaults to: src/data/content/songs)",
+    ],
+    ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
     ["j", "json", "generate JSON debug files"],
     ["a", "all", "include all charts, including NUMERIC difficulty levels"],
@@ -64,6 +70,7 @@ if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
   GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
+const SONGS_PATH = opt.options.directory || DEFAULT_SONGS_PATH;
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
@@ -89,7 +96,8 @@ try {
     `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
   );
   console.log(
-    "To stop reusing rom ids, remove src/data/content/songs/romid.u32".yellow
+    "To stop reusing rom ids, remove ".yellow +
+      `${$path.join(SONGS_PATH, ROM_ID_FILE_REUSE)}`.cyan
   );
 } catch (e) {}
 utils.run(`rm -rf ${OUTPUT_PATH}`);
