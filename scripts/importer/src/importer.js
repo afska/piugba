@@ -22,6 +22,7 @@ const DATA_PATH = $path.join(__dirname, "../../../src/data");
 const CONTENT_PATH = $path.join(DATA_PATH, "content");
 const AUDIO_PATH = $path.join(DATA_PATH, "assets/audio");
 const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
+const BLACK_DOT_FILE = $path.join(IMAGES_PATH, "black.bmp");
 const SONGS_PATH = $path.join(CONTENT_PATH, "songs");
 const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
 
@@ -173,7 +174,13 @@ const processedSongs = songs.map((song, i) => {
 
   // background
   utils.report(
-    () => importers.background(outputName, backgroundFile, OUTPUT_PATH),
+    () =>
+      importers.background(
+        outputName,
+        backgroundFile,
+        OUTPUT_PATH,
+        BLACK_DOT_FILE
+      ),
     "background"
   );
 
