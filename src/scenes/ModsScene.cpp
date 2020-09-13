@@ -44,7 +44,7 @@ void ModsScene::printOptions() {
   u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
   u8 stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
   u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
-  bool jump = SAVEFILE_read8(SRAM->mods.jump);
+  u8 jump = SAVEFILE_read8(SRAM->mods.jump);
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
   bool negative = SAVEFILE_read8(SRAM->mods.negative);
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
@@ -68,9 +68,13 @@ void ModsScene::printOptions() {
                                     ? "BLINK_IN"  // ° ͜ʖ ͡°)
                                     : pixelate == 4 ? "BLINK_OUT" : "RANDOM",
               6);
-  printOption(OPTION_JUMP, "Jump", jump ? "ON" : "OFF", 7);
+  printOption(OPTION_JUMP, "Jump",
+              jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
   printOption(OPTION_REDUCE, "Reduce",
-              reduce == 0 ? "OFF" : reduce == 1 ? "FIXED" : "RANDOM", 8);
+              reduce == 0
+                  ? "OFF"
+                  : reduce == 1 ? "LINEAR" : reduce == 2 ? "FIXED" : "RANDOM",
+              8);
   printOption(OPTION_NEGATIVE_COLORS, "Negative colors",
               negative ? "ON" : "OFF", 9);
   printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
@@ -106,13 +110,13 @@ bool ModsScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_JUMP: {
-      bool jump = SAVEFILE_read8(SRAM->mods.jump);
-      SAVEFILE_write8(SRAM->mods.jump, !jump);
+      u8 jump = SAVEFILE_read8(SRAM->mods.jump);
+      SAVEFILE_write8(SRAM->mods.jump, increment(jump, 3));
       return true;
     }
     case OPTION_REDUCE: {
       u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 3));
+      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 4));
       return true;
     }
     case OPTION_NEGATIVE_COLORS: {

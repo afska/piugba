@@ -161,6 +161,7 @@ void SongScene::tick(u16 keys) {
   if (SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
+  processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
   updateFakeHeads();
@@ -295,6 +296,27 @@ void SongScene::updateFakeHeads() {
   }
 }
 
+void SongScene::updateGameX() {
+  lifeBar->get()->moveTo(GameState.positionX + LIFEBAR_POSITION_X,
+                         lifeBar->get()->getY());
+  for (auto& it : arrowHolders)
+    it->get()->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * it->direction,
+                      it->get()->getY());
+  score->relocate();
+
+  auto backgroundType = static_cast<BackgroundType>(
+      SAVEFILE_read8(SRAM->settings.backgroundType));
+  if (backgroundType == BackgroundType::HALF_BGA_DARK)
+    REG_BG_OFS[DARKENER_ID].x = -GameState.positionX;
+}
+
+void SongScene::updateGameY() {
+  lifeBar->get()->moveTo(lifeBar->get()->getX(),
+                         GameState.positionY + LIFEBAR_POSITION_Y);
+  for (auto& it : arrowHolders)
+    it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
+}
+
 void SongScene::processKeys(u16 keys) {
   arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys));
@@ -353,7 +375,7 @@ void SongScene::finishAndGoToEvaluation() {
 void SongScene::processModsLoad() {
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
       GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
-    targetMosaic = 6;
+    targetMosaic = 4;
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     targetMosaic = 0;
 }
@@ -365,44 +387,45 @@ void SongScene::processModsBeat() {
     mosaic = 0;
   else if (GameState.mods.pixelate == PixelateOpts::pRANDOM) {
     auto previousTargetMosaic = targetMosaic;
-    targetMosaic = qran_range(0, 7);
+    targetMosaic = qran_range(1, 5);
     if (previousTargetMosaic == targetMosaic)
-      mosaic = 0;
+      mosaic = 1;
   }
 
-  if (GameState.mods.jump) {
+  if (GameState.mods.jump == JumpOpts::jRANDOM) {
     int random = qran_range(0, GAME_POSITION_X[GamePosition::RIGHT] + 1);
     GameState.positionX = random;
-
-    lifeBar->get()->moveTo(GameState.positionX + LIFEBAR_POSITION_X,
-                           lifeBar->get()->getY());
-    for (auto& it : arrowHolders)
-      it->get()->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * it->direction,
-                        it->get()->getY());
-    score->relocate();
-
-    auto backgroundType = static_cast<BackgroundType>(
-        SAVEFILE_read8(SRAM->settings.backgroundType));
-    if (backgroundType == HALF_BGA_DARK)
-      REG_BG_OFS[DARKENER_ID].x = -random;
-
+    updateGameX();
     pixelBlink->blink();
   }
 
   if (GameState.mods.reduce == ReduceOpts::rRANDOM) {
     int random = qran_range(0, REDUCE_MOD_POSITION_Y);
     GameState.positionY = REDUCE_MOD_POSITION_Y - random;
-
-    lifeBar->get()->moveTo(lifeBar->get()->getX(),
-                           GameState.positionY + LIFEBAR_POSITION_Y);
-    for (auto& it : arrowHolders)
-      it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
-
+    updateGameY();
     pixelBlink->blink();
   }
 
   if (GameState.mods.randomSpeed)
     chartReader->setMultiplier(qran_range(3, 6));
+}
+
+void SongScene::processModsTick() {
+  if (GameState.mods.jump == JumpOpts::jLINEAR) {
+    GameState.positionX += jumpDirection;
+    if (GameState.positionX >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
+        GameState.positionX <= 0)
+      jumpDirection *= -1;
+    updateGameX();
+  }
+
+  if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
+    GameState.positionY += reduceDirection;
+    if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
+        GameState.positionY <= 0)
+      reduceDirection *= -1;
+    updateGameY();
+  }
 }
 
 u8 SongScene::processPixelateMod() {

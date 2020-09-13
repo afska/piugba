@@ -59,16 +59,18 @@ void Arrow::press() {
 
 ArrowState Arrow::tick(int newY, bool isPressing) {
   sprite->flipHorizontally(flip);
+  if (SPRITE_isHidden(get()))
+    return ArrowState::OUT;
+
   bool isHoldArrow = type == ArrowType::HOLD_HEAD ||
                      type == ArrowType::HOLD_TAIL ||
                      type == ArrowType::HOLD_FILL;
   bool isHoldFill = type == ArrowType::HOLD_FILL;
-
-  if (SPRITE_isHidden(get()))
-    return ArrowState::OUT;
+  int newX = ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction;
 
   if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
     endAnimationFrame++;
+    sprite->moveTo(newX, sprite->getY());
 
     if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES) {
       if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 1)
@@ -99,7 +101,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     return end();
   } else
-    sprite->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction, newY);
+    sprite->moveTo(newX, newY);
 
   return ArrowState::ACTIVE;
 }

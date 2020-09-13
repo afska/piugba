@@ -116,22 +116,12 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   auto message =
       gameMode == GameMode::CAMPAIGN
           ? MODE_CAMPAIGN
-          : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE_1;
+          : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
   goTo(new TalkScene(
       _engine, _fs, message,
       [](u16 keys) {
-        if (KEY_CENTER(keys)) {
-          if (SAVEFILE_read8(SRAM->state.gameMode) == GameMode::IMPOSSIBLE)
-            goTo(new TalkScene(
-                _engine, _fs, MODE_IMPOSSIBLE_2,
-                [](u16 keys) {
-                  if (KEY_CENTER(keys))
-                    goTo(new SelectionScene(_engine, _fs));
-                },
-                true));
-          else
-            goTo(new SelectionScene(_engine, _fs));
-        }
+        if (KEY_CENTER(keys))
+          goTo(new SelectionScene(_engine, _fs));
       },
       true));
 }

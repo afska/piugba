@@ -19,7 +19,7 @@ void STATE_setup(Song* song, Chart* chart) {
     case GameMode::CAMPAIGN: {
       GameState.mods.stageBreak = StageBreakOpts::sON;
       GameState.mods.pixelate = PixelateOpts::pOFF;
-      GameState.mods.jump = false;
+      GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.negative = false;
       GameState.mods.randomSpeed = false;
@@ -29,7 +29,7 @@ void STATE_setup(Song* song, Chart* chart) {
 
       if (song->applyTo[chart->difficulty]) {
         GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
-        GameState.mods.jump = song->jump;
+        GameState.mods.jump = static_cast<JumpOpts>(song->jump);
         GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
         GameState.mods.negative = song->negativeColors;
         GameState.mods.randomSpeed = song->randomSpeed;
@@ -42,7 +42,8 @@ void STATE_setup(Song* song, Chart* chart) {
           static_cast<StageBreakOpts>(SAVEFILE_read8(SRAM->mods.stageBreak));
       GameState.mods.pixelate =
           static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
-      GameState.mods.jump = SAVEFILE_read8(SRAM->mods.jump);
+      GameState.mods.jump =
+          static_cast<JumpOpts>(SAVEFILE_read8(SRAM->mods.jump));
       GameState.mods.reduce =
           static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
       GameState.mods.negative = SAVEFILE_read8(SRAM->mods.negative);
@@ -55,13 +56,13 @@ void STATE_setup(Song* song, Chart* chart) {
     case GameMode::IMPOSSIBLE: {
       GameState.mods.stageBreak = StageBreakOpts::sON;
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
-      GameState.mods.jump = false;
-      GameState.mods.reduce = ReduceOpts::rOFF;
-      GameState.mods.negative = true;
+      GameState.mods.jump = JumpOpts::jLINEAR;
+      GameState.mods.reduce = ReduceOpts::rLINEAR;
+      GameState.mods.negative = false;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
-      GameState.mods.extraJudgement = true;
+      GameState.mods.extraJudgement = false;
       break;
     }
   }

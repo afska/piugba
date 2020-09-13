@@ -38,17 +38,11 @@ const std::string MODE_ARCADE =
     "any difficulty level.\r\n"
     "Use SELECT to add mods!";
 
-const std::string MODE_IMPOSSIBLE_1 =
+const std::string MODE_IMPOSSIBLE =
     "In IMPOSSIBLE MODE...\r\n"
-    "the colors are INVERTED,\r\n"
-    "the arrows are MIRRORED,\r\n"
+    "the game area JUMPS,\r\n"
+    "patterns are MIRRORED,\r\n"
     "and it's all PIXELATED.";
-
-const std::string MODE_IMPOSSIBLE_2 =
-    "Also, you have to be more\r\n"
-    "PRECISE to hit the notes.\r\n"
-    "That's called EXTRA\r\n"
-    "JUDGEMENT. Best of luck!";
 
 const std::string KEYS_HINT =
     "To change the speed, use:\r\n"

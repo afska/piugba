@@ -9,12 +9,14 @@ module.exports = {
   },
   JUMP: {
     OFF: 0,
-    ON: 1,
+    LINEAR: 1,
+    RANDOM: 2,
   },
   REDUCE: {
     OFF: 0,
-    FIXED: 1,
-    RANDOM: 2,
+    LINEAR: 1,
+    FIXED: 2,
+    RANDOM: 3,
   },
   NEGATIVECOLORS: {
     OFF: 0,

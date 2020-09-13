@@ -56,6 +56,8 @@ class SongScene : public Scene {
   u8 targetMosaic = 0;
   u8 mosaic = 0;
   bool waitMosaic = true;
+  int jumpDirection = 1;
+  int reduceDirection = -1;
 
   void setUpPalettes();
   void setUpBackground();
@@ -64,10 +66,13 @@ class SongScene : public Scene {
   void updateArrowHolders();
   void updateArrows();
   void updateFakeHeads();
+  void updateGameX();
+  void updateGameY();
   void processKeys(u16 keys);
   void finishAndGoToEvaluation();
 
   void processModsLoad();
+  void processModsTick();
   void processModsBeat();
   u8 processPixelateMod();
 
