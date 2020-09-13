@@ -3,16 +3,18 @@ const $path = require("path");
 const _ = require("lodash");
 
 const COMMAND_BUILD = (input, output) =>
-  `magick "${input}" -resize 240x160\! -colors 254 "${output}"`;
+  `magick "${input}" -resize ${RESOLUTION} -colors 254 "${output}"`;
 const COMMAND_BUILD_REMAP = (input, firstColorPalette, output) =>
-  `magick "${input}" -resize 240x160\! -colors 253 -unique-colors ${TMP_PALETTE} && ` +
+  `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -unique-colors ${TMP_PALETTE} && ` +
   `magick "${firstColorPalette}" _tmp_palette.bmp +append ${TMP_PALETTE} && ` +
-  `magick "${input}" -resize 240x160\! -colors 253 -remap ${TMP_PALETTE} "${output}" && ` +
+  `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -remap ${TMP_PALETTE} "${output}" && ` +
   `rm ${TMP_PALETTE}`;
 const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
 const COMMAND_CLEANUP = (tmp1, tmp2) => `rm "${tmp1}" && rm "${tmp2}"`;
 const COMMAND_FIX = (input) => `pngfix -f "${input}`;
 const TMP_PALETTE = "_tmp_palette.bmp";
+const RESOLUTION = "240x160!";
+const COLORS = "253";
 const EXTENSION_TMP1 = "bmp";
 const EXTENSION_TMP2 = "h";
 const EXTENSION_FIXED = "-fixed.png";
