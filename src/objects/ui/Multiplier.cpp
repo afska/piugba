@@ -9,7 +9,7 @@
 
 const u32 POSITION_X = 111;
 const u32 POSITION_Y = 34;
-const u32 BLINK_FRAME = 5;
+const u32 BLINK_FRAME = 6;
 
 Multiplier::Multiplier(u32 initialValue) {
   SpriteBuilder<Sprite> builder;
