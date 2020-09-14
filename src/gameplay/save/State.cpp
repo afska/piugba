@@ -17,7 +17,10 @@ void STATE_setup(Song* song, Chart* chart) {
 
   switch (gameMode) {
     case GameMode::CAMPAIGN: {
-      GameState.mods.stageBreak = StageBreakOpts::sON;
+      GameState.mods.stageBreak =
+          !ENV_DEVELOPMENT || ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
+              ? StageBreakOpts::sON
+              : StageBreakOpts::sOFF;
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
@@ -54,7 +57,10 @@ void STATE_setup(Song* song, Chart* chart) {
       break;
     }
     case GameMode::IMPOSSIBLE: {
-      GameState.mods.stageBreak = StageBreakOpts::sON;
+      GameState.mods.stageBreak =
+          !ENV_DEVELOPMENT || ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
+              ? StageBreakOpts::sON
+              : StageBreakOpts::sOFF;
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
       GameState.mods.reduce = ReduceOpts::rLINEAR;
