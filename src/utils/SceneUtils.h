@@ -12,6 +12,7 @@ const u32 TEXT_MIDDLE_COL = 12;
 inline void SCENE_init() {
   TextStream::instance().clear();
   TextStream::instance().scroll(0, 0);
+  TextStream::instance().setMosaic(false);
 
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
