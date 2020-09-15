@@ -89,6 +89,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
 void SelectionScene::load() {
   SCENE_init();
 
+  TextStream::instance().setMosaic(true);
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
