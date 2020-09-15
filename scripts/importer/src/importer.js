@@ -313,8 +313,8 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
 
       return {
         id,
-        title: it.metadata.title,
-        artist: it.metadata.artist,
+        title: it.metadata.title.substring(0, 25),
+        artist: it.metadata.artist.substring(0, 25),
         channel: it.metadata.channel,
         normal: levelOf(normal),
         hard: levelOf(hard),
