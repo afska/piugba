@@ -23,8 +23,9 @@ class ArrowSelector : public InputHandler {
   u32 start = 0;
   bool flip = false;
   bool reactive = true;
-  u32 lastPressFrame = 0;
-  u32 autoFireSpeed = 1;
+  u32 globalLastPressFrame = 0;
+  u32 currentLastPressFrame = 0;
+  u32 autoFireSpeed = 0;
 };
 
 #endif  // ARROW_SELECTOR_H

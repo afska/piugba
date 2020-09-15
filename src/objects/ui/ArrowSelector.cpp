@@ -8,8 +8,9 @@
 
 const u32 ANIMATION_FRAMES = 5;
 const u32 ANIMATION_DELAY = 2;
-const u32 AUTOFIRE_FIRST_DELAY = 30;
-const u32 AUTOFIRE_SECOND_DELAY = 10;
+const u32 AUTOFIRE_SWITCH[] = {50, 100, 150, 200};
+const u32 AUTOFIRE_DELAY[] = {25, 15, 10, 5};
+const u32 AUTOFIRE_SPEEDS = 4;
 
 ArrowSelector::ArrowSelector(ArrowDirection direction,
                              bool reuseTiles,
@@ -34,31 +35,36 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
 }
 
 bool ArrowSelector::shouldFireEvent() {
+  bool isPressed = getIsPressed();
+  if (!isPressed)
+    return false;
+
   if (hasBeenPressedNow()) {
-    lastPressFrame = 0;
-    autoFireSpeed = 1;
+    globalLastPressFrame = 0;
+    currentLastPressFrame = 0;
+    autoFireSpeed = 0;
+    return true;
   }
 
-  if (autoFireSpeed == 1) {
-    if (getIsPressed() && lastPressFrame > AUTOFIRE_FIRST_DELAY) {
-      lastPressFrame = 0;
-      autoFireSpeed = 2;
-      return true;
-    }
-  } else if (autoFireSpeed == 2) {
-    if (getIsPressed() && lastPressFrame > AUTOFIRE_SECOND_DELAY) {
-      lastPressFrame = 0;
-      return true;
-    }
+  // autofire
+  bool itsTime = currentLastPressFrame >= AUTOFIRE_DELAY[autoFireSpeed];
+  bool canIncreaseSpeed = autoFireSpeed < AUTOFIRE_SPEEDS - 1;
+  bool shouldIncrease = globalLastPressFrame >= AUTOFIRE_SWITCH[autoFireSpeed];
+  if (itsTime)
+    currentLastPressFrame = 0;
+  if (canIncreaseSpeed && shouldIncrease) {
+    currentLastPressFrame = 0;
+    autoFireSpeed++;
   }
-
-  return hasBeenPressedNow();
+  return itsTime;
 }
 
 void ArrowSelector::tick() {
   sprite->flipHorizontally(flip);
   isNewPressEvent = false;
-  lastPressFrame++;
+
+  globalLastPressFrame++;
+  currentLastPressFrame++;
 
   if (!reactive)
     return;
