@@ -371,7 +371,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
 
   lastTick = tick;
 
-  return hasChanged && subtick == 1;
+  return hasChanged && (tickCount == 1 || subtick == 1);
 }
 
 void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
