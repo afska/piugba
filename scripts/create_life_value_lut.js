@@ -2,7 +2,7 @@ const _ = require("./importer/node_modules/lodash");
 
 const MIN_LIFE = 0;
 const MAX_LIFE = 100;
-const MAX_MOSAIC = 6;
+const MAX_MOSAIC = 4;
 
 const lookUpTables = {
   lifebar: _
