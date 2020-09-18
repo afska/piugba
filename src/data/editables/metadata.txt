@@ -69,9 +69,14 @@ level:
 ===
 
 screen_selection:
-  Image -> Mode -> Indexed...
-    -> 251 colors
+	Image -> Mode -> Indexed...
+		-> 251 colors
 screen_controls:
-  Image -> Mode -> Indexed...
-    -> 254 colors
+	Image -> Mode -> Indexed...
+		-> 254 colors
 		-> Color dithering: None
+
+===
+
+icon_vc:
+-> vc color = #4e249c
