@@ -2,7 +2,7 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo1](img/1.gif)![demo2](img/2.gif)![demo3](img/3.gif)![demo4](img/4.gif)![demo5](img/5.gif)![demo6](img/6.gif)![demo7](img/7.gif)![demo8](img/8.gif)![demo9](img/9.gif)![demo10](img/10.gif)![demo11](img/11.gif)![demo12](img/12.gif)
+![demo1](https://i.imgur.com/wUaksOH.gif)![demo2](https://i.imgur.com/DoPl7f8.gif)![demo3](https://i.imgur.com/GwQBOF8.gif)![demo4](https://i.imgur.com/Hm3NTLu.gif)![demo5](https://i.imgur.com/1zMgPgT.gif)![demo6](https://i.imgur.com/Pn6S5qC.gif)![demo7](https://i.imgur.com/w9kHpLr.gif)![demo8](img/8.gif)![demo9](https://i.imgur.com/LdTN37Z.gif)![demo10](https://i.imgur.com/BITyzuF.gif)![demo11](https://i.imgur.com/gXFk671.gif)![demo12](img/12.gif)
 
 ## Key features
 
@@ -27,7 +27,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   * Extra judgement
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
-- **Optimized** to support ~60 songs per ROM file.
+- **Optimized** to support ~70 songs per ROM file.
 
 ## How does it work?
 
