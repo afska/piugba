@@ -75,6 +75,11 @@ Full guide -> [Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Bui
   * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files.
   * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
     * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+- Install node dependencies:
+```bash
+cd scripts/importer
+npm install
+```
 - Add to `~/.bash_profile`:
 ```bash
 export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
