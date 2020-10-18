@@ -2,7 +2,7 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo1](https://i.imgur.com/wUaksOH.gif)![demo2](https://i.imgur.com/DoPl7f8.gif)![demo3](https://i.imgur.com/GwQBOF8.gif)![demo4](https://i.imgur.com/Hm3NTLu.gif)![demo5](https://i.imgur.com/1zMgPgT.gif)![demo6](https://i.imgur.com/Pn6S5qC.gif)![demo7](https://i.imgur.com/w9kHpLr.gif)![demo8](img/8.gif)![demo9](https://i.imgur.com/LdTN37Z.gif)![demo10](https://i.imgur.com/BITyzuF.gif)![demo11](https://i.imgur.com/gXFk671.gif)![demo12](img/12.gif)
+![demo1](https://i.imgur.com/wUaksOH.gif)![demo2](https://i.imgur.com/DoPl7f8.gif)![demo3](https://i.imgur.com/GwQBOF8.gif)![demo4](https://i.imgur.com/Hm3NTLu.gif)![demo5](https://i.imgur.com/1zMgPgT.gif)![demo6](https://i.imgur.com/Pn6S5qC.gif)![demo7](https://i.imgur.com/w9kHpLr.gif)![demo8](https://i.imgur.com/WpUiynZ.gif)![demo9](https://i.imgur.com/LdTN37Z.gif)![demo10](https://i.imgur.com/BITyzuF.gif)![demo11](https://i.imgur.com/gXFk671.gif)![demo12](https://i.imgur.com/vDletif.gif)
 
 ## Key features
 
