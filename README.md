@@ -4,6 +4,8 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
 
 ![demo1](https://i.imgur.com/wUaksOH.gif)![demo2](https://i.imgur.com/DoPl7f8.gif)![demo3](https://i.imgur.com/GwQBOF8.gif)![demo4](https://i.imgur.com/Hm3NTLu.gif)![demo5](https://i.imgur.com/1zMgPgT.gif)![demo6](https://i.imgur.com/Pn6S5qC.gif)![demo7](https://i.imgur.com/w9kHpLr.gif)![demo8](https://i.imgur.com/WpUiynZ.gif)![demo9](https://i.imgur.com/LdTN37Z.gif)![demo10](https://i.imgur.com/BITyzuF.gif)![demo11](https://i.imgur.com/gXFk671.gif)![demo12](https://i.imgur.com/vDletif.gif)
 
+Created by [[r]labs](https://r-labs.io).
+
 ## Key features
 
 - Full **.ssc files** support, including:
@@ -75,6 +77,11 @@ Full guide -> [Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Bui
   * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files.
   * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
     * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+- Install node dependencies:
+```bash
+cd scripts/importer
+npm install
+```
 - Add to `~/.bash_profile`:
 ```bash
 export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
