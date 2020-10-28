@@ -19,9 +19,9 @@
 
 Playback PlaybackState;
 
-#define RATE_LEVELS 3
+#define RATE_LEVELS 4
 
-static const int rateDelays[] = {1, 2, 3, 0, 3, 2, 1};
+static const int rateDelays[] = {1, 2, 3, 4, 0, 4, 3, 2, 1};
 
 static int rate = 0;
 static u32 rateCounter = 0;
