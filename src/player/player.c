@@ -19,6 +19,13 @@
 
 Playback PlaybackState;
 
+#define RATE_LEVELS 3
+
+static const int rateDelays[] = {1, 2, 3, 0, 3, 2, 1};
+
+static int rate = 0;
+static u32 rateCounter = 0;
+
 PLAYER_DEFINE(REG_DMA1CNT,
               REG_DMA1SAD,
               REG_DMA1DAD,
@@ -37,6 +44,8 @@ void player_play(const char* name) {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
+  rate = 0;
+  rateCounter = 0;
 }
 
 void player_loop(const char* name) {
@@ -56,10 +65,30 @@ void player_seek(unsigned int msecs) {
   unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
   cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
   src_pos = src + cursor;
+  rate = 0;
+  rateCounter = 0;
 }
 
-void player_advance() {
-  src_pos += AUDIO_CHUNK_SIZE;
+bool player_slower() {
+  if (rate == -RATE_LEVELS)
+    return false;
+
+  rate--;
+  if (rate < -RATE_LEVELS)
+    rate = RATE_LEVELS;
+  rateCounter = 0;
+
+  return true;
+}
+
+bool player_faster() {
+  if (rate == RATE_LEVELS)
+    return false;
+
+  rate++;
+  rateCounter = 0;
+
+  return true;
 }
 
 void player_stop() {
@@ -67,6 +96,8 @@ void player_stop() {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
+  rate = 0;
+  rateCounter = 0;
 }
 
 void player_stopAll() {
@@ -76,6 +107,14 @@ void player_stopAll() {
 
 void player_forever(void (*update)()) {
   while (1) {
+    if (rate != 0) {
+      rateCounter++;
+      if (rateCounter == rateDelays[rate + RATE_LEVELS]) {
+        src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
+        rateCounter = 0;
+      }
+    }
+
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;

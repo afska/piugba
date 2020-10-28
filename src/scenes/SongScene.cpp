@@ -109,12 +109,6 @@ void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  counter++;
-  if (counter == 2) {
-    player_advance();
-    counter = 0;
-  }
-
   if (init == 0) {
     if (!ENV_DEBUG) {
       auto gamePosition =
@@ -338,8 +332,10 @@ void SongScene::processKeys(u16 keys) {
         if (chartReader->offset == 0)
           score->log(0);
       } else {
-        if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        if (player_faster())  // TODO: Parameterize
           pixelBlink->blink();
+        // if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        //   pixelBlink->blink();
       }
     }
 
@@ -349,8 +345,10 @@ void SongScene::processKeys(u16 keys) {
         if (chartReader->offset == 0)
           score->log(0);
       } else {
-        if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        if (player_slower())  // TODO: Parameterize
           pixelBlink->blink();
+        // if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        //   pixelBlink->blink();
       }
     }
   }
