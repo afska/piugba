@@ -58,6 +58,10 @@ void player_seek(unsigned int msecs) {
   src_pos = src + cursor;
 }
 
+void player_advance() {
+  src_pos += AUDIO_CHUNK_SIZE;
+}
+
 void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;

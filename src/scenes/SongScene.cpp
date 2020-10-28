@@ -109,6 +109,12 @@ void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
+  counter++;
+  if (counter == 2) {
+    player_advance();
+    counter = 0;
+  }
+
   if (init == 0) {
     if (!ENV_DEBUG) {
       auto gamePosition =

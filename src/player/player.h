@@ -5,6 +5,7 @@ void player_init();
 void player_play(const char* name);
 void player_loop(const char* name);
 void player_seek(unsigned int msecs);
+void player_advance();
 void player_stop();
 void player_stopAll();
 void player_forever(void (*update)());

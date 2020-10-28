@@ -40,6 +40,7 @@ class SongScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  u32 counter = 0;
 
   Song* song;
   Chart* chart;
