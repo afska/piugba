@@ -170,8 +170,8 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  if (ENV_DEVELOPMENT && chartReader->offset)
-    score->log(chartReader->offset);
+  if (ENV_DEVELOPMENT && chartReader->debugOffset)
+    score->log(chartReader->debugOffset);
 
   IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
 }
@@ -346,8 +346,8 @@ void SongScene::processKeys(u16 keys) {
 
   if (speedUpInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReader->offset -= DEBUG_OFFSET_CORRECTION;
-      if (chartReader->offset == 0)
+      chartReader->debugOffset -= DEBUG_OFFSET_CORRECTION;
+      if (chartReader->debugOffset == 0)
         score->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
@@ -357,8 +357,8 @@ void SongScene::processKeys(u16 keys) {
 
   if (speedDownInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReader->offset += DEBUG_OFFSET_CORRECTION;
-      if (chartReader->offset == 0)
+      chartReader->debugOffset += DEBUG_OFFSET_CORRECTION;
+      if (chartReader->debugOffset == 0)
         score->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
@@ -465,36 +465,46 @@ u8 SongScene::processPixelateMod() {
 }
 
 void SongScene::processTrainingModeMod() {
+  // TODO: SILENT MODE
+
   // RATE DOWN
   if ((speedUpInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
       (speedUpInput->getIsPressed() && keyB->hasBeenPressedNow())) {
-    if (setRate(rate - 1)) {
-      pixelBlink->blink();
-      speedUpInput->setFlag(true);
-    }
+    speedUpInput->setFlag(true);
+
+    setRate(rate - 1);
   }
 
   // RATE UP
   if ((speedUpInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
       (speedUpInput->getIsPressed() && keyA->hasBeenPressedNow())) {
-    if (setRate(rate + 1)) {
-      pixelBlink->blink();
-      speedUpInput->setFlag(true);
-    }
+    speedUpInput->setFlag(true);
+
+    setRate(rate + 1);
   }
 
   // CHECKPOINT LOAD
   if ((speedDownInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
       (speedDownInput->getIsPressed() && keyB->hasBeenPressedNow())) {
-    speedUpInput->setFlag(true);
-    // TODO: Checkpoints
+    speedDownInput->setFlag(true);
+
+    if (checkpointMsecs != 0) {
+      arrowPool->clear();
+      chartReader->rewindToCheckpoint(checkpointEventIndex, checkpointStoppedMs,
+                                      checkpointWarpedMs);
+      player_seek(checkpointMsecs);
+    }
   }
 
   // CHECKPOINT SAVE
   if ((speedDownInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
       (speedDownInput->getIsPressed() && keyA->hasBeenPressedNow())) {
     speedDownInput->setFlag(true);
-    // TODO: Checkpoints
+
+    checkpointMsecs = PlaybackState.msecs;
+    checkpointEventIndex = chartReader->getEventIndex();
+    checkpointStoppedMs = chartReader->getStoppedMs();
+    checkpointWarpedMs = chartReader->getWarpedMs();
   }
 
   // MULTIPLIER DOWN

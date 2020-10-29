@@ -63,7 +63,6 @@ inline void player_seek(unsigned int msecs) {
   unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
   cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
   src_pos = src + cursor;
-  rate = 0;
   rateCounter = 0;
 }
 

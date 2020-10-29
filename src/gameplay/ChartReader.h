@@ -22,7 +22,7 @@ const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
 
 class ChartReader : public TimingProvider {
  public:
-  int offset = 0;
+  int debugOffset = 0;
 
   ChartReader(Chart* chart,
               ObjectPool<Arrow>* arrowPool,
@@ -32,7 +32,6 @@ class ChartReader : public TimingProvider {
               u32 multiplier);
 
   bool update(int msecs);
-
   int getYFor(Arrow* arrow);
 
   inline u32 getMultiplier() { return multiplier; }
@@ -55,6 +54,25 @@ class ChartReader : public TimingProvider {
       rateAudioLag =
           MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
   }
+
+  inline void rewindToCheckpoint(u32 eventIndex, u32 stoppedMs, u32 warpedMs) {
+    this->eventIndex = eventIndex;
+    this->stoppedMs = stoppedMs;
+    this->warpedMs = warpedMs;
+
+    u32 currentIndex = 0;
+    while (currentIndex < chart->eventCount) {
+      auto event = chart->events + currentIndex;
+      event->handled = false;
+      currentIndex++;
+    }  // TODO: Optimize with oldEventIndex
+
+    // TODO: RESTORE RYTHM
+  }
+
+  inline u32 getEventIndex() { return eventIndex; }
+  inline u32 getStoppedMs() { return stoppedMs; }
+  inline u32 getWarpedMs() { return warpedMs; }
 
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();

@@ -38,8 +38,9 @@ ChartReader::ChartReader(Chart* chart,
 };
 
 bool ChartReader::update(int songMsecs) {
-  int rythmMsecs = songMsecs - rateAudioLag + offset - lastBpmChange;
-  msecs = songMsecs - rateAudioLag + offset - (int)stoppedMs + (int)warpedMs;
+  int rythmMsecs = songMsecs - rateAudioLag + debugOffset - lastBpmChange;
+  msecs =
+      songMsecs - rateAudioLag + debugOffset - (int)stoppedMs + (int)warpedMs;
 
   MATH_approximate(&arrowTime, targetArrowTime, maxArrowTimeJump);
 

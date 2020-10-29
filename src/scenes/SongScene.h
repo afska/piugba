@@ -61,6 +61,10 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = -1;
+  int checkpointMsecs = 0;
+  u32 checkpointEventIndex = 0;
+  u32 checkpointStoppedMs = 0;
+  u32 checkpointWarpedMs = 0;
 
   void setUpPalettes();
   void setUpBackground();
