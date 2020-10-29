@@ -18,6 +18,9 @@ class InputHandler {
   inline bool hasBeenPressedNow() { return isNewPressEvent; }
   inline bool hasBeenReleasedNow() { return isNewReleaseEvent; }
 
+  inline bool getFlag() { return flag; }
+  inline void setFlag(bool value) { flag = value; }
+
   inline void setIsPressed(bool isPressed) {
     bool isNewPressEvent = !this->isPressed && isPressed;
     bool isNewReleaseEvent = this->isPressed && !isPressed;
@@ -32,6 +35,7 @@ class InputHandler {
   bool isPressed = false;
   bool isNewPressEvent = false;
   bool isNewReleaseEvent = false;
+  bool flag = false;
 };
 
 #endif  // INPUT_HANDLER_H

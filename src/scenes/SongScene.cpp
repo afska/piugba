@@ -103,6 +103,8 @@ void SongScene::load() {
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
+  keyA = std::unique_ptr<InputHandler>(new InputHandler());
+  keyB = std::unique_ptr<InputHandler>(new InputHandler());
 }
 
 void SongScene::tick(u16 keys) {
@@ -324,13 +326,26 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
   speedUpInput->setIsPressed(keys & KEY_START);
   speedDownInput->setIsPressed(keys & KEY_SELECT);
+  keyA->setIsPressed(keys & KEY_A);
+  keyB->setIsPressed(keys & KEY_B);
 
-  bool isModActive = true;  // TODO: Parameterize
+  IFSTRESSTEST {
+    for (auto& arrowHolder : arrowHolders)
+      if (arrowHolder->hasBeenPressedNow())
+        arrowPool->create([&arrowHolder, this](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
+                         chartReader->getMsecs() + chartReader->getArrowTime(),
+                         false);
+        });
+  }
+
+  if (GameState.mods.trainingMode) {
+    processTrainingModeMod();
+    return;
+  }
+
   if (speedUpInput->hasBeenPressedNow()) {
-    if (KEY_CENTER(keys) && isModActive) {
-      if (setRate(rate + 1))
-        pixelBlink->blink();
-    } else if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+    if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
       chartReader->offset -= DEBUG_OFFSET_CORRECTION;
       if (chartReader->offset == 0)
         score->log(0);
@@ -341,10 +356,7 @@ void SongScene::processKeys(u16 keys) {
   }
 
   if (speedDownInput->hasBeenPressedNow()) {
-    if (KEY_CENTER(keys) && isModActive) {
-      if (setRate(rate - 1))
-        pixelBlink->blink();
-    } else if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+    if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
       chartReader->offset += DEBUG_OFFSET_CORRECTION;
       if (chartReader->offset == 0)
         score->log(0);
@@ -352,16 +364,6 @@ void SongScene::processKeys(u16 keys) {
       if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
         pixelBlink->blink();
     }
-  }
-
-  IFSTRESSTEST {
-    for (auto& arrowHolder : arrowHolders)
-      if (arrowHolder->hasBeenPressedNow())
-        arrowPool->create([&arrowHolder, this](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
-                         chartReader->getMsecs() + chartReader->getArrowTime(),
-                         false);
-        });
   }
 }
 
@@ -460,6 +462,58 @@ u8 SongScene::processPixelateMod() {
 
   EFFECT_setMosaic(minMosaic);
   return minMosaic;
+}
+
+void SongScene::processTrainingModeMod() {
+  // RATE DOWN
+  if ((speedUpInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
+      (speedUpInput->getIsPressed() && keyB->hasBeenPressedNow())) {
+    if (setRate(rate - 1)) {
+      pixelBlink->blink();
+      speedUpInput->setFlag(true);
+    }
+  }
+
+  // RATE UP
+  if ((speedUpInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
+      (speedUpInput->getIsPressed() && keyA->hasBeenPressedNow())) {
+    if (setRate(rate + 1)) {
+      pixelBlink->blink();
+      speedUpInput->setFlag(true);
+    }
+  }
+
+  // CHECKPOINT LOAD
+  if ((speedDownInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
+      (speedDownInput->getIsPressed() && keyB->hasBeenPressedNow())) {
+    speedUpInput->setFlag(true);
+    // TODO: Checkpoints
+  }
+
+  // CHECKPOINT SAVE
+  if ((speedDownInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
+      (speedDownInput->getIsPressed() && keyA->hasBeenPressedNow())) {
+    speedDownInput->setFlag(true);
+    // TODO: Checkpoints
+  }
+
+  // MULTIPLIER DOWN
+  if (speedDownInput->hasBeenReleasedNow()) {
+    if (!speedDownInput->getFlag()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
+    }
+    speedDownInput->setFlag(false);
+  }
+
+  // MULTIPLIER UP
+  if (speedUpInput->hasBeenReleasedNow()) {
+    if (!speedUpInput->getFlag()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        pixelBlink->blink();
+    }
+    speedUpInput->setFlag(false);
+  }
 }
 
 bool SongScene::setRate(int rate) {
