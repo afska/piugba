@@ -472,7 +472,8 @@ void SongScene::processTrainingModeMod() {
       (speedUpInput->getIsPressed() && keyB->hasBeenPressedNow())) {
     speedUpInput->setFlag(true);
 
-    setRate(rate - 1);
+    if (setRate(rate - 1))
+      pixelBlink->blink();
   }
 
   // RATE UP
@@ -480,7 +481,8 @@ void SongScene::processTrainingModeMod() {
       (speedUpInput->getIsPressed() && keyA->hasBeenPressedNow())) {
     speedUpInput->setFlag(true);
 
-    setRate(rate + 1);
+    if (setRate(rate + 1))
+      pixelBlink->blink();
   }
 
   // CHECKPOINT LOAD
