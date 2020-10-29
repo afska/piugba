@@ -19,9 +19,7 @@
 
 Playback PlaybackState;
 
-#define RATE_LEVELS 4
-
-static const int rateDelays[] = {1, 2, 3, 4, 0, 4, 3, 2, 1};
+static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
 
 static int rate = 0;
 static u32 rateCounter = 0;
@@ -33,13 +31,13 @@ PLAYER_DEFINE(REG_DMA1CNT,
               CHANNEL_A_MUTE,
               CHANNEL_A_UNMUTE);
 
-void player_init() {
+inline void player_init() {
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
   fxes_init();
 }
 
-void player_play(const char* name) {
+inline void player_play(const char* name) {
   PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -48,12 +46,12 @@ void player_play(const char* name) {
   rateCounter = 0;
 }
 
-void player_loop(const char* name) {
+inline void player_loop(const char* name) {
   player_play(name);
   PlaybackState.isLooping = true;
 }
 
-void player_seek(unsigned int msecs) {
+inline void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
@@ -69,29 +67,12 @@ void player_seek(unsigned int msecs) {
   rateCounter = 0;
 }
 
-bool player_slower() {
-  if (rate == -RATE_LEVELS)
-    return false;
-
-  rate--;
-  if (rate < -RATE_LEVELS)
-    rate = RATE_LEVELS;
+inline void player_setRate(int newRate) {
+  rate = newRate;
   rateCounter = 0;
-
-  return true;
 }
 
-bool player_faster() {
-  if (rate == RATE_LEVELS)
-    return false;
-
-  rate++;
-  rateCounter = 0;
-
-  return true;
-}
-
-void player_stop() {
+inline void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -100,12 +81,12 @@ void player_stop() {
   rateCounter = 0;
 }
 
-void player_stopAll() {
+inline void player_stopAll() {
   player_stop();
   fxes_stop();
 }
 
-void player_forever(void (*update)()) {
+inline void player_forever(void (*update)()) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -139,7 +120,7 @@ void player_forever(void (*update)()) {
   }
 }
 
-void fxes_playSolo(const char* name) {
+inline void fxes_playSolo(const char* name) {
   player_stop();
   fxes_play(name);
 }

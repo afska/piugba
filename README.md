@@ -26,7 +26,7 @@ Created by [[r]labs](https://r-labs.io).
   * Negative: Inverts palette
   * Random speed
   * Mirror and random steps
-  * Extra judgement
+  * Training mode: Rate and checkpoints
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~70 songs per ROM file.

@@ -52,6 +52,7 @@ class SongScene : public Scene {
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   std::unique_ptr<InputHandler> speedUpInput;
   std::unique_ptr<InputHandler> speedDownInput;
+  int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
   u8 mosaic = 0;
@@ -75,6 +76,7 @@ class SongScene : public Scene {
   void processModsTick();
   void processModsBeat();
   u8 processPixelateMod();
+  bool setRate(int rate);
 
   void unload();
 };

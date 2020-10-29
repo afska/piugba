@@ -16,6 +16,9 @@
 #include "utils/pool/ObjectPool.h"
 
 const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
+const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
+                                       472446402,  1116691497, 2319282339};
+// (0.86, 0.73, 0.47, 0, (1+)0.11, (1+)0.26, (1)+0.54)
 
 class ChartReader : public TimingProvider {
  public:
@@ -43,6 +46,16 @@ class ChartReader : public TimingProvider {
     return this->multiplier != oldMultiplier;
   }
 
+  inline void syncRate(u32 base, int rate) {
+    rateAudioLag = audioLag;
+    if (rate > 0)
+      rateAudioLag +=
+          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+    if (rate < 0)
+      rateAudioLag =
+          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+  }
+
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();
@@ -56,6 +69,7 @@ class ChartReader : public TimingProvider {
   Judge* judge;
   PixelBlink* pixelBlink;
   int audioLag;
+  int rateAudioLag;
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;

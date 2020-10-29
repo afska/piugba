@@ -7,6 +7,7 @@ enum StageBreakOpts : u8 { sON, sOFF, sSUDDEN_DEATH };
 enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK_IN, pBLINK_OUT, pRANDOM };
 enum JumpOpts : u8 { jOFF, jLINEAR, jRANDOM };
 enum ReduceOpts : u8 { rOFF, rLINEAR, rFIXED, rRANDOM };
+enum TrainingModeOpts : u8 { tOFF, tON, tSILENT };
 
 typedef struct __attribute__((__packed__)) {
   u8 multiplier;
@@ -18,7 +19,7 @@ typedef struct __attribute__((__packed__)) {
   u8 randomSpeed;
   u8 mirrorSteps;
   u8 randomSteps;
-  u8 extraJudgement;
+  TrainingModeOpts trainingMode;
 } Mods;
 
 #endif  // MODS_H

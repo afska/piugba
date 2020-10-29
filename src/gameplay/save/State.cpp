@@ -28,7 +28,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
-      GameState.mods.extraJudgement = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
 
       if (song->applyTo[chart->difficulty]) {
         GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
@@ -53,7 +53,8 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
-      GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+      GameState.mods.trainingMode = static_cast<TrainingModeOpts>(
+          SAVEFILE_read8(SRAM->mods.trainingMode));
       break;
     }
     case GameMode::IMPOSSIBLE: {
@@ -68,7 +69,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
-      GameState.mods.extraJudgement = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
     }
   }

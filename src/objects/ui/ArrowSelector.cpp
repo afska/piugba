@@ -61,7 +61,6 @@ bool ArrowSelector::shouldFireEvent() {
 
 void ArrowSelector::tick() {
   sprite->flipHorizontally(flip);
-  isNewPressEvent = false;
 
   globalLastPressFrame++;
   currentLastPressFrame++;

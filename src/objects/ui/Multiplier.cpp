@@ -29,8 +29,6 @@ u32 Multiplier::change() {
 }
 
 void Multiplier::tick() {
-  isNewPressEvent = false;
-
   if (sprite->getCurrentFrame() == BLINK_FRAME)
     SPRITE_goToFrame(sprite.get(), getFrame());
 }

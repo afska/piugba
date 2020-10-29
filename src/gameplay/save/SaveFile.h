@@ -65,7 +65,7 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.randomSpeed, false);
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
   SAVEFILE_write8(SRAM->mods.randomSteps, false);
-  SAVEFILE_write8(SRAM->mods.extraJudgement, false);
+  SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
 }
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {

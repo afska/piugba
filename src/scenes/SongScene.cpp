@@ -325,31 +325,32 @@ void SongScene::processKeys(u16 keys) {
   speedUpInput->setIsPressed(keys & KEY_START);
   speedDownInput->setIsPressed(keys & KEY_SELECT);
 
-  if (!GameState.mods.randomSpeed) {
-    if (speedUpInput->hasBeenPressedNow()) {
-      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
-        chartReader->offset -= DEBUG_OFFSET_CORRECTION;
-        if (chartReader->offset == 0)
-          score->log(0);
-      } else {
-        if (player_faster())  // TODO: Parameterize
-          pixelBlink->blink();
-        // if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
-        //   pixelBlink->blink();
-      }
+  bool isModActive = true;  // TODO: Parameterize
+  if (speedUpInput->hasBeenPressedNow()) {
+    if (KEY_CENTER(keys) && isModActive) {
+      if (setRate(rate + 1))
+        pixelBlink->blink();
+    } else if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+      chartReader->offset -= DEBUG_OFFSET_CORRECTION;
+      if (chartReader->offset == 0)
+        score->log(0);
+    } else if (!GameState.mods.randomSpeed) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        pixelBlink->blink();
     }
+  }
 
-    if (speedDownInput->hasBeenPressedNow()) {
-      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
-        chartReader->offset += DEBUG_OFFSET_CORRECTION;
-        if (chartReader->offset == 0)
-          score->log(0);
-      } else {
-        if (player_slower())  // TODO: Parameterize
-          pixelBlink->blink();
-        // if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
-        //   pixelBlink->blink();
-      }
+  if (speedDownInput->hasBeenPressedNow()) {
+    if (KEY_CENTER(keys) && isModActive) {
+      if (setRate(rate - 1))
+        pixelBlink->blink();
+    } else if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+      chartReader->offset += DEBUG_OFFSET_CORRECTION;
+      if (chartReader->offset == 0)
+        score->log(0);
+    } else if (!GameState.mods.randomSpeed) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
     }
   }
 
@@ -459,6 +460,17 @@ u8 SongScene::processPixelateMod() {
 
   EFFECT_setMosaic(minMosaic);
   return minMosaic;
+}
+
+bool SongScene::setRate(int rate) {
+  int oldRate = this->rate;
+  this->rate = max(min(rate, RATE_LEVELS), -RATE_LEVELS);
+  if (this->rate == oldRate)
+    return false;
+
+  player_setRate(rate);
+  chartReader->syncRate(RATE_LEVELS, rate);
+  return true;
 }
 
 void SongScene::unload() {

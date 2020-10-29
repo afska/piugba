@@ -14,7 +14,7 @@
 #define OPTION_RANDOM_SPEED 6
 #define OPTION_MIRROR_STEPS 7
 #define OPTION_RANDOM_STEPS 8
-#define OPTION_EXTRA_JUDGEMENT 9
+#define OPTION_TRAINING_MODE 9
 #define OPTION_RESET 10
 
 const u32 TEXT_BLEND_ALPHA = 12;
@@ -50,7 +50,7 @@ void ModsScene::printOptions() {
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
-  bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+  u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
               4);
@@ -83,8 +83,9 @@ void ModsScene::printOptions() {
               11);
   printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
               12);
-  printOption(OPTION_EXTRA_JUDGEMENT, "Extra judgement",
-              extraJudgement ? "ON" : "OFF", 13);
+  printOption(OPTION_TRAINING_MODE, "Training mode",
+              trainingMode == 0 ? "OFF" : trainingMode == 1 ? "ON" : "SILENT",
+              13);
   printOption(OPTION_RESET, "[RESET MODS]", "", 15);
 }
 
@@ -139,9 +140,9 @@ bool ModsScene::selectOption(u32 selected) {
       SAVEFILE_write8(SRAM->mods.randomSteps, !randomSteps);
       return true;
     }
-    case OPTION_EXTRA_JUDGEMENT: {
-      bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
-      SAVEFILE_write8(SRAM->mods.extraJudgement, !extraJudgement);
+    case OPTION_TRAINING_MODE: {
+      u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
+      SAVEFILE_write8(SRAM->mods.trainingMode, increment(trainingMode, 3));
       return true;
     }
     case OPTION_RESET: {
