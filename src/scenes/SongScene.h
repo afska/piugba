@@ -50,8 +50,10 @@ class SongScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
-  std::unique_ptr<InputHandler> speedUpInput;
-  std::unique_ptr<InputHandler> speedDownInput;
+  std::unique_ptr<InputHandler> startInput;
+  std::unique_ptr<InputHandler> selectInput;
+  std::unique_ptr<InputHandler> aInput;
+  std::unique_ptr<InputHandler> bInput;
   int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
@@ -76,7 +78,7 @@ class SongScene : public Scene {
   void processModsTick();
   void processModsBeat();
   u8 processPixelateMod();
-  void processTrainingModeMod(u16 keys);
+  void processTrainingModeMod();
   bool setRate(int rate);
 
   void unload();

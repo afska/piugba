@@ -152,6 +152,19 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
     return;
   }
 
+  if (gameMode == GameMode::ARCADE &&
+      GameState.mods.trainingMode == TrainingModeOpts::tON) {
+    goTo(new TalkScene(
+             _engine, _fs, KEYS_TRAINING_HINT,
+             [song, chart](u16 keys) {
+               if (KEY_CENTER(keys))
+                 goTo(new SongScene(_engine, _fs, song, chart), 2);
+             },
+             true),
+         4);
+    return;
+  }
+
   goTo(new SongScene(_engine, _fs, song, chart), 4);
 }
 
