@@ -20,6 +20,7 @@ ChartReader::ChartReader(Chart* chart,
   this->judge = judge;
   this->pixelBlink = pixelBlink;
   this->audioLag = audioLag;
+  this->rateAudioLag = audioLag;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE,
@@ -37,8 +38,9 @@ ChartReader::ChartReader(Chart* chart,
 };
 
 bool ChartReader::update(int songMsecs) {
-  int rythmMsecs = songMsecs - audioLag + offset - lastBpmChange;
-  msecs = songMsecs - audioLag + offset - (int)stoppedMs + (int)warpedMs;
+  int rythmMsecs = songMsecs - rateAudioLag + debugOffset - lastBpmChange;
+  msecs =
+      songMsecs - rateAudioLag + debugOffset - (int)stoppedMs + (int)warpedMs;
 
   MATH_approximate(&arrowTime, targetArrowTime, maxArrowTimeJump);
 

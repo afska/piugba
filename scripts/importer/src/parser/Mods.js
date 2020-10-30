@@ -26,8 +26,4 @@ module.exports = {
     OFF: 0,
     ON: 1,
   },
-  EXTRAJUDGEMENT: {
-    OFF: 0,
-    ON: 1,
-  },
 };

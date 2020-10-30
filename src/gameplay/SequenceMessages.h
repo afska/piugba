@@ -50,6 +50,12 @@ const std::string KEYS_HINT =
     "To cancel the song, use: \r\n"
     "    A+B+START+SELECT";
 
+const std::string KEYS_TRAINING_HINT =
+    "How to use Training Mode:\r\n"
+    "- Speed: START/SELECT\r\n"
+    "- Rate: B + START/SELECT\r\n"
+    "- Fast-forward: A + START";
+
 const std::string WIN =
     "  *YOU'VE WON THE GAME*\r\n"
     "\r\n"

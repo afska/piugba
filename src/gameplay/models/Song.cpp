@@ -34,7 +34,7 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   song->reduce = parse_u8(data, &cursor);
   song->negativeColors = parse_u8(data, &cursor);
   song->randomSpeed = parse_u8(data, &cursor);
-  song->extraJudgement = parse_u8(data, &cursor);
+  cursor += sizeof(u8);
   song->hasMessage = parse_u8(data, &cursor);
 
   if (song->hasMessage) {

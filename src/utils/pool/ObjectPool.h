@@ -68,7 +68,8 @@ class ObjectPool {
 
   void clear() {
     for (u32 i = 0; i < objects.size(); i++)
-      discard(i);
+      if (objects[i]->isActive)
+        discard(i);
   }
 
   template <typename F>

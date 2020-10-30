@@ -87,8 +87,6 @@ void SongScene::load() {
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
-  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  u32 multiplier = GameState.mods.multiplier;
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         if (GameState.mods.stageBreak != StageBreakOpts::sOFF) {
@@ -97,12 +95,17 @@ void SongScene::load() {
                                       new FadeOutScene(6));
         }
       }));
+
+  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  u32 multiplier = GameState.mods.multiplier;
   chartReader = std::unique_ptr<ChartReader>(
       new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get(),
                       audioLag, multiplier));
 
-  speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
-  speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
+  startInput = std::unique_ptr<InputHandler>(new InputHandler());
+  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
+  aInput = std::unique_ptr<InputHandler>(new InputHandler());
+  bInput = std::unique_ptr<InputHandler>(new InputHandler());
 }
 
 void SongScene::tick(u16 keys) {
@@ -145,7 +148,7 @@ void SongScene::tick(u16 keys) {
 
   bool isNewBeat = chartReader->update((int)songMsecs);
   if (isNewBeat) {
-    blinkFrame += ALPHA_BLINK_TIME;
+    blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -168,8 +171,8 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  if (ENV_DEVELOPMENT && chartReader->offset)
-    score->log(chartReader->offset);
+  if (ENV_DEVELOPMENT && chartReader->debugOffset)
+    score->log(chartReader->debugOffset);
 
   IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
 }
@@ -322,32 +325,10 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[2]->setIsPressed(KEY_CENTER(keys));
   arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
-  speedUpInput->setIsPressed(keys & KEY_START);
-  speedDownInput->setIsPressed(keys & KEY_SELECT);
-
-  if (!GameState.mods.randomSpeed) {
-    if (speedUpInput->hasBeenPressedNow()) {
-      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
-        chartReader->offset -= DEBUG_OFFSET_CORRECTION;
-        if (chartReader->offset == 0)
-          score->log(0);
-      } else {
-        if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
-          pixelBlink->blink();
-      }
-    }
-
-    if (speedDownInput->hasBeenPressedNow()) {
-      if (ENV_DEVELOPMENT && KEY_CENTER(keys)) {
-        chartReader->offset += DEBUG_OFFSET_CORRECTION;
-        if (chartReader->offset == 0)
-          score->log(0);
-      } else {
-        if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
-          pixelBlink->blink();
-      }
-    }
-  }
+  startInput->setIsPressed(keys & KEY_START);
+  selectInput->setIsPressed(keys & KEY_SELECT);
+  aInput->setIsPressed(keys & KEY_A);
+  bInput->setIsPressed(keys & KEY_B);
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
@@ -357,6 +338,33 @@ void SongScene::processKeys(u16 keys) {
                          chartReader->getMsecs() + chartReader->getArrowTime(),
                          false);
         });
+  }
+
+  if (GameState.mods.trainingMode != TrainingModeOpts::tOFF) {
+    processTrainingModeMod();
+    return;
+  }
+
+  if (startInput->hasBeenPressedNow()) {
+    if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+      chartReader->debugOffset -= DEBUG_OFFSET_CORRECTION;
+      if (chartReader->debugOffset == 0)
+        score->log(0);
+    } else if (!GameState.mods.randomSpeed) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        pixelBlink->blink();
+    }
+  }
+
+  if (selectInput->hasBeenPressedNow()) {
+    if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
+      chartReader->debugOffset += DEBUG_OFFSET_CORRECTION;
+      if (chartReader->debugOffset == 0)
+        score->log(0);
+    } else if (!GameState.mods.randomSpeed) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
+    }
   }
 }
 
@@ -457,8 +465,65 @@ u8 SongScene::processPixelateMod() {
   return minMosaic;
 }
 
+void SongScene::processTrainingModeMod() {
+  // Rate down
+  if ((bInput->hasBeenPressedNow() && selectInput->getIsPressed()) ||
+      (bInput->getIsPressed() && selectInput->hasBeenPressedNow())) {
+    selectInput->setHandledFlag(true);
+
+    if (setRate(rate - 1))
+      pixelBlink->blink();
+  }
+
+  // Rate up
+  if ((bInput->hasBeenPressedNow() && startInput->getIsPressed()) ||
+      (bInput->getIsPressed() && startInput->hasBeenPressedNow())) {
+    startInput->setHandledFlag(true);
+
+    if (setRate(rate + 1))
+      pixelBlink->blink();
+  }
+
+  // Fast forward
+  if (aInput->getIsPressed() && startInput->getIsPressed()) {
+    startInput->setHandledFlag(true);
+
+    judge->disable();
+    player_seek(PlaybackState.msecs + 100);
+  } else
+    judge->enable();
+
+  // Multiplier down
+  if (selectInput->hasBeenReleasedNow()) {
+    if (!selectInput->getHandledFlag()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
+    }
+    selectInput->setHandledFlag(false);
+  }
+
+  // Multiplier up
+  if (startInput->hasBeenReleasedNow()) {
+    if (!startInput->getHandledFlag()) {
+      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+        pixelBlink->blink();
+    }
+    startInput->setHandledFlag(false);
+  }
+}
+
+bool SongScene::setRate(int rate) {
+  int oldRate = this->rate;
+  this->rate = max(min(rate, RATE_LEVELS), -RATE_LEVELS);
+  if (this->rate == oldRate)
+    return false;
+
+  player_setRate(rate);
+  chartReader->syncRate(RATE_LEVELS, rate);
+  return true;
+}
+
 void SongScene::unload() {
-  SAVEFILE_write8(SRAM->state.isPlaying, 0);
   player_stopAll();
 }
 

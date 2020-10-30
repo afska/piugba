@@ -88,6 +88,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
 
 void SelectionScene::load() {
   SCENE_init();
+  SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);

@@ -32,7 +32,6 @@ void ArrowHolder::blink() {
 
 void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
-  isNewPressEvent = false;
 
   u32 currentFrame = sprite->getCurrentFrame();
 

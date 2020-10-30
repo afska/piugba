@@ -10,8 +10,7 @@
 #include "objects/score/Score.h"
 #include "utils/pool/ObjectPool.h"
 
-const u32 TIMING_WINDOWS[] = {0, 2, 4, 6, 8, 0, 2, 3, 4, 5};
-const u32 EXTRA_JUDGEMENT_START = 5;
+const u32 TIMING_WINDOWS[] = {0, 2, 4, 6, 8};
 const int HOLD_ARROW_TICK_OFFSET_MS = 67;
 //                                    ^ OFFSET_GOOD * FRAME_MS = 4 * 16.73322954
 
@@ -26,6 +25,9 @@ class Judge {
   void onOut(Arrow* arrow);
   void onHoldTick(u8 arrows, bool canMiss);
 
+  inline void disable() { isDisabled = true; }
+  inline void enable() { isDisabled = false; }
+
   inline bool isInsideTimingWindow(u32 diff) {
     return diff < FRAME_MS * getTimingWindowOf(FeedbackType::MISS);
   }
@@ -39,11 +41,10 @@ class Judge {
   std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;
   Score* score;
   std::function<void()> onStageBreak;
+  bool isDisabled = false;
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {
-    return TIMING_WINDOWS[GameState.mods.extraJudgement *
-                              EXTRA_JUDGEMENT_START +
-                          feedbackType];
+    return TIMING_WINDOWS[feedbackType];
   }
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);

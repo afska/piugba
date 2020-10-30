@@ -19,6 +19,11 @@
 
 Playback PlaybackState;
 
+static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
+
+static int rate = 0;
+static u32 rateCounter = 0;
+
 PLAYER_DEFINE(REG_DMA1CNT,
               REG_DMA1SAD,
               REG_DMA1DAD,
@@ -26,25 +31,27 @@ PLAYER_DEFINE(REG_DMA1CNT,
               CHANNEL_A_MUTE,
               CHANNEL_A_UNMUTE);
 
-void player_init() {
+inline void player_init() {
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
   fxes_init();
 }
 
-void player_play(const char* name) {
+inline void player_play(const char* name) {
   PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
+  rate = 0;
+  rateCounter = 0;
 }
 
-void player_loop(const char* name) {
+inline void player_loop(const char* name) {
   player_play(name);
   PlaybackState.isLooping = true;
 }
 
-void player_seek(unsigned int msecs) {
+inline void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
@@ -56,22 +63,38 @@ void player_seek(unsigned int msecs) {
   unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
   cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
   src_pos = src + cursor;
+  rateCounter = 0;
 }
 
-void player_stop() {
+inline void player_setRate(int newRate) {
+  rate = newRate;
+  rateCounter = 0;
+}
+
+inline void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
+  rate = 0;
+  rateCounter = 0;
 }
 
-void player_stopAll() {
+inline void player_stopAll() {
   player_stop();
   fxes_stop();
 }
 
-void player_forever(void (*update)()) {
+inline void player_forever(void (*update)()) {
   while (1) {
+    if (rate != 0) {
+      rateCounter++;
+      if (rateCounter == rateDelays[rate + RATE_LEVELS]) {
+        src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
+        rateCounter = 0;
+      }
+    }
+
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
@@ -96,7 +119,7 @@ void player_forever(void (*update)()) {
   }
 }
 
-void fxes_playSolo(const char* name) {
+inline void fxes_playSolo(const char* name) {
   player_stop();
   fxes_play(name);
 }

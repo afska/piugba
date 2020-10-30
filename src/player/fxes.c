@@ -22,22 +22,22 @@ PLAYER_DEFINE(REG_DMA2CNT,
               CHANNEL_B_MUTE,
               CHANNEL_B_UNMUTE);
 
-void fxes_init() {
+inline void fxes_init() {
   PLAYER_INIT(REG_TM1CNT_L, REG_TM1CNT_H);
 }
 
-void fxes_play(const char* name) {
+inline void fxes_play(const char* name) {
   PLAYER_PLAY(name);
 }
 
-void fxes_stop() {
+inline void fxes_stop() {
   PLAYER_STOP();
 }
 
-void fxes_preUpdate() {
+inline void fxes_preUpdate() {
   PLAYER_PRE_UPDATE({ fxes_stop(); });
 }
 
-void fxes_postUpdate() {
+inline void fxes_postUpdate() {
   PLAYER_POST_UPDATE();
 }
