@@ -87,8 +87,6 @@ void SongScene::load() {
   lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
-  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
-  u32 multiplier = GameState.mods.multiplier;
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
         if (GameState.mods.stageBreak != StageBreakOpts::sOFF) {
@@ -97,14 +95,15 @@ void SongScene::load() {
                                       new FadeOutScene(6));
         }
       }));
+
+  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  u32 multiplier = GameState.mods.multiplier;
   chartReader = std::unique_ptr<ChartReader>(
       new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get(),
                       audioLag, multiplier));
 
   speedUpInput = std::unique_ptr<InputHandler>(new InputHandler());
   speedDownInput = std::unique_ptr<InputHandler>(new InputHandler());
-  keyA = std::unique_ptr<InputHandler>(new InputHandler());
-  keyB = std::unique_ptr<InputHandler>(new InputHandler());
 }
 
 void SongScene::tick(u16 keys) {
@@ -147,7 +146,7 @@ void SongScene::tick(u16 keys) {
 
   bool isNewBeat = chartReader->update((int)songMsecs);
   if (isNewBeat) {
-    blinkFrame += ALPHA_BLINK_TIME;
+    blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
     for (auto& arrowHolder : arrowHolders) {
       lifeBar->blink(foregroundPalette.get());
@@ -326,8 +325,6 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
   speedUpInput->setIsPressed(keys & KEY_START);
   speedDownInput->setIsPressed(keys & KEY_SELECT);
-  keyA->setIsPressed(keys & KEY_A);
-  keyB->setIsPressed(keys & KEY_B);
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
@@ -340,7 +337,7 @@ void SongScene::processKeys(u16 keys) {
   }
 
   if (GameState.mods.trainingMode) {
-    processTrainingModeMod();
+    processTrainingModeMod(keys);
     return;
   }
 
@@ -464,68 +461,39 @@ u8 SongScene::processPixelateMod() {
   return minMosaic;
 }
 
-void SongScene::processTrainingModeMod() {
+void SongScene::processTrainingModeMod(u16 keys) {
   // TODO: SILENT MODE
 
-  // RATE DOWN
-  if ((speedUpInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
-      (speedUpInput->getIsPressed() && keyB->hasBeenPressedNow())) {
-    speedUpInput->setFlag(true);
-
-    if (setRate(rate - 1))
-      pixelBlink->blink();
-  }
-
-  // RATE UP
-  if ((speedUpInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
-      (speedUpInput->getIsPressed() && keyA->hasBeenPressedNow())) {
-    speedUpInput->setFlag(true);
-
-    if (setRate(rate + 1))
-      pixelBlink->blink();
-  }
-
-  // CHECKPOINT LOAD
-  if ((speedDownInput->hasBeenPressedNow() && keyB->getIsPressed()) ||
-      (speedDownInput->getIsPressed() && keyB->hasBeenPressedNow())) {
-    speedDownInput->setFlag(true);
-
-    if (checkpointMsecs != 0) {
-      arrowPool->clear();
-      chartReader->rewindToCheckpoint(checkpointEventIndex, checkpointStoppedMs,
-                                      checkpointWarpedMs);
-      player_seek(checkpointMsecs);
-    }
-  }
-
-  // CHECKPOINT SAVE
-  if ((speedDownInput->hasBeenPressedNow() && keyA->getIsPressed()) ||
-      (speedDownInput->getIsPressed() && keyA->hasBeenPressedNow())) {
-    speedDownInput->setFlag(true);
-
-    checkpointMsecs = PlaybackState.msecs;
-    checkpointEventIndex = chartReader->getEventIndex();
-    checkpointStoppedMs = chartReader->getStoppedMs();
-    checkpointWarpedMs = chartReader->getWarpedMs();
-  }
-
-  // MULTIPLIER DOWN
-  if (speedDownInput->hasBeenReleasedNow()) {
-    if (!speedDownInput->getFlag()) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+  if (speedUpInput->hasBeenPressedNow()) {
+    if ((keys & KEY_B)) {
+      // rate up
+      if (setRate(rate + 1))
         pixelBlink->blink();
-    }
-    speedDownInput->setFlag(false);
-  }
-
-  // MULTIPLIER UP
-  if (speedUpInput->hasBeenReleasedNow()) {
-    if (!speedUpInput->getFlag()) {
+    } else if (!GameState.mods.randomSpeed) {
+      // multiplier up
       if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
         pixelBlink->blink();
     }
-    speedUpInput->setFlag(false);
   }
+
+  if (speedDownInput->hasBeenPressedNow()) {
+    if ((keys & KEY_B)) {
+      // rate down
+      if (setRate(rate - 1))
+        pixelBlink->blink();
+    } else if (!GameState.mods.randomSpeed) {
+      // multiplier down
+      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+        pixelBlink->blink();
+    }
+  }
+
+  if (speedUpInput->getIsPressed() && (keys & KEY_A)) {
+    // fast forward
+    judge->disable();
+    player_seek(PlaybackState.msecs + 100);
+  } else
+    judge->enable();
 }
 
 bool SongScene::setRate(int rate) {
@@ -540,7 +508,6 @@ bool SongScene::setRate(int rate) {
 }
 
 void SongScene::unload() {
-  SAVEFILE_write8(SRAM->state.isPlaying, 0);
   player_stopAll();
 }
 

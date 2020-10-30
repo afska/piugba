@@ -55,25 +55,6 @@ class ChartReader : public TimingProvider {
           MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
   }
 
-  inline void rewindToCheckpoint(u32 eventIndex, u32 stoppedMs, u32 warpedMs) {
-    this->eventIndex = eventIndex;
-    this->stoppedMs = stoppedMs;
-    this->warpedMs = warpedMs;
-
-    u32 currentIndex = 0;
-    while (currentIndex < chart->eventCount) {
-      auto event = chart->events + currentIndex;
-      event->handled = false;
-      currentIndex++;
-    }  // TODO: Optimize with oldEventIndex
-
-    // TODO: RESTORE RYTHM
-  }
-
-  inline u32 getEventIndex() { return eventIndex; }
-  inline u32 getStoppedMs() { return stoppedMs; }
-  inline u32 getWarpedMs() { return warpedMs; }
-
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();

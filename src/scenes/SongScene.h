@@ -52,8 +52,6 @@ class SongScene : public Scene {
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   std::unique_ptr<InputHandler> speedUpInput;
   std::unique_ptr<InputHandler> speedDownInput;
-  std::unique_ptr<InputHandler> keyA;
-  std::unique_ptr<InputHandler> keyB;
   int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
@@ -61,10 +59,6 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = -1;
-  int checkpointMsecs = 0;
-  u32 checkpointEventIndex = 0;
-  u32 checkpointStoppedMs = 0;
-  u32 checkpointWarpedMs = 0;
 
   void setUpPalettes();
   void setUpBackground();
@@ -82,7 +76,7 @@ class SongScene : public Scene {
   void processModsTick();
   void processModsBeat();
   u8 processPixelateMod();
-  void processTrainingModeMod();
+  void processTrainingModeMod(u16 keys);
   bool setRate(int rate);
 
   void unload();

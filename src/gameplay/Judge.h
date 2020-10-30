@@ -25,6 +25,9 @@ class Judge {
   void onOut(Arrow* arrow);
   void onHoldTick(u8 arrows, bool canMiss);
 
+  inline void disable() { isDisabled = true; }
+  inline void enable() { isDisabled = false; }
+
   inline bool isInsideTimingWindow(u32 diff) {
     return diff < FRAME_MS * getTimingWindowOf(FeedbackType::MISS);
   }
@@ -38,6 +41,7 @@ class Judge {
   std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;
   Score* score;
   std::function<void()> onStageBreak;
+  bool isDisabled = false;
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {
     return TIMING_WINDOWS[feedbackType];
