@@ -40,9 +40,9 @@ const std::string MODE_ARCADE =
 
 const std::string MODE_IMPOSSIBLE =
     "In IMPOSSIBLE MODE...\r\n"
-    "the game area JUMPS,\r\n"
-    "patterns are MIRRORED,\r\n"
-    "and it's all PIXELATED.";
+    "- Songs run FASTER\r\n"
+    "- Patterns are MIRRORED\r\n"
+    "- Screen has visual MODS";
 
 const std::string KEYS_HINT =
     "To change the speed, use:\r\n"
