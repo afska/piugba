@@ -74,6 +74,17 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
     }
+    default: {
+      GameState.mods.stageBreak = StageBreakOpts::sON;
+      GameState.mods.pixelate = PixelateOpts::pOFF;
+      GameState.mods.jump = JumpOpts::jOFF;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.decolorize = DecolorizeOpts::dOFF;
+      GameState.mods.randomSpeed = false;
+      GameState.mods.mirrorSteps = false;
+      GameState.mods.randomSteps = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
+    }
   }
 
   if (!GameState.mods.jump)

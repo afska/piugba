@@ -98,7 +98,7 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   u32 cursor = TITLE_LEN + ARTIST_LEN;
   auto channel = static_cast<Channel>(parse_u8(data, &cursor));
 
-  if (gameMode == GameMode::ARCADE)
+  if (gameMode != GameMode::CAMPAIGN)
     return channel;
 
   cursor +=

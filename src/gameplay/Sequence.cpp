@@ -41,9 +41,11 @@ Scene* SEQUENCE_getInitialScene() {
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
-  if (isPlaying)
+  if (isPlaying && gameMode != GameMode::MULTI_VS &&
+      gameMode != GameMode::MULTI_COOP)
     return new SelectionScene(_engine, _fs);
 
   return new ControlsScene(_engine, _fs,
@@ -80,6 +82,8 @@ Scene* SEQUENCE_getMainScene() {
 void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool isArcadeModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
+
+  // TODO: Multiplayer game modes
 
   if (gameMode == GameMode::ARCADE && !isArcadeModeUnlocked) {
     goTo(new TalkScene(

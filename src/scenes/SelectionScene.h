@@ -87,6 +87,7 @@ class SelectionScene : public Scene {
             SRAM->progress[PROGRESS_IMPOSSIBLE + difficultyLevel]
                 .completedSongs);
       }
+        // TODO: Multi modes
     }
 
     return 0;

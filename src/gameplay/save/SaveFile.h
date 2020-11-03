@@ -126,11 +126,12 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
 
   u8 completedSongs = SAVEFILE_getCompletedSongs();
 
-  if (gameMode == GameMode::ARCADE)
+  if (gameMode == GameMode::ARCADE || gameMode == GameMode::MULTI_VS ||
+      gameMode == GameMode::MULTI_COOP)
     return completedSongs >= 1;
 
   if (gameMode == GameMode::IMPOSSIBLE)
-    return completedSongs == SAVEFILE_getLibrarySize();
+    return completedSongs >= SAVEFILE_getLibrarySize();
 
   return true;
 }
