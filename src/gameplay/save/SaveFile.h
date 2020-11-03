@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
+#include "ArcadeProgress.h"
 #include "Memory.h"
 #include "Mods.h"
 #include "Progress.h"
@@ -33,6 +34,9 @@ typedef struct __attribute__((__packed__)) {
   Progress progress[PROGRESS_REGISTERS];
 
   State state;
+
+  u8 singleArcadeProgress[ARCADE_PROGRESS_SIZE];
+  u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
@@ -100,6 +104,8 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
+
+    ARCADE_initialize();
   }
 }
 
