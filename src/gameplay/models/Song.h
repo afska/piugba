@@ -23,16 +23,16 @@ typedef struct {
   u32 sampleStart;      // 0x3F (u32 - in ms)
   u32 sampleLength;     // 0x43 (u32 - in ms)
 
-  u8 applyTo[3];      //   0x47
-  u8 isBoss;          //   0x4A
-  u8 pixelate;        //   0x4B
-  u8 jump;            //   0x4C
-  u8 reduce;          //   0x4D
-  u8 negativeColors;  //   0x4E
-  u8 randomSpeed;     //   0x4F
-  u8 ___;             //   0x50 (unused)
-  u8 hasMessage;      //   0x51
-  char* message;      //   0x52 (optional - 107 bytes - including \0)
+  u8 applyTo[3];   //   0x47
+  u8 isBoss;       //   0x4A
+  u8 pixelate;     //   0x4B
+  u8 jump;         //   0x4C
+  u8 reduce;       //   0x4D
+  u8 decolorize;   //   0x4E
+  u8 randomSpeed;  //   0x4F
+  u8 ___;          //   0x50 (unused)
+  u8 hasMessage;   //   0x51
+  char* message;   //   0x52 (optional - 107 bytes - including \0)
 
   u8 chartCount;  // 0x52 if no message, 0xBD otherwise (u8)
   Chart* charts;  // 0x53 if no message, 0xBE otherwise ("chartCount" times)

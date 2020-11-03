@@ -122,9 +122,9 @@ void SongScene::tick(u16 keys) {
     } else
       BACKGROUND_setColor(0, 127);
 
-    if (GameState.mods.negative) {
-      SCENE_invert(backgroundPalette.get());
-      SCENE_invert(foregroundPalette.get());
+    if (GameState.mods.decolorize != DecolorizeOpts::dOFF) {
+      SCENE_decolorize(backgroundPalette.get(), GameState.mods.decolorize);
+      SCENE_decolorize(foregroundPalette.get(), GameState.mods.decolorize);
     }
 
     init++;

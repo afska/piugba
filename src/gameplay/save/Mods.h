@@ -7,6 +7,7 @@ enum StageBreakOpts : u8 { sON, sOFF, sSUDDEN_DEATH };
 enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK_IN, pBLINK_OUT, pRANDOM };
 enum JumpOpts : u8 { jOFF, jLINEAR, jRANDOM };
 enum ReduceOpts : u8 { rOFF, rLINEAR, rFIXED, rRANDOM };
+enum DecolorizeOpts : u8 { dOFF, dINVERT, dGRAY, dRED, dGREEN, dBLUE };
 enum TrainingModeOpts : u8 { tOFF, tON, tSILENT };
 
 typedef struct __attribute__((__packed__)) {
@@ -15,7 +16,7 @@ typedef struct __attribute__((__packed__)) {
   PixelateOpts pixelate;
   JumpOpts jump;
   ReduceOpts reduce;
-  bool negative;
+  DecolorizeOpts decolorize;
   u8 randomSpeed;
   u8 mirrorSteps;
   u8 randomSteps;

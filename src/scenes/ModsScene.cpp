@@ -10,7 +10,7 @@
 #define OPTION_PIXELATE 2
 #define OPTION_JUMP 3
 #define OPTION_REDUCE 4
-#define OPTION_NEGATIVE_COLORS 5
+#define OPTION_DECOLORIZE 5
 #define OPTION_RANDOM_SPEED 6
 #define OPTION_MIRROR_STEPS 7
 #define OPTION_RANDOM_STEPS 8
@@ -46,7 +46,7 @@ void ModsScene::printOptions() {
   u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
   u8 jump = SAVEFILE_read8(SRAM->mods.jump);
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-  bool negative = SAVEFILE_read8(SRAM->mods.negative);
+  u8 decolorize = SAVEFILE_read8(SRAM->mods.decolorize);
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
@@ -75,8 +75,17 @@ void ModsScene::printOptions() {
                   ? "OFF"
                   : reduce == 1 ? "LINEAR" : reduce == 2 ? "FIXED" : "RANDOM",
               8);
-  printOption(OPTION_NEGATIVE_COLORS, "Negative colors",
-              negative ? "ON" : "OFF", 9);
+  printOption(OPTION_DECOLORIZE, "Decolorize",
+              decolorize == 0
+                  ? "OFF"  // ° ͜ʖ ͡°)
+                  : decolorize == 1
+                        ? "INVERT"  // ° ͜ʖ ͡°)
+                        : decolorize == 2
+                              ? "GRAY"  // ° ͜ʖ ͡°)
+                              : decolorize == 3
+                                    ? "RED"  // ° ͜ʖ ͡°)
+                                    : decolorize == 4 ? "GREEN" : "BLUE",
+              9);
   printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
               10);
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
@@ -120,9 +129,9 @@ bool ModsScene::selectOption(u32 selected) {
       SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 4));
       return true;
     }
-    case OPTION_NEGATIVE_COLORS: {
-      bool negative = SAVEFILE_read8(SRAM->mods.negative);
-      SAVEFILE_write8(SRAM->mods.negative, !negative);
+    case OPTION_DECOLORIZE: {
+      u8 decolorize = SAVEFILE_read8(SRAM->mods.decolorize);
+      SAVEFILE_write8(SRAM->mods.decolorize, increment(decolorize, 6));
       return true;
     }
     case OPTION_RANDOM_SPEED: {

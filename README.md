@@ -23,7 +23,7 @@ Created by [[r]labs](https://r-labs.io).
   * Stage break
   * Pixelate: Mosaic effect
   * Jump/Reduce: Moves game area
-  * Negative: Inverts palette
+  * Decolorize: Inverts/removes colors
   * Random speed
   * Mirror and random steps
   * Training mode: Rate and checkpoints
