@@ -115,6 +115,8 @@ class SelectionScene : public Scene {
         getGameMode() == GameMode::IMPOSSIBLE)
       return difficulty->getValue();
 
+    // TODO: Multi modes
+
     DifficultyLevel maxLevel;
     u32 max = 0;
 

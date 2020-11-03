@@ -79,12 +79,11 @@ Scene* SEQUENCE_getMainScene() {
 }
 
 void SEQUENCE_goToGameMode(GameMode gameMode) {
-  bool isArcadeModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
+  bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
 
-  // TODO: Multiplayer game modes
-
-  if (gameMode == GameMode::ARCADE && !isArcadeModeUnlocked) {
+  if ((gameMode == GameMode::ARCADE || IS_MULTIPLAYER(gameMode)) &&
+      !areArcadeModesUnlocked) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
@@ -117,17 +116,21 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
-  auto message =
-      gameMode == GameMode::CAMPAIGN
-          ? MODE_CAMPAIGN
-          : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
-  goTo(new TalkScene(
-      _engine, _fs, message,
-      [](u16 keys) {
-        if (KEY_CENTER(keys))
-          goTo(new SelectionScene(_engine, _fs));
-      },
-      true));
+  if (IS_MULTIPLAYER(gameMode)) {
+    goTo(new TalkScene(_engine, _fs, std::string("// TODO"), [](u16 keys) {}));
+  } else {
+    auto message =
+        gameMode == GameMode::CAMPAIGN
+            ? MODE_CAMPAIGN
+            : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
+    goTo(new TalkScene(
+        _engine, _fs, message,
+        [](u16 keys) {
+          if (KEY_CENTER(keys))
+            goTo(new SelectionScene(_engine, _fs));
+        },
+        true));
+  }
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
