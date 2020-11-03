@@ -82,8 +82,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
 
-  if ((gameMode == GameMode::ARCADE || IS_MULTIPLAYER(gameMode)) &&
-      !areArcadeModesUnlocked) {
+  if (!IS_STORY(gameMode) && !areArcadeModesUnlocked) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
@@ -108,9 +107,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   auto lastGameMode =
       static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   if (lastGameMode != gameMode) {
-    auto songIndex = gameMode == GameMode::ARCADE || IS_MULTIPLAYER(gameMode)
-                         ? 0
-                         : SAVEFILE_getLibrarySize() - 1;
+    auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
   }
@@ -178,8 +175,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
-  if ((gameMode == GameMode::CAMPAIGN || gameMode == GameMode::IMPOSSIBLE) &&
-      isLastSong)
+  if (IS_STORY(gameMode) && isLastSong)
     goTo(new TalkScene(_engine, _fs,
                        gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
                        [](u16 keys) {

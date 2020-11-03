@@ -70,6 +70,7 @@ class SelectionScene : public Scene {
     return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
+    // TODO: Multi modes
     return getGameMode() == GameMode::ARCADE
                ? SAVEFILE_getCompletedSongs()
                : getCompletedSongsOf(difficulty->getValue());
@@ -111,8 +112,7 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
-    if (getGameMode() == GameMode::CAMPAIGN ||
-        getGameMode() == GameMode::IMPOSSIBLE)
+    if (IS_STORY(getGameMode()))
       return difficulty->getValue();
 
     // TODO: Multi modes

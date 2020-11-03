@@ -5,6 +5,9 @@
 
 enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE, MULTI_VS, MULTI_COOP };
 
+#define IS_STORY(GAME_MODE) \
+  (GAME_MODE == GameMode::CAMPAIGN || GAME_MODE == GameMode::IMPOSSIBLE)
+
 #define IS_MULTIPLAYER(GAME_MODE) \
   (GAME_MODE == GameMode::MULTI_VS || GAME_MODE == GameMode::MULTI_COOP)
 

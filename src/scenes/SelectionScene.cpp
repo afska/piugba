@@ -80,7 +80,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
   sprites.push_back(multiplier->get());
   progress->render(&sprites);
 
-  if (getGameMode() == GameMode::ARCADE)
+  if (!IS_STORY(getGameMode()))
     sprites.push_back(numericLevelBadge->get());
 
   return sprites;
@@ -100,7 +100,7 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
-  if (getGameMode() == GameMode::ARCADE) {
+  if (!IS_STORY(getGameMode())) {
     numericLevelBadge = std::unique_ptr<Button>{
         new Button(ButtonType::LEVEL_METER, NUMERIC_LEVEL_BADGE_X,
                    NUMERIC_LEVEL_BADGE_Y, false)};
@@ -249,10 +249,10 @@ void SelectionScene::goToSong() {
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
   Chart* chart =
-      getGameMode() == GameMode::ARCADE
-          ? SONG_findChartByNumericLevelIndex(song,
-                                              getSelectedNumericLevelIndex())
-          : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
+      IS_STORY(getGameMode())
+          ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
+          : SONG_findChartByNumericLevelIndex(song,
+                                              getSelectedNumericLevelIndex());
 
   STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart);
@@ -269,16 +269,7 @@ void SelectionScene::processKeys(u16 keys) {
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
-  if (getGameMode() == GameMode::ARCADE) {
-    auto currentIndex = getSelectedNumericLevelIndex();
-    auto previousIndex = max(currentIndex - 1, 0);
-    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
-
-    if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
-      return;
-
-    onNumericLevelChange(ArrowDirection::UPLEFT, previousIndex);
-  } else {
+  if (IS_STORY(getGameMode())) {
     if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
             static_cast<DifficultyLevel>(
@@ -288,6 +279,15 @@ void SelectionScene::processDifficultyChangeEvents() {
     onDifficultyLevelChange(
         ArrowDirection::UPLEFT,
         static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+  } else {
+    auto currentIndex = getSelectedNumericLevelIndex();
+    auto previousIndex = max(currentIndex - 1, 0);
+    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
+
+    if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
+      return;
+
+    onNumericLevelChange(ArrowDirection::UPLEFT, previousIndex);
   }
 }
 
@@ -315,13 +315,13 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents(u16 keys) {
   if (multiplier->hasBeenPressedNow()) {
-    if (getGameMode() == GameMode::ARCADE) {
+    if (IS_STORY(getGameMode())) {
+      fxes_playSolo(SOUND_MOD);
+      SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
+    } else {
       player_stopAll();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new FadeOutScene(4));
-    } else {
-      fxes_playSolo(SOUND_MOD);
-      SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     }
   }
 
@@ -436,7 +436,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
-  if (getGameMode() == GameMode::ARCADE)
+  if (!IS_STORY(getGameMode()))
     numericLevelBadge->get()->moveTo(
         NUMERIC_LEVEL_BADGE_X,
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
@@ -452,7 +452,7 @@ void SelectionScene::confirm() {
 
 void SelectionScene::unconfirm() {
   if (confirmed) {
-    if (getGameMode() == GameMode::ARCADE)
+    if (!IS_STORY(getGameMode()))
       numericLevelBadge->get()->moveTo(NUMERIC_LEVEL_BADGE_X,
                                        NUMERIC_LEVEL_BADGE_Y);
 
@@ -512,8 +512,7 @@ void SelectionScene::setNames(std::string title, std::string artist) {
 }
 
 void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
-  if (getGameMode() == GameMode::CAMPAIGN ||
-      getGameMode() == GameMode::IMPOSSIBLE)
+  if (IS_STORY(getGameMode()))
     return;
 
   if (difficulty == DifficultyLevel::NORMAL)
