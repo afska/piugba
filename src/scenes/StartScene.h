@@ -39,6 +39,7 @@ class StartScene : public Scene {
   std::vector<std::unique_ptr<InputHandler>> inputHandlers;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
+  bool isExpanded = false;
   int lastBeat = 0;
   u8 selectedMode = 0;
   u8 darkenerOpacity;

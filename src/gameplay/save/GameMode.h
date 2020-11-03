@@ -3,6 +3,6 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE };
+enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE, MULTI_VS, MULTI_COOP };
 
 #endif  // GAME_MODE_H

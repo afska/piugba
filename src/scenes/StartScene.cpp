@@ -19,12 +19,14 @@ extern "C" {
 #include "player/player.h"
 }
 
-const std::string TITLES[] = {"Campaign", "Arcade", "Impossible"};
+const std::string TITLES[] = {"Campaign", "Arcade",     "Multi vs",
+                              "Single",   "Multi coop", "Impossible"};
 
 const u32 BPM = 145;
 const u32 ARROW_POOL_SIZE = 10;
 const u32 ARROW_SPEED = 3;
 const u32 DEMO_ARROW_INITIAL_Y = 78;
+const u32 BUTTONS_TOTAL = 6;
 
 const u32 ID_DARKENER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
@@ -35,8 +37,8 @@ const u32 TEXT_ROW = 12;
 const int TEXT_OFFSET_Y = -4;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
-const u32 BUTTONS_X[] = {141, 175, 209};
-const u32 BUTTONS_Y = 128;
+const u32 BUTTONS_X[] = {141, 175, 170, 183, 196, 209};
+const u32 BUTTONS_Y[] = {128, 128, 136, 136, 136, 128};
 const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
@@ -59,8 +61,12 @@ std::vector<Background*> StartScene::backgrounds() {
 std::vector<Sprite*> StartScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (auto& it : buttons)
-    sprites.push_back(it->get());
+  sprites.push_back(buttons[0]->get());
+  sprites.push_back(buttons[1]->get());
+  sprites.push_back(buttons[5]->get());
+  sprites.push_back(buttons[2]->get());
+  sprites.push_back(buttons[3]->get());
+  sprites.push_back(buttons[4]->get());
 
   arrowPool->forEach([&sprites](Arrow* it) {
     it->index = sprites.size();
@@ -125,11 +131,22 @@ void StartScene::setUpBackground() {
 }
 
 void StartScene::setUpButtons() {
-  for (u32 i = 0; i < BUTTONS_TOTAL; i++) {
-    auto type = static_cast<ButtonType>(i);
-    buttons.push_back(std::unique_ptr<Button>{
-        new Button(type, BUTTONS_X[i], BUTTONS_Y, type != ButtonType::BLUE)});
-  }
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::BLUE, BUTTONS_X[0], BUTTONS_Y[0], false)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::GRAY, BUTTONS_X[1], BUTTONS_Y[1], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[2], BUTTONS_Y[2], false)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[3], BUTTONS_Y[3], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[4], BUTTONS_Y[4], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::ORANGE, BUTTONS_X[5], BUTTONS_Y[5], true)});
+
+  buttons[2]->hide();
+  buttons[3]->hide();
+  buttons[4]->hide();
 
   for (u32 i = 0; i < INPUTS; i++)
     inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
@@ -207,6 +224,10 @@ void StartScene::processKeys(u16 keys) {
 void StartScene::processSelectionChange() {
   if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && selectedMode > 0) {
     selectedMode--;
+    if (selectedMode == 4 && !isExpanded)
+      selectedMode -= 3;
+    if (selectedMode == 1 && isExpanded)
+      selectedMode--;
     pixelBlink->blink();
     printTitle();
   }
@@ -214,6 +235,10 @@ void StartScene::processSelectionChange() {
   if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() &&
       selectedMode < BUTTONS_TOTAL - 1) {
     selectedMode++;
+    if (selectedMode == 2 && !isExpanded)
+      selectedMode += 3;
+    if (selectedMode == 1 && isExpanded)
+      selectedMode++;
     pixelBlink->blink();
     printTitle();
   }
@@ -226,9 +251,43 @@ void StartScene::processSelectionChange() {
 }
 
 void StartScene::goToGame() {
-  player_stop();
+  if (selectedMode == 1) {
+    isExpanded = true;
+    buttons[1]->hide();
+    buttons[2]->show();
+    buttons[3]->show();
+    buttons[4]->show();
+    selectedMode = 3;
+    pixelBlink->blink();
+    printTitle();
+    return;
+  }
 
-  auto gameMode = static_cast<GameMode>(selectedMode);
+  GameMode gameMode;
+  switch (selectedMode) {
+    case 2: {
+      gameMode = GameMode::MULTI_VS;
+      break;
+    }
+    case 3: {
+      gameMode = GameMode::ARCADE;
+      break;
+    }
+    case 4: {
+      gameMode = GameMode::MULTI_COOP;
+      break;
+    }
+    case 5: {
+      gameMode = GameMode::IMPOSSIBLE;
+      break;
+    }
+    default: {
+      gameMode = GameMode::CAMPAIGN;
+      break;
+    }
+  }
+
+  player_stop();
   SEQUENCE_goToGameMode(gameMode);
 }
 
