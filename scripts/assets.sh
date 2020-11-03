@@ -54,10 +54,13 @@ mv \
 grit \
   spr_arrows.bmp \
   spr_buttons.bmp \
+  spr_buttons_mini.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_start.c
 mv \
   spr_buttons.h \
   spr_buttons.c \
+  spr_buttons_mini.h \
+  spr_buttons_mini.c \
   palette_start.* \
   "$DESTINATION"
 

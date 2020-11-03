@@ -55,7 +55,7 @@ void ModsScene::printOptions() {
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
               4);
   printOption(OPTION_STAGE_BREAK, "Stage break",
-              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN_DEATH",
+              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN DEATH",
               5);
   printOption(OPTION_PIXELATE, "Pixelate",
               pixelate == 0
@@ -65,8 +65,8 @@ void ModsScene::printOptions() {
                         : pixelate == 2
                               ? "FIXED"  // ° ͜ʖ ͡°)
                               : pixelate == 3
-                                    ? "BLINK_IN"  // ° ͜ʖ ͡°)
-                                    : pixelate == 4 ? "BLINK_OUT" : "RANDOM",
+                                    ? "BLINK IN"  // ° ͜ʖ ͡°)
+                                    : pixelate == 4 ? "BLINK OUT" : "RANDOM",
               6);
   printOption(OPTION_JUMP, "Jump",
               jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
