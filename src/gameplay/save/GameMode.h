@@ -5,4 +5,7 @@
 
 enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE, MULTI_VS, MULTI_COOP };
 
+#define IS_MULTIPLAYER(GAME_MODE) \
+  (GAME_MODE == GameMode::MULTI_VS || GAME_MODE == GameMode::MULTI_COOP)
+
 #endif  // GAME_MODE_H

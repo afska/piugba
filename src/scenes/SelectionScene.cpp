@@ -292,7 +292,7 @@ void SelectionScene::processDifficultyChangeEvents() {
 }
 
 void SelectionScene::processSelectionChangeEvents() {
-  auto isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
+  bool isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
   if (ENV_DEVELOPMENT)
     isOnListEdge = getSelectedSongIndex() == count - 1;
 
@@ -512,7 +512,8 @@ void SelectionScene::setNames(std::string title, std::string artist) {
 }
 
 void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
-  if (getGameMode() != GameMode::ARCADE)
+  if (getGameMode() == GameMode::CAMPAIGN ||
+      getGameMode() == GameMode::IMPOSSIBLE)
     return;
 
   if (difficulty == DifficultyLevel::NORMAL)

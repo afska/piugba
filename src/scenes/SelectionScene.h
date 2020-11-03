@@ -67,9 +67,7 @@ class SelectionScene : public Scene {
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
   inline u32 getLastUnlockedSongIndex() {
-    return getGameMode() == GameMode::ARCADE
-               ? min(getCompletedSongs() - 1, count - 1)
-               : min(getCompletedSongs(), count - 1);
+    return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
     return getGameMode() == GameMode::ARCADE
@@ -113,7 +111,8 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
-    if (getGameMode() != GameMode::ARCADE)
+    if (getGameMode() == GameMode::CAMPAIGN ||
+        getGameMode() == GameMode::IMPOSSIBLE)
       return difficulty->getValue();
 
     DifficultyLevel maxLevel;

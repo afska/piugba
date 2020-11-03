@@ -44,8 +44,7 @@ Scene* SEQUENCE_getInitialScene() {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
-  if (isPlaying && gameMode != GameMode::MULTI_VS &&
-      gameMode != GameMode::MULTI_COOP)
+  if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
 
   return new ControlsScene(_engine, _fs,
@@ -110,8 +109,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   auto lastGameMode =
       static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
   if (lastGameMode != gameMode) {
-    auto songIndex =
-        gameMode == GameMode::ARCADE ? 0 : SAVEFILE_getLibrarySize() - 1;
+    auto songIndex = gameMode == GameMode::ARCADE || IS_MULTIPLAYER(gameMode)
+                         ? 0
+                         : SAVEFILE_getLibrarySize() - 1;
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
   }
@@ -175,7 +175,8 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
-  if (gameMode != GameMode::ARCADE && isLastSong)
+  if ((gameMode == GameMode::CAMPAIGN || gameMode == GameMode::IMPOSSIBLE) &&
+      isLastSong)
     goTo(new TalkScene(_engine, _fs,
                        gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
                        [](u16 keys) {
