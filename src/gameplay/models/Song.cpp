@@ -14,6 +14,8 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   u32 cursor = 0;
   auto song = new Song();
 
+  song->id = parse_u8(data, &cursor);
+
   song->title = (char*)malloc(TITLE_LEN);
   parse_array(data, &cursor, song->title, TITLE_LEN);
 
@@ -76,7 +78,7 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
     }
   }
 
-  song->id = file->id;
+  song->index = file->id;
   song->audioPath = file->getAudioFile();
   song->backgroundTilesPath = file->getBackgroundTilesFile();
   song->backgroundPalettePath = file->getBackgroundPaletteFile();

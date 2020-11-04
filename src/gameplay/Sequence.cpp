@@ -144,7 +144,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
     return;
   }
 
-  if (gameMode == GameMode::CAMPAIGN && song->id == 1) {
+  if (gameMode == GameMode::CAMPAIGN && song->index == 1) {
     goTo(new TalkScene(
              _engine, _fs, KEYS_HINT,
              [song, chart](u16 keys) {

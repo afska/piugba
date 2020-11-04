@@ -18,6 +18,7 @@ module.exports = class SongSerializer {
     const { metadata, charts } = this.simfile;
 
     return buffer
+      .UInt8(metadata.id)
       .String(metadata.title, TITLE_LEN)
       .String(metadata.artist, ARTIST_LEN)
       .UInt8(Channels[metadata.channel])

@@ -370,7 +370,7 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::finishAndGoToEvaluation() {
   auto evaluation = score->evaluate();
-  bool isLastSong = SAVEFILE_setGradeOf(song->id, chart->difficulty,
+  bool isLastSong = SAVEFILE_setGradeOf(song->index, chart->difficulty,
                                         chart->level, evaluation->getGrade());
 
   unload();
