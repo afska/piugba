@@ -1,8 +1,6 @@
 #ifndef SETTINGS_SCENE_H
 #define SETTINGS_SCENE_H
 
-#include <libgba-sprite-engine/sprites/sprite.h>
-
 #include "base/MenuScene.h"
 
 class SettingsScene : public MenuScene {

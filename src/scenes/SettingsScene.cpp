@@ -4,6 +4,7 @@
 
 #include "CalibrateScene.h"
 #include "StartScene.h"
+#include "assets.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 

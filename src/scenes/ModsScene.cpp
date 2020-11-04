@@ -1,5 +1,6 @@
 #include "ModsScene.h"
 
+#include "assets.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
