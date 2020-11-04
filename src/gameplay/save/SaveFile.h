@@ -142,13 +142,8 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
   return true;
 }
 
-inline GradeType SAVEFILE_getGradeOf(u8 songIndex,
-                                     DifficultyLevel level,
-                                     u8 numericLevel) {
+inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-
-  if (gameMode == GameMode::ARCADE)
-    return ARCADE_readSingle(songIndex, numericLevel);
 
   u32 index =
       (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
@@ -160,41 +155,66 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex,
       SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
 }
 
+inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
+  return ARCADE_readSingle(songId, numericLevel);
+}
+
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
+                                u8 songId,
                                 u8 numericLevel,
                                 GradeType grade) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 
-  if (gameMode == GameMode::ARCADE) {
-    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
-        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
-      return false;
+  switch (gameMode) {
+    {
+      case GameMode::CAMPAIGN:
+      case GameMode::IMPOSSIBLE:
+        u32 index =
+            (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) +
+            level;
+        int lastIndex =
+            SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
+        u8 librarySize = SAVEFILE_getLibrarySize();
+        bool firstTime = songIndex > lastIndex;
 
-    // TODO: Use the right index depending on list
-    ARCADE_writeSingle(songIndex, numericLevel, grade);
-    return false;
+        if (firstTime) {
+          auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);
+          auto completedSongs = (u8)min(songIndex + 1, librarySize);
+          SAVEFILE_write8(SRAM->progress[index].completedSongs, completedSongs);
+          SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
+          SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
+        }
+
+        u8 currentGrade =
+            SAVEFILE_read8(SRAM->progress[index].grades[songIndex]);
+        if (firstTime || grade < currentGrade)
+          SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
+
+        return songIndex == SAVEFILE_getLibrarySize() - 1;
+    }
+    {
+      case GameMode::ARCADE:
+      case GameMode::MULTI_VS:
+        if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
+            GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+          return false;
+
+        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
+        if (grade < currentGrade)
+          ARCADE_writeSingle(songId, numericLevel, grade);
+
+        return false;
+    }
+    {
+      case GameMode::MULTI_COOP:
+        u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
+        if (grade < currentGrade)
+          ARCADE_writeDouble(songId, numericLevel, grade);
+
+        return false;
+    }
   }
-
-  u32 index =
-      (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
-  int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
-  u8 librarySize = SAVEFILE_getLibrarySize();
-  bool firstTime = songIndex > lastIndex;
-
-  if (firstTime) {
-    auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);
-    auto completedSongs = (u8)min(songIndex + 1, librarySize);
-    SAVEFILE_write8(SRAM->progress[index].completedSongs, completedSongs);
-    SAVEFILE_write8(SRAM->memory.pageIndex, Div(nextSongIndex, 4));
-    SAVEFILE_write8(SRAM->memory.songIndex, DivMod(nextSongIndex, 4));
-  }
-
-  if (firstTime ||
-      grade < SAVEFILE_read8(SRAM->progress[index].grades[songIndex]))
-    SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
-
-  return songIndex == SAVEFILE_getLibrarySize() - 1;
 }
 
 #endif  // SAVE_FILE_H

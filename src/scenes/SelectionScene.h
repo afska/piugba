@@ -171,7 +171,7 @@ class SelectionScene : public Scene {
     printNumericLevel(difficulty, 0);
   }
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
-  void loadSelectedSongGrade();
+  void loadSelectedSongGrade(u8 songId);
 
   ~SelectionScene();
 };

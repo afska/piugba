@@ -411,7 +411,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   printNumericLevel(song->charts[getSelectedNumericLevelIndex()].difficulty);
-  loadSelectedSongGrade();
+  loadSelectedSongGrade(song->id);
   if (!isChangingLevel) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
@@ -510,11 +510,10 @@ void SelectionScene::loadProgress() {
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     auto songIndex = page * PAGE_SIZE + i;
 
-    gradeBadges[i]->setType(IS_STORY(getGameMode())
-                                ? SAVEFILE_getGradeOf(songIndex,
-                                                      difficulty->getValue(),
-                                                      getSelectedNumericLevel())
-                                : GradeType::UNPLAYED);
+    gradeBadges[i]->setType(
+        IS_STORY(getGameMode())
+            ? SAVEFILE_getStoryGradeOf(songIndex, difficulty->getValue())
+            : GradeType::UNPLAYED);
     locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
                          songIndex <= count - 1);
   }
@@ -546,18 +545,17 @@ void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
   SCENE_write(levelText, NUMERIC_LEVEL_ROW + offset);
 }
 
-void SelectionScene::loadSelectedSongGrade() {
+void SelectionScene::loadSelectedSongGrade(u8 songId) {
   if (IS_STORY(getGameMode()))
     return;
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     auto songIndex = page * PAGE_SIZE + i;
 
-    gradeBadges[i]->setType(songIndex == getSelectedSongIndex()
-                                ? SAVEFILE_getGradeOf(songIndex,
-                                                      difficulty->getValue(),
-                                                      getSelectedNumericLevel())
-                                : GradeType::UNPLAYED);
+    gradeBadges[i]->setType(
+        songIndex == getSelectedSongIndex()
+            ? SAVEFILE_getArcadeGradeOf(songId, getSelectedNumericLevel())
+            : GradeType::UNPLAYED);
   }
 }
 
