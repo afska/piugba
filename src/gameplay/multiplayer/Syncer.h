@@ -53,4 +53,6 @@ class Syncer {
   void reset();
 };
 
+extern Syncer* syncer;
+
 #endif  // SYNCER_H

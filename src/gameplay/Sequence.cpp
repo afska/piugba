@@ -9,6 +9,7 @@
 #include "gameplay/Library.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
+#include "scenes/MultiplayerLobbyScene.h"
 #include "scenes/SelectionScene.h"
 #include "scenes/SongScene.h"
 #include "scenes/StartScene.h"
@@ -114,7 +115,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   if (IS_MULTIPLAYER(gameMode)) {
-    goTo(new TalkScene(_engine, _fs, std::string("// TODO"), [](u16 keys) {}));
+    goTo(new MultiplayerLobbyScene(_engine, _fs));
   } else {
     auto message =
         gameMode == GameMode::CAMPAIGN
