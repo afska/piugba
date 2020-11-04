@@ -38,6 +38,7 @@ SRCDIRS		:= src \
 						 src/gameplay \
 						 src/gameplay/debug \
 						 src/gameplay/models \
+						 src/gameplay/multiplayer \
 						 src/gameplay/save \
 						 src/objects \
 						 src/objects/base \

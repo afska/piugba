@@ -46,11 +46,11 @@ typedef struct __attribute__((__packed__)) {
 #define SAVEFILE_read32(TARGET)                                    \
   (u32)(*(((char*)&TARGET) + 0) + (*(((char*)&TARGET) + 1) << 8) + \
         (*(((char*)&TARGET) + 2) << 16) + (*(((char*)&TARGET) + 3) << 24))
-#define SAVEFILE_write32(DEST, VALUE)                        \
-  *(((char*)&DEST) + 0) = (((u32)VALUE) & 0x000000ff) >> 0;  \
-  *(((char*)&DEST) + 1) = (((u32)VALUE) & 0x0000ff00) >> 8;  \
-  *(((char*)&DEST) + 2) = (((u32)VALUE) & 0x00ff0000) >> 16; \
-  *(((char*)&DEST) + 3) = (((u32)VALUE) & 0xff000000) >> 24;
+#define SAVEFILE_write32(DEST, VALUE)                          \
+  *(((char*)&DEST) + 0) = (((u32)(VALUE)) & 0x000000ff) >> 0;  \
+  *(((char*)&DEST) + 1) = (((u32)(VALUE)) & 0x0000ff00) >> 8;  \
+  *(((char*)&DEST) + 2) = (((u32)(VALUE)) & 0x00ff0000) >> 16; \
+  *(((char*)&DEST) + 3) = (((u32)(VALUE)) & 0xff000000) >> 24;
 
 inline void SAVEFILE_resetSettings() {
   SAVEFILE_write32(SRAM->settings.audioLag, 0);
