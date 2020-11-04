@@ -2,8 +2,6 @@
 
 #include "SaveFile.h"
 
-// TODO: Test and use
-
 #define ARCADE_read(ARRAY, SONG_INDEX, LEVEL)               \
   u32 index = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) / 2; \
   u32 part = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) % 2;  \

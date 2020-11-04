@@ -142,10 +142,13 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
   return true;
 }
 
-inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
+inline GradeType SAVEFILE_getGradeOf(u8 songIndex,
+                                     DifficultyLevel level,
+                                     u8 numericLevel) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+
   if (gameMode == GameMode::ARCADE)
-    return GradeType::UNPLAYED;
+    return ARCADE_readSingle(songIndex, numericLevel);
 
   u32 index =
       (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
@@ -159,10 +162,19 @@ inline GradeType SAVEFILE_getGradeOf(u8 songIndex, DifficultyLevel level) {
 
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
+                                u8 numericLevel,
                                 GradeType grade) {
   auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  if (gameMode == GameMode::ARCADE)
+
+  if (gameMode == GameMode::ARCADE) {
+    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
+        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+      return false;
+
+    // TODO: Use the right index depending on list
+    ARCADE_writeSingle(songIndex, numericLevel, grade);
     return false;
+  }
 
   u32 index =
       (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;

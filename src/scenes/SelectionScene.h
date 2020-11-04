@@ -160,6 +160,7 @@ class SelectionScene : public Scene {
 
   void updateSelection() { updateSelection(false); }
   void updateSelection(bool isChangingLevel);
+  void updateLevel(Song* song, bool isChangingLevel);
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);
@@ -170,6 +171,7 @@ class SelectionScene : public Scene {
     printNumericLevel(difficulty, 0);
   }
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
+  void loadSelectedSongGrade();
 
   ~SelectionScene();
 };

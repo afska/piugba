@@ -100,7 +100,10 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
-  if (!IS_STORY(getGameMode())) {
+  if (IS_STORY(getGameMode())) {
+    auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+    difficulty->setValue(static_cast<DifficultyLevel>(level));
+  } else {
     numericLevelBadge = std::unique_ptr<Button>{
         new Button(ButtonType::LEVEL_METER, NUMERIC_LEVEL_BADGE_X,
                    NUMERIC_LEVEL_BADGE_Y, false)};
@@ -108,9 +111,6 @@ void SelectionScene::load() {
 
     difficulty->setValue(DifficultyLevel::NUMERIC);
     SPRITE_hide(multiplier->get());
-  } else {
-    auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
-    difficulty->setValue(static_cast<DifficultyLevel>(level));
   }
 
   setUpSpritesPalette();
@@ -408,31 +408,43 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 void SelectionScene::updateSelection(bool isChangingLevel) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
-  bool canUpdateLevel = false;
-  u8 currentLevel;
-  if (!numericLevels.empty()) {
-    canUpdateLevel = true;
-    currentLevel = getSelectedNumericLevel();
-    numericLevels.clear();
-  }
-  for (u32 i = 0; i < song->chartCount; i++)
-    numericLevels.push_back(song->charts[i].level);
-  if (canUpdateLevel && !isChangingLevel)
-    setClosestNumericLevel(currentLevel);
-  if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
-    setClosestNumericLevel(0);
-
+  updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   printNumericLevel(song->charts[getSelectedNumericLevelIndex()].difficulty);
+  loadSelectedSongGrade();
   if (!isChangingLevel) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
   }
+
   SONG_free(song);
 
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
   SAVEFILE_write8(SRAM->memory.songIndex, selected);
   highlighter->select(selected);
+}
+
+void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
+  bool canUpdateLevel = false;
+  u8 currentLevel;
+
+  if (!numericLevels.empty()) {
+    canUpdateLevel = true;
+    currentLevel = getSelectedNumericLevel();
+    numericLevels.clear();
+  }
+
+  for (u32 i = 0; i < song->chartCount; i++)
+    numericLevels.push_back(song->charts[i].level);
+
+  if (canUpdateLevel && !isChangingLevel)
+    setClosestNumericLevel(currentLevel);
+  if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
+    setClosestNumericLevel(0);
+
+  if (difficulty->getValue() != DifficultyLevel::NUMERIC)
+    setClosestNumericLevel(
+        SONG_findChartByDifficultyLevel(song, difficulty->getValue())->level);
 }
 
 void SelectionScene::confirm() {
@@ -496,11 +508,15 @@ void SelectionScene::loadProgress() {
   progress->setValue(getCompletedSongs(), count);
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    auto songId = page * PAGE_SIZE + i;
-    auto grade = SAVEFILE_getGradeOf(songId, difficulty->getValue());
-    gradeBadges[i]->setType(grade);
-    locks[i]->setVisible(songId > getLastUnlockedSongIndex() &&
-                         songId <= count - 1);
+    auto songIndex = page * PAGE_SIZE + i;
+
+    gradeBadges[i]->setType(IS_STORY(getGameMode())
+                                ? SAVEFILE_getGradeOf(songIndex,
+                                                      difficulty->getValue(),
+                                                      getSelectedNumericLevel())
+                                : GradeType::UNPLAYED);
+    locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
+                         songIndex <= count - 1);
   }
 }
 
@@ -528,6 +544,21 @@ void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
   if (levelText.size() == 1)
     levelText = "0" + levelText;
   SCENE_write(levelText, NUMERIC_LEVEL_ROW + offset);
+}
+
+void SelectionScene::loadSelectedSongGrade() {
+  if (IS_STORY(getGameMode()))
+    return;
+
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    auto songIndex = page * PAGE_SIZE + i;
+
+    gradeBadges[i]->setType(songIndex == getSelectedSongIndex()
+                                ? SAVEFILE_getGradeOf(songIndex,
+                                                      difficulty->getValue(),
+                                                      getSelectedNumericLevel())
+                                : GradeType::UNPLAYED);
+  }
 }
 
 SelectionScene::~SelectionScene() {
