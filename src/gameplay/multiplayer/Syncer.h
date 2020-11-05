@@ -37,6 +37,7 @@ class Syncer {
   Syncer() {}
 
   inline bool isReady() { return state >= SyncState::SYNC_STATE_PLAYING; }
+  inline int getPlayerId() { return playerId; }
   inline SyncError getLastError() { return error; }
 
   void initialize(SyncMode mode);
@@ -47,6 +48,7 @@ class Syncer {
   SyncState state = SyncState::SYNC_STATE_WAIT_ROM_ID;
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
+  int playerId = -1;
   u16 outgoingData = 0;
 
   inline u16 getPartialRomId() {
@@ -54,7 +56,7 @@ class Syncer {
     return (romId & 0b00000000000111111111100000000000) >> 11;
   }
 
-  void syncState(LinkState linkState);
+  void sync(LinkState linkState);
   void fail(SyncError error);
   void reset();
   void resetError();

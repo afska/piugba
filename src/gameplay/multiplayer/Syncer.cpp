@@ -21,20 +21,21 @@ void Syncer::update() {
 
   if (!isActive) {
     isActive = true;
+    playerId = linkState.currentPlayerId;
     reset();
   }
 
   if (isReady())
     resetError();
 
-  syncState(linkState);
+  sync(linkState);
 }
 
-void Syncer::syncState(LinkState linkState) {
+void Syncer::sync(LinkState linkState) {
   if (mode == SyncMode::SYNC_MODE_OFFLINE)
     return;
 
-  u16 incomingData = linkState.data[!linkState.currentPlayerId];
+  u16 incomingData = linkState.data[!playerId];
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
@@ -68,6 +69,7 @@ void Syncer::syncState(LinkState linkState) {
 
 void Syncer::fail(SyncError error) {
   isActive = false;
+  playerId = -1;
   reset();
   this->error = error;
 }
