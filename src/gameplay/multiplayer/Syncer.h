@@ -3,6 +3,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
 enum SyncState {
@@ -37,8 +38,8 @@ class Syncer {
 
   inline bool isReady() { return state >= SyncState::SYNC_STATE_PLAYING; }
   inline SyncError getLastError() { return error; }
-  inline void setMode(SyncMode mode) { this->mode = mode; }
 
+  void initialize(SyncMode mode);
   void update();
 
  private:
@@ -48,9 +49,15 @@ class Syncer {
   SyncError error = SyncError::SYNC_ERROR_NONE;
   u16 outgoingData = 0;
 
+  inline u16 getPartialRomId() {
+    u32 romId = SAVEFILE_read32(SRAM->romId);
+    return (romId & 0b00000000000111111111100000000000) >> 11;
+  }
+
   void syncState(LinkState linkState);
   void fail(SyncError error);
   void reset();
+  void resetError();
 };
 
 extern Syncer* syncer;

@@ -115,7 +115,10 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   if (IS_MULTIPLAYER(gameMode)) {
-    goTo(new MultiplayerLobbyScene(_engine, _fs));
+    goTo(new MultiplayerLobbyScene(_engine, _fs,
+                                   gameMode == GameMode::MULTI_COOP
+                                       ? SyncMode::SYNC_MODE_COOP
+                                       : SyncMode::SYNC_MODE_VS));
   } else {
     auto message =
         gameMode == GameMode::CAMPAIGN

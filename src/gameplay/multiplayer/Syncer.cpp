@@ -1,9 +1,10 @@
 #include "Syncer.h"
 
-#include "gameplay/save/SaveFile.h"
-
-#define ROM_ID_MASK 0b00000000000111111111100000000000
-#define ROM_ID_MASK_OFFSET 11
+void Syncer::initialize(SyncMode mode) {
+  this->mode = mode;
+  reset();
+  resetError();
+}
 
 void Syncer::update() {
   auto linkState = linkConnection->tick(outgoingData);
@@ -23,6 +24,9 @@ void Syncer::update() {
     reset();
   }
 
+  if (isReady())
+    resetError();
+
   syncState(linkState);
 }
 
@@ -34,31 +38,30 @@ void Syncer::syncState(LinkState linkState) {
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
-  if (state == SyncState::SYNC_STATE_WAIT_ROM_ID) {
-    u32 romId = SAVEFILE_read32(SRAM->romId);
-    u16 partialRomId = (romId & ROM_ID_MASK) >> ROM_ID_MASK_OFFSET;
-    outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, partialRomId);
+  switch (state) {
+    case SyncState::SYNC_STATE_WAIT_ROM_ID: {
+      outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
 
-    if (incomingEvent == SYNC_EVENT_ROM_ID) {
-      if (incomingPayload == partialRomId)
-        state = SyncState::SYNC_STATE_WAIT_MODE;
-      else {
-        fail(SyncError::SYNC_ERROR_ROM_MISMATCH);
-        return;
+      if (incomingEvent == SYNC_EVENT_ROM_ID) {
+        if (incomingPayload == getPartialRomId())
+          state = SyncState::SYNC_STATE_WAIT_MODE;
+        else
+          fail(SyncError::SYNC_ERROR_ROM_MISMATCH);
       }
     }
-  }
+    case SyncState::SYNC_STATE_WAIT_MODE: {
+      outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_MODE, mode);
 
-  if (state == SyncState::SYNC_STATE_WAIT_MODE) {
-    outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_MODE, mode);
-
-    if (incomingEvent == SYNC_EVENT_MODE) {
-      if (incomingPayload == mode)
-        state = SyncState::SYNC_STATE_PLAYING;
-      else {
-        fail(SyncError::SYNC_ERROR_WRONG_MODE);
-        return;
+      if (incomingEvent == SYNC_EVENT_MODE) {
+        if (incomingPayload == mode)
+          state = SyncState::SYNC_STATE_PLAYING;
+        else
+          fail(SyncError::SYNC_ERROR_WRONG_MODE);
       }
+    }
+    case SyncState::SYNC_STATE_PLAYING: {
+      // TODO: IMPLEMENT
+      // TODO: DISCONNECT ON UNEXPECTED DATA
     }
   }
 }
@@ -71,5 +74,9 @@ void Syncer::fail(SyncError error) {
 
 void Syncer::reset() {
   state = SyncState::SYNC_STATE_WAIT_ROM_ID;
+  outgoingData = 0;
+}
+
+void Syncer::resetError() {
   error = SyncError::SYNC_ERROR_NONE;
 }
