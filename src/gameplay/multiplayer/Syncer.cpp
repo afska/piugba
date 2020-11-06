@@ -1,5 +1,7 @@
 #include "Syncer.h"
 
+#include "Protocol.h"
+
 void Syncer::initialize(SyncMode mode) {
   this->mode = mode;
   reset();
@@ -39,27 +41,29 @@ void Syncer::sync(LinkState linkState) {
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
   switch (state) {
-    case SyncState::SYNC_STATE_WAIT_ROM_ID: {
+    case SyncState::SYNC_STATE_SEND_ROM_ID: {
       outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
 
       if (incomingEvent == SYNC_EVENT_ROM_ID) {
         if (incomingPayload == getPartialRomId())
-          state = SyncState::SYNC_STATE_WAIT_MODE;
+          state = SyncState::SYNC_STATE_SEND_PROGRESS;
         else
           fail(SyncError::SYNC_ERROR_ROM_MISMATCH);
       }
     }
-    case SyncState::SYNC_STATE_WAIT_MODE: {
+    case SyncState::SYNC_STATE_SEND_PROGRESS: {
       outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_MODE, mode);
+      // TODO: Use SYNCER_MSG_PROGRESS_BUILD
+      // TODO: Validate library type and library size
 
       if (incomingEvent == SYNC_EVENT_MODE) {
         if (incomingPayload == mode)
-          state = SyncState::SYNC_STATE_PLAYING;
+          state = SyncState::SYNC_STATE_SELECTING_SONG;
         else
           fail(SyncError::SYNC_ERROR_WRONG_MODE);
       }
     }
-    case SyncState::SYNC_STATE_PLAYING: {
+    case SyncState::SYNC_STATE_SELECTING_SONG: {
       // TODO: IMPLEMENT
       // TODO: DISCONNECT ON UNEXPECTED DATA
     }
@@ -73,7 +77,7 @@ void Syncer::fail(SyncError error) {
 }
 
 void Syncer::reset() {
-  state = SyncState::SYNC_STATE_WAIT_ROM_ID;
+  state = SyncState::SYNC_STATE_SEND_ROM_ID;
   outgoingData = 0;
 }
 

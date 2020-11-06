@@ -7,9 +7,9 @@
 #include "utils/LinkConnection.h"
 
 enum SyncState {
-  SYNC_STATE_WAIT_ROM_ID,
-  SYNC_STATE_WAIT_MODE,
-  SYNC_STATE_PLAYING
+  SYNC_STATE_SEND_ROM_ID,
+  SYNC_STATE_SEND_PROGRESS,
+  SYNC_STATE_SELECTING_SONG
 };
 enum SyncMode { SYNC_MODE_OFFLINE, SYNC_MODE_VS, SYNC_MODE_COOP };
 enum SyncError {
@@ -19,33 +19,21 @@ enum SyncError {
   SYNC_ERROR_WRONG_MODE
 };
 
-#define SYNC_EVENT_ROM_ID 1
-#define SYNC_EVENT_MODE 2
-
-/*
-F: Heartbit
-E: Reserved (always 0)
-A~D: Event (16 values)
-0~9: Payload (1024 values)
-*/
-#define SYNCER_MSG_BUILD(EVENT, PAYLOAD) (((EVENT) << 10) | (PAYLOAD))
-#define SYNCER_MSG_EVENT(MSG) (((MSG) >> 10) & 0b1111)
-#define SYNCER_MSG_PAYLOAD(MSG) ((MSG)&0b1111111111)
-
 class Syncer {
  public:
   Syncer() {}
 
-  inline bool isReady() { return state >= SyncState::SYNC_STATE_PLAYING; }
-  inline int getPlayerId() { return playerId; }
+  inline bool isReady() {
+    return state >= SyncState::SYNC_STATE_SELECTING_SONG;
+  }
+  inline bool isMaster() { return playerId == 0; }
   inline SyncError getLastError() { return error; }
-  inline SyncState getState() { return state; }  // DEBUG
 
   void initialize(SyncMode mode);
   void update();
 
  private:
-  SyncState state = SyncState::SYNC_STATE_WAIT_ROM_ID;
+  SyncState state = SyncState::SYNC_STATE_SEND_ROM_ID;
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
