@@ -39,6 +39,7 @@ class Syncer {
   inline bool isReady() { return state >= SyncState::SYNC_STATE_PLAYING; }
   inline int getPlayerId() { return playerId; }
   inline SyncError getLastError() { return error; }
+  inline SyncState getState() { return state; }  // DEBUG
 
   void initialize(SyncMode mode);
   void update();

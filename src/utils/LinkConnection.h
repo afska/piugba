@@ -55,12 +55,15 @@ struct LinkState {
   void _reset() {
     playerCount = 0;
     currentPlayerId = 0;
+    _resetData();
+    _tick = 0;
+    _lastIRQTick = 0;
+  }
+  void _resetData() {
     for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
       data[i] = LINK_NO_DATA;
       _heartBits[i] = LINK_HEART_BIT_UNKNOWN;
     }
-    _tick = 0;
-    _lastIRQTick = 0;
   }
 };
 
@@ -74,17 +77,28 @@ class LinkConnection {
   };
   struct LinkState _linkState;
 
-  explicit LinkConnection(BaudRate baudRate = BAUD_RATE_3) {
+  explicit LinkConnection(u32 timeoutFrames = 1,
+                          BaudRate baudRate = BAUD_RATE_3) {
+    this->timeoutFrames = timeoutFrames;
+
     REG_RCNT = 0;
     REG_SIOCNT = (u8)baudRate;
-    this->setBitHigh(LINK_BIT_MULTIPLAYER);
-    this->setBitHigh(LINK_BIT_IRQ);
+    setBitHigh(LINK_BIT_MULTIPLAYER);
+    setBitHigh(LINK_BIT_IRQ);
   }
 
   LinkState tick(u16 data) {
     bool shouldForceReset = !isBitHigh(LINK_BIT_READY) ||
                             isBitHigh(LINK_BIT_ERROR) ||
                             _linkState._isOutOfSync();
+
+    if (shouldForceReset) {
+      timeoutCount++;
+      _linkState._resetData();
+      shouldForceReset = timeoutCount >= timeoutFrames;
+    } else
+      timeoutCount = 0;
+
     if (shouldForceReset) {
       resetCommunicationCircuit();
       _linkState._reset();
@@ -102,6 +116,8 @@ class LinkConnection {
   }
 
  private:
+  u32 timeoutFrames;
+  u32 timeoutCount = 0;
   bool heartBit = 0;
 
   void resetCommunicationCircuit() {
