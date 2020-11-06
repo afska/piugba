@@ -44,12 +44,13 @@ class Syncer {
   void update();
 
  private:
-  bool isActive = false;
   SyncState state = SyncState::SYNC_STATE_WAIT_ROM_ID;
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
   u16 outgoingData = 0;
+
+  inline bool isActive() { return playerId > -1; }
 
   inline u16 getPartialRomId() {
     u32 romId = SAVEFILE_read32(SRAM->romId);

@@ -22,8 +22,7 @@ void Syncer::update() {
     return;
   }
 
-  if (!isActive) {
-    isActive = true;
+  if (!isActive()) {
     playerId = linkState.currentPlayerId;
     reset();
   }
@@ -68,7 +67,6 @@ void Syncer::sync(LinkState linkState) {
 }
 
 void Syncer::fail(SyncError error) {
-  isActive = false;
   playerId = -1;
   reset();
   this->error = error;
