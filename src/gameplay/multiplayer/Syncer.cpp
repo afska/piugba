@@ -7,6 +7,9 @@ void Syncer::initialize(SyncMode mode) {
 }
 
 void Syncer::update() {
+  if (mode == SyncMode::SYNC_MODE_OFFLINE)
+    return;
+
   auto linkState = linkConnection->tick(outgoingData);
 
   if (!linkState.isConnected()) {
@@ -32,9 +35,6 @@ void Syncer::update() {
 }
 
 void Syncer::sync(LinkState linkState) {
-  if (mode == SyncMode::SYNC_MODE_OFFLINE)
-    return;
-
   u16 incomingData = linkState.data[!playerId];
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
