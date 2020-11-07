@@ -36,4 +36,18 @@ struct Message {
 #define SYNCER_MSG_PROGRESS_LIBRARY_TYPE(MSG) (((MSG) >> 7) & 0b11)
 #define SYNCER_MSG_PROGRESS_COMPLETED_SONGS(MSG) ((MSG)&0b1111111)
 
+/*
+  4: DOWNRIGHT
+  3: UPRIGHT
+  2: CENTER
+  1: UPLEFT
+  0: DOWNLEFT
+*/
+#define SYNCER_MSG_SELECTION_BUILD(DOWNLEFT, UPLEFT, CENTER, UPRIGHT,   \
+                                   DOWNRIGHT)                           \
+  ((!!(DOWNRIGHT)) << 4) | ((!!(UPRIGHT)) << 3) | ((!!(CENTER)) << 2) | \
+      ((!!(UPLEFT)) << 1) | (!!(DOWNLEFT))
+#define SYNCER_MSG_SELECTION_DIRECTION(MSG, DIRECTION) \
+  (((MSG) >> DIRECTION) & 1)
+
 #endif  // PROTOCOL_H

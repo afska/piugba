@@ -6,12 +6,14 @@
 #include <tonc_input.h>
 
 #include "ModsScene.h"
+#include "MultiplayerLobbyScene.h"
 #include "SettingsScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/models/Song.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
@@ -124,6 +126,16 @@ void SelectionScene::load() {
 void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  // auto gameMode = SAVEFILE_getGameMode();
+  // if (IS_MULTIPLAYER(SAVEFILE_getGameMode()) && !syncer->isReady())
+  //   engine->transitionIntoScene(
+  //       new MultiplayerLobbyScene(
+  //           engine, fs,
+  //           gameMode == GameMode::MULTI_COOP
+  //               ? SyncMode::SYNC_MODE_COOP
+  //               : SyncMode::SYNC_MODE_VS),  // TODO: DRY, Sequence.cpp
+  //       new FadeOutScene(4));
 
   if (init < INIT_FRAME) {
     init++;
@@ -259,13 +271,30 @@ void SelectionScene::goToSong() {
 }
 
 void SelectionScene::processKeys(u16 keys) {
-  arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-  arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-  arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-  multiplier->setIsPressed(keys & KEY_SELECT);
-  settingsMenuInput->setIsPressed(keys & KEY_START);
+  auto gameMode = SAVEFILE_getGameMode();
+
+  if (IS_MULTIPLAYER(gameMode) && !syncer->isMaster() && syncer->isReady()) {
+    auto lastMessage = syncer->getLastMessage();
+
+    if (lastMessage.event == SYNC_EVENT_SELECTION) {
+      auto receivedKeys = lastMessage.data1;
+      for (u32 i = 0; i < ARROWS_TOTAL; i++)
+        arrowSelectors[i]->setIsPressed(
+            SYNCER_MSG_SELECTION_DIRECTION(receivedKeys, i));
+    }
+  } else {
+    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
+    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
+    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(
+        KEY_DOWNRIGHT(keys));
+  }
+
+  if (!IS_MULTIPLAYER(gameMode)) {
+    multiplier->setIsPressed(keys & KEY_SELECT);
+    settingsMenuInput->setIsPressed(keys & KEY_START);
+  }
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
