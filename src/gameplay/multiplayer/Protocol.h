@@ -1,5 +1,5 @@
-#define SYNC_EVENT_ROM_ID 1
-#define SYNC_EVENT_PROGRESS 2
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
 
 /*
   F: Heartbit
@@ -11,6 +11,20 @@
 #define SYNCER_MSG_EVENT(MSG) (((MSG) >> 10) & 0b1111)
 #define SYNCER_MSG_PAYLOAD(MSG) ((MSG)&0b1111111111)
 
+// Generic message struct (`data` fields are parts of payload)
+struct Message {
+  u8 event;
+  u16 data1;
+  u16 data2;
+  u16 data3;
+};
+
+// Message IDs:
+#define SYNC_EVENT_ROM_ID 1
+#define SYNC_EVENT_PROGRESS 2
+#define SYNC_EVENT_SELECTION 3
+#define SYNC_EVENT_SONG 4
+
 /*
   9: Mode (0 = VS, 1 = Co-op)
   7~8: Library type (0 = Normal, 1 = Hard, 2 = Crazy)
@@ -21,3 +35,5 @@
 #define SYNCER_MSG_PROGRESS_MODE(MSG) (((MSG) >> 9) & 1)
 #define SYNCER_MSG_PROGRESS_LIBRARY_TYPE(MSG) (((MSG) >> 7) & 0b11)
 #define SYNCER_MSG_PROGRESS_COMPLETED_SONGS(MSG) ((MSG)&0b1111111)
+
+#endif  // PROTOCOL_H

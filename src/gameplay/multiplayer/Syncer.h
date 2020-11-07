@@ -2,14 +2,18 @@
 #define SYNCER_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+#include <libgba-sprite-engine/gba/tonc_memdef.h>
+#include <libgba-sprite-engine/gba/tonc_memmap.h>
 
+#include "Protocol.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,
-  SYNC_STATE_SELECTING_SONG
+  SYNC_STATE_SELECTING_SONG,
+  SYNC_STATE_PLAYING
 };
 enum SyncMode { SYNC_MODE_OFFLINE, SYNC_MODE_VS, SYNC_MODE_COOP };
 enum SyncError {
@@ -29,6 +33,10 @@ class Syncer {
   inline bool isMaster() { return playerId == 0; }
   inline SyncError getLastError() { return error; }
 
+  inline SyncState getState() { return state; }
+  inline void setState(SyncState newState) { state = newState; }
+  inline Message getLastMessage() { return lastMessage; }
+
   void initialize(SyncMode mode);
   void update();
 
@@ -38,8 +46,11 @@ class Syncer {
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
   u16 outgoingData = 0;
+  Message lastMessage;
 
   inline bool isActive() { return playerId > -1; }
+
+  inline u16 getPressedKeys() { return ~REG_KEYS & KEY_ANY; }
 
   inline u16 getPartialRomId() {
     u32 romId = SAVEFILE_read32(SRAM->romId);

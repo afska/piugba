@@ -1,7 +1,5 @@
 #include "Syncer.h"
 
-#include "Protocol.h"
-
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
     fail(FAILURE_REASON);                 \
@@ -83,8 +81,8 @@ void Syncer::sync(LinkState linkState) {
       }
     }
     case SyncState::SYNC_STATE_SELECTING_SONG: {
-      // TODO: IMPLEMENT
-      // TODO: DISCONNECT ON UNEXPECTED DATA
+      lastMessage.event = SYNC_EVENT_SELECTION;
+      lastMessage.data1 = getPressedKeys();
     }
   }
 }
@@ -98,6 +96,7 @@ void Syncer::fail(SyncError error) {
 void Syncer::reset() {
   state = SyncState::SYNC_STATE_SEND_ROM_ID;
   outgoingData = 0;
+  lastMessage.event = 0;
 }
 
 void Syncer::resetError() {
