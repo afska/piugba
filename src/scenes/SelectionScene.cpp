@@ -80,7 +80,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
   sprites.push_back(multiplier->get());
   progress->render(&sprites);
 
-  if (!IS_STORY(getGameMode()))
+  if (!IS_STORY(SAVEFILE_getGameMode()))
     sprites.push_back(numericLevelBadge->get());
 
   return sprites;
@@ -100,7 +100,7 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
-  if (IS_STORY(getGameMode())) {
+  if (IS_STORY(SAVEFILE_getGameMode())) {
     auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
     difficulty->setValue(static_cast<DifficultyLevel>(level));
   } else {
@@ -249,7 +249,7 @@ void SelectionScene::goToSong() {
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
   Chart* chart =
-      IS_STORY(getGameMode())
+      IS_STORY(SAVEFILE_getGameMode())
           ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
           : SONG_findChartByNumericLevelIndex(song,
                                               getSelectedNumericLevelIndex());
@@ -269,7 +269,7 @@ void SelectionScene::processKeys(u16 keys) {
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
-  if (IS_STORY(getGameMode())) {
+  if (IS_STORY(SAVEFILE_getGameMode())) {
     if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
             static_cast<DifficultyLevel>(
@@ -315,7 +315,7 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents(u16 keys) {
   if (multiplier->hasBeenPressedNow()) {
-    if (IS_STORY(getGameMode())) {
+    if (IS_STORY(SAVEFILE_getGameMode())) {
       fxes_playSolo(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     } else {
@@ -448,7 +448,7 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
-  if (!IS_STORY(getGameMode()))
+  if (!IS_STORY(SAVEFILE_getGameMode()))
     numericLevelBadge->get()->moveTo(
         NUMERIC_LEVEL_BADGE_X,
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
@@ -464,7 +464,7 @@ void SelectionScene::confirm() {
 
 void SelectionScene::unconfirm() {
   if (confirmed) {
-    if (!IS_STORY(getGameMode()))
+    if (!IS_STORY(SAVEFILE_getGameMode()))
       numericLevelBadge->get()->moveTo(NUMERIC_LEVEL_BADGE_X,
                                        NUMERIC_LEVEL_BADGE_Y);
 
@@ -495,8 +495,8 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::loadChannels() {
   for (u32 i = 0; i < songs.size(); i++) {
-    auto channel =
-        SONG_getChannel(fs, getGameMode(), songs[i].get(), getLibraryType());
+    auto channel = SONG_getChannel(fs, SAVEFILE_getGameMode(), songs[i].get(),
+                                   getLibraryType());
     channelBadges[i]->setType(channel);
   }
 
@@ -511,7 +511,7 @@ void SelectionScene::loadProgress() {
     auto songIndex = page * PAGE_SIZE + i;
 
     gradeBadges[i]->setType(
-        IS_STORY(getGameMode())
+        IS_STORY(SAVEFILE_getGameMode())
             ? SAVEFILE_getStoryGradeOf(songIndex, difficulty->getValue())
             : GradeType::UNPLAYED);
     locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
@@ -527,7 +527,7 @@ void SelectionScene::setNames(std::string title, std::string artist) {
 }
 
 void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
-  if (IS_STORY(getGameMode()))
+  if (IS_STORY(SAVEFILE_getGameMode()))
     return;
 
   if (difficulty == DifficultyLevel::NORMAL)
@@ -546,7 +546,7 @@ void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
 }
 
 void SelectionScene::loadSelectedSongGrade(u8 songId) {
-  if (IS_STORY(getGameMode()))
+  if (IS_STORY(SAVEFILE_getGameMode()))
     return;
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {

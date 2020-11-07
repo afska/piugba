@@ -387,8 +387,7 @@ void SongScene::processModsLoad() {
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     targetMosaic = 0;
 
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  if (gameMode == GameMode::IMPOSSIBLE)
+  if (SAVEFILE_getGameMode() == GameMode::IMPOSSIBLE)
     setRate(rate + 1);
 }
 

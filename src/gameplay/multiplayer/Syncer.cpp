@@ -2,6 +2,12 @@
 
 #include "Protocol.h"
 
+#define ASSERT(CONDITION, FAILURE_REASON) \
+  if (!(CONDITION)) {                     \
+    fail(FAILURE_REASON);                 \
+    return;                               \
+  }
+
 void Syncer::initialize(SyncMode mode) {
   this->mode = mode;
   reset();
@@ -14,15 +20,8 @@ void Syncer::update() {
 
   auto linkState = linkConnection->tick(outgoingData);
 
-  if (!linkState.isConnected()) {
-    fail(SyncError::SYNC_ERROR_NONE);
-    return;
-  }
-
-  if (linkState.playerCount > 2) {
-    fail(SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
-    return;
-  }
+  ASSERT(linkState.isConnected(), SyncError::SYNC_ERROR_NONE);
+  ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
     playerId = linkState.currentPlayerId;
@@ -45,22 +44,42 @@ void Syncer::sync(LinkState linkState) {
       outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
 
       if (incomingEvent == SYNC_EVENT_ROM_ID) {
-        if (incomingPayload == getPartialRomId())
-          state = SyncState::SYNC_STATE_SEND_PROGRESS;
-        else
-          fail(SyncError::SYNC_ERROR_ROM_MISMATCH);
+        ASSERT(incomingPayload == getPartialRomId(),
+               SyncError::SYNC_ERROR_ROM_MISMATCH);
+        state = SyncState::SYNC_STATE_SEND_PROGRESS;
       }
     }
     case SyncState::SYNC_STATE_SEND_PROGRESS: {
-      outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_MODE, mode);
-      // TODO: Use SYNCER_MSG_PROGRESS_BUILD
-      // TODO: Validate library type and library size
+      u8 modeBit = mode == SyncMode::SYNC_MODE_COOP;
+      outgoingData =
+          isMaster()
+              ? SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS,
+                                 SYNCER_MSG_PROGRESS_BUILD(
+                                     modeBit, SAVEFILE_getMaxLibraryType(),
+                                     SAVEFILE_getMaxCompletedSongs()))
+              : SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS, modeBit);
 
-      if (incomingEvent == SYNC_EVENT_MODE) {
-        if (incomingPayload == mode)
+      if (incomingEvent == SYNC_EVENT_PROGRESS) {
+        if (isMaster()) {
+          ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
           state = SyncState::SYNC_STATE_SELECTING_SONG;
-        else
-          fail(SyncError::SYNC_ERROR_WRONG_MODE);
+        } else {
+          u8 receivedModeBit = SYNCER_MSG_PROGRESS_MODE(incomingPayload);
+          u8 receivedLibraryType =
+              SYNCER_MSG_PROGRESS_LIBRARY_TYPE(incomingPayload);
+          u8 receivedCompletedSongs =
+              SYNCER_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
+
+          ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
+          ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
+                     receivedLibraryType <= DifficultyLevel::CRAZY,
+                 SyncError::SYNC_ERROR_ROM_MISMATCH);
+          ASSERT(receivedCompletedSongs >= 0 &&
+                     receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
+                 SyncError::SYNC_ERROR_NONE);
+
+          state = SyncState::SYNC_STATE_SELECTING_SONG;
+        }
       }
     }
     case SyncState::SYNC_STATE_SELECTING_SONG: {

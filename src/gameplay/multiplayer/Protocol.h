@@ -1,5 +1,5 @@
 #define SYNC_EVENT_ROM_ID 1
-#define SYNC_EVENT_MODE 2
+#define SYNC_EVENT_PROGRESS 2
 
 /*
   F: Heartbit
@@ -13,11 +13,11 @@
 
 /*
   9: Mode (0 = VS, 1 = Co-op)
-  6~8: Library type (0 = Normal, 1 = Hard, 2 = Crazy)
+  7~8: Library type (0 = Normal, 1 = Hard, 2 = Crazy)
   0~6: Completed songs (0 ~ librarySize)
 */
 #define SYNCER_MSG_PROGRESS_BUILD(MODE, LIBRARY_TYPE, COMPLETED_SONGS) \
   (((MODE) << 9) | ((LIBRARY_TYPE) << 7) | (COMPLETED_SONGS))
 #define SYNCER_MSG_PROGRESS_MODE(MSG) (((MSG) >> 9) & 1)
-#define SYNCER_MSG_PROGRESS_LIBRARY_TYPE(MSG) (((MSG) >> 6) & 0b111)
+#define SYNCER_MSG_PROGRESS_LIBRARY_TYPE(MSG) (((MSG) >> 7) & 0b11)
 #define SYNCER_MSG_PROGRESS_COMPLETED_SONGS(MSG) ((MSG)&0b1111111)

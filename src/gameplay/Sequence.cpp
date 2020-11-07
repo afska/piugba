@@ -42,7 +42,7 @@ Scene* SEQUENCE_getInitialScene() {
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
@@ -105,8 +105,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
-  auto lastGameMode =
-      static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto lastGameMode = SAVEFILE_getGameMode();
   if (lastGameMode != gameMode) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
@@ -135,7 +134,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
@@ -177,7 +176,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
 }
 
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
 
   if (IS_STORY(gameMode) && isLastSong)
     goTo(new TalkScene(_engine, _fs,

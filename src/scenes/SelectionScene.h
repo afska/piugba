@@ -60,9 +60,6 @@ class SelectionScene : public Scene {
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
-  inline GameMode getGameMode() {
-    return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  }
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
@@ -71,25 +68,9 @@ class SelectionScene : public Scene {
   }
   inline u32 getCompletedSongs() {
     // TODO: Multi modes
-    return getGameMode() == GameMode::ARCADE
-               ? SAVEFILE_getCompletedSongs()
-               : getCompletedSongsOf(difficulty->getValue());
-  }
-  inline u32 getCompletedSongsOf(DifficultyLevel difficultyLevel) {
-    switch (getGameMode()) {
-      case GameMode::CAMPAIGN:
-      case GameMode::ARCADE: {
-        return SAVEFILE_read8(SRAM->progress[difficultyLevel].completedSongs);
-      }
-      case GameMode::IMPOSSIBLE: {
-        return SAVEFILE_read8(
-            SRAM->progress[PROGRESS_IMPOSSIBLE + difficultyLevel]
-                .completedSongs);
-      }
-        // TODO: Multi modes
-    }
-
-    return 0;
+    return SAVEFILE_getGameMode() == GameMode::ARCADE
+               ? SAVEFILE_getMaxCompletedSongs()
+               : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
   }
   inline u8 getSelectedNumericLevel() {
     return numericLevels[getSelectedNumericLevelIndex()];
@@ -112,25 +93,11 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
-    if (IS_STORY(getGameMode()))
+    // TODO: Multi modes
+    if (IS_STORY(SAVEFILE_getGameMode()))
       return difficulty->getValue();
 
-    // TODO: Multi modes
-
-    DifficultyLevel maxLevel;
-    u32 max = 0;
-
-    for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
-      auto difficultyLevel = static_cast<DifficultyLevel>(i);
-      auto completedSongs = getCompletedSongsOf(difficultyLevel);
-
-      if (completedSongs >= max) {
-        maxLevel = difficultyLevel;
-        max = completedSongs;
-      }
-    }
-
-    return maxLevel;
+    return SAVEFILE_getMaxLibraryType();
   }
 
   void setUpSpritesPalette();

@@ -5,7 +5,7 @@
 RAMState GameState;
 
 void STATE_setup(Song* song, Chart* chart) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
   if (song == NULL)
     gameMode = GameMode::ARCADE;
 

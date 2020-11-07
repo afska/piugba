@@ -118,7 +118,11 @@ inline u8 SAVEFILE_getLibrarySize() {
   return (SAVEFILE_read32(SRAM->romId)) & LIBRARY_SIZE_MASK;
 }
 
-inline u8 SAVEFILE_getCompletedSongs() {
+inline GameMode SAVEFILE_getGameMode() {
+  return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+}
+
+inline u8 SAVEFILE_getMaxCompletedSongs() {
   u8 a = SAVEFILE_read8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs);
   u8 b = SAVEFILE_read8(SRAM->progress[DifficultyLevel::HARD].completedSongs);
   u8 c = SAVEFILE_read8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs);
@@ -130,23 +134,47 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
   if (ENV_DEVELOPMENT)
     return true;
 
-  u8 completedSongs = SAVEFILE_getCompletedSongs();
+  u8 maxCompletedSongs = SAVEFILE_getMaxCompletedSongs();
 
   if (gameMode == GameMode::ARCADE || gameMode == GameMode::MULTI_VS ||
       gameMode == GameMode::MULTI_COOP)
-    return completedSongs >= 1;
+    return maxCompletedSongs >= 1;
 
   if (gameMode == GameMode::IMPOSSIBLE)
-    return completedSongs >= SAVEFILE_getLibrarySize();
+    return maxCompletedSongs >= SAVEFILE_getLibrarySize();
 
   return true;
 }
 
-inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+inline u32 SAVEFILE_getCompletedSongsOf(DifficultyLevel difficultyLevel) {
+  return SAVEFILE_read8(
+      SRAM->progress[(SAVEFILE_getGameMode() == GameMode::IMPOSSIBLE) *
+                         PROGRESS_IMPOSSIBLE +
+                     difficultyLevel]
+          .completedSongs);
+}
 
-  u32 index =
-      (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) + level;
+inline DifficultyLevel SAVEFILE_getMaxLibraryType() {
+  DifficultyLevel maxLevel;
+  u32 max = 0;
+
+  for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
+    auto difficultyLevel = static_cast<DifficultyLevel>(i);
+    auto completedSongs = SAVEFILE_getCompletedSongsOf(difficultyLevel);
+
+    if (completedSongs >= max) {
+      maxLevel = difficultyLevel;
+      max = completedSongs;
+    }
+  }
+
+  return maxLevel;
+}
+
+inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
+  auto gameMode = SAVEFILE_getGameMode();
+
+  u32 index = (gameMode == GameMode::IMPOSSIBLE) * PROGRESS_IMPOSSIBLE + level;
   int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
   if (songIndex > lastIndex)
     return GradeType::UNPLAYED;
@@ -164,15 +192,14 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 u8 songId,
                                 u8 numericLevel,
                                 GradeType grade) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
 
   switch (gameMode) {
     {
       case GameMode::CAMPAIGN:
       case GameMode::IMPOSSIBLE:
         u32 index =
-            (gameMode == GameMode::IMPOSSIBLE ? PROGRESS_IMPOSSIBLE : 0) +
-            level;
+            (gameMode == GameMode::IMPOSSIBLE) * PROGRESS_IMPOSSIBLE + level;
         int lastIndex =
             SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
         u8 librarySize = SAVEFILE_getLibrarySize();
