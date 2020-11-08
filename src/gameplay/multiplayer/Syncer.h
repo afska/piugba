@@ -67,6 +67,7 @@ class Syncer {
   void sync(LinkState linkState);
   void fail(SyncError error);
   void reset();
+  void resetData();
   void resetError();
 };
 

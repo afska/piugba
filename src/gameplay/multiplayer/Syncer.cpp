@@ -30,6 +30,7 @@ void Syncer::update() {
   bool isConnected = linkState.isConnected();
   if (isActive() && !isConnected) {
     timeoutCount++;
+    resetData();
     if (timeoutCount < SYNC_TIMEOUT_FRAMES)
       return;
   }
@@ -137,6 +138,10 @@ void Syncer::fail(SyncError error) {
 void Syncer::reset() {
   playerId = -1;
   setState(SyncState::SYNC_STATE_SEND_ROM_ID);
+  resetData();
+}
+
+void Syncer::resetData() {
   outgoingData = 0;
   lastMessage.event = 0;
 }
