@@ -32,7 +32,7 @@ std::vector<Background*> TextScene::backgrounds() {
 std::vector<Sprite*> TextScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(instructor->get());
+  // sprites.push_back(instructor->get()); // TODO: RECOVER
 
   return sprites;
 }

@@ -9,7 +9,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
-#define SYNC_TIMEOUT_FRAMES 10
+#define SYNC_TIMEOUT_FRAMES 1000  // TODO: 10
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
@@ -38,6 +38,7 @@ class Syncer {
 
   inline SyncState getState() { return state; }
   inline void setState(SyncState newState) {
+    DEBUTRACE("--> state " + std::to_string(newState));
     state = newState;
     timeoutCount = 0;
   }

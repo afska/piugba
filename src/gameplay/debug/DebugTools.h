@@ -27,6 +27,7 @@ inline void DEBULIST(int num) {
 }
 static int DEBUTRACE_LINE = -1;
 inline void DEBUTRACE(std::string string) {
+  // TODO: IF DEBUG
   if (DEBUTRACE_LINE == -1)
     TextStream::instance().clear();
   TextStream::instance().setText("                              ",
