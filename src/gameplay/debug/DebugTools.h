@@ -25,5 +25,15 @@ inline void DEBULIST(int num) {
   LOGN(num, DEBULIST_LINE);
   DEBULIST_LINE++;
 }
-
+static int DEBUTRACE_LINE = -1;
+inline void DEBUTRACE(std::string string) {
+  if (DEBUTRACE_LINE == -1)
+    TextStream::instance().clear();
+  TextStream::instance().setText("                              ",
+                                 1 + DEBUTRACE_LINE, -3);
+  TextStream::instance().setText(string, 1 + DEBUTRACE_LINE, -3);
+  DEBUTRACE_LINE++;
+  if (DEBUTRACE_LINE == 17)
+    DEBUTRACE_LINE = -1;
+}
 #endif  // DEBUG_TOOLS_H
