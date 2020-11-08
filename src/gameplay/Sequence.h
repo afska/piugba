@@ -21,5 +21,6 @@ void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode);
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart);
 void SEQUENCE_goToWinOrSelection(bool isLastSong);
+bool SEQUENCE_checkMultiplayerSession();
 
 #endif  // SEQUENCE_H

@@ -124,12 +124,8 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || SEQUENCE_checkMultiplayerSession())
     return;
-
-  auto gameMode = SAVEFILE_getGameMode();
-  if (IS_MULTIPLAYER(gameMode) && !syncer->isReady())
-    SEQUENCE_goToMultiplayerGameMode(gameMode);
 
   if (init < INIT_FRAME) {
     init++;
@@ -267,7 +263,7 @@ void SelectionScene::goToSong() {
 void SelectionScene::processKeys(u16 keys) {
   auto gameMode = SAVEFILE_getGameMode();
 
-  if (IS_MULTIPLAYER(gameMode) && !syncer->isMaster() && syncer->isReady()) {
+  if (IS_MULTIPLAYER(gameMode) && !syncer->isMaster()) {
     auto lastMessage = syncer->getLastMessage();
 
     if (lastMessage.event == SYNC_EVENT_SELECTION) {

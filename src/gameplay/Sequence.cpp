@@ -193,3 +193,14 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   else
     goTo(new SelectionScene(_engine, _fs));
 }
+
+bool SEQUENCE_checkMultiplayerSession() {
+  auto gameMode = SAVEFILE_getGameMode();
+
+  if (IS_MULTIPLAYER(gameMode) && !syncer->isReady()) {
+    SEQUENCE_goToMultiplayerGameMode(gameMode);
+    return true;
+  }
+
+  return false;
+}
