@@ -5,6 +5,7 @@
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_controls.h"
+#include "gameplay/debug/DebugTools.h"
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
 
@@ -32,7 +33,8 @@ std::vector<Background*> TextScene::backgrounds() {
 std::vector<Sprite*> TextScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  // sprites.push_back(instructor->get()); // TODO: RECOVER
+  if (!ENV_DEBUG)
+    sprites.push_back(instructor->get());
 
   return sprites;
 }

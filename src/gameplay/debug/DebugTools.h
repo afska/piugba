@@ -17,7 +17,8 @@
 #define TIMINGTEST_MODE false
 #define IFSTRESSTEST if (STRESSTEST_MODE)
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
-#define LOGN(NUM, LINE) (LOGSTR(std::to_string(NUM).c_str(), LINE))
+#define DSTR(EXP) (ENV_DEBUG ? std::to_string((EXP)) : "")
+#define LOGN(NUM, LINE) (LOGSTR(DSTR(NUM).c_str(), LINE))
 #define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
 #define DEBULOG(NUM) LOGN(NUM, -1)
 static int DEBULIST_LINE = -1;
@@ -27,11 +28,11 @@ inline void DEBULIST(int num) {
 }
 static int DEBUTRACE_LINE = -1;
 inline void DEBUTRACE(std::string string) {
-  // TODO: IF DEBUG
+  if (!ENV_DEBUG || string.empty())
+    return;
+
   if (DEBUTRACE_LINE == -1)
     TextStream::instance().clear();
-  TextStream::instance().setText("                              ",
-                                 1 + DEBUTRACE_LINE, -3);
   TextStream::instance().setText(string, 1 + DEBUTRACE_LINE, -3);
   DEBUTRACE_LINE++;
   if (DEBUTRACE_LINE == 17)

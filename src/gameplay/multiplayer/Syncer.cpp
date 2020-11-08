@@ -2,19 +2,20 @@
 
 #include "gameplay/Key.h"
 
-// TODO: ADD LOG PARAMETERS
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
     fail(FAILURE_REASON);                 \
     return;                               \
   }
 
-#define ASSERT_EVENT(EXPECTED_EVENT)       \
+#define ASSERT_EVENT(EXPECTED_EVENT, LOG)  \
   if (incomingEvent != (EXPECTED_EVENT)) { \
     timeoutCount++;                        \
     break;                                 \
-  } else                                   \
-    timeoutCount = 0;
+  } else {                                 \
+    DEBUTRACE((LOG));                      \
+    timeoutCount = 0;                      \
+  }
 
 void Syncer::initialize(SyncMode mode) {
   this->mode = mode;
@@ -27,22 +28,18 @@ void Syncer::update() {
     return;
 
   DEBUTRACE("----------");
-  DEBUTRACE("(" + std::to_string(state) + ")-> " +
-            std::to_string(outgoingData));
+  DEBUTRACE("(" + DSTR(state) + ")-> " + DSTR(outgoingData));
+
   auto linkState = linkConnection->tick(outgoingData);
 
   bool isConnected = linkState.isConnected();
-  if (!isConnected) {
-    DEBUTRACE("disconnected: " +
-              std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_READY)) + "-" +
-              std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)) + "-" +
-              std::to_string(linkConnection->_linkState._isOutOfSync()));
-  }
+  if (!isConnected)
+    DEBUTRACE("disconnected...");
 
   if (isActive() && !isConnected) {
     timeoutCount++;
     resetData();
-    DEBUTRACE("! conn timeout: " + std::to_string(timeoutCount));
+    DEBUTRACE("! conn timeout: " + DSTR(timeoutCount));
     if (timeoutCount < SYNC_TIMEOUT_FRAMES)
       return;
   }
@@ -53,14 +50,13 @@ void Syncer::update() {
   if (!isActive()) {
     reset();
     playerId = linkState.currentPlayerId;
-    DEBUTRACE("* init: player " + std::to_string(playerId));
+    DEBUTRACE("* init: player " + DSTR(playerId));
   }
 
   if (isReady())
     resetError();
 
   sync(linkState);
-  // linkConnection->tick(outgoingData); // TODO: Remove one-frame delay
 }
 
 void Syncer::sync(LinkState linkState) {
@@ -68,9 +64,8 @@ void Syncer::sync(LinkState linkState) {
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
-  DEBUTRACE("(" + std::to_string(state) + ")<- " +
-            std::to_string(incomingData) + " (" +
-            std::to_string(incomingEvent) + ")");
+  DEBUTRACE("(" + DSTR(state) + ")<- " + DSTR(incomingData) + " (" +
+            DSTR(incomingEvent) + ")");
 
   outgoingData = 0;
 
@@ -78,7 +73,7 @@ void Syncer::sync(LinkState linkState) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
       outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
 
-      ASSERT_EVENT(SYNC_EVENT_ROM_ID);
+      ASSERT_EVENT(SYNC_EVENT_ROM_ID, "* rom id received");
 
       ASSERT(incomingPayload == getPartialRomId(),
              SyncError::SYNC_ERROR_ROM_MISMATCH);
@@ -96,12 +91,9 @@ void Syncer::sync(LinkState linkState) {
                                      SAVEFILE_getMaxCompletedSongs()))
               : SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS, modeBit);
 
-      ASSERT_EVENT(SYNC_EVENT_PROGRESS);
-      DEBUTRACE("* progress received");
+      ASSERT_EVENT(SYNC_EVENT_PROGRESS, "* progress received");
 
       if (isMaster()) {
-        if (incomingPayload == modeBit)
-          DEBUTRACE("* mode ok");
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         setState(SyncState::SYNC_STATE_SELECTING_SONG);
       } else {
@@ -111,18 +103,10 @@ void Syncer::sync(LinkState linkState) {
         u8 receivedCompletedSongs =
             SYNCER_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
 
-        if (receivedModeBit == modeBit)
-          DEBUTRACE("* mode ok");
         ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
-        if (receivedLibraryType >= DifficultyLevel::NORMAL &&
-            receivedLibraryType <= DifficultyLevel::CRAZY)
-          DEBUTRACE("* library ok");
         ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
                    receivedLibraryType <= DifficultyLevel::CRAZY,
                SyncError::SYNC_ERROR_NONE);
-        if (receivedCompletedSongs >= 0 &&
-            receivedCompletedSongs <= SAVEFILE_getLibrarySize())
-          DEBUTRACE("* songs ok");
         ASSERT(receivedCompletedSongs >= 0 &&
                    receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
                SyncError::SYNC_ERROR_NONE);
@@ -140,11 +124,11 @@ void Syncer::sync(LinkState linkState) {
             KEY_UPRIGHT(keys), KEY_DOWNRIGHT(keys));
         outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, payload);
 
-        ASSERT_EVENT(SYNC_EVENT_SELECTION);
+        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
       } else {
         outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, 0);
 
-        ASSERT_EVENT(SYNC_EVENT_SELECTION);
+        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
         lastMessage.event = SYNC_EVENT_SELECTION;
         lastMessage.data1 = incomingPayload;
       }
@@ -154,11 +138,10 @@ void Syncer::sync(LinkState linkState) {
   }
 
   if (timeoutCount >= SYNC_TIMEOUT_FRAMES) {
-    DEBUTRACE("! state timeout: " + std::to_string(timeoutCount));
+    DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
     reset();
   }
-  DEBUTRACE("(" + std::to_string(state) + ")...-> " +
-            std::to_string(outgoingData));
+  DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
 }
 
 void Syncer::fail(SyncError error) {

@@ -6,6 +6,7 @@
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
 #include "Protocol.h"
+#include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
@@ -38,7 +39,7 @@ class Syncer {
 
   inline SyncState getState() { return state; }
   inline void setState(SyncState newState) {
-    DEBUTRACE("--> state " + std::to_string(newState));
+    DEBUTRACE("--> state " + DSTR(newState));
     state = newState;
     timeoutCount = 0;
   }

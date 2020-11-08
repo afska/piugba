@@ -34,22 +34,14 @@ void MultiplayerLobbyScene::tick(u16 keys) {
   }
 
   refresh(syncer->getLastError());
-  // TextScene::tick(keys); // TODO: UNCOMMENT AND REMOVE TEST CODE
-  if (DEBUTRACE_LINE == -1) {
+
+  if (ENV_DEBUG) {
+    if (DEBUTRACE_LINE == -1) {
+      TextScene::tick(keys);
+      DEBUTRACE_LINE++;
+    }
+  } else
     TextScene::tick(keys);
-    DEBUTRACE_LINE++;
-  }
-  // SCENE_write(std::to_string(syncer->getState()) + "-" +
-  //                 std::to_string(syncer->getLastError()) + "->" +
-  //                 std::to_string(syncer->a),
-  //             0);
-  // SCENE_write(std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_READY)) + "-" +
-  //                 std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)) +
-  //                 "-" +
-  //                 std::to_string(linkConnection->_linkState._isOutOfSync()) +
-  //                 "|||" +
-  //                 std::to_string(linkConnection->_linkState.playerCount),
-  //             0 + 1);
 }
 
 void MultiplayerLobbyScene::refresh(int newMessageId) {
