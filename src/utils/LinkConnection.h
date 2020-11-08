@@ -36,12 +36,14 @@ u16 _withHeartBit(u16 data, bool heartBit);
 bool _isBitHigh(u16 data, u8 bit);
 
 struct LinkState {
-  u8 playerCount = 0;
-  u8 currentPlayerId = 0;
+  u8 playerCount;
+  u8 currentPlayerId;
   u16 data[4];
   u8 _heartBits[4];
-  u32 _tick = 0;
-  u32 _lastIRQTick = 0;
+  u32 _timeoutCounts[4];
+  u32 _timeoutFrames;
+  u32 _tick;
+  u32 _lastIRQTick;
 
   bool isConnected() { return playerCount > 1; }
   bool hasData(u8 playerId) { return data[playerId] != LINK_NO_DATA; }
@@ -54,14 +56,16 @@ struct LinkState {
   void _reset() {
     playerCount = 0;
     currentPlayerId = 0;
-    _resetData();
+    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++)
+      data[i] = LINK_NO_DATA;
+    _resetMemory();
     _tick = 0;
     _lastIRQTick = 0;
   }
-  void _resetData() {
+  void _resetMemory() {
     for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
-      data[i] = LINK_NO_DATA;
       _heartBits[i] = LINK_HEART_BIT_UNKNOWN;
+      _timeoutCounts[i] = 0;
     }
   }
 };
@@ -78,7 +82,8 @@ class LinkConnection {
 
   explicit LinkConnection(u32 timeoutFrames = 1,
                           BaudRate baudRate = BAUD_RATE_3) {
-    this->timeoutFrames = timeoutFrames;
+    _linkState._timeoutFrames = timeoutFrames;
+    _linkState._reset();
 
     REG_RCNT = 0;
     REG_SIOCNT = (u8)baudRate;
@@ -87,14 +92,14 @@ class LinkConnection {
   }
 
   LinkState tick(u16 data) {
-    bool shouldForceReset = !isBitHigh(LINK_BIT_READY) ||
-                            isBitHigh(LINK_BIT_ERROR) ||
-                            _linkState._isOutOfSync();
+    bool shouldForceReset =
+        !isBitHigh(LINK_BIT_READY) || isBitHigh(LINK_BIT_ERROR);
 
-    if (shouldForceReset) {
+    if (_linkState._isOutOfSync()) {
       timeoutCount++;
-      _linkState._resetData();
-      shouldForceReset = timeoutCount >= timeoutFrames;
+      _linkState._resetMemory();
+      shouldForceReset =
+          shouldForceReset || timeoutCount >= _linkState._timeoutFrames;
     } else
       timeoutCount = 0;
 
@@ -115,7 +120,6 @@ class LinkConnection {
   }
 
  private:
-  u32 timeoutFrames;
   u32 timeoutCount = 0;
   bool heartBit = 0;
 
@@ -137,16 +141,31 @@ inline void ISR_serial() {
 
   for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
     auto data = REG_SIOMULTI[i];
+    u16 oldData = linkConnection->_linkState.data[i];
     u8 oldHeartBit = linkConnection->_linkState._heartBits[i];
     u8 newHeartBit = _isBitHigh(data, LINK_HEART_BIT);
+    bool wasConnectionAlive =
+        linkConnection->_linkState.data[i] != LINK_NO_DATA;
     bool isConnectionAlive =
         data != LINK_NO_DATA &&
         (oldHeartBit == LINK_HEART_BIT_UNKNOWN || oldHeartBit != newHeartBit);
 
-    linkConnection->_linkState.data[i] =
-        isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
-    linkConnection->_linkState._heartBits[i] =
-        isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
+    u16 outData = isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
+    u8 outHeartBit = isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
+
+    if (!wasConnectionAlive && isConnectionAlive) {
+      linkConnection->_linkState._timeoutCounts[i] = 0;
+    } else if (wasConnectionAlive && !isConnectionAlive) {
+      bool hasReachedTimeout = linkConnection->_linkState._timeoutCounts[i] >=
+                               linkConnection->_linkState._timeoutFrames;
+
+      linkConnection->_linkState._timeoutCounts[i]++;
+      outData = hasReachedTimeout ? LINK_NO_DATA : oldData;
+      outHeartBit = LINK_HEART_BIT_UNKNOWN;
+    }
+
+    linkConnection->_linkState.data[i] = outData;
+    linkConnection->_linkState._heartBits[i] = outHeartBit;
 
     if (linkConnection->_linkState.hasData(i))
       linkConnection->_linkState.playerCount++;

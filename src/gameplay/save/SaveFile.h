@@ -242,6 +242,8 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
         return false;
     }
   }
+
+  return false;
 }
 
 #endif  // SAVE_FILE_H
