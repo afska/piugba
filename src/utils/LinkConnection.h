@@ -92,20 +92,23 @@ class LinkConnection {
   }
 
   LinkState tick(u16 data) {
-    bool shouldForceReset =
-        !isBitHigh(LINK_BIT_READY) || isBitHigh(LINK_BIT_ERROR);
+    bool shouldReset = !isBitHigh(LINK_BIT_READY) || isBitHigh(LINK_BIT_ERROR);
+    bool isTimeout = false;
 
-    if (_linkState._isOutOfSync()) {
+    if (shouldReset || _linkState._isOutOfSync()) {
       timeoutCount++;
       _linkState._resetMemory();
-      shouldForceReset =
-          shouldForceReset || timeoutCount >= _linkState._timeoutFrames;
+      isTimeout = timeoutCount >= _linkState._timeoutFrames;
+      shouldReset = shouldReset || isTimeout;
     } else
       timeoutCount = 0;
 
-    if (shouldForceReset) {
+    if (shouldReset) {
       resetCommunicationCircuit();
-      _linkState._reset();
+      if (isTimeout) {
+        timeoutCount = 0;
+        _linkState._reset();
+      }
       return _linkState;
     }
 
@@ -153,14 +156,14 @@ inline void ISR_serial() {
     u16 outData = isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
     u8 outHeartBit = isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
 
-    if (!wasConnectionAlive && isConnectionAlive) {
+    if (!wasConnectionAlive && isConnectionAlive)
       linkConnection->_linkState._timeoutCounts[i] = 0;
-    } else if (wasConnectionAlive && !isConnectionAlive) {
-      bool hasReachedTimeout = linkConnection->_linkState._timeoutCounts[i] >=
-                               linkConnection->_linkState._timeoutFrames;
+    else if (wasConnectionAlive && !isConnectionAlive) {
+      bool isTimeout = linkConnection->_linkState._timeoutCounts[i] >=
+                       linkConnection->_linkState._timeoutFrames;
 
       linkConnection->_linkState._timeoutCounts[i]++;
-      outData = hasReachedTimeout ? LINK_NO_DATA : oldData;
+      outData = isTimeout ? LINK_NO_DATA : oldData;
       outHeartBit = LINK_HEART_BIT_UNKNOWN;
     }
 
