@@ -35,13 +35,15 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 
   refresh(syncer->getLastError());
 
-  if (ENV_DEBUG) {
-    if (DEBUTRACE_LINE == -1) {
-      TextScene::tick(keys);
-      DEBUTRACE_LINE++;
-    }
-  } else
+#ifdef SENV_DEBUG
+  if (DEBUTRACE_LINE == -1) {
     TextScene::tick(keys);
+    DEBUTRACE_LINE++;
+  }
+#endif
+#ifndef SENV_DEBUG
+  TextScene::tick(keys);
+#endif
 }
 
 void MultiplayerLobbyScene::refresh(int newMessageId) {

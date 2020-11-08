@@ -126,9 +126,9 @@ SONGS ?= src/data/content/songs
 ENV ?= development
 
 ifeq ($(ENV), debug)
-	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true
 else ifeq ($(ENV), development)
-	CXXFLAGS += -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true
 else
 
 endif

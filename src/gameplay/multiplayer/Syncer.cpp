@@ -27,19 +27,28 @@ void Syncer::update() {
   if (mode == SyncMode::SYNC_MODE_OFFLINE)
     return;
 
+#ifdef SENV_DEBUG
   DEBUTRACE("----------");
   DEBUTRACE("(" + DSTR(state) + ")-> " + DSTR(outgoingData));
+#endif
 
   auto linkState = linkConnection->tick(outgoingData);
 
   bool isConnected = linkState.isConnected();
+
+#ifdef SENV_DEBUG
   if (!isConnected)
     DEBUTRACE("disconnected...");
+#endif
 
   if (isActive() && !isConnected) {
     timeoutCount++;
     resetData();
+
+#ifdef SENV_DEBUG
     DEBUTRACE("! conn timeout: " + DSTR(timeoutCount));
+#endif
+
     if (timeoutCount < SYNC_TIMEOUT_FRAMES)
       return;
   }
@@ -50,7 +59,10 @@ void Syncer::update() {
   if (!isActive()) {
     reset();
     playerId = linkState.currentPlayerId;
+
+#ifdef SENV_DEBUG
     DEBUTRACE("* init: player " + DSTR(playerId));
+#endif
   }
 
   if (isReady())
@@ -64,8 +76,10 @@ void Syncer::sync(LinkState linkState) {
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
+#ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")<- " + DSTR(incomingData) + " (" +
             DSTR(incomingEvent) + ")");
+#endif
 
   outgoingData = 0;
 
@@ -138,10 +152,16 @@ void Syncer::sync(LinkState linkState) {
   }
 
   if (timeoutCount >= SYNC_TIMEOUT_FRAMES) {
+#ifdef SENV_DEBUG
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
+#endif
+
     reset();
   }
+
+#ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
+#endif
 }
 
 void Syncer::fail(SyncError error) {

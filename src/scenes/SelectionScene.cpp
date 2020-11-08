@@ -312,8 +312,10 @@ void SelectionScene::processDifficultyChangeEvents() {
 
 void SelectionScene::processSelectionChangeEvents() {
   bool isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
-  if (ENV_DEVELOPMENT)
-    isOnListEdge = getSelectedSongIndex() == count - 1;
+
+#ifdef SENV_DEVELOPMENT
+  isOnListEdge = getSelectedSongIndex() == count - 1;
+#endif
 
   if (onSelectionChange(ArrowDirection::DOWNRIGHT, isOnListEdge,
                         selected == PAGE_SIZE - 1, 1))

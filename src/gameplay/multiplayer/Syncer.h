@@ -39,7 +39,10 @@ class Syncer {
 
   inline SyncState getState() { return state; }
   inline void setState(SyncState newState) {
+#ifdef SENV_DEBUG
     DEBUTRACE("--> state " + DSTR(newState));
+#endif
+
     state = newState;
     timeoutCount = 0;
   }

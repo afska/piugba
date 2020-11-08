@@ -10,11 +10,9 @@
 
 static bool isWarningVisible = false;
 inline void LOG_WARNING() {
-  if (ENV_DEBUG) {
-    if (!isWarningVisible) {
-      LOGSTR("!", 0);
-      isWarningVisible = true;
-    }
+  if (!isWarningVisible) {
+    LOGSTR("!", 0);
+    isWarningVisible = true;
   }
 }
 
@@ -48,7 +46,10 @@ class ObjectPool {
       }
     }
 
+#ifdef SENV_DEBUG
     LOG_WARNING();
+#endif
+
     return NULL;
   }
 

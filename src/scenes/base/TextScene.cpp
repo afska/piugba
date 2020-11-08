@@ -33,8 +33,9 @@ std::vector<Background*> TextScene::backgrounds() {
 std::vector<Sprite*> TextScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  if (!ENV_DEBUG)
-    sprites.push_back(instructor->get());
+#ifndef SENV_DEBUG
+  sprites.push_back(instructor->get());
+#endif
 
   return sprites;
 }

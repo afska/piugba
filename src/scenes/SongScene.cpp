@@ -44,8 +44,9 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
 }
 
 std::vector<Background*> SongScene::backgrounds() {
-  if (ENV_DEBUG)
-    return {};
+#ifdef SENV_DEBUG
+  return {};
+#endif
 
   return {bg.get()};
 }
@@ -79,8 +80,9 @@ void SongScene::load() {
   SCENE_init();
 
   setUpPalettes();
-  if (!ENV_DEBUG)
-    setUpBackground();
+#ifndef SENV_DEBUG
+  setUpBackground();
+#endif
   setUpArrows();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
@@ -113,14 +115,16 @@ void SongScene::tick(u16 keys) {
     return;
 
   if (init == 0) {
-    if (!ENV_DEBUG) {
-      auto gamePosition =
-          GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
-      auto type = static_cast<BackgroundType>(
-          SAVEFILE_read8(SRAM->settings.backgroundType));
-      darkener->initialize(gamePosition, type);
-    } else
-      BACKGROUND_setColor(0, 127);
+#ifdef SENV_DEBUG
+    BACKGROUND_setColor(0, 127);
+#endif
+#ifndef SENV_DEBUG
+    auto gamePosition =
+        GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
+    auto type = static_cast<BackgroundType>(
+        SAVEFILE_read8(SRAM->settings.backgroundType));
+    darkener->initialize(gamePosition, type);
+#endif
 
     if (GameState.mods.decolorize != DecolorizeOpts::dOFF) {
       SCENE_decolorize(backgroundPalette.get(), GameState.mods.decolorize);
@@ -171,10 +175,12 @@ void SongScene::tick(u16 keys) {
   score->tick();
   lifeBar->tick(foregroundPalette.get());
 
-  if (ENV_DEVELOPMENT && chartReader->debugOffset)
+#ifdef SENV_DEVELOPMENT
+  if (chartReader->debugOffset)
     score->log(chartReader->debugOffset);
 
   IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
+#endif
 }
 
 void SongScene::setUpPalettes() {

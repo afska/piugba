@@ -131,8 +131,9 @@ inline u8 SAVEFILE_getMaxCompletedSongs() {
 }
 
 inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
-  if (ENV_DEVELOPMENT)
-    return true;
+#ifdef SENV_DEVELOPMENT
+  return true;
+#endif
 
   u8 maxCompletedSongs = SAVEFILE_getMaxCompletedSongs();
 
