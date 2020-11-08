@@ -127,15 +127,9 @@ void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  // auto gameMode = SAVEFILE_getGameMode();
-  // if (IS_MULTIPLAYER(SAVEFILE_getGameMode()) && !syncer->isReady())
-  //   engine->transitionIntoScene(
-  //       new MultiplayerLobbyScene(
-  //           engine, fs,
-  //           gameMode == GameMode::MULTI_COOP
-  //               ? SyncMode::SYNC_MODE_COOP
-  //               : SyncMode::SYNC_MODE_VS),  // TODO: DRY, Sequence.cpp
-  //       new FadeOutScene(4));
+  auto gameMode = SAVEFILE_getGameMode();
+  if (IS_MULTIPLAYER(gameMode) && !syncer->isReady())
+    SEQUENCE_goToMultiplayerGameMode(gameMode);
 
   if (init < INIT_FRAME) {
     init++;

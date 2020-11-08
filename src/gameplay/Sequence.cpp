@@ -113,12 +113,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
-  if (IS_MULTIPLAYER(gameMode)) {
-    goTo(new MultiplayerLobbyScene(_engine, _fs,
-                                   gameMode == GameMode::MULTI_COOP
-                                       ? SyncMode::SYNC_MODE_COOP
-                                       : SyncMode::SYNC_MODE_VS));
-  } else {
+  if (IS_MULTIPLAYER(gameMode))
+    SEQUENCE_goToMultiplayerGameMode(gameMode);
+  else {
     auto message =
         gameMode == GameMode::CAMPAIGN
             ? MODE_CAMPAIGN
@@ -131,6 +128,13 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
         },
         true));
   }
+}
+
+void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
+  goTo(new MultiplayerLobbyScene(_engine, _fs,
+                                 gameMode == GameMode::MULTI_COOP
+                                     ? SyncMode::SYNC_MODE_COOP
+                                     : SyncMode::SYNC_MODE_VS));
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
