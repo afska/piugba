@@ -124,8 +124,14 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (engine->isTransitioning() || SEQUENCE_checkMultiplayerSession())
+  if (engine->isTransitioning())
     return;
+
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stopAll();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
 
   if (init < INIT_FRAME) {
     init++;
