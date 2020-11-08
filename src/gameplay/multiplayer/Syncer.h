@@ -27,6 +27,7 @@ enum SyncError {
 
 class Syncer {
  public:
+  int a = 0;  // TODO: REMOVE
   Syncer() {}
 
   inline bool isReady() {
@@ -65,7 +66,6 @@ class Syncer {
 
   void sync(LinkState linkState);
   void fail(SyncError error);
-  void checkTimeout();
   void reset();
   void resetError();
 };

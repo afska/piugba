@@ -40,8 +40,6 @@ struct LinkState {
   u8 currentPlayerId;
   u16 data[4];
   u8 _heartBits[4];
-  u32 _timeoutCounts[4];
-  u32 _timeoutFrames;
   u32 _tick;
   u32 _lastIRQTick;
 
@@ -56,17 +54,12 @@ struct LinkState {
   void _reset() {
     playerCount = 0;
     currentPlayerId = 0;
-    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++)
+    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
       data[i] = LINK_NO_DATA;
-    _resetMemory();
+      _heartBits[i] = LINK_HEART_BIT_UNKNOWN;
+    }
     _tick = 0;
     _lastIRQTick = 0;
-  }
-  void _resetMemory() {
-    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
-      _heartBits[i] = LINK_HEART_BIT_UNKNOWN;
-      _timeoutCounts[i] = 0;
-    }
   }
 };
 
@@ -80,11 +73,8 @@ class LinkConnection {
   };
   struct LinkState _linkState;
 
-  explicit LinkConnection(u32 timeoutFrames = 1,
-                          BaudRate baudRate = BAUD_RATE_3) {
-    _linkState._timeoutFrames = timeoutFrames;
+  explicit LinkConnection(BaudRate baudRate = BAUD_RATE_3) {
     _linkState._reset();
-
     REG_RCNT = 0;
     REG_SIOCNT = (u8)baudRate;
     setBitHigh(LINK_BIT_MULTIPLAYER);
@@ -92,23 +82,13 @@ class LinkConnection {
   }
 
   LinkState tick(u16 data) {
-    bool shouldReset = !isBitHigh(LINK_BIT_READY) || isBitHigh(LINK_BIT_ERROR);
-    bool isTimeout = false;
+    bool shouldForceReset = !isBitHigh(LINK_BIT_READY) ||
+                            isBitHigh(LINK_BIT_ERROR) ||
+                            _linkState._isOutOfSync();
 
-    if (shouldReset || _linkState._isOutOfSync()) {
-      timeoutCount++;
-      _linkState._resetMemory();
-      isTimeout = timeoutCount >= _linkState._timeoutFrames;
-      shouldReset = shouldReset || isTimeout;
-    } else
-      timeoutCount = 0;
-
-    if (shouldReset) {
+    if (shouldForceReset) {
       resetCommunicationCircuit();
-      if (isTimeout) {
-        timeoutCount = 0;
-        _linkState._reset();
-      }
+      _linkState._reset();
       return _linkState;
     }
 
@@ -123,7 +103,6 @@ class LinkConnection {
   }
 
  private:
-  u32 timeoutCount = 0;
   bool heartBit = 0;
 
   void resetCommunicationCircuit() {
@@ -144,31 +123,16 @@ inline void ISR_serial() {
 
   for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
     auto data = REG_SIOMULTI[i];
-    u16 oldData = linkConnection->_linkState.data[i];
     u8 oldHeartBit = linkConnection->_linkState._heartBits[i];
     u8 newHeartBit = _isBitHigh(data, LINK_HEART_BIT);
-    bool wasConnectionAlive =
-        linkConnection->_linkState.data[i] != LINK_NO_DATA;
     bool isConnectionAlive =
         data != LINK_NO_DATA &&
         (oldHeartBit == LINK_HEART_BIT_UNKNOWN || oldHeartBit != newHeartBit);
 
-    u16 outData = isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
-    u8 outHeartBit = isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
-
-    if (!wasConnectionAlive && isConnectionAlive)
-      linkConnection->_linkState._timeoutCounts[i] = 0;
-    else if (wasConnectionAlive && !isConnectionAlive) {
-      linkConnection->_linkState._timeoutCounts[i]++;
-      bool isTimeout = linkConnection->_linkState._timeoutCounts[i] >=
-                       linkConnection->_linkState._timeoutFrames;
-
-      outData = isTimeout ? LINK_NO_DATA : oldData;
-      outHeartBit = isTimeout ? LINK_HEART_BIT_UNKNOWN : oldHeartBit;
-    }
-
-    linkConnection->_linkState.data[i] = outData;
-    linkConnection->_linkState._heartBits[i] = outHeartBit;
+    linkConnection->_linkState.data[i] =
+        isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
+    linkConnection->_linkState._heartBits[i] =
+        isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
 
     if (linkConnection->_linkState.hasData(i))
       linkConnection->_linkState.playerCount++;

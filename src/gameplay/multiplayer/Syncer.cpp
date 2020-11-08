@@ -27,7 +27,14 @@ void Syncer::update() {
 
   auto linkState = linkConnection->tick(outgoingData);
 
-  ASSERT(linkState.isConnected(), SyncError::SYNC_ERROR_NONE);
+  bool isConnected = linkState.isConnected();
+  if (isActive() && !isConnected) {
+    timeoutCount++;
+    if (timeoutCount < SYNC_TIMEOUT_FRAMES)
+      return;
+  }
+
+  ASSERT(isConnected, SyncError::SYNC_ERROR_NONE);
   ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
@@ -39,7 +46,7 @@ void Syncer::update() {
     resetError();
 
   sync(linkState);
-  linkConnection->tick(outgoingData);
+  // linkConnection->tick(outgoingData); // TODO: Remove one-frame delay
 }
 
 void Syncer::sync(LinkState linkState) {
@@ -72,6 +79,8 @@ void Syncer::sync(LinkState linkState) {
               : SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS, modeBit);
 
       ASSERT_EVENT(SYNC_EVENT_PROGRESS);
+
+      a = 123;  // TODO: REMOVE
 
       if (isMaster()) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
@@ -116,17 +125,13 @@ void Syncer::sync(LinkState linkState) {
     }
   }
 
-  checkTimeout();
+  if (timeoutCount >= SYNC_TIMEOUT_FRAMES)
+    reset();
 }
 
 void Syncer::fail(SyncError error) {
   reset();
   this->error = error;
-}
-
-void Syncer::checkTimeout() {
-  if (timeoutCount >= SYNC_TIMEOUT_FRAMES)
-    reset();
 }
 
 void Syncer::reset() {

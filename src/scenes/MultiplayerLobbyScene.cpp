@@ -35,6 +35,17 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 
   refresh(syncer->getLastError());
   TextScene::tick(keys);
+  TextStream::instance().clear();  // TODO: REMOVE
+  SCENE_write(std::to_string(syncer->getState()) + "-" +
+                  std::to_string(syncer->getLastError()) + "->" +
+                  std::to_string(syncer->a),
+              0);
+  SCENE_write(std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_READY)) + "-" +
+                  std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)) + "-" +
+                  std::to_string(linkConnection->_linkState._isOutOfSync()) +
+                  "|||" +
+                  std::to_string(linkConnection->_linkState.playerCount),
+              0 + 1);
 }
 
 void MultiplayerLobbyScene::refresh(int newMessageId) {
