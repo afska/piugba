@@ -32,6 +32,7 @@ void Syncer::update() {
     resetError();
 
   sync(linkState);
+  linkConnection->tick(outgoingData);
 }
 
 void Syncer::sync(LinkState linkState) {
