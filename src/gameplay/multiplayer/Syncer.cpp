@@ -8,6 +8,13 @@
     return;                               \
   }
 
+#define ASSERT_EVENT(EXPECTED_EVENT)       \
+  if (incomingEvent != (EXPECTED_EVENT)) { \
+    timeoutCount++;                        \
+    break;                                 \
+  } else                                   \
+    timeoutCount = 0;
+
 void Syncer::initialize(SyncMode mode) {
   this->mode = mode;
   reset();
@@ -24,8 +31,8 @@ void Syncer::update() {
   ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
-    playerId = linkState.currentPlayerId;
     reset();
+    playerId = linkState.currentPlayerId;
   }
 
   if (isReady())
@@ -46,11 +53,12 @@ void Syncer::sync(LinkState linkState) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
       outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
 
-      if (incomingEvent == SYNC_EVENT_ROM_ID) {
-        ASSERT(incomingPayload == getPartialRomId(),
-               SyncError::SYNC_ERROR_ROM_MISMATCH);
-        state = SyncState::SYNC_STATE_SEND_PROGRESS;
-      }
+      ASSERT_EVENT(SYNC_EVENT_ROM_ID);
+
+      ASSERT(incomingPayload == getPartialRomId(),
+             SyncError::SYNC_ERROR_ROM_MISMATCH);
+      setState(SyncState::SYNC_STATE_SEND_PROGRESS);
+
       break;
     }
     case SyncState::SYNC_STATE_SEND_PROGRESS: {
@@ -63,28 +71,29 @@ void Syncer::sync(LinkState linkState) {
                                      SAVEFILE_getMaxCompletedSongs()))
               : SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS, modeBit);
 
-      if (incomingEvent == SYNC_EVENT_PROGRESS) {
-        if (isMaster()) {
-          ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
-          state = SyncState::SYNC_STATE_SELECTING_SONG;
-        } else {
-          u8 receivedModeBit = SYNCER_MSG_PROGRESS_MODE(incomingPayload);
-          u8 receivedLibraryType =
-              SYNCER_MSG_PROGRESS_LIBRARY_TYPE(incomingPayload);
-          u8 receivedCompletedSongs =
-              SYNCER_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
+      ASSERT_EVENT(SYNC_EVENT_PROGRESS);
 
-          ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
-          ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
-                     receivedLibraryType <= DifficultyLevel::CRAZY,
-                 SyncError::SYNC_ERROR_ROM_MISMATCH);
-          ASSERT(receivedCompletedSongs >= 0 &&
-                     receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
-                 SyncError::SYNC_ERROR_NONE);
+      if (isMaster()) {
+        ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
+        setState(SyncState::SYNC_STATE_SELECTING_SONG);
+      } else {
+        u8 receivedModeBit = SYNCER_MSG_PROGRESS_MODE(incomingPayload);
+        u8 receivedLibraryType =
+            SYNCER_MSG_PROGRESS_LIBRARY_TYPE(incomingPayload);
+        u8 receivedCompletedSongs =
+            SYNCER_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
 
-          state = SyncState::SYNC_STATE_SELECTING_SONG;
-        }
+        ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
+        ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
+                   receivedLibraryType <= DifficultyLevel::CRAZY,
+               SyncError::SYNC_ERROR_ROM_MISMATCH);
+        ASSERT(receivedCompletedSongs >= 0 &&
+                   receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
+               SyncError::SYNC_ERROR_NONE);
+
+        setState(SyncState::SYNC_STATE_SELECTING_SONG);
       }
+
       break;
     }
     case SyncState::SYNC_STATE_SELECTING_SONG: {
@@ -94,27 +103,35 @@ void Syncer::sync(LinkState linkState) {
             KEY_DOWNLEFT(keys), KEY_UPLEFT(keys), KEY_CENTER(keys),
             KEY_UPRIGHT(keys), KEY_DOWNRIGHT(keys));
         outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, payload);
+
+        ASSERT_EVENT(SYNC_EVENT_SELECTION);
       } else {
         outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, 0);
 
-        if (incomingEvent == SYNC_EVENT_SELECTION) {
-          lastMessage.event = SYNC_EVENT_SELECTION;
-          lastMessage.data1 = incomingPayload;
-        }
+        ASSERT_EVENT(SYNC_EVENT_SELECTION);
+        lastMessage.event = SYNC_EVENT_SELECTION;
+        lastMessage.data1 = incomingPayload;
       }
       break;
     }
   }
+
+  checkTimeout();
 }
 
 void Syncer::fail(SyncError error) {
-  playerId = -1;
   reset();
   this->error = error;
 }
 
+void Syncer::checkTimeout() {
+  if (timeoutCount >= SYNC_TIMEOUT_FRAMES)
+    reset();
+}
+
 void Syncer::reset() {
-  state = SyncState::SYNC_STATE_SEND_ROM_ID;
+  playerId = -1;
+  setState(SyncState::SYNC_STATE_SEND_ROM_ID);
   outgoingData = 0;
   lastMessage.event = 0;
 }

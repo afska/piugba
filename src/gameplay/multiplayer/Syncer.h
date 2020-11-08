@@ -9,6 +9,8 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
+#define SYNC_TIMEOUT_FRAMES 10
+
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,
@@ -34,7 +36,10 @@ class Syncer {
   inline SyncError getLastError() { return error; }
 
   inline SyncState getState() { return state; }
-  inline void setState(SyncState newState) { state = newState; }
+  inline void setState(SyncState newState) {
+    state = newState;
+    timeoutCount = 0;
+  }
   inline Message getLastMessage() { return lastMessage; }
 
   void initialize(SyncMode mode);
@@ -46,6 +51,7 @@ class Syncer {
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
   u16 outgoingData = 0;
+  u32 timeoutCount = 0;
   Message lastMessage;
 
   inline bool isActive() { return playerId > -1; }
@@ -59,6 +65,7 @@ class Syncer {
 
   void sync(LinkState linkState);
   void fail(SyncError error);
+  void checkTimeout();
   void reset();
   void resetError();
 };

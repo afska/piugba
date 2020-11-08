@@ -159,12 +159,12 @@ inline void ISR_serial() {
     if (!wasConnectionAlive && isConnectionAlive)
       linkConnection->_linkState._timeoutCounts[i] = 0;
     else if (wasConnectionAlive && !isConnectionAlive) {
+      linkConnection->_linkState._timeoutCounts[i]++;
       bool isTimeout = linkConnection->_linkState._timeoutCounts[i] >=
                        linkConnection->_linkState._timeoutFrames;
 
-      linkConnection->_linkState._timeoutCounts[i]++;
       outData = isTimeout ? LINK_NO_DATA : oldData;
-      outHeartBit = LINK_HEART_BIT_UNKNOWN;
+      outHeartBit = isTimeout ? LINK_HEART_BIT_UNKNOWN : oldHeartBit;
     }
 
     linkConnection->_linkState.data[i] = outData;
