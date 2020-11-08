@@ -162,7 +162,9 @@ void Syncer::sync(LinkState linkState) {
 }
 
 void Syncer::fail(SyncError error) {
+  u16 data = outgoingData;
   reset();
+  outgoingData = data;
   this->error = error;
 }
 
