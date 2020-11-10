@@ -26,6 +26,9 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever([]() {
     syncer->update();
+    if (syncer->isOutOfSync())
+      return;
+
     engine->update();
   });
 

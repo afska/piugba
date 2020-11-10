@@ -35,6 +35,7 @@ class Syncer {
     return state >= SyncState::SYNC_STATE_SELECTING_SONG;
   }
   inline bool isMaster() { return playerId == 0; }
+  inline bool isOutOfSync() { return outOfSyncCount > 0; }
   inline SyncError getLastError() { return error; }
 
   inline SyncState getState() { return state; }
@@ -58,6 +59,7 @@ class Syncer {
   int playerId = -1;
   u16 outgoingData = 0;
   u32 timeoutCount = 0;
+  u32 outOfSyncCount = 0;
   Message lastMessage;
 
   inline bool isActive() { return playerId > -1; }
