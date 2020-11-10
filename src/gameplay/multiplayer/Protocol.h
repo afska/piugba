@@ -43,10 +43,9 @@ struct Message {
   1: UPLEFT
   0: DOWNLEFT
 */
-#define SYNCER_MSG_SELECTION_BUILD(DOWNLEFT, UPLEFT, CENTER, UPRIGHT,   \
-                                   DOWNRIGHT)                           \
-  ((!!(DOWNRIGHT)) << 4) | ((!!(UPRIGHT)) << 3) | ((!!(CENTER)) << 2) | \
-      ((!!(UPLEFT)) << 1) | (!!(DOWNLEFT))
+#define SYNCER_MSG_SELECTION_BUILD(DL, UL, C, UR, DR)                    \
+  ((!!(DR)) << 4) | ((!!(UR)) << 3) | ((!!(C)) << 2) | ((!!(UL)) << 1) | \
+      (!!(DL))
 #define SYNCER_MSG_SELECTION_DIRECTION(MSG, DIRECTION) \
   (((MSG) >> DIRECTION) & 1)
 

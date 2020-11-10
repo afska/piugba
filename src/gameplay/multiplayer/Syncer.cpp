@@ -33,7 +33,6 @@ void Syncer::update() {
 #endif
 
   auto linkState = linkConnection->tick(outgoingData);
-
   bool isConnected = linkState.isConnected();
 
 #ifdef SENV_DEBUG
