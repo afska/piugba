@@ -10,7 +10,7 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
+#include "player/player.h"
 }
 
 const u32 ID_MAIN_BACKGROUND = 1;
@@ -128,7 +128,7 @@ void MenuScene::processKeys(u16 keys) {
   closeInput->setIsPressed(keys & getCloseKey());
 
   if (closeInput->hasBeenPressedNow()) {
-    fxes_stop();
+    player_stop();
     engine->transitionIntoScene(new SelectionScene(engine, fs),
                                 new FadeOutScene(2));
   }
@@ -161,17 +161,17 @@ void MenuScene::move(int direction) {
   else
     selected += direction;
 
-  fxes_play(SOUND_STEP);
+  player_play(SOUND_STEP);
   pixelBlink->blink();
   printMenu();
 }
 
 void MenuScene::select() {
-  fxes_play(SOUND_STEP);
+  player_play(SOUND_STEP);
   pixelBlink->blink();
 
   if (selectOption(selected))
     printMenu();
   else
-    fxes_stop();
+    player_stop();
 }

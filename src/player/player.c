@@ -14,7 +14,6 @@
 #include "PlaybackState.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
-#include "fxes.h"
 #include "utils/gbfs/gbfs.h"
 
 Playback PlaybackState;
@@ -34,7 +33,6 @@ PLAYER_DEFINE(REG_DMA1CNT,
 inline void player_init() {
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
-  fxes_init();
 }
 
 inline void player_play(const char* name) {
@@ -80,11 +78,6 @@ inline void player_stop() {
   rateCounter = 0;
 }
 
-inline void player_stopAll() {
-  player_stop();
-  fxes_stop();
-}
-
 inline void player_forever(void (*update)()) {
   while (1) {
     if (rate != 0) {
@@ -108,18 +101,11 @@ inline void player_forever(void (*update)()) {
         PlaybackState.hasFinished = true;
       }
     });
-    fxes_preUpdate();
 
     // --------------
     VBlankIntrWait();  // VBLANK
     // --------------
 
     PLAYER_POST_UPDATE();
-    fxes_postUpdate();
   }
-}
-
-inline void fxes_playSolo(const char* name) {
-  player_stop();
-  fxes_play(name);
 }

@@ -534,7 +534,7 @@ bool SongScene::setRate(int rate) {
 }
 
 void SongScene::unload() {
-  player_stopAll();
+  player_stop();
 }
 
 SongScene::~SongScene() {

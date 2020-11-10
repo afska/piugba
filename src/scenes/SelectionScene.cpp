@@ -17,7 +17,6 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
 #include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
@@ -128,7 +127,7 @@ void SelectionScene::tick(u16 keys) {
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
-    player_stopAll();
+    player_stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
   }
@@ -252,7 +251,7 @@ void SelectionScene::scrollTo(u32 page, u32 selected) {
 }
 
 void SelectionScene::goToSong() {
-  player_stopAll();
+  player_stop();
   confirmed = false;
 
   Song* song = SONG_parse(fs, getSelectedSong(), true);
@@ -343,17 +342,17 @@ void SelectionScene::processConfirmEvents() {
 void SelectionScene::processMenuEvents(u16 keys) {
   if (multiplier->hasBeenPressedNow()) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
-      fxes_playSolo(SOUND_MOD);
+      player_play(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     } else {
-      player_stopAll();
+      player_stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new FadeOutScene(4));
     }
   }
 
   if (settingsMenuInput->hasBeenPressedNow()) {
-    player_stopAll();
+    player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new FadeOutScene(4));
   }
@@ -363,7 +362,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
                                              DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    fxes_playSolo(SOUND_STEP);
+    player_play(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -373,7 +372,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
     pixelBlink->blink();
 
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
-    player_stopAll();
+    player_stop();
     scrollTo(lastUnlockedSongIndex);
 
     return true;
@@ -386,7 +385,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
                                           u8 newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    fxes_playSolo(SOUND_STEP);
+    player_play(SOUND_STEP);
 
     if (newValue == getSelectedNumericLevelIndex())
       return true;
@@ -410,20 +409,18 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 
     if (isOnListEdge) {
       if (arrowSelectors[selector]->hasBeenPressedNow())
-        fxes_playSolo(SOUND_STEP);
+        player_play(SOUND_STEP);
       return true;
     }
 
-    player_stopAll();
+    player_stop();
 
-    if (isOnPageEdge) {
+    if (isOnPageEdge)
       setPage(page + direction, direction);
-      player_play(SOUND_STEP);
-    } else {
+    else {
       selected += direction;
       updateSelection();
       pixelBlink->blink();
-      fxes_play(SOUND_STEP);
     }
 
     return true;
@@ -480,7 +477,7 @@ void SelectionScene::confirm() {
         NUMERIC_LEVEL_BADGE_X,
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
 
-  fxes_playSolo(SOUND_STEP);
+  player_play(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);

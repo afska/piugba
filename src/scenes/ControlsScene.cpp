@@ -6,7 +6,7 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
+#include "player/player.h"
 }
 
 const u32 ID_MAIN_BACKGROUND = 1;
@@ -70,7 +70,7 @@ void ControlsScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     hasStarted = true;
-    fxes_play(SOUND_ENTER);
+    player_play(SOUND_ENTER);
   }
 
   processKeys(keys);
@@ -150,12 +150,12 @@ void ControlsScene::processCombo() {
 }
 
 void ControlsScene::advanceCombo() {
-  fxes_play(SOUND_STEP);
+  player_play(SOUND_STEP);
   comboArrows[comboStep]->on();
   comboStep++;
 
   if (comboStep == START_COMBO_TOTAL) {
-    fxes_stop();
+    player_stop();
     onFinish();
   }
 }
@@ -164,7 +164,7 @@ void ControlsScene::resetCombo() {
   if (comboStep == 0)
     return;
 
-  fxes_play(SOUND_MOD);
+  player_play(SOUND_MOD);
   pixelBlink->blink();
 
   comboStep = 0;

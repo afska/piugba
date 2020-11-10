@@ -15,7 +15,6 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
 #include "player/player.h"
 }
 
