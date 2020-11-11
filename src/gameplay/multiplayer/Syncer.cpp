@@ -44,22 +44,19 @@ void Syncer::update() {
 #endif
 
   if (isReady() && !linkState.isConnected()) {
-    u32 retries = 0;
-    bool isPlaying = player_isPlaying();
+    // maybe one peer has exceeded frame time and lost sync
+    // -> trying to reconnect...
 
-    if (isPlaying)
-      player_mute();
+    player_mute();
 
-    while (!linkState.isConnected()) {
-      // one peer has exceeded frame time and lost sync, reconnecting...
+    for (u32 retries = 0; retries < SYNC_RECONNECT_RETRIES; retries++) {
       wait();
       linkState = linkConnection->tick(outgoingData);
-      retries++;
-      if (retries >= SYNC_RECONNECT_RETRIES)
+      if (linkState.isConnected())
         break;
     }
 
-    if (isPlaying)
+    if (player_isPlaying())
       player_unmute();
   }
 
