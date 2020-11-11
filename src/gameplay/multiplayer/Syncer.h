@@ -11,7 +11,8 @@
 #include "utils/LinkConnection.h"
 
 #define SYNC_TIMEOUT_FRAMES 10
-#define SYNC_RECONNECT_WAIT 5
+#define SYNC_RECONNECT_VCOUNT 10
+#define SYNC_RECONNECT_RETRIES 100
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
@@ -29,7 +30,6 @@ enum SyncError {
 
 class Syncer {
  public:
-  int a = 0;  // TODO: REMOVE
   Syncer() {}
 
   inline bool isReady() {

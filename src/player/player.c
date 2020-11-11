@@ -78,6 +78,18 @@ inline void player_stop() {
   rateCounter = 0;
 }
 
+inline bool player_isPlaying() {
+  return src_pos != NULL;
+}
+
+inline void player_mute() {
+  mute();
+}
+
+inline void player_unmute() {
+  unmute();
+}
+
 inline void player_forever(void (*update)()) {
   while (1) {
     if (rate != 0) {

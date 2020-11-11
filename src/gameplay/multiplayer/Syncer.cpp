@@ -17,6 +17,10 @@
     timeoutCount = 0;                      \
   }
 
+extern "C" {
+#include "player/player.h"
+}
+
 void Syncer::initialize(SyncMode mode) {
   this->mode = mode;
   reset();
@@ -39,13 +43,24 @@ void Syncer::update() {
     DEBUTRACE("disconnected...");
 #endif
 
-  if (isReady()) {
+  if (isReady() && !linkState.isConnected()) {
+    u32 retries = 0;
+    bool isPlaying = player_isPlaying();
+
+    if (isPlaying)
+      player_mute();
+
     while (!linkState.isConnected()) {
-      // TODO: ADD TIMEOUT, MUTE WHILE RECONNECTING
       // one peer has exceeded frame time and lost sync, reconnecting...
       wait();
       linkState = linkConnection->tick(outgoingData);
+      retries++;
+      if (retries >= SYNC_RECONNECT_RETRIES)
+        break;
     }
+
+    if (isPlaying)
+      player_unmute();
   }
 
   ASSERT(linkState.isConnected(), SyncError::SYNC_ERROR_NONE);
@@ -163,7 +178,7 @@ void Syncer::wait() {
   u32 lines = 0;
   u32 vCount = REG_VCOUNT;
 
-  while (lines < SYNC_RECONNECT_WAIT) {
+  while (lines < SYNC_RECONNECT_VCOUNT) {
     if (REG_VCOUNT != vCount) {
       lines++;
       vCount = REG_VCOUNT;
