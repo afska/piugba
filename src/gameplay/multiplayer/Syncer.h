@@ -11,6 +11,8 @@
 #include "utils/LinkConnection.h"
 
 #define SYNC_TIMEOUT_FRAMES 10
+#define SYNC_RECONNECT_VCOUNT 10
+#define SYNC_RECONNECT_RETRIES 100
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
@@ -69,6 +71,7 @@ class Syncer {
   }
 
   void sync(LinkState linkState);
+  void wait();
   void fail(SyncError error);
   void reset();
   void resetData();
