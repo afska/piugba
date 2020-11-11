@@ -27,6 +27,7 @@ class TextScene : public Scene {
  protected:
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
+  bool hasStarted = false;
 
   void write(std::string text);
   inline bool hasFinished() { return row == lines.size(); }
@@ -34,8 +35,6 @@ class TextScene : public Scene {
   ~TextScene();
 
  private:
-  bool hasStarted = false;
-
   std::unique_ptr<Instructor> instructor;
   std::vector<std::string> lines;
   u32 col = 0;
