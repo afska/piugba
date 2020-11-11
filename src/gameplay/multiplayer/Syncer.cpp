@@ -40,19 +40,6 @@ void Syncer::update() {
     DEBUTRACE("disconnected...");
 #endif
 
-  if (isActive() && !isConnected) {
-    outOfSyncCount++;
-    resetData();
-
-#ifdef SENV_DEBUG
-    DEBUTRACE("! conn timeout: " + DSTR(outOfSyncCount));
-#endif
-
-    if (outOfSyncCount < SYNC_TIMEOUT_FRAMES)
-      return;
-  } else
-    outOfSyncCount = 0;
-
   ASSERT(isConnected, SyncError::SYNC_ERROR_NONE);
   ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
