@@ -33,14 +33,22 @@ void Syncer::update() {
 #endif
 
   auto linkState = linkConnection->tick(outgoingData);
-  bool isConnected = linkState.isConnected();
 
 #ifdef SENV_DEBUG
-  if (!isConnected)
+  if (!linkState.isConnected())
     DEBUTRACE("disconnected...");
 #endif
 
-  ASSERT(isConnected, SyncError::SYNC_ERROR_NONE);
+  if (isReady()) {
+    while (!linkState.isConnected()) {
+      // TODO: ADD TIMEOUT, MUTE WHILE RECONNECTING
+      // one peer has exceeded frame time and lost sync, reconnecting...
+      wait();
+      linkState = linkConnection->tick(outgoingData);
+    }
+  }
+
+  ASSERT(linkState.isConnected(), SyncError::SYNC_ERROR_NONE);
   ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
@@ -149,6 +157,18 @@ void Syncer::sync(LinkState linkState) {
 #ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
 #endif
+}
+
+void Syncer::wait() {
+  u32 lines = 0;
+  u32 vCount = REG_VCOUNT;
+
+  while (lines < SYNC_RECONNECT_WAIT) {
+    if (REG_VCOUNT != vCount) {
+      lines++;
+      vCount = REG_VCOUNT;
+    }
+  };
 }
 
 void Syncer::fail(SyncError error) {

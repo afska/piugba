@@ -6,7 +6,6 @@
 
 #define LINK_MAX_PLAYERS 4
 #define LINK_NO_DATA 0xffff
-#define LINK_VCOUNT_WAIT 10
 #define LINK_HEART_BIT 0xf
 #define LINK_HEART_BIT_UNKNOWN 2
 #define LINK_BIT_SLAVE 2
@@ -83,9 +82,6 @@ class LinkConnection {
   }
 
   LinkState tick(u16 data) {
-    if (_linkState._isOutOfSync())
-      wait();
-
     bool shouldForceReset = !isBitHigh(LINK_BIT_READY) ||
                             isBitHigh(LINK_BIT_ERROR) ||
                             _linkState._isOutOfSync();
@@ -104,12 +100,6 @@ class LinkConnection {
       setBitHigh(LINK_BIT_START);
 
     return _linkState;
-  }
-
-  void wait() {
-    u32 vCount = REG_VCOUNT;
-    while (REG_VCOUNT < vCount + LINK_VCOUNT_WAIT)
-      ;
   }
 
  private:
