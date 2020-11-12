@@ -37,7 +37,6 @@ int main() {
 void ISR_reset() {
   RegisterRamReset(RESET_REG | RESET_VRAM);
   SoftReset();
-  REG_IF = IRQ_KEYPAD;
 }
 
 void setUpInterrupts() {
