@@ -6,6 +6,8 @@
 
 #define LINK_MAX_PLAYERS 4
 #define LINK_NO_DATA 0xffff
+#define LINK_BAUD_RATE_MAX 3
+#define LINK_WAIT_VCOUNT 10
 #define LINK_HEART_BIT 0xf
 #define LINK_HEART_BIT_UNKNOWN 2
 #define LINK_BIT_SLAVE 2
@@ -65,36 +67,22 @@ struct LinkState {
 
 class LinkConnection {
  public:
-  enum BaudRate {
-    BAUD_RATE_0,  // 9600 bps
-    BAUD_RATE_1,  // 38400 bps
-    BAUD_RATE_2,  // 57600 bps
-    BAUD_RATE_3   // 115200 bps
-  };
   struct LinkState _linkState;
 
-  explicit LinkConnection(BaudRate baudRate = BAUD_RATE_3) {
-    _linkState._reset();
-    REG_RCNT = 0;
-    REG_SIOCNT = (u8)baudRate;
-    setBitHigh(LINK_BIT_MULTIPLAYER);
-    setBitHigh(LINK_BIT_IRQ);
-  }
+  LinkConnection() {}
 
   LinkState tick(u16 data) {
-    bool shouldForceReset = !isBitHigh(LINK_BIT_READY) ||
-                            isBitHigh(LINK_BIT_ERROR) ||
-                            _linkState._isOutOfSync();
-
-    if (shouldForceReset) {
-      resetCommunicationCircuit();
-      _linkState._reset();
+    if (!isReady() || _linkState._isOutOfSync()) {
+      reset();
       return _linkState;
     }
 
+    bool heartBit = getNewHeartBit();
+    setNewHeartBit(heartBit);
     REG_SIOMLT_SEND = _withHeartBit(data, heartBit);
     _linkState._tick++;
-    heartBit = !heartBit;
+
+    wait(LINK_WAIT_VCOUNT);
 
     if (!isBitHigh(LINK_BIT_SLAVE))
       setBitHigh(LINK_BIT_START);
@@ -102,12 +90,43 @@ class LinkConnection {
     return _linkState;
   }
 
- private:
-  bool heartBit = 0;
+  bool isReady() {
+    return isBitHigh(LINK_BIT_READY) && !isBitHigh(LINK_BIT_ERROR);
+  }
 
-  void resetCommunicationCircuit() {
+  void wait(u32 verticalLines) {
+    u32 lines = 0;
+    u32 vCount = REG_VCOUNT;
+
+    while (lines < verticalLines) {
+      if (REG_VCOUNT != vCount) {
+        lines++;
+        vCount = REG_VCOUNT;
+      }
+    };
+  }
+
+ private:
+  bool getNewHeartBit() {
+    return _linkState.isConnected()
+               ? !_linkState._heartBits[_linkState.currentPlayerId]
+               : 1;
+  }
+
+  void setNewHeartBit(bool heartBit) {
+    if (_linkState.isConnected())
+      _linkState._heartBits[_linkState.currentPlayerId] = heartBit;
+  }
+
+  void reset() {
+    _linkState._reset();
+
+    // switching to another mode and going back resets the communication circuit
     REG_RCNT = 0xf;
     REG_RCNT = 0;
+    REG_SIOCNT = LINK_BAUD_RATE_MAX;
+    setBitHigh(LINK_BIT_MULTIPLAYER);
+    setBitHigh(LINK_BIT_IRQ);
   }
 
   bool isBitHigh(u8 bit) { return _isBitHigh(REG_SIOCNT, bit); }
@@ -117,17 +136,21 @@ class LinkConnection {
 extern LinkConnection* linkConnection;
 
 inline void ISR_serial() {
-  linkConnection->_linkState.playerCount = 0;
-  linkConnection->_linkState.currentPlayerId =
+  u8 currentPlayerId =
       (REG_SIOCNT & (0b11 << LINK_BITS_PLAYER_ID)) >> LINK_BITS_PLAYER_ID;
+
+  linkConnection->_linkState.playerCount = 0;
+  linkConnection->_linkState.currentPlayerId = currentPlayerId;
 
   for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
     auto data = REG_SIOMULTI[i];
     u8 oldHeartBit = linkConnection->_linkState._heartBits[i];
     u8 newHeartBit = _isBitHigh(data, LINK_HEART_BIT);
+
     bool isConnectionAlive =
         data != LINK_NO_DATA &&
-        (oldHeartBit == LINK_HEART_BIT_UNKNOWN || oldHeartBit != newHeartBit);
+        (i == currentPlayerId || oldHeartBit == LINK_HEART_BIT_UNKNOWN ||
+         oldHeartBit != newHeartBit);
 
     linkConnection->_linkState.data[i] =
         isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
