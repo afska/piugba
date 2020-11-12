@@ -24,10 +24,7 @@ int main() {
   SEQUENCE_initialize(engine, fs);
 
   engine->setScene(SEQUENCE_getInitialScene());
-  player_forever([]() {
-    syncer->update();
-    engine->update();
-  });
+  player_forever([]() { engine->update(); });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 
@@ -39,15 +36,19 @@ void ISR_reset() {
   SoftReset();
 }
 
+void ISR_vblank() {
+  syncer->update();
+}
+
 void setUpInterrupts() {
   // VBlank
   irq_init(NULL);
-  irq_add(II_VBLANK, NULL);
+  irq_add(II_VBLANK, ISR_vblank);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
   irq_add(II_KEYPAD, ISR_reset);
 
   // LinkConnection
-  irq_add(II_SERIAL, ISR_serial);
+  irq_add(II_SERIAL, NULL);
 }

@@ -46,8 +46,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 #ifdef SENV_DEVELOPMENT
 #ifndef SENV_DEBUG
   SCENE_write(std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_READY)) +
-                  std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)) +
-                  std::to_string(linkConnection->_linkState._isOutOfSync()),
+                  std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)),
               0);
 #endif
 #endif
