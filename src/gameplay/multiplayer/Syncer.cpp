@@ -31,24 +31,19 @@ void Syncer::update() {
   if (mode == SyncMode::SYNC_MODE_OFFLINE)
     return;
 
-#ifdef SENV_DEBUG
-  DEBUTRACE("----------");
-  DEBUTRACE("(" + DSTR(state) + ")-> " + DSTR(outgoingData));
-#endif
-
-  auto linkState = linkConnection->tick(outgoingData);
+  LinkState* linkState = linkConnection->linkState.get();
 
 #ifdef SENV_DEBUG
-  if (!linkState.isConnected())
+  if (!linkState->isConnected())
     DEBUTRACE("disconnected...");
 #endif
 
-  ASSERT(linkState.isConnected(), SyncError::SYNC_ERROR_NONE);
-  ASSERT(linkState.playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
+  ASSERT(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
+  ASSERT(linkState->playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
     reset();
-    playerId = linkState.currentPlayerId;
+    playerId = linkState->currentPlayerId;
 
 #ifdef SENV_DEBUG
     DEBUTRACE("* init: player " + DSTR(playerId));
@@ -61,8 +56,8 @@ void Syncer::update() {
   sync(linkState);
 }
 
-void Syncer::sync(LinkState linkState) {
-  u16 incomingData = linkState.data[!playerId];
+void Syncer::sync(LinkState* linkState) {
+  u16 incomingData = linkState->readMessage(!playerId);
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
@@ -71,7 +66,7 @@ void Syncer::sync(LinkState linkState) {
             DSTR(incomingEvent) + ")");
 #endif
 
-  outgoingData = 0;
+  u16 outgoingData = LINK_NO_DATA;
 
   switch (state) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
@@ -141,6 +136,9 @@ void Syncer::sync(LinkState linkState) {
     }
   }
 
+  linkConnection->send(outgoingData);
+  // TODO: Do it twice for fast sync
+
   if (timeoutCount >= SYNC_TIMEOUT_FRAMES) {
 #ifdef SENV_DEBUG
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
@@ -155,9 +153,7 @@ void Syncer::sync(LinkState linkState) {
 }
 
 void Syncer::fail(SyncError error) {
-  u16 data = outgoingData;
   reset();
-  outgoingData = data;
   this->error = error;
 }
 
@@ -168,7 +164,6 @@ void Syncer::reset() {
 }
 
 void Syncer::resetData() {
-  outgoingData = 0;
   lastMessage.event = 0;
 }
 

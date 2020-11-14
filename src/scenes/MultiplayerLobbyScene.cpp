@@ -35,7 +35,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 
   refresh(syncer->getLastError());
 
-#ifdef SENV_DEVELOPMENT
+#ifdef SENV_DEBUG
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
@@ -43,15 +43,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
   }
 #endif
 
-#ifdef SENV_DEVELOPMENT
 #ifndef SENV_DEBUG
-  SCENE_write(std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_READY)) +
-                  std::to_string(_isBitHigh(REG_SIOCNT, LINK_BIT_ERROR)),
-              0);
-#endif
-#endif
-
-#ifndef SENV_DEVELOPMENT
   TextScene::tick(keys);
 #endif
 }

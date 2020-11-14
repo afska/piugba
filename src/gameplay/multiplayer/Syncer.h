@@ -55,7 +55,6 @@ class Syncer {
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
-  u16 outgoingData = 0;
   u32 timeoutCount = 0;
   Message lastMessage;
 
@@ -68,7 +67,7 @@ class Syncer {
     return (romId & 0b00000000000111111111100000000000) >> 11;
   }
 
-  void sync(LinkState linkState);
+  void sync(LinkState* linkState);
   void fail(SyncError error);
   void reset();
   void resetData();

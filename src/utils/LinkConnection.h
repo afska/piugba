@@ -1,17 +1,19 @@
 #ifndef LINK_CONNECTION_H
 #define LINK_CONNECTION_H
 
-#include <tonc_bios.h>
 #include <tonc_core.h>
 #include <tonc_memdef.h>
 #include <tonc_memmap.h>
 
+#include <memory>
+#include <queue>
+
 #define LINK_MAX_PLAYERS 4
-#define LINK_NO_DATA 0xffff
-#define LINK_BAUD_RATE_MAX 3
-#define LINK_WAIT_VCOUNT 10
-#define LINK_HEART_BIT 0xf
-#define LINK_HEART_BIT_UNKNOWN 2
+#define LINK_DISCONNECTED 0xFFFF
+#define LINK_NO_DATA 0x0
+#define LINK_TRANSFER_VCOUNT_WAIT 2
+#define LINK_DEFAULT_TIMEOUT 3
+#define LINK_DEFAULT_BUFFER_SIZE 60
 #define LINK_BIT_SLAVE 2
 #define LINK_BIT_READY 3
 #define LINK_BITS_PLAYER_ID 4
@@ -19,6 +21,10 @@
 #define LINK_BIT_START 7
 #define LINK_BIT_MULTIPLAYER 13
 #define LINK_BIT_IRQ 14
+#define LINK_BIT_GENERAL_PURPOSE_LOW 14
+#define LINK_BIT_GENERAL_PURPOSE_HIGH 15
+#define LINK_SET_HIGH(REG, BIT) REG |= 1 << BIT
+#define LINK_SET_LOW(REG, BIT) REG &= ~(1 << BIT)
 
 // A Link Cable connection for Multi-player mode.
 
@@ -26,74 +32,201 @@
 // - 1) Include this header in your main.cpp file and add:
 //       LinkConnection* linkConnection = new LinkConnection();
 // - 2) Add the interrupt service routines:
-//       irq_add(II_SERIAL, NULL);
-//       irq_add(II_VBLANK, ISR_vblank);
-// - 3) Define a void ISR_vblank() function that does:
-//       linkConnection->tick(data);
-// - 4) Use `linkConnection->linkState` in your update loop
+//       irq_add(II_VBLANK, LINK_ISR_VBLANK);
+//       irq_add(II_SERIAL, LINK_ISR_SERIAL);
+// - 3) Send/read messages by using:
+//       linkConnection->send(...);
+//       linkConnection->linkState
 
 // `data` restrictions:
-// - 0xFFFF and 0x7FFF are reserved values, so don't use them
-// - Bit 0xF will be ignored: it'll be used as a heartbeat
+// 0xFFFF and 0x0 are reserved values, so don't use them
+// (they mean 'disconnected' and 'no data' respectively)
 
-void ISR_serial();
-u16 _withHeartBit(u16 data, bool heartBit);
-bool _isBitHigh(u16 data, u8 bit);
+void LINK_ISR_VBLANK();
+void LINK_ISR_SERIAL();
+u16 LINK_QUEUE_POP(std::queue<u16>& q);
+void LINK_QUEUE_CLEAR(std::queue<u16>& q);
 
 struct LinkState {
   u8 playerCount;
   u8 currentPlayerId;
-  u16 data[4];
-  u8 _heartBits[4];
+  std::queue<u16> _incomingMessages[LINK_MAX_PLAYERS];
+  std::queue<u16> _outgoingMessages;
+  bool _IRQFlag;
+  u32 _IRQTimeout;
 
-  bool isConnected() { return playerCount > 1; }
-  bool hasData(u8 playerId) { return data[playerId] != LINK_NO_DATA; }
+  bool isConnected() {
+    return playerCount > 1 && currentPlayerId < playerCount;
+  }
 
-  void _reset() {
-    playerCount = 0;
-    currentPlayerId = 0;
-    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
-      data[i] = LINK_NO_DATA;
-      _heartBits[i] = LINK_HEART_BIT_UNKNOWN;
-    }
+  bool hasMessage(u8 playerId) {
+    if (playerId >= playerCount)
+      return false;
+
+    return !_incomingMessages[playerId].empty();
+  }
+
+  u16 readMessage(u8 playerId) {
+    return LINK_QUEUE_POP(_incomingMessages[playerId]);
   }
 };
 
 class LinkConnection {
  public:
-  struct LinkState linkState;
+  enum BaudRate {
+    BAUD_RATE_0,  // 9600 bps
+    BAUD_RATE_1,  // 38400 bps
+    BAUD_RATE_2,  // 57600 bps
+    BAUD_RATE_3   // 115200 bps
+  };
+  std::unique_ptr<struct LinkState> linkState{new LinkState()};
 
-  LinkConnection() {}
+  explicit LinkConnection(bool startNow = true,
+                          BaudRate baudRate = BAUD_RATE_3,
+                          u32 timeout = LINK_DEFAULT_TIMEOUT,
+                          u32 bufferSize = LINK_DEFAULT_BUFFER_SIZE) {
+    this->baudRate = baudRate;
+    this->timeout = timeout;
+    this->bufferSize = bufferSize;
 
-  LinkState tick(u16 data) {
-    if (!isReady()) {
-      reset();
-      return linkState;
-    }
+    if (startNow)
+      activate();
+    else
+      stop();
+  }
 
-    bool heartBit = getNewHeartBit();
-    setNewHeartBit(heartBit);
-    REG_SIOMLT_SEND = _withHeartBit(data, heartBit);
+  bool isActive() { return isEnabled; }
 
-    wait(LINK_WAIT_VCOUNT);
+  void activate() {
+    isEnabled = true;
+    reset();
+  }
 
-    if (!isBitHigh(LINK_BIT_SLAVE))
-      setBitHigh(LINK_BIT_START);
+  void deactivate() {
+    isEnabled = false;
+    resetState();
+    stop();
+  }
 
-    IntrWait(1, IRQ_SERIAL);
+  void send(u16 data) {
+    if (data == LINK_DISCONNECTED || data == LINK_NO_DATA)
+      return;
 
-    if (!isReady()) {
-      reset();
-      return linkState;
-    }
-
-    ISR_serial();
-
-    return linkState;
+    push(linkState->_outgoingMessages, data);
   }
 
   bool isReady() {
     return isBitHigh(LINK_BIT_READY) && !isBitHigh(LINK_BIT_ERROR);
+  }
+
+  void _onVBlank() {
+    if (!isEnabled || resetIfNeeded())
+      return;
+
+    if (!linkState->_IRQFlag) {
+      linkState->_IRQTimeout++;
+
+      if (linkState->_IRQTimeout >= timeout)
+        reset();
+      else if (isMaster())
+        transfer(LINK_NO_DATA, true);
+    }
+
+    linkState->_IRQFlag = false;
+  }
+
+  void _onSerial() {
+    if (!isEnabled || resetIfNeeded())
+      return;
+
+    linkState->_IRQFlag = true;
+    linkState->_IRQTimeout = 0;
+
+    linkState->playerCount = 0;
+    linkState->currentPlayerId =
+        (REG_SIOCNT & (0b11 << LINK_BITS_PLAYER_ID)) >> LINK_BITS_PLAYER_ID;
+
+    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
+      u16 data = REG_SIOMULTI[i];
+
+      if (data != LINK_DISCONNECTED) {
+        if (data != LINK_NO_DATA)
+          push(linkState->_incomingMessages[i], data);
+        linkState->playerCount++;
+      } else
+        LINK_QUEUE_CLEAR(linkState->_incomingMessages[i]);
+    }
+
+    if (linkState->isConnected())
+      sendPendingData();
+  }
+
+ private:
+  BaudRate baudRate;
+  u32 timeout;
+  u32 bufferSize;
+  bool isEnabled = false;
+
+  void sendPendingData() {
+    transfer(LINK_QUEUE_POP(linkState->_outgoingMessages));
+  }
+
+  void transfer(u16 data, bool force = false) {
+    bool shouldNotify = isMaster() && (data != LINK_NO_DATA || force);
+
+    if (shouldNotify)
+      setBitLow(LINK_BIT_START);
+
+    wait(LINK_TRANSFER_VCOUNT_WAIT);
+    REG_SIOMLT_SEND = data;
+
+    if (shouldNotify)
+      setBitHigh(LINK_BIT_START);
+  }
+
+  bool resetIfNeeded() {
+    if (!isReady()) {
+      reset();
+      return true;
+    }
+
+    return false;
+  }
+
+  void reset() {
+    resetState();
+    stop();
+    start();
+  }
+
+  void resetState() {
+    linkState->playerCount = 0;
+    linkState->currentPlayerId = 0;
+    for (u32 i = 0; i < LINK_MAX_PLAYERS; i++)
+      LINK_QUEUE_CLEAR(linkState->_incomingMessages[i]);
+    LINK_QUEUE_CLEAR(linkState->_outgoingMessages);
+    linkState->_IRQFlag = false;
+    linkState->_IRQTimeout = 0;
+  }
+
+  void stop() {
+    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_LOW);
+    LINK_SET_HIGH(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
+  }
+
+  void start() {
+    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
+    REG_SIOCNT = baudRate;
+    REG_SIOMLT_SEND = 0;
+    setBitHigh(LINK_BIT_MULTIPLAYER);
+    setBitHigh(LINK_BIT_IRQ);
+  }
+
+  void push(std::queue<u16>& q, u16 value) {
+    if (q.size() >= bufferSize)
+      LINK_QUEUE_POP(q);
+
+    q.push(value);
   }
 
   void wait(u32 verticalLines) {
@@ -108,68 +241,34 @@ class LinkConnection {
     };
   }
 
- private:
-  bool getNewHeartBit() {
-    return linkState.isConnected()
-               ? !linkState._heartBits[linkState.currentPlayerId]
-               : 1;
-  }
-
-  void setNewHeartBit(bool heartBit) {
-    if (linkState.isConnected())
-      linkState._heartBits[linkState.currentPlayerId] = heartBit;
-  }
-
-  void reset() {
-    linkState._reset();
-
-    // switching to another mode and going back resets the communication circuit
-    REG_RCNT = 0xf;
-    REG_RCNT = 0;
-    REG_SIOCNT = LINK_BAUD_RATE_MAX;
-    setBitHigh(LINK_BIT_MULTIPLAYER);
-    setBitHigh(LINK_BIT_IRQ);
-  }
-
-  bool isBitHigh(u8 bit) { return _isBitHigh(REG_SIOCNT, bit); }
-  void setBitHigh(u8 bit) { REG_SIOCNT |= 1 << bit; }
+  bool isMaster() { return !isBitHigh(LINK_BIT_SLAVE); }
+  bool isBitHigh(u8 bit) { return (REG_SIOCNT >> bit) & 1; }
+  void setBitHigh(u8 bit) { LINK_SET_HIGH(REG_SIOCNT, bit); }
+  void setBitLow(u8 bit) { LINK_SET_LOW(REG_SIOCNT, bit); }
 };
 
 extern LinkConnection* linkConnection;
 
-inline void ISR_serial() {
-  u8 currentPlayerId =
-      (REG_SIOCNT & (0b11 << LINK_BITS_PLAYER_ID)) >> LINK_BITS_PLAYER_ID;
-
-  linkConnection->linkState.playerCount = 0;
-  linkConnection->linkState.currentPlayerId = currentPlayerId;
-
-  for (u32 i = 0; i < LINK_MAX_PLAYERS; i++) {
-    auto data = REG_SIOMULTI[i];
-    u8 oldHeartBit = linkConnection->linkState._heartBits[i];
-    u8 newHeartBit = _isBitHigh(data, LINK_HEART_BIT);
-
-    bool isConnectionAlive =
-        data != LINK_NO_DATA &&
-        (i == currentPlayerId || oldHeartBit == LINK_HEART_BIT_UNKNOWN ||
-         oldHeartBit != newHeartBit);
-
-    linkConnection->linkState.data[i] =
-        isConnectionAlive ? _withHeartBit(data, 0) : LINK_NO_DATA;
-    linkConnection->linkState._heartBits[i] =
-        isConnectionAlive ? newHeartBit : LINK_HEART_BIT_UNKNOWN;
-
-    if (linkConnection->linkState.hasData(i))
-      linkConnection->linkState.playerCount++;
-  }
+inline void LINK_ISR_VBLANK() {
+  linkConnection->_onVBlank();
 }
 
-inline bool _isBitHigh(u16 data, u8 bit) {
-  return (data >> bit) & 1;
+inline void LINK_ISR_SERIAL() {
+  linkConnection->_onSerial();
 }
 
-inline u16 _withHeartBit(u16 data, bool heartBit) {
-  return (data & ~(1 << LINK_HEART_BIT)) | (heartBit << LINK_HEART_BIT);
+inline u16 LINK_QUEUE_POP(std::queue<u16>& q) {
+  if (q.empty())
+    return LINK_NO_DATA;
+
+  u16 value = q.front();
+  q.pop();
+  return value;
+}
+
+inline void LINK_QUEUE_CLEAR(std::queue<u16>& q) {
+  while (!q.empty())
+    LINK_QUEUE_POP(q);
 }
 
 #endif  // LINK_CONNECTION_H

@@ -90,6 +90,10 @@ inline void player_unmute() {
   unmute();
 }
 
+inline void player_onVBlank() {
+  PLAYER_POST_UPDATE();
+}
+
 inline void player_forever(void (*update)()) {
   while (1) {
     if (rate != 0) {
@@ -114,10 +118,6 @@ inline void player_forever(void (*update)()) {
       }
     });
 
-    // --------------
-    VBlankIntrWait();  // VBLANK
-    // --------------
-
-    PLAYER_POST_UPDATE();
+    VBlankIntrWait();
   }
 }
