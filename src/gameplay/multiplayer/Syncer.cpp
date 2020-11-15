@@ -60,7 +60,8 @@ void Syncer::update() {
 
   do {
     sync(linkState);
-  } while (isActive() && linkState->hasMessage(!playerId));
+  } while (isActive() && linkState->isConnected() &&
+           linkState->hasMessage(!playerId));
 }
 
 void Syncer::sync(LinkState* linkState) {

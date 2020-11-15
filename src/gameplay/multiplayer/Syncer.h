@@ -10,6 +10,8 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
+#define SYNC_BUFFER_SIZE 10
+
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,
