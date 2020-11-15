@@ -64,8 +64,16 @@ class SongScene : public Scene {
   int reduceDirection = -1;
 
   inline u8 getPlayerIdFromIndex(u32 index) {
-    return index >= ARROWS_TOTAL ? syncer->getRemotePlayerId()
-                                 : syncer->getLocalPlayerId();
+    return index >= ARROWS_TOTAL ? 1 : 0;
+  }
+
+  inline u8 getLocalBaseIndex() { return getLocalPlayerId() * ARROWS_TOTAL; }
+  inline u8 getRemoteBaseIndex() {
+    return syncer->getRemotePlayerId() * ARROWS_TOTAL;
+  }
+
+  inline u8 getLocalPlayerId() {
+    return isMultiplayer() ? syncer->getLocalPlayerId() : 0;
   }
 
   void setUpPalettes();

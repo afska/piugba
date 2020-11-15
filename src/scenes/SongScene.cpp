@@ -354,11 +354,11 @@ void SongScene::updateGameY() {
 }
 
 void SongScene::processKeys(u16 keys) {
-  arrowHolders[0]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowHolders[1]->setIsPressed(KEY_UPLEFT(keys));
-  arrowHolders[2]->setIsPressed(KEY_CENTER(keys));
-  arrowHolders[3]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowHolders[4]->setIsPressed(KEY_DOWNRIGHT(keys));
+  arrowHolders[getLocalBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowHolders[getLocalBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
+  arrowHolders[getLocalBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
+  arrowHolders[getLocalBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowHolders[getLocalBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
   startInput->setIsPressed(keys & KEY_START);
   selectInput->setIsPressed(keys & KEY_SELECT);
   aInput->setIsPressed(keys & KEY_A);
@@ -366,11 +366,11 @@ void SongScene::processKeys(u16 keys) {
 
   if (isMultiplayer()) {
     // TODO: REMOVE/MOVE
-    arrowHolders[5]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowHolders[6]->setIsPressed(KEY_UPLEFT(keys));
-    arrowHolders[7]->setIsPressed(KEY_CENTER(keys));
-    arrowHolders[8]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowHolders[9]->setIsPressed(KEY_DOWNRIGHT(keys));
+    arrowHolders[getRemoteBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[getRemoteBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[getRemoteBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[getRemoteBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[getRemoteBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
   }
 
   IFSTRESSTEST {

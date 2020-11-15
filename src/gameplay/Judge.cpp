@@ -51,11 +51,12 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
-void Judge::onHoldTick(u8 arrows, bool canMiss) {
+void Judge::onHoldTick(u8 arrows, u8 playerId, bool canMiss) {
   bool isPressed = true;
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-    if (arrows & EVENT_ARROW_MASKS[i] && !arrowHolders->at(i)->getIsPressed()) {
+    if (arrows & EVENT_ARROW_MASKS[i] &&
+        !arrowHolders->at(playerId * ARROWS_TOTAL + i)->getIsPressed()) {
       isPressed = false;
       break;
     }

@@ -370,7 +370,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
       }
 
       if (arrows > 0 && !isFake)
-        judge->onHoldTick(arrows, canMiss);
+        judge->onHoldTick(arrows, playerId, canMiss);
     }
   }
 
