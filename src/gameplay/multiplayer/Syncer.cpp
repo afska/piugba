@@ -70,8 +70,8 @@ void Syncer::sync(LinkState* linkState) {
             DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
-  u8 outgoingEvent = LINK_NO_DATA;
-  u16 outgoingPayload = LINK_NO_DATA;
+  outgoingEvent = LINK_NO_DATA;
+  outgoingPayload = LINK_NO_DATA;
 
   switch (state) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
@@ -127,8 +127,10 @@ void Syncer::sync(LinkState* linkState) {
         outgoingPayload = SYNCER_MSG_SELECTION_BUILD(
             KEY_DOWNLEFT(keys), KEY_UPLEFT(keys), KEY_CENTER(keys),
             KEY_UPRIGHT(keys), KEY_DOWNRIGHT(keys));
+
+        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
       } else {
-        outgoingPayload = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, 0);
+        outgoingPayload = 0;
 
         ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
         lastMessage.event = SYNC_EVENT_SELECTION;
@@ -139,14 +141,22 @@ void Syncer::sync(LinkState* linkState) {
     }
   }
 
+  sendOutgoingData();
+  checkTimeout();
+}
+
+void Syncer::sendOutgoingData() {
   u16 outgoingData = SYNCER_MSG_BUILD(outgoingEvent, outgoingPayload);
   linkConnection->send(outgoingData);
+
 #ifdef SENV_DEBUG
   if (outgoingData != LINK_NO_DATA)
     DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
+}
 
+void Syncer::checkTimeout() {
   if (timeoutCount >= SYNC_TIMEOUT) {
 #ifdef SENV_DEBUG
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
@@ -161,6 +171,8 @@ void Syncer::fail(SyncError error) {
   DEBUTRACE("* fail: " + DSTR(error));
 #endif
 
+  if (isActive())
+    sendOutgoingData();
   reset();
   this->error = error;
 }
@@ -177,6 +189,8 @@ void Syncer::reset() {
 }
 
 void Syncer::resetData() {
+  outgoingEvent = LINK_NO_DATA;
+  outgoingPayload = LINK_NO_DATA;
   lastMessage.event = 0;
 }
 

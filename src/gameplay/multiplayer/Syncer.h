@@ -57,6 +57,8 @@ class Syncer {
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
+  u8 outgoingEvent = 0;
+  u16 outgoingPayload = 0;
   u32 timeoutCount = 0;
   Message lastMessage;
 
@@ -70,6 +72,8 @@ class Syncer {
   }
 
   void sync(LinkState* linkState);
+  void sendOutgoingData();
+  void checkTimeout();
   void fail(SyncError error);
   void reset();
   void resetData();
