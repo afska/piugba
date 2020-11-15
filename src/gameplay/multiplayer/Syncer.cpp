@@ -10,15 +10,16 @@
 
 #define ASSERT_EVENT(EXPECTED_EVENT, LOG) \
   if (incomingEvent != (EXPECTED_EVENT))  \
-    fail(SyncError::SYNC_ERROR_WTF);      \
+    break;                                \
   else                                    \
     DEBUTRACE((LOG));
 
-extern "C" {
-#include "player/player.h"
-}
-
 void Syncer::initialize(SyncMode mode) {
+  if (mode != SyncMode::SYNC_MODE_OFFLINE)
+    linkConnection->activate();
+  else
+    linkConnection->deactivate();
+
   this->mode = mode;
   reset();
   resetError();
@@ -134,9 +135,9 @@ void Syncer::sync(LinkState* linkState) {
   }
 
   linkConnection->send(outgoingData);
-
 #ifdef SENV_DEBUG
-  DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
+  if (outgoingData != LINK_NO_DATA)
+    DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
 #endif
 }
 
@@ -150,8 +151,12 @@ void Syncer::fail(SyncError error) {
 }
 
 void Syncer::reset() {
+#ifdef SENV_DEBUG
+  DEBUTRACE("* reset");
+#endif
+
   playerId = -1;
-  setState(SyncState::SYNC_STATE_SEND_ROM_ID);
+  state = SyncState::SYNC_STATE_SEND_ROM_ID;
   resetData();
 }
 

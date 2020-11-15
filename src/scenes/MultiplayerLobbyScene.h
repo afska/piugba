@@ -18,8 +18,9 @@ class MultiplayerLobbyScene : public TextScene {
   void tick(u16 keys) override;
 
  private:
-  int messageId = -1;
   SyncMode mode;
+  int messageId = -1;
+  bool hasStartedSync = false;
 
   void refresh(int newMessageId);
   void start();

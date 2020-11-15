@@ -8,14 +8,14 @@
 #include "utils/SceneUtils.h"
 
 std::string messages[] = {"Connecting...\r\n\r\n(Press SELECT to cancel)",
+                          "ERROR:\r\nwtf?!"
                           "ERROR:\r\nToo many players!",
                           "ERROR:\r\nROM IDs don't match!",
-                          "ERROR:\r\nMixed game modes!", "ERROR:\r\nwtf?!"};
+                          "ERROR:\r\nMixed game modes!"};
 
 void MultiplayerLobbyScene::load() {
   TextScene::load();
 
-  syncer->initialize(mode);
   refresh(0);
 }
 
@@ -33,13 +33,20 @@ void MultiplayerLobbyScene::tick(u16 keys) {
     return;
   }
 
+  if (hasFinished() && !hasStartedSync) {
+    syncer->initialize(mode);
+    hasStartedSync = true;
+  }
+
   refresh(syncer->getLastError());
 
 #ifdef SENV_DEBUG
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
+    syncer->initialize(mode);
     hasStarted = true;
+    hasStartedSync = true;
   }
 #endif
 
