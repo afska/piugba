@@ -254,6 +254,12 @@ void SelectionScene::scrollTo(u32 page, u32 selected) {
   updateSelection();
 }
 
+void SelectionScene::setNumericLevel(u8 numericLevelIndex) {
+  SAVEFILE_write8(SRAM->memory.numericLevel, numericLevelIndex);
+  updateSelection(true);
+  pixelBlink->blink();
+}
+
 void SelectionScene::goToSong() {
   player_stop();
   confirmed = false;
@@ -319,10 +325,10 @@ void SelectionScene::processSelectionChangeEvents() {
 
 void SelectionScene::processConfirmEvents() {
   if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
-    if (confirmed)
-      goToSong();
-    else
-      confirm();
+    if (isMultiplayer() && syncer->isMaster())
+      syncer->send(SYNC_EVENT_START_SONG, confirmed);
+
+    onConfirmOrStart(confirmed);
   }
 }
 
@@ -377,9 +383,10 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     if (newValue == getSelectedNumericLevelIndex())
       return true;
 
-    SAVEFILE_write8(SRAM->memory.numericLevel, newValue);
-    updateSelection(true);
-    pixelBlink->blink();
+    setNumericLevel(newValue);
+
+    if (isMultiplayer() && syncer->isMaster())
+      syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
 
     return true;
   }
@@ -410,13 +417,20 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       pixelBlink->blink();
     }
 
-    if (isMultiplayer())
+    if (isMultiplayer() && syncer->isMaster())
       syncer->send(SYNC_EVENT_SONG_CHANGED, getSelectedSongIndex());
 
     return true;
   }
 
   return false;
+}
+
+void SelectionScene::onConfirmOrStart(bool isConfirmed) {
+  if (confirmed)
+    goToSong();
+  else
+    confirm();
 }
 
 void SelectionScene::updateSelection(bool isChangingLevel) {
@@ -584,15 +598,19 @@ void SelectionScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {
-        pixelBlink->blink();
         scrollTo(payload);
+        pixelBlink->blink();
 
         break;
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
+        setNumericLevel(payload);
+
         break;
       }
       case SYNC_EVENT_START_SONG: {
+        onConfirmOrStart(payload);
+
         break;
       }
       default: {

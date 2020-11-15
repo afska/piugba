@@ -113,6 +113,7 @@ class SelectionScene : public Scene {
 
   void scrollTo(u32 songIndex);
   void scrollTo(u32 page, u32 selected);
+  void setNumericLevel(u8 numericLevelIndex);
   void goToSong();
 
   void processKeys(u16 keys);
@@ -127,6 +128,7 @@ class SelectionScene : public Scene {
                          bool isOnListEdge,
                          bool isOnPageEdge,
                          int direction);
+  void onConfirmOrStart(bool confirmed);
 
   void updateSelection() { updateSelection(false); }
   void updateSelection(bool isChangingLevel);
