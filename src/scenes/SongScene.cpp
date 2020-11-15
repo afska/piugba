@@ -8,6 +8,7 @@
 #include "StageBreakScene.h"
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"
@@ -76,8 +77,8 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   if (!isMultiplayer())
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
-  player_play(song->audioPath.c_str());
 
+  player_play(song->audioPath.c_str());
   SCENE_init();
 
   setUpPalettes();
@@ -114,6 +115,12 @@ void SongScene::load() {
 void SongScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    unload();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
 
   if (init == 0) {
 #ifdef SENV_DEBUG

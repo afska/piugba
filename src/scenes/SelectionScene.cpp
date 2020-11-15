@@ -147,6 +147,7 @@ void SelectionScene::tick(u16 keys) {
   multiplier->tick();
 
   processKeys(keys);
+
   if (isMultiplayer() && !syncer->isMaster())
     processMultiplayerUpdates();
   else {

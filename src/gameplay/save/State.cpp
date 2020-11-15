@@ -1,6 +1,7 @@
 #include "State.h"
 
 #include "Savefile.h"
+#include "gameplay/multiplayer/Syncer.h"
 
 RAMState GameState;
 
@@ -89,7 +90,9 @@ void STATE_setup(Song* song, Chart* chart) {
 
   if (!GameState.mods.jump)
     GameState.positionX =
-        GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
+        GAME_POSITION_X[isMultiplayer()
+                            ? (syncer->isMaster() ? 0 : 2)
+                            : SAVEFILE_read8(SRAM->settings.gamePosition)];
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {
     GameState.positionY = REDUCE_MOD_POSITION_Y;
