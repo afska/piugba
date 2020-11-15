@@ -44,7 +44,7 @@ class SongScene : public Scene {
 
   Song* song;
   Chart* chart;
-  std::unique_ptr<ChartReader> chartReader;
+  std::unique_ptr<ChartReader> chartReader[LINK_MAX_PLAYERS];
   std::unique_ptr<Judge> judge;
   std::unique_ptr<LifeBar> lifeBar;
   std::unique_ptr<Score> score;

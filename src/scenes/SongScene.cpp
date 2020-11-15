@@ -104,9 +104,10 @@ void SongScene::load() {
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
-  chartReader = std::unique_ptr<ChartReader>(
-      new ChartReader(chart, arrowPool.get(), judge.get(), pixelBlink.get(),
-                      audioLag, multiplier));
+  for (u32 playerId = 0; playerId < 1 + isMultiplayer(); playerId++)
+    chartReader[playerId] = std::unique_ptr<ChartReader>(
+        new ChartReader(chart, playerId, arrowPool.get(), judge.get(),
+                        pixelBlink.get(), audioLag, multiplier));
 
   startInput = std::unique_ptr<InputHandler>(new InputHandler());
   selectInput = std::unique_ptr<InputHandler>(new InputHandler());
@@ -166,7 +167,7 @@ void SongScene::tick(u16 keys) {
   updateArrowHolders();
   processKeys(keys);
 
-  bool isNewBeat = chartReader->update((int)songMsecs);
+  bool isNewBeat = chartReader[0]->update((int)songMsecs);
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
@@ -178,6 +179,8 @@ void SongScene::tick(u16 keys) {
 
     processModsBeat();
   }
+  if (isMultiplayer())
+    chartReader[1]->update((int)songMsecs);
 
   blinkFrame = max(blinkFrame - 1, 0);
   if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
@@ -192,10 +195,10 @@ void SongScene::tick(u16 keys) {
   lifeBar->tick(foregroundPalette.get());
 
 #ifdef SENV_DEVELOPMENT
-  if (chartReader->debugOffset)
-    score->log(chartReader->debugOffset);
+  if (chartReader[0]->debugOffset)
+    score->log(chartReader[0]->debugOffset);
 
-  IFTIMINGTEST { chartReader->logDebugInfo<CHART_DEBUG>(); }
+  IFTIMINGTEST { chartReader[0]->logDebugInfo<CHART_DEBUG>(); }
 #endif
 }
 
@@ -249,9 +252,9 @@ void SongScene::updateArrows() {
   // update sprites
   arrowPool->forEachActive([&nextArrows, this](Arrow* arrow) {
     ArrowDirection direction = arrow->direction;
-    bool isStopped = chartReader->isStopped();
+    bool isStopped = chartReader[arrow->playerId]->isStopped();
 
-    int newY = chartReader->getYFor(arrow);
+    int newY = chartReader[arrow->playerId]->getYFor(arrow);
     bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
     ArrowState arrowState = arrow->tick(newY, isPressing);
 
@@ -270,7 +273,8 @@ void SongScene::updateArrows() {
   // judge key press events
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto arrow = nextArrows[i];
-    bool isStopped = chartReader->isStopped();
+    u8 playerId = arrow->playerId;
+    bool isStopped = chartReader[playerId]->isStopped();
     if (arrow == NULL)
       continue;
 
@@ -279,38 +283,40 @@ void SongScene::updateArrows() {
     int judgementOffset = 0;
 
     if (isStopped) {
-      bool hasJustStopped = chartReader->hasJustStopped();
-      bool isAboutToResume = chartReader->isAboutToResume();
+      bool hasJustStopped = chartReader[playerId]->hasJustStopped();
+      bool isAboutToResume = chartReader[playerId]->isAboutToResume();
 
-      canBeJudged = arrow->timestamp >= chartReader->getStopStart() &&
+      canBeJudged = arrow->timestamp >= chartReader[playerId]->getStopStart() &&
                     (hasJustStopped || isAboutToResume);
-      judgementOffset = isAboutToResume ? -chartReader->getStopLength() : 0;
+      judgementOffset =
+          isAboutToResume ? -chartReader[playerId]->getStopLength() : 0;
 
-      if (chartReader->isStopJudgeable()) {
+      if (chartReader[playerId]->isStopJudgeable()) {
         canBeJudged = true;
-        judgementOffset =
-            -(chartReader->getMsecs() - chartReader->getStopStart());
+        judgementOffset = -(chartReader[playerId]->getMsecs() -
+                            chartReader[playerId]->getStopStart());
       }
     }
 
     bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();
     if (canBeJudged && hasBeenPressedNow)
-      judge->onPress(arrow, chartReader.get(), judgementOffset);
+      judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
   }
 }
 
 void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
+    u8 playerId = getPlayerIdFromIndex(i);
 
-    bool isHoldMode = chartReader->isHoldActive(direction);
+    bool isHoldMode = chartReader[playerId]->isHoldActive(direction);
     bool isPressing = arrowHolders[direction]->getIsPressed();
     bool isVisible = fakeHeads[i]->get()->enabled;
 
-    if (isHoldMode && isPressing && !chartReader->isStopped()) {
+    if (isHoldMode && isPressing && !chartReader[playerId]->isStopped()) {
       if (!isVisible) {
-        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction,
-                                 getPlayerIdFromIndex(i), 0, false);
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, playerId,
+                                 0, false);
         isVisible = true;
       }
     } else if (isVisible) {
@@ -371,9 +377,10 @@ void SongScene::processKeys(u16 keys) {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, arrowHolder->direction, 0,
-                         chartReader->getMsecs() + chartReader->getArrowTime(),
-                         false);
+          it->initialize(
+              ArrowType::UNIQUE, arrowHolder->direction, 0,
+              chartReader[0]->getMsecs() + chartReader[0]->getArrowTime(),
+              false);
         });
   }
 
@@ -384,22 +391,22 @@ void SongScene::processKeys(u16 keys) {
 
   if (startInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReader->debugOffset -= DEBUG_OFFSET_CORRECTION;
-      if (chartReader->debugOffset == 0)
+      chartReader[0]->debugOffset -= DEBUG_OFFSET_CORRECTION;
+      if (chartReader[0]->debugOffset == 0)
         score->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() + 1))
         pixelBlink->blink();
     }
   }
 
   if (selectInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReader->debugOffset += DEBUG_OFFSET_CORRECTION;
-      if (chartReader->debugOffset == 0)
+      chartReader[0]->debugOffset += DEBUG_OFFSET_CORRECTION;
+      if (chartReader[0]->debugOffset == 0)
         score->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() - 1))
         pixelBlink->blink();
     }
   }
@@ -455,7 +462,7 @@ void SongScene::processModsBeat() {
   }
 
   if (GameState.mods.randomSpeed)
-    chartReader->setMultiplier(qran_range(3, 6));
+    chartReader[0]->setMultiplier(qran_range(3, 6));
 }
 
 void SongScene::processModsTick() {
@@ -537,7 +544,7 @@ void SongScene::processTrainingModeMod() {
   // Multiplier down
   if (selectInput->hasBeenReleasedNow()) {
     if (!selectInput->getHandledFlag()) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() - 1))
+      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() - 1))
         pixelBlink->blink();
     }
     selectInput->setHandledFlag(false);
@@ -546,7 +553,7 @@ void SongScene::processTrainingModeMod() {
   // Multiplier up
   if (startInput->hasBeenReleasedNow()) {
     if (!startInput->getHandledFlag()) {
-      if (chartReader->setMultiplier(chartReader->getMultiplier() + 1))
+      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() + 1))
         pixelBlink->blink();
     }
     startInput->setHandledFlag(false);
@@ -560,7 +567,7 @@ bool SongScene::setRate(int rate) {
     return false;
 
   player_setRate(rate);
-  chartReader->syncRate(RATE_LEVELS, rate);
+  chartReader[0]->syncRate(RATE_LEVELS, rate);
   return true;
 }
 

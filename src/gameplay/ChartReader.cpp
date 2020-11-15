@@ -10,12 +10,14 @@ const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 FRAME_SKIP = 1;
 
 ChartReader::ChartReader(Chart* chart,
+                         u8 playerId,
                          ObjectPool<Arrow>* arrowPool,
                          Judge* judge,
                          PixelBlink* pixelBlink,
                          int audioLag,
                          u32 multiplier) {
   this->chart = chart;
+  this->playerId = playerId;
   this->arrowPool = arrowPool;
   this->judge = judge;
   this->pixelBlink = pixelBlink;
@@ -222,13 +224,14 @@ void ChartReader::processUniqueNote(Event* event) {
                   << 3;
   }
 
-  forEachDirection(event->data, [event, &arrows,
-                                 this](ArrowDirection direction) {
-    arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
-      it->initialize(ArrowType::UNIQUE, direction, 0, event->timestamp, fake);
-      arrows.push_back(it);
-    });
-  });
+  forEachDirection(
+      event->data, [event, &arrows, this](ArrowDirection direction) {
+        arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
+          it->initialize(ArrowType::UNIQUE, direction, playerId,
+                         event->timestamp, fake);
+          arrows.push_back(it);
+        });
+      });
 
   connectArrows(arrows);
 }
@@ -241,11 +244,11 @@ void ChartReader::startHoldNote(Event* event) {
       holdArrow->startTime = event->timestamp;
       holdArrow->endTime = 0;
 
-      Arrow* head =
-          arrowPool->create([event, &direction, &holdArrow, this](Arrow* head) {
-            head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction, 0,
-                                       event->timestamp, holdArrow, fake);
-          });
+      Arrow* head = arrowPool->create([event, &direction, &holdArrow,
+                                       this](Arrow* head) {
+        head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction, playerId,
+                                   event->timestamp, holdArrow, fake);
+      });
 
       if (head == NULL) {
         holdArrows->discard(holdArrow->id);
@@ -269,7 +272,7 @@ void ChartReader::endHoldNote(Event* event) {
       holdArrow->endTime = event->timestamp;
 
       arrowPool->create([&holdArrow, &event, &direction, this](Arrow* tail) {
-        tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction, 0,
+        tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction, playerId,
                                    event->timestamp, holdArrow, fake);
       });
     });
@@ -322,7 +325,7 @@ void ChartReader::orchestrateHoldArrows() {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
-        fill->initializeHoldFill(direction, 0, holdArrow);
+        fill->initializeHoldFill(direction, playerId, holdArrow);
       else
         break;
 

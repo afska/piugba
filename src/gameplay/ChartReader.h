@@ -25,6 +25,7 @@ class ChartReader : public TimingProvider {
   int debugOffset = 0;
 
   ChartReader(Chart* chart,
+              u8 playerId,
               ObjectPool<Arrow>* arrowPool,
               Judge* judge,
               PixelBlink* pixelBlink,
@@ -64,6 +65,7 @@ class ChartReader : public TimingProvider {
 
  private:
   Chart* chart;
+  u8 playerId;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   PixelBlink* pixelBlink;
