@@ -4,21 +4,18 @@
 
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
-    error = FAILURE_REASON;               \
-    break;                                \
+    fail(FAILURE_REASON);                 \
+    return;                               \
   }
 
-#define ASSERT_NOW(CONDITION, FAILURE_REASON) \
-  if (!(CONDITION)) {                         \
-    fail(FAILURE_REASON);                     \
-    return;                                   \
+#define ASSERT_EVENT(EXPECTED_EVENT, LOG)  \
+  if (incomingEvent != (EXPECTED_EVENT)) { \
+    timeoutCount++;                        \
+    break;                                 \
+  } else {                                 \
+    DEBUTRACE((LOG));                      \
+    timeoutCount = 0;                      \
   }
-
-#define ASSERT_EVENT(EXPECTED_EVENT, LOG) \
-  if (incomingEvent != (EXPECTED_EVENT))  \
-    break;                                \
-  else                                    \
-    DEBUTRACE((LOG));
 
 void Syncer::initialize(SyncMode mode) {
   if (mode != SyncMode::SYNC_MODE_OFFLINE)
@@ -42,9 +39,8 @@ void Syncer::update() {
     DEBUTRACE("disconnected...");
 #endif
 
-  ASSERT_NOW(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
-  ASSERT_NOW(linkState->playerCount == 2,
-             SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
+  ASSERT(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
+  ASSERT(linkState->playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
     reset();
@@ -74,7 +70,6 @@ void Syncer::sync(LinkState* linkState) {
             DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
-  int error = -1;
   u8 outgoingEvent = LINK_NO_DATA;
   u16 outgoingPayload = LINK_NO_DATA;
 
@@ -152,8 +147,13 @@ void Syncer::sync(LinkState* linkState) {
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
 
-  if (error > -1)
-    fail(static_cast<SyncError>(error));
+  if (timeoutCount >= SYNC_TIMEOUT) {
+#ifdef SENV_DEBUG
+    DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
+#endif
+
+    reset();
+  }
 }
 
 void Syncer::fail(SyncError error) {
@@ -172,6 +172,7 @@ void Syncer::reset() {
 
   playerId = -1;
   state = SyncState::SYNC_STATE_SEND_ROM_ID;
+  timeoutCount = 0;
   resetData();
 }
 

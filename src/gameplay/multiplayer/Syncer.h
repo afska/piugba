@@ -11,6 +11,7 @@
 #include "utils/LinkConnection.h"
 
 #define SYNC_BUFFER_SIZE 10
+#define SYNC_TIMEOUT 10
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
@@ -44,6 +45,7 @@ class Syncer {
 #endif
 
     state = newState;
+    timeoutCount = 0;
   }
   inline Message getLastMessage() { return lastMessage; }
 
@@ -55,6 +57,7 @@ class Syncer {
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
+  u32 timeoutCount = 0;
   Message lastMessage;
 
   inline bool isActive() { return playerId > -1; }
