@@ -94,11 +94,12 @@ void SongScene::load() {
 
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
-        if (GameState.mods.stageBreak != StageBreakOpts::sOFF) {
-          unload();
-          engine->transitionIntoScene(new StageBreakScene(engine, fs),
-                                      new FadeOutScene(6));
-        }
+        // if (GameState.mods.stageBreak != StageBreakOpts::sOFF) { // TODO:
+        // RESTORE
+        //   unload();
+        //   engine->transitionIntoScene(new StageBreakScene(engine, fs),
+        //                               new FadeOutScene(6));
+        // }
       }));
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
@@ -356,6 +357,15 @@ void SongScene::processKeys(u16 keys) {
   selectInput->setIsPressed(keys & KEY_SELECT);
   aInput->setIsPressed(keys & KEY_A);
   bInput->setIsPressed(keys & KEY_B);
+
+  if (isMultiplayer()) {
+    // TODO: REMOVE/MOVE
+    arrowHolders[5]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[6]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[7]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[8]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[9]->setIsPressed(KEY_DOWNRIGHT(keys));
+  }
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
