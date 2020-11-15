@@ -13,7 +13,6 @@
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/models/Song.h"
-#include "gameplay/multiplayer/Syncer.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "gameplay/Library.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "objects/base/InputHandler.h"
 #include "objects/ui/ArrowSelector.h"
@@ -64,11 +65,17 @@ class SelectionScene : public Scene {
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
   inline u32 getLastUnlockedSongIndex() {
-    return SAVEFILE_getLibrarySize() - 1;  // TODO: Test
     return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
-    // TODO: Multi modes
+#ifdef SENV_DEVELOPMENT
+    if (isMultiplayer())
+      return SAVEFILE_getLibrarySize() - 1;
+#endif
+
+    if (isMultiplayer())
+      return syncer->$completedSongs;
+
     return SAVEFILE_getGameMode() == GameMode::ARCADE
                ? SAVEFILE_getMaxCompletedSongs()
                : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
@@ -94,7 +101,9 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
-    // TODO: Multi modes
+    if (isMultiplayer())
+      return static_cast<DifficultyLevel>(syncer->$libraryType);
+
     if (IS_STORY(SAVEFILE_getGameMode()))
       return difficulty->getValue();
 

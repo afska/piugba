@@ -29,7 +29,6 @@ enum SyncError {
 
 class Syncer {
  public:
-  u8 $gameMode = 0;
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
   Syncer() {}
@@ -49,6 +48,7 @@ class Syncer {
     state = newState;
     timeoutCount = 0;
   }
+  inline SyncMode getMode() { return mode; }
 
   void initialize(SyncMode mode);
   void update();

@@ -105,16 +105,19 @@ void Syncer::sync(LinkState* linkState) {
     }
     case SyncState::SYNC_STATE_SEND_PROGRESS: {
       u8 modeBit = mode == SyncMode::SYNC_MODE_COOP;
+      u8 libraryType = SAVEFILE_getMaxLibraryType();
+      u8 completedSongs = SAVEFILE_getMaxCompletedSongs();
       outgoingEvent = SYNC_EVENT_PROGRESS;
       outgoingPayload = isMaster() ? SYNC_MSG_PROGRESS_BUILD(
-                                         modeBit, SAVEFILE_getMaxLibraryType(),
-                                         SAVEFILE_getMaxCompletedSongs())
+                                         modeBit, libraryType, completedSongs)
                                    : modeBit;
 
       ASSERT_EVENT(SYNC_EVENT_PROGRESS, "* progress received");
 
       if (isMaster()) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
+        $libraryType = libraryType;
+        $completedSongs = completedSongs;
         setState(SyncState::SYNC_STATE_PLAYING);
       } else {
         u8 receivedModeBit = SYNC_MSG_PROGRESS_MODE(incomingPayload);
@@ -131,7 +134,6 @@ void Syncer::sync(LinkState* linkState) {
                    receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
                SyncError::SYNC_ERROR_WTF);
 
-        $gameMode = receivedModeBit;
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
         setState(SyncState::SYNC_STATE_PLAYING);
@@ -184,7 +186,6 @@ void Syncer::reset() {
 }
 
 void Syncer::resetData() {
-  $gameMode = 0;
   $libraryType = 0;
   $completedSongs = 0;
   outgoingEvent = LINK_NO_DATA;
