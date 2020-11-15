@@ -167,6 +167,9 @@ void SongScene::tick(u16 keys) {
   updateArrowHolders();
   processKeys(keys);
 
+  if (isMultiplayer())
+    processMultiplayerUpdates();
+
   bool isNewBeat = chartReader[0]->update((int)songMsecs);
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
@@ -371,15 +374,6 @@ void SongScene::processKeys(u16 keys) {
   aInput->setIsPressed(keys & KEY_A);
   bInput->setIsPressed(keys & KEY_B);
 
-  if (isMultiplayer()) {
-    // TODO: REMOVE/MOVE
-    arrowHolders[getRemoteBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowHolders[getRemoteBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
-    arrowHolders[getRemoteBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
-    arrowHolders[getRemoteBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowHolders[getRemoteBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
-  }
-
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
@@ -564,6 +558,38 @@ void SongScene::processTrainingModeMod() {
         pixelBlink->blink();
     }
     startInput->setHandledFlag(false);
+  }
+}
+
+void SongScene::processMultiplayerUpdates() {
+  syncer->send(SYNC_EVENT_KEYS,
+               SYNC_MSG_KEYS_BUILD(
+                   arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 4]->getIsPressed()));
+
+  auto linkState = linkConnection->linkState.get();
+  auto remoteId = syncer->getRemotePlayerId();
+
+  while (linkState->hasMessage(remoteId)) {
+    u16 message = linkState->readMessage(remoteId);
+    u8 event = SYNC_MSG_EVENT(message);
+    u16 payload = SYNC_MSG_PAYLOAD(message);
+
+    switch (event) {
+      case SYNC_EVENT_KEYS: {
+        for (u32 i = 0; i < ARROWS_TOTAL; i++)
+          arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
+              SYNC_MSG_KEYS_DIRECTION(payload, i));
+
+        break;
+      }
+      default: {
+        syncer->registerTimeout();
+      }
+    }
   }
 }
 

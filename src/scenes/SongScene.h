@@ -96,6 +96,7 @@ class SongScene : public Scene {
   void processModsBeat();
   u8 processPixelateMod();
   void processTrainingModeMod();
+  void processMultiplayerUpdates();
   bool setRate(int rate);
 
   void unload();
