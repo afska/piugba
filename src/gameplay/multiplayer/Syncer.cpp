@@ -4,8 +4,14 @@
 
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
-    fail(FAILURE_REASON);                 \
-    return;                               \
+    error = FAILURE_REASON;               \
+    break;                                \
+  }
+
+#define ASSERT_NOW(CONDITION, FAILURE_REASON) \
+  if (!(CONDITION)) {                         \
+    fail(FAILURE_REASON);                     \
+    return;                                   \
   }
 
 #define ASSERT_EVENT(EXPECTED_EVENT, LOG) \
@@ -36,8 +42,9 @@ void Syncer::update() {
     DEBUTRACE("disconnected...");
 #endif
 
-  ASSERT(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
-  ASSERT(linkState->playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
+  ASSERT_NOW(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
+  ASSERT_NOW(linkState->playerCount == 2,
+             SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
     reset();
@@ -66,6 +73,7 @@ void Syncer::sync(LinkState* linkState) {
             DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
+  int error = -1;
   u8 outgoingEvent = LINK_NO_DATA;
   u16 outgoingPayload = LINK_NO_DATA;
 
@@ -142,6 +150,9 @@ void Syncer::sync(LinkState* linkState) {
     DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
+
+  if (error > -1)
+    fail(static_cast<SyncError>(error));
 }
 
 void Syncer::fail(SyncError error) {

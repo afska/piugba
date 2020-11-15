@@ -16,6 +16,7 @@ std::string messages[] = {"Connecting...\r\n\r\n(Press SELECT to cancel)",
 void MultiplayerLobbyScene::load() {
   TextScene::load();
 
+  syncer->initialize(mode);
   refresh(0);
 }
 
@@ -33,20 +34,13 @@ void MultiplayerLobbyScene::tick(u16 keys) {
     return;
   }
 
-  if (hasFinished() && !hasStartedSync) {
-    syncer->initialize(mode);
-    hasStartedSync = true;
-  }
-
   refresh(syncer->getLastError());
 
 #ifdef SENV_DEBUG
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
-    syncer->initialize(mode);
     hasStarted = true;
-    hasStartedSync = true;
   }
 #endif
 

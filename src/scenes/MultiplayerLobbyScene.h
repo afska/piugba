@@ -20,7 +20,6 @@ class MultiplayerLobbyScene : public TextScene {
  private:
   SyncMode mode;
   int messageId = -1;
-  bool hasStartedSync = false;
 
   void refresh(int newMessageId);
   void start();
