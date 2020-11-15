@@ -8,14 +8,11 @@
     return;                               \
   }
 
-#define ASSERT_EVENT(EXPECTED_EVENT, LOG)  \
-  if (incomingEvent != (EXPECTED_EVENT)) { \
-    timeoutCount++;                        \
-    break;                                 \
-  } else {                                 \
-    DEBUTRACE((LOG));                      \
-    timeoutCount = 0;                      \
-  }
+#define ASSERT_EVENT(EXPECTED_EVENT, LOG) \
+  if (incomingEvent != (EXPECTED_EVENT))  \
+    break;                                \
+  else                                    \
+    DEBUTRACE((LOG));
 
 extern "C" {
 #include "player/player.h"
@@ -57,6 +54,7 @@ void Syncer::update() {
 }
 
 void Syncer::sync(LinkState* linkState) {
+  linkState->readMessage(!playerId);
   u16 incomingData = linkState->readMessage(!playerId);
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
@@ -137,15 +135,7 @@ void Syncer::sync(LinkState* linkState) {
   }
 
   linkConnection->send(outgoingData);
-  // TODO: Do it twice for fast sync
-
-  if (timeoutCount >= SYNC_TIMEOUT_FRAMES) {
-#ifdef SENV_DEBUG
-    DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
-#endif
-
-    reset();
-  }
+  linkConnection->send(outgoingData);
 
 #ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
