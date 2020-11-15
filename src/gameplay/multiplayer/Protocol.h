@@ -12,7 +12,7 @@
 #define SYNCER_MSG_BUILD(EVENT, PAYLOAD) \
   (((EVENT)&SYNCER_EVENT_MASK) << 11) | (((PAYLOAD)&SYNCER_PAYLOAD_MASK) << 1)
 #define SYNCER_MSG_EVENT(MSG) (((MSG) >> 11) & SYNCER_EVENT_MASK)
-#define SYNCER_MSG_PAYLOAD(MSG) (((MSG) << 1) & SYNCER_PAYLOAD_MASK)
+#define SYNCER_MSG_PAYLOAD(MSG) (((MSG) >> 1) & SYNCER_PAYLOAD_MASK)
 
 // Message struct (`data` fields are parts of payload)
 struct Message {
