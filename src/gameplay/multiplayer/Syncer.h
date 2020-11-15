@@ -16,7 +16,6 @@
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,
-  SYNC_STATE_SELECTING_SONG,
   SYNC_STATE_PLAYING
 };
 enum SyncMode { SYNC_MODE_OFFLINE, SYNC_MODE_VS, SYNC_MODE_COOP };
@@ -30,11 +29,12 @@ enum SyncError {
 
 class Syncer {
  public:
+  u8 $gameMode = 0;
+  u8 $libraryType = 0;
+  u8 $completedSongs = 0;
   Syncer() {}
 
-  inline bool isPlaying() {
-    return state >= SyncState::SYNC_STATE_SELECTING_SONG;
-  }
+  inline bool isPlaying() { return state >= SyncState::SYNC_STATE_PLAYING; }
   inline bool isMaster() { return playerId == 0; }
   inline int getLocalPlayerId() { return playerId; }
   inline int getRemotePlayerId() { return !playerId; }
@@ -60,9 +60,6 @@ class Syncer {
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
-  u8 $gameMode = 0;
-  u8 $libraryType = 0;
-  u8 $completedSongs = 0;
   u8 outgoingEvent = 0;
   u16 outgoingPayload = 0;
   u32 timeoutCount = 0;

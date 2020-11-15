@@ -115,7 +115,7 @@ void Syncer::sync(LinkState* linkState) {
 
       if (isMaster()) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
-        setState(SyncState::SYNC_STATE_SELECTING_SONG);
+        setState(SyncState::SYNC_STATE_PLAYING);
       } else {
         u8 receivedModeBit = SYNC_MSG_PROGRESS_MODE(incomingPayload);
         u8 receivedLibraryType =
@@ -134,7 +134,7 @@ void Syncer::sync(LinkState* linkState) {
         $gameMode = receivedModeBit;
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
-        setState(SyncState::SYNC_STATE_SELECTING_SONG);
+        setState(SyncState::SYNC_STATE_PLAYING);
       }
 
       break;
