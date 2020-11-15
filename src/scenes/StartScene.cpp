@@ -282,7 +282,6 @@ void StartScene::goToGame() {
     }
     default: {
       gameMode = GameMode::CAMPAIGN;
-      break;
     }
   }
 

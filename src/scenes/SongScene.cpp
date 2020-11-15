@@ -291,7 +291,7 @@ void SongScene::updateArrows() {
 
     bool canBeJudged =
         arrow->type == ArrowType::UNIQUE && !arrow->getIsPressed();
-    u8 index = getBaseIndexFromPlayerId(playerId) + direction;
+    u8 index = baseIndex + direction;
     if (canBeJudged && (nextArrows[index] == NULL ||
                         arrow->timestamp < nextArrows[index]->timestamp))
       nextArrows[index] = arrow;
@@ -416,7 +416,8 @@ void SongScene::processKeys(u16 keys) {
       if (chartReader[0]->debugOffset == 0)
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() + 1))
+      if (chartReader[getLocalPlayerId()]->setMultiplier(
+              chartReader[getLocalPlayerId()]->getMultiplier() + 1))
         pixelBlink->blink();
     }
   }
@@ -427,7 +428,8 @@ void SongScene::processKeys(u16 keys) {
       if (chartReader[0]->debugOffset == 0)
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() - 1))
+      if (chartReader[getLocalPlayerId()]->setMultiplier(
+              chartReader[getLocalPlayerId()]->getMultiplier() - 1))
         pixelBlink->blink();
     }
   }
