@@ -2,16 +2,19 @@
 #define PROTOCOL_H
 
 /*
-  F: Heartbit
-  E: Reserved (always 0)
-  A~D: Event (16 values)
-  0~9: Payload (1024 values)
+  F: Reserved (always 0)
+  B~E: Event (16 values)
+  1~A: Payload (1024 values)
+  0: Reserved (always 0)
 */
-#define SYNCER_MSG_BUILD(EVENT, PAYLOAD) (((EVENT) << 10) | (PAYLOAD))
-#define SYNCER_MSG_EVENT(MSG) (((MSG) >> 10) & 0b1111)
-#define SYNCER_MSG_PAYLOAD(MSG) ((MSG)&0b1111111111)
+#define SYNCER_EVENT_MASK 0b1111
+#define SYNCER_PAYLOAD_MASK 0b1111111111
+#define SYNCER_MSG_BUILD(EVENT, PAYLOAD) \
+  (((EVENT)&SYNCER_EVENT_MASK) << 11) | (((PAYLOAD)&SYNCER_PAYLOAD_MASK) << 1)
+#define SYNCER_MSG_EVENT(MSG) (((MSG) >> 11) & SYNCER_EVENT_MASK)
+#define SYNCER_MSG_PAYLOAD(MSG) (((MSG) << 1) & SYNCER_PAYLOAD_MASK)
 
-// Generic message struct (`data` fields are parts of payload)
+// Message struct (`data` fields are parts of payload)
 struct Message {
   u8 event;
   u16 data1;

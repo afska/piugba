@@ -10,7 +10,7 @@
 
 #define ASSERT_EVENT(EXPECTED_EVENT, LOG) \
   if (incomingEvent != (EXPECTED_EVENT))  \
-    break;                                \
+    fail(SyncError::SYNC_ERROR_WTF);      \
   else                                    \
     DEBUTRACE((LOG));
 
@@ -54,14 +54,13 @@ void Syncer::update() {
 }
 
 void Syncer::sync(LinkState* linkState) {
-  linkState->readMessage(!playerId);
   u16 incomingData = linkState->readMessage(!playerId);
   u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
 
 #ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")<- " + DSTR(incomingData) + " (" +
-            DSTR(incomingEvent) + ")");
+            DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
   u16 outgoingData = LINK_NO_DATA;
@@ -135,7 +134,6 @@ void Syncer::sync(LinkState* linkState) {
   }
 
   linkConnection->send(outgoingData);
-  linkConnection->send(outgoingData);
 
 #ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
@@ -143,6 +141,10 @@ void Syncer::sync(LinkState* linkState) {
 }
 
 void Syncer::fail(SyncError error) {
+#ifdef SENV_DEBUG
+  DEBUTRACE("* fail: " + DSTR(error));
+#endif
+
   reset();
   this->error = error;
 }

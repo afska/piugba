@@ -10,8 +10,6 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
-#define SYNC_TIMEOUT_FRAMES 10
-
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,
@@ -23,7 +21,8 @@ enum SyncError {
   SYNC_ERROR_NONE,
   SYNC_ERROR_TOO_MANY_PLAYERS,
   SYNC_ERROR_ROM_MISMATCH,
-  SYNC_ERROR_WRONG_MODE
+  SYNC_ERROR_WRONG_MODE,
+  SYNC_ERROR_WTF
 };
 
 class Syncer {
