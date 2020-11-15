@@ -74,7 +74,8 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
         event->param2 = parse_u32le(data, &cursor);
       if (EVENT_HAS_PARAM3(eventType))
         event->param3 = parse_u32le(data, &cursor);
-      event->handled = false;
+      event->handled[0] = false;
+      event->handled[1] = false;
     }
   }
 

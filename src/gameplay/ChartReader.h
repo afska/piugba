@@ -99,16 +99,16 @@ class ChartReader : public TimingProvider {
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
-      if (event->handled) {
+      if (event->handled[playerId]) {
         currentIndex++;
         continue;
       }
 
       bool stop = false;
-      event->handled = action(type, event, &stop);
+      event->handled[playerId] = action(type, event, &stop);
       currentIndex++;
 
-      if (!event->handled)
+      if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
         eventIndex = currentIndex;

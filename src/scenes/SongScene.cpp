@@ -104,7 +104,7 @@ void SongScene::load() {
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
-  for (u32 playerId = 0; playerId < 1 + isMultiplayer(); playerId++)
+  for (u32 playerId = 0; playerId < 1 + (u8)isMultiplayer(); playerId++)
     chartReader[playerId] = std::unique_ptr<ChartReader>(
         new ChartReader(chart, playerId, arrowPool.get(), judge.get(),
                         pixelBlink.get(), audioLag, multiplier));

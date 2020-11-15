@@ -10,6 +10,8 @@
 #define EVENT_ARROW_UPRIGHT /*    */ 0b01000000
 #define EVENT_ARROW_DOWNRIGHT /*  */ 0b10000000
 
+#define GAME_MAX_PLAYERS 2
+
 enum EventType {
   SET_FAKE,
   NOTE,
@@ -51,7 +53,7 @@ typedef struct {
   u32 param3;
   // (params are not present in note-related events)
   u32 index = 0;
-  bool handled = false;
+  bool handled[GAME_MAX_PLAYERS];
 } Event;
 
 #endif  // EVENT_H

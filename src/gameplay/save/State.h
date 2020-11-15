@@ -7,8 +7,6 @@
 #include "Mods.h"
 #include "gameplay/models/Song.h"
 
-#define GAME_MAX_PLAYERS 2
-
 const int REDUCE_MOD_POSITION_Y = 51;
 const int REDUCE_MOD_SCORE_POSITION_Y = 34;
 const u32 GAME_POSITION_X[] = {0, 72, 144};
