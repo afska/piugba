@@ -27,6 +27,10 @@ enum SyncError {
   SYNC_ERROR_WRONG_MODE
 };
 
+inline bool isMultiplayer() {
+  return IS_MULTIPLAYER(SAVEFILE_getGameMode());
+}
+
 class Syncer {
  public:
   u8 $libraryType = 0;

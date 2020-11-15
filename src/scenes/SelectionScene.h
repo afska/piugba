@@ -110,8 +110,6 @@ class SelectionScene : public Scene {
     return SAVEFILE_getMaxLibraryType();
   }
 
-  inline bool isMultiplayer() { return IS_MULTIPLAYER(SAVEFILE_getGameMode()); }
-
   void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
