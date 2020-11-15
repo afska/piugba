@@ -12,8 +12,6 @@ void player_seek(unsigned int msecs);
 void player_setRate(int rate);
 void player_stop();
 bool player_isPlaying();
-void player_mute();
-void player_unmute();
 void player_onVBlank();
 void player_forever(void (*update)());
 

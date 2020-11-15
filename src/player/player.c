@@ -82,14 +82,6 @@ inline bool player_isPlaying() {
   return src_pos != NULL;
 }
 
-inline void player_mute() {
-  mute();
-}
-
-inline void player_unmute() {
-  unmute();
-}
-
 inline void player_onVBlank() {
   PLAYER_POST_UPDATE();
 }
