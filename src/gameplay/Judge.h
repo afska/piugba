@@ -32,8 +32,9 @@ class Judge {
     return diff < FRAME_MS * getTimingWindowOf(FeedbackType::MISS);
   }
 
-  inline bool isPressed(ArrowDirection direction) {
-    return arrowHolders->at(direction)->getIsPressed();
+  inline bool isPressed(ArrowDirection direction, u8 playerId) {
+    return arrowHolders->at(playerId * ARROWS_TOTAL + direction)
+        ->getIsPressed();
   }
 
  private:

@@ -296,7 +296,7 @@ void ChartReader::orchestrateHoldArrows() {
       holdArrowStates[direction].isActive = false;
 
     int topY = getFillTopY(holdArrow);
-    if (hasStarted && judge->isPressed(direction))
+    if (hasStarted && judge->isPressed(direction, playerId))
       holdArrow->updateLastPress(topY);
     int screenTopY =
         topY <= holdArrow->lastPressTopY

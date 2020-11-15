@@ -224,7 +224,7 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL * (1 + isMultiplayer()); i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * (1 + (u8)isMultiplayer()); i++) {
     auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
     auto arrowHolder = std::unique_ptr<ArrowHolder>{
         new ArrowHolder(direction, getPlayerIdFromIndex(i), true)};
@@ -245,17 +245,20 @@ void SongScene::updateArrowHolders() {
 }
 
 void SongScene::updateArrows() {
-  std::array<Arrow*, ARROWS_TOTAL> nextArrows;
-  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+  std::array<Arrow*, ARROWS_TOTAL * GAME_MAX_PLAYERS> nextArrows;
+  for (u32 i = 0; i < ARROWS_TOTAL * GAME_MAX_PLAYERS; i++)
     nextArrows[i] = NULL;
 
   // update sprites
   arrowPool->forEachActive([&nextArrows, this](Arrow* arrow) {
     ArrowDirection direction = arrow->direction;
-    bool isStopped = chartReader[arrow->playerId]->isStopped();
+    u8 playerId = arrow->playerId;
+    u8 baseIndex = getBaseIndexFromPlayerId(playerId);
+    bool isStopped = chartReader[playerId]->isStopped();
 
-    int newY = chartReader[arrow->playerId]->getYFor(arrow);
-    bool isPressing = arrowHolders[direction]->getIsPressed() && !isStopped;
+    int newY = chartReader[playerId]->getYFor(arrow);
+    bool isPressing =
+        arrowHolders[baseIndex + direction]->getIsPressed() && !isStopped;
     ArrowState arrowState = arrow->tick(newY, isPressing);
 
     if (arrowState == ArrowState::OUT) {
@@ -265,15 +268,17 @@ void SongScene::updateArrows() {
 
     bool canBeJudged =
         arrow->type == ArrowType::UNIQUE && !arrow->getIsPressed();
-    if (canBeJudged && (nextArrows[direction] == NULL ||
-                        arrow->timestamp < nextArrows[direction]->timestamp))
-      nextArrows[direction] = arrow;
+    u8 index = getBaseIndexFromPlayerId(playerId) + direction;
+    if (canBeJudged && (nextArrows[index] == NULL ||
+                        arrow->timestamp < nextArrows[index]->timestamp))
+      nextArrows[index] = arrow;
   });
 
   // judge key press events
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * (1 + (u8)isMultiplayer()); i++) {
     auto arrow = nextArrows[i];
     u8 playerId = arrow->playerId;
+    u8 baseIndex = getBaseIndexFromPlayerId(playerId);
     bool isStopped = chartReader[playerId]->isStopped();
     if (arrow == NULL)
       continue;
@@ -298,7 +303,8 @@ void SongScene::updateArrows() {
       }
     }
 
-    bool hasBeenPressedNow = arrowHolders[direction]->hasBeenPressedNow();
+    bool hasBeenPressedNow =
+        arrowHolders[baseIndex + direction]->hasBeenPressedNow();
     if (canBeJudged && hasBeenPressedNow)
       judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
   }
@@ -308,9 +314,10 @@ void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
     u8 playerId = getPlayerIdFromIndex(i);
+    u8 baseIndex = getBaseIndexFromPlayerId(playerId);
 
     bool isHoldMode = chartReader[playerId]->isHoldActive(direction);
-    bool isPressing = arrowHolders[direction]->getIsPressed();
+    bool isPressing = arrowHolders[baseIndex + direction]->getIsPressed();
     bool isVisible = fakeHeads[i]->get()->enabled;
 
     if (isHoldMode && isPressing && !chartReader[playerId]->isStopped()) {

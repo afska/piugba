@@ -66,12 +66,15 @@ class SongScene : public Scene {
   inline u8 getPlayerIdFromIndex(u32 index) {
     return index >= ARROWS_TOTAL ? 1 : 0;
   }
-
-  inline u8 getLocalBaseIndex() { return getLocalPlayerId() * ARROWS_TOTAL; }
-  inline u8 getRemoteBaseIndex() {
-    return syncer->getRemotePlayerId() * ARROWS_TOTAL;
+  inline u8 getBaseIndexFromPlayerId(u8 playerId) {
+    return playerId * ARROWS_TOTAL;
   }
-
+  inline u8 getLocalBaseIndex() {
+    return getBaseIndexFromPlayerId(getLocalPlayerId());
+  }
+  inline u8 getRemoteBaseIndex() {
+    return getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
+  }
   inline u8 getLocalPlayerId() {
     return isMultiplayer() ? syncer->getLocalPlayerId() : 0;
   }
