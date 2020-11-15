@@ -8,6 +8,7 @@
 
 #include "gameplay/ChartReader.h"
 #include "gameplay/Judge.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"

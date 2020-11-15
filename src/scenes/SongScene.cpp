@@ -74,7 +74,8 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
-  SAVEFILE_write8(SRAM->state.isPlaying, 1);
+  if (!isMultiplayer())
+    SAVEFILE_write8(SRAM->state.isPlaying, 1);
   player_play(song->audioPath.c_str());
 
   SCENE_init();
@@ -123,6 +124,12 @@ void SongScene::tick(u16 keys) {
         GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
     auto type = static_cast<BackgroundType>(
         SAVEFILE_read8(SRAM->settings.backgroundType));
+
+    if (isMultiplayer()) {
+      gamePosition = syncer->isMaster() ? 0 : 2;
+      type = BackgroundType::FULL_BGA_DARK;
+    }
+
     darkener->initialize(gamePosition, type);
 #endif
 
@@ -164,7 +171,7 @@ void SongScene::tick(u16 keys) {
   }
 
   blinkFrame = max(blinkFrame - 1, 0);
-  if (SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
+  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   processModsTick();
@@ -312,10 +319,12 @@ void SongScene::updateGameX() {
                       it->get()->getY());
   score->relocate();
 
-  auto backgroundType = static_cast<BackgroundType>(
-      SAVEFILE_read8(SRAM->settings.backgroundType));
-  if (backgroundType == BackgroundType::HALF_BGA_DARK)
-    REG_BG_OFS[DARKENER_ID].x = -GameState.positionX;
+  if (!isMultiplayer()) {
+    auto backgroundType = static_cast<BackgroundType>(
+        SAVEFILE_read8(SRAM->settings.backgroundType));
+    if (backgroundType == BackgroundType::HALF_BGA_DARK)
+      REG_BG_OFS[DARKENER_ID].x = -GameState.positionX;
+  }
 }
 
 void SongScene::updateGameY() {
