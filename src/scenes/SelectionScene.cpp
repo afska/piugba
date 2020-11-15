@@ -232,8 +232,11 @@ void SelectionScene::setUpLocks() {
 void SelectionScene::setUpPager() {
   count = SAVEFILE_getLibrarySize();
 
-  scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
-           SAVEFILE_read8(SRAM->memory.songIndex));
+  if (isMultiplayer())
+    scrollTo(0, 0);
+  else
+    scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
+             SAVEFILE_read8(SRAM->memory.songIndex));
 }
 
 void SelectionScene::scrollTo(u32 songIndex) {
@@ -597,12 +600,14 @@ void SelectionScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {
+        unconfirm();
         scrollTo(payload);
         pixelBlink->blink();
 
         break;
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
+        unconfirm();
         setNumericLevel(payload);
 
         break;
