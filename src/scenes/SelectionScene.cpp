@@ -126,6 +126,12 @@ void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
+
   if (init < INIT_FRAME) {
     init++;
     return;
@@ -148,11 +154,6 @@ void SelectionScene::tick(u16 keys) {
     processDifficultyChangeEvents();
     processSelectionChangeEvents();
     processConfirmEvents();
-  }
-  if (SEQUENCE_isMultiplayerSessionDead()) {
-    player_stop();
-    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
-    return;
   }
   processMenuEvents(keys);
 
@@ -573,9 +574,6 @@ void SelectionScene::loadSelectedSongGrade(u8 songId) {
 }
 
 void SelectionScene::processMultiplayerUpdates() {
-  if (!syncer->isPlaying())
-    return;
-
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
