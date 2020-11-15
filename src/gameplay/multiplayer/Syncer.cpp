@@ -51,7 +51,9 @@ void Syncer::update() {
   if (isReady())
     resetError();
 
-  sync(linkState);
+  do {
+    sync(linkState);
+  } while (isActive() && linkState->hasMessage(!playerId));
 }
 
 void Syncer::sync(LinkState* linkState) {
@@ -64,11 +66,13 @@ void Syncer::sync(LinkState* linkState) {
             DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
-  u16 outgoingData = LINK_NO_DATA;
+  u8 outgoingEvent = LINK_NO_DATA;
+  u16 outgoingPayload = LINK_NO_DATA;
 
   switch (state) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
-      outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_ROM_ID, getPartialRomId());
+      outgoingEvent = SYNC_EVENT_ROM_ID;
+      outgoingPayload = getPartialRomId();
 
       ASSERT_EVENT(SYNC_EVENT_ROM_ID, "* rom id received");
 
@@ -80,13 +84,11 @@ void Syncer::sync(LinkState* linkState) {
     }
     case SyncState::SYNC_STATE_SEND_PROGRESS: {
       u8 modeBit = mode == SyncMode::SYNC_MODE_COOP;
-      outgoingData =
-          isMaster()
-              ? SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS,
-                                 SYNCER_MSG_PROGRESS_BUILD(
-                                     modeBit, SAVEFILE_getMaxLibraryType(),
-                                     SAVEFILE_getMaxCompletedSongs()))
-              : SYNCER_MSG_BUILD(SYNC_EVENT_PROGRESS, modeBit);
+      outgoingEvent = SYNC_EVENT_PROGRESS;
+      outgoingPayload = isMaster() ? SYNCER_MSG_PROGRESS_BUILD(
+                                         modeBit, SAVEFILE_getMaxLibraryType(),
+                                         SAVEFILE_getMaxCompletedSongs())
+                                   : modeBit;
 
       ASSERT_EVENT(SYNC_EVENT_PROGRESS, "* progress received");
 
@@ -103,10 +105,10 @@ void Syncer::sync(LinkState* linkState) {
         ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
                    receivedLibraryType <= DifficultyLevel::CRAZY,
-               SyncError::SYNC_ERROR_NONE);
+               SyncError::SYNC_ERROR_WTF);
         ASSERT(receivedCompletedSongs >= 0 &&
                    receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
-               SyncError::SYNC_ERROR_NONE);
+               SyncError::SYNC_ERROR_WTF);
 
         setState(SyncState::SYNC_STATE_SELECTING_SONG);
       }
@@ -114,16 +116,15 @@ void Syncer::sync(LinkState* linkState) {
       break;
     }
     case SyncState::SYNC_STATE_SELECTING_SONG: {
+      outgoingEvent = SYNC_EVENT_SELECTION;
+
       if (isMaster()) {
         u16 keys = getPressedKeys();
-        u16 payload = SYNCER_MSG_SELECTION_BUILD(
+        outgoingPayload = SYNCER_MSG_SELECTION_BUILD(
             KEY_DOWNLEFT(keys), KEY_UPLEFT(keys), KEY_CENTER(keys),
             KEY_UPRIGHT(keys), KEY_DOWNRIGHT(keys));
-        outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, payload);
-
-        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
       } else {
-        outgoingData = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, 0);
+        outgoingPayload = SYNCER_MSG_BUILD(SYNC_EVENT_SELECTION, 0);
 
         ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
         lastMessage.event = SYNC_EVENT_SELECTION;
@@ -134,10 +135,12 @@ void Syncer::sync(LinkState* linkState) {
     }
   }
 
+  u16 outgoingData = SYNCER_MSG_BUILD(outgoingEvent, outgoingPayload);
   linkConnection->send(outgoingData);
 #ifdef SENV_DEBUG
   if (outgoingData != LINK_NO_DATA)
-    DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData));
+    DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
+              DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
 }
 
