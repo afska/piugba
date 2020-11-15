@@ -382,8 +382,12 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     unconfirm();
     player_play(SOUND_STEP);
 
-    if (newValue == getSelectedNumericLevelIndex())
+    if (newValue == getSelectedNumericLevelIndex()) {
+      if (isMultiplayer() && syncer->isMaster())
+        syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
+
       return true;
+    }
 
     setNumericLevel(newValue);
 
@@ -404,8 +408,14 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
     unconfirm();
 
     if (isOnListEdge) {
-      if (arrowSelectors[selector]->hasBeenPressedNow())
+      bool withSound = arrowSelectors[selector]->hasBeenPressedNow();
+
+      if (withSound)
         player_play(SOUND_STEP);
+
+      if (isMultiplayer() && syncer->isMaster())
+        syncer->send(SYNC_EVENT_SONG_CORNER, withSound);
+
       return true;
     }
 
@@ -608,7 +618,15 @@ void SelectionScene::processMultiplayerUpdates() {
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
         unconfirm();
+        player_play(SOUND_STEP);
         setNumericLevel(payload);
+
+        break;
+      }
+      case SYNC_EVENT_SONG_CORNER: {
+        unconfirm();
+        if (payload)
+          player_play(SOUND_STEP);
 
         break;
       }
