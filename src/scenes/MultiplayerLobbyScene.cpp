@@ -8,8 +8,7 @@
 #include "utils/SceneUtils.h"
 
 std::string messages[] = {"Connecting...\r\n\r\n(Press SELECT to cancel)",
-                          "ERROR:\r\nwtf?!"
-                          "ERROR:\r\nToo many players!",
+                          "ERROR:\r\nwtf?!", "ERROR:\r\nToo many players!",
                           "ERROR:\r\nROM IDs don't match!",
                           "ERROR:\r\nMixed game modes!"};
 
