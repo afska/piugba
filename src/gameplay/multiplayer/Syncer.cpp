@@ -118,6 +118,7 @@ void Syncer::sync(LinkState* linkState) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         $libraryType = libraryType;
         $completedSongs = completedSongs;
+        SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
       } else {
         u8 receivedModeBit = SYNC_MSG_PROGRESS_MODE(incomingPayload);
@@ -136,6 +137,7 @@ void Syncer::sync(LinkState* linkState) {
 
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
+        SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
       }
 
