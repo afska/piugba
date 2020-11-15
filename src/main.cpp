@@ -16,7 +16,7 @@ void setUpInterrupts();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 LinkConnection* linkConnection =
     new LinkConnection(false,
-                       LinkConnection::BaudRate::BAUD_RATE_3,
+                       LinkConnection::BaudRate::BAUD_RATE_0,
                        LINK_DEFAULT_TIMEOUT,
                        SYNC_BUFFER_SIZE);
 Syncer* syncer = new Syncer();
