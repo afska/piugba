@@ -1,6 +1,7 @@
 #include "SongScene.h"
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
@@ -58,7 +59,7 @@ std::vector<Sprite*> SongScene::sprites() {
   sprites.push_back(lifeBar->get());
   score->render(&sprites);
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+  for (u32 i = 0; i < fakeHeads.size(); i++) {
     fakeHeads[i]->index = sprites.size();
     sprites.push_back(fakeHeads[i]->get());
   }
@@ -88,7 +89,7 @@ void SongScene::load() {
   setUpArrows();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
-  lifeBar = std::unique_ptr<LifeBar>(new LifeBar());
+  lifeBar = std::unique_ptr<LifeBar>(new LifeBar(0));
   score = std::unique_ptr<Score>{new Score(lifeBar.get())};
 
   judge = std::unique_ptr<Judge>(
@@ -133,7 +134,7 @@ void SongScene::tick(u16 keys) {
         SAVEFILE_read8(SRAM->settings.backgroundType));
 
     if (isMultiplayer()) {
-      gamePosition = syncer->isMaster() ? 0 : 2;
+      gamePosition = syncer->getLocalPlayerId() * 2;
       type = BackgroundType::FULL_BGA_DARK;
     }
 
@@ -219,14 +220,17 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-    arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i), true)});
-    arrowHolders[i]->get()->setPriority(ARROW_LAYER_BACK);
+  for (u32 i = 0; i < ARROWS_TOTAL * (1 + isMultiplayer()); i++) {
+    auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
+    auto arrowHolder = std::unique_ptr<ArrowHolder>{
+        new ArrowHolder(direction, getPlayerIdFromIndex(i), true)};
+    arrowHolder->get()->setPriority(ARROW_LAYER_BACK);
+    arrowHolders.push_back(std::move(arrowHolder));
 
     auto fakeHead =
         std::unique_ptr<Arrow>{new Arrow(ARROW_TILEMAP_LOADING_ID + i)};
     SPRITE_hide(fakeHead->get());
+
     fakeHeads.push_back(std::move(fakeHead));
   }
 }
@@ -295,8 +299,8 @@ void SongScene::updateArrows() {
 }
 
 void SongScene::updateFakeHeads() {
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-    auto direction = static_cast<ArrowDirection>(i);
+  for (u32 i = 0; i < fakeHeads.size(); i++) {
+    auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
 
     bool isHoldMode = chartReader->isHoldActive(direction);
     bool isPressing = arrowHolders[direction]->getIsPressed();
@@ -304,8 +308,8 @@ void SongScene::updateFakeHeads() {
 
     if (isHoldMode && isPressing && !chartReader->isStopped()) {
       if (!isVisible) {
-        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, 0,
-                                 false);
+        fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction,
+                                 getPlayerIdFromIndex(i), 0, false);
         isVisible = true;
       }
     } else if (isVisible) {
@@ -319,19 +323,20 @@ void SongScene::updateFakeHeads() {
 }
 
 void SongScene::updateGameX() {
-  lifeBar->get()->moveTo(GameState.positionX + LIFEBAR_POSITION_X,
+  if (isMultiplayer())
+    return;
+
+  lifeBar->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
                          lifeBar->get()->getY());
   for (auto& it : arrowHolders)
-    it->get()->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * it->direction,
+    it->get()->moveTo(ARROW_CORNER_MARGIN_X(0) + ARROW_MARGIN * it->direction,
                       it->get()->getY());
   score->relocate();
 
-  if (!isMultiplayer()) {
-    auto backgroundType = static_cast<BackgroundType>(
-        SAVEFILE_read8(SRAM->settings.backgroundType));
-    if (backgroundType == BackgroundType::HALF_BGA_DARK)
-      REG_BG_OFS[DARKENER_ID].x = -GameState.positionX;
-  }
+  auto backgroundType = static_cast<BackgroundType>(
+      SAVEFILE_read8(SRAM->settings.backgroundType));
+  if (backgroundType == BackgroundType::HALF_BGA_DARK)
+    REG_BG_OFS[DARKENER_ID].x = -GameState.positionX[0];
 }
 
 void SongScene::updateGameY() {
@@ -356,7 +361,7 @@ void SongScene::processKeys(u16 keys) {
     for (auto& arrowHolder : arrowHolders)
       if (arrowHolder->hasBeenPressedNow())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, arrowHolder->direction,
+          it->initialize(ArrowType::UNIQUE, arrowHolder->direction, 0,
                          chartReader->getMsecs() + chartReader->getArrowTime(),
                          false);
         });
@@ -427,7 +432,7 @@ void SongScene::processModsBeat() {
 
   if (GameState.mods.jump == JumpOpts::jRANDOM) {
     int random = qran_range(0, GAME_POSITION_X[GamePosition::RIGHT] + 1);
-    GameState.positionX = random;
+    GameState.positionX[0] = random;
     updateGameX();
     pixelBlink->blink();
   }
@@ -445,9 +450,9 @@ void SongScene::processModsBeat() {
 
 void SongScene::processModsTick() {
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
-    GameState.positionX += jumpDirection;
-    if (GameState.positionX >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
-        GameState.positionX <= 0)
+    GameState.positionX[0] += jumpDirection;
+    if (GameState.positionX[0] >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
+        GameState.positionX[0] <= 0)
       jumpDirection *= -1;
     updateGameX();
   }

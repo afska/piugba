@@ -66,7 +66,7 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
                      type == ArrowType::HOLD_TAIL ||
                      type == ArrowType::HOLD_FILL;
   bool isHoldFill = type == ArrowType::HOLD_FILL;
-  int newX = ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction;
+  int newX = ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction;
 
   if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
     endAnimationFrame++;
@@ -121,7 +121,7 @@ void Arrow::animatePress() {
 
   hasEnded = true;
   endAnimationFrame = 0;
-  sprite->moveTo(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction,
+  sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
                  ARROW_FINAL_Y());
   SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
 }

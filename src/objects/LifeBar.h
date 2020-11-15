@@ -13,7 +13,7 @@ const int LIFEBAR_POSITION_Y = -11 + 2;
 
 class LifeBar {
  public:
-  LifeBar();
+  LifeBar(u8 playerId);
 
   inline u8 getMosaicValue() { return mosaicValue; }
 

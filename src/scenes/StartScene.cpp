@@ -155,7 +155,7 @@ void StartScene::setUpButtons() {
 
 void StartScene::setUpGameAnimation() {
   STATE_setup(NULL, NULL);
-  GameState.positionX = GAME_X;
+  GameState.positionX[0] = GAME_X;
   GameState.positionY = GAME_Y;
 
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{
@@ -165,7 +165,7 @@ void StartScene::setUpGameAnimation() {
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     arrowHolders.push_back(std::unique_ptr<ArrowHolder>{
-        new ArrowHolder(static_cast<ArrowDirection>(i), true)});
+        new ArrowHolder(static_cast<ArrowDirection>(i), 0, true)});
     arrowHolders[i]->setIsPressed(false);
   }
 }
@@ -187,7 +187,7 @@ void StartScene::animateBpm() {
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
                      static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
-                     0, false);
+                     0, 0, false);
       it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
       it->press();
     });

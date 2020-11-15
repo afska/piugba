@@ -10,7 +10,9 @@ void STATE_setup(Song* song, Chart* chart) {
   if (song == NULL)
     gameMode = GameMode::ARCADE;
 
-  GameState.positionX = 0;
+  GameState.positionX[0] = 0;
+  GameState.positionX[1] =
+      GAME_POSITION_X[isMultiplayer() ? syncer->getRemotePlayerId() * 2 : 0];
   GameState.positionY = 0;
   GameState.scorePositionY = 0;
 
@@ -89,9 +91,9 @@ void STATE_setup(Song* song, Chart* chart) {
   }
 
   if (!GameState.mods.jump)
-    GameState.positionX =
+    GameState.positionX[0] =
         GAME_POSITION_X[isMultiplayer()
-                            ? (syncer->isMaster() ? 0 : 2)
+                            ? syncer->getLocalPlayerId() * 2
                             : SAVEFILE_read8(SRAM->settings.gamePosition)];
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {

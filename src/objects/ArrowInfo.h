@@ -27,9 +27,10 @@ const u32 ARROW_HALF_SIZE = 8;
 const u32 ARROW_QUARTER_SIZE = 4;
 const u32 ARROW_MARGIN = ARROW_SIZE + 2;
 const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
+const u32 ARROW_CORNER_MARGIN_X_OFFSET = 4;
 
-inline u32 ARROW_CORNER_MARGIN_X() {
-  return GameState.positionX + 4;
+inline u32 ARROW_CORNER_MARGIN_X(u8 playerId) {
+  return GameState.positionX[playerId] + ARROW_CORNER_MARGIN_X_OFFSET;
 }
 
 inline u32 ARROW_FINAL_Y() {

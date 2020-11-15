@@ -10,7 +10,8 @@
 const u32 POSITION_X = 16;
 const u32 POSITION_Y = 70;
 
-ComboTitle::ComboTitle() {
+ComboTitle::ComboTitle(u8 playerId) {
+  this->playerId = playerId;
   relocate();
   animationDirection = -1;
 
@@ -22,7 +23,7 @@ ComboTitle::ComboTitle() {
 }
 
 void ComboTitle::relocate() {
-  animationPositionX = GameState.positionX + POSITION_X;
+  animationPositionX = GameState.positionX[playerId] + POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 

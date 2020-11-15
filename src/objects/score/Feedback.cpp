@@ -10,7 +10,8 @@
 const u32 POSITION_X = 16;
 const u32 POSITION_Y = 60;
 
-Feedback::Feedback() {
+Feedback::Feedback(u8 playerId) {
+  this->playerId = playerId;
   type = FeedbackType::MISS;
   relocate();
 
@@ -27,7 +28,7 @@ void Feedback::setType(FeedbackType type) {
 }
 
 void Feedback::relocate() {
-  animationPositionX = GameState.positionX + POSITION_X;
+  animationPositionX = GameState.positionX[playerId] + POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 

@@ -26,11 +26,11 @@ const COLOR CURSOR_COLOR_BORDER = 0x7734;
 const COLOR BLINK_MIN_COLOR = 127;
 const COLOR BLINK_MAX_COLOR = 0x7FFF;
 
-LifeBar::LifeBar() {
+LifeBar::LifeBar(u8 playerId) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
-               .withLocation(GameState.positionX + LIFEBAR_POSITION_X,
+               .withLocation(GameState.positionX[playerId] + LIFEBAR_POSITION_X,
                              GameState.positionY + LIFEBAR_POSITION_Y)
                .buildPtr();
 }

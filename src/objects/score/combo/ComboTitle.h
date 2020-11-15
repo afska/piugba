@@ -7,7 +7,7 @@
 
 class ComboTitle : public AnimatedIndicator {
  public:
-  ComboTitle();
+  ComboTitle(u8 playerId);
 
   void relocate();
 
@@ -15,6 +15,7 @@ class ComboTitle : public AnimatedIndicator {
 
  private:
   std::unique_ptr<Sprite> sprite;
+  u8 playerId;
 };
 
 #endif  // COMBO_TITLE_H

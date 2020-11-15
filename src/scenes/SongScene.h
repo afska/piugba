@@ -63,6 +63,11 @@ class SongScene : public Scene {
   int jumpDirection = 1;
   int reduceDirection = -1;
 
+  inline u8 getPlayerIdFromIndex(u32 index) {
+    return index >= ARROWS_TOTAL ? syncer->getRemotePlayerId()
+                                 : syncer->getLocalPlayerId();
+  }
+
   void setUpPalettes();
   void setUpBackground();
   void setUpArrows();

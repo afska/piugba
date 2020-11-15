@@ -10,13 +10,15 @@ const u32 DIGITS = 3;
 const u32 DIGITS_POSITION_X = 8;
 const u32 DIGITS_POSITION_Y = 89;
 
-Combo::Combo() {
-  title = std::unique_ptr<ComboTitle>{new ComboTitle()};
+Combo::Combo(u8 playerId) {
+  this->playerId = playerId;
+
+  title = std::unique_ptr<ComboTitle>{new ComboTitle(playerId)};
 
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
-                  GameState.scorePositionY + DIGITS_POSITION_Y, i)};
+    auto digit = std::unique_ptr<Digit>{new Digit(
+        DigitSize::BIG, GameState.positionX[playerId] + DIGITS_POSITION_X,
+        GameState.scorePositionY + DIGITS_POSITION_Y, i)};
     digits.push_back(std::move(digit));
   }
 }
@@ -54,7 +56,8 @@ void Combo::relocate() {
   title->relocate();
 
   for (u32 i = 0; i < DIGITS; i++)
-    digits[i]->relocate(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
+    digits[i]->relocate(DigitSize::BIG,
+                        GameState.positionX[playerId] + DIGITS_POSITION_X,
                         GameState.scorePositionY + DIGITS_POSITION_Y, i);
 }
 

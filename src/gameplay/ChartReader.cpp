@@ -222,13 +222,13 @@ void ChartReader::processUniqueNote(Event* event) {
                   << 3;
   }
 
-  forEachDirection(
-      event->data, [event, &arrows, this](ArrowDirection direction) {
-        arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, direction, event->timestamp, fake);
-          arrows.push_back(it);
-        });
-      });
+  forEachDirection(event->data, [event, &arrows,
+                                 this](ArrowDirection direction) {
+    arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
+      it->initialize(ArrowType::UNIQUE, direction, 0, event->timestamp, fake);
+      arrows.push_back(it);
+    });
+  });
 
   connectArrows(arrows);
 }
@@ -243,7 +243,7 @@ void ChartReader::startHoldNote(Event* event) {
 
       Arrow* head =
           arrowPool->create([event, &direction, &holdArrow, this](Arrow* head) {
-            head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction,
+            head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction, 0,
                                        event->timestamp, holdArrow, fake);
           });
 
@@ -269,7 +269,7 @@ void ChartReader::endHoldNote(Event* event) {
       holdArrow->endTime = event->timestamp;
 
       arrowPool->create([&holdArrow, &event, &direction, this](Arrow* tail) {
-        tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction,
+        tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction, 0,
                                    event->timestamp, holdArrow, fake);
       });
     });
@@ -322,7 +322,7 @@ void ChartReader::orchestrateHoldArrows() {
       Arrow* fill = arrowPool->create([](Arrow* it) {});
 
       if (fill != NULL)
-        fill->initializeHoldFill(direction, holdArrow);
+        fill->initializeHoldFill(direction, 0, holdArrow);
       else
         break;
 
