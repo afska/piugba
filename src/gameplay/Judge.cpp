@@ -4,11 +4,11 @@
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
              std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
-             Score* score,
-             std::function<void()> onStageBreak) {
+             std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores,
+             std::function<void(u8 playerId)> onStageBreak) {
   this->arrowPool = arrowPool;
   this->arrowHolders = arrowHolders;
-  this->score = score;
+  this->scores = scores;
   this->onStageBreak = onStageBreak;
 }
 
@@ -63,9 +63,9 @@ void Judge::onHoldTick(u8 arrows, u8 playerId, bool canMiss) {
   }
 
   if (isPressed)
-    updateScore(FeedbackType::PERFECT, true);
+    updateScore(FeedbackType::PERFECT, playerId, true);
   else if (canMiss)
-    updateScore(FeedbackType::MISS, true);
+    updateScore(FeedbackType::MISS, playerId, true);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
@@ -73,7 +73,7 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
 
   if (result != FeedbackType::UNKNOWN) {
     if (!arrow->isFake)
-      updateScore(result, false);
+      updateScore(result, arrow->playerId, false);
 
     switch (result) {
       case FeedbackType::MISS:
@@ -93,17 +93,17 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   return result;
 }
 
-void Judge::updateScore(FeedbackType result, bool isLong) {
+void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
   if (isDisabled)
     return;
 
   if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH &&
       result == FeedbackType::MISS) {
-    onStageBreak();
+    onStageBreak(playerId);
     return;
   }
 
-  bool isAlive = score->update(result, isLong);
+  bool isAlive = scores->at(playerId)->update(result, isLong);
   if (!isAlive)
-    onStageBreak();
+    onStageBreak(playerId);
 }

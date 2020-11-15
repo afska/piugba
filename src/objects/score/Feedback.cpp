@@ -20,6 +20,9 @@ Feedback::Feedback(u8 playerId) {
                .withSize(SIZE_64_32)
                .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
+
+  if (playerId > 0)
+    SPRITE_reuseTiles(sprite.get());
 }
 
 void Feedback::setType(FeedbackType type) {

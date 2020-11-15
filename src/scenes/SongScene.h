@@ -44,10 +44,10 @@ class SongScene : public Scene {
 
   Song* song;
   Chart* chart;
-  std::unique_ptr<ChartReader> chartReader[LINK_MAX_PLAYERS];
+  std::unique_ptr<ChartReader> chartReader[GAME_MAX_PLAYERS];
+  std::unique_ptr<LifeBar> lifeBars[GAME_MAX_PLAYERS];
+  std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS> scores;
   std::unique_ptr<Judge> judge;
-  std::unique_ptr<LifeBar> lifeBar;
-  std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
@@ -63,6 +63,7 @@ class SongScene : public Scene {
   int jumpDirection = 1;
   int reduceDirection = -1;
 
+  inline u8 getPlayerCount() { return (u8)(1 + isMultiplayer()); }
   inline u8 getPlayerIdFromIndex(u32 index) {
     return index >= ARROWS_TOTAL ? 1 : 0;
   }

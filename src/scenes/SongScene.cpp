@@ -56,8 +56,19 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(lifeBar->get());
-  score->render(&sprites);
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(lifeBars[playerId]->get());
+
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(scores[playerId]->getFeedback()->get());
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(scores[playerId]->getCombo()->getTitle()->get());
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(0)->get());
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(1)->get());
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(2)->get());
 
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     fakeHeads[i]->index = sprites.size();
@@ -88,11 +99,15 @@ void SongScene::load() {
   setUpArrows();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
-  lifeBar = std::unique_ptr<LifeBar>(new LifeBar(0));
-  score = std::unique_ptr<Score>{new Score(lifeBar.get())};
+
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++) {
+    lifeBars[playerId] = std::unique_ptr<LifeBar>(new LifeBar(playerId));
+    scores[playerId] =
+        std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
+  }
 
   judge = std::unique_ptr<Judge>(
-      new Judge(arrowPool.get(), &arrowHolders, score.get(), [this]() {
+      new Judge(arrowPool.get(), &arrowHolders, &scores, [this](u8 playerId) {
         // if (GameState.mods.stageBreak != StageBreakOpts::sOFF) { // TODO:
         // RESTORE
         //   unload();
@@ -103,7 +118,7 @@ void SongScene::load() {
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
-  for (u32 playerId = 0; playerId < (u8)(1 + isMultiplayer()); playerId++)
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     chartReader[playerId] = std::unique_ptr<ChartReader>(
         new ChartReader(chart, playerId, arrowPool.get(), judge.get(),
                         pixelBlink.get(), audioLag, multiplier));
@@ -176,11 +191,12 @@ void SongScene::tick(u16 keys) {
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
-    for (auto& arrowHolder : arrowHolders) {
-      lifeBar->blink(foregroundPalette.get());
+    for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+      lifeBars[playerId]->blink(foregroundPalette.get());
+
+    for (auto& arrowHolder : arrowHolders)
       if (!KEY_ANY_PRESSED(keys))
         arrowHolder->blink();
-    }
 
     processModsBeat();
   }
@@ -196,12 +212,14 @@ void SongScene::tick(u16 keys) {
   pixelBlink->tick(minMosaic);
   updateFakeHeads();
   updateArrows();
-  score->tick();
-  lifeBar->tick(foregroundPalette.get());
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++) {
+    scores[playerId]->tick();
+    lifeBars[playerId]->tick(foregroundPalette.get());
+  }
 
 #ifdef SENV_DEVELOPMENT
   if (chartReader[0]->debugOffset)
-    score->log(chartReader[0]->debugOffset);
+    scores[0]->log(chartReader[0]->debugOffset);
 
   IFTIMINGTEST { chartReader[0]->logDebugInfo<CHART_DEBUG>(); }
 #endif
@@ -345,12 +363,12 @@ void SongScene::updateGameX() {
   if (isMultiplayer())
     return;
 
-  lifeBar->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
-                         lifeBar->get()->getY());
+  lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
+                             lifeBars[0]->get()->getY());
   for (auto& it : arrowHolders)
     it->get()->moveTo(ARROW_CORNER_MARGIN_X(0) + ARROW_MARGIN * it->direction,
                       it->get()->getY());
-  score->relocate();
+  scores[0]->relocate();
 
   auto backgroundType = static_cast<BackgroundType>(
       SAVEFILE_read8(SRAM->settings.backgroundType));
@@ -359,8 +377,8 @@ void SongScene::updateGameX() {
 }
 
 void SongScene::updateGameY() {
-  lifeBar->get()->moveTo(lifeBar->get()->getX(),
-                         GameState.positionY + LIFEBAR_POSITION_Y);
+  lifeBars[0]->get()->moveTo(lifeBars[0]->get()->getX(),
+                             GameState.positionY + LIFEBAR_POSITION_Y);
   for (auto& it : arrowHolders)
     it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
 }
@@ -396,7 +414,7 @@ void SongScene::processKeys(u16 keys) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
       chartReader[0]->debugOffset -= DEBUG_OFFSET_CORRECTION;
       if (chartReader[0]->debugOffset == 0)
-        score->log(0);
+        scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() + 1))
         pixelBlink->blink();
@@ -407,7 +425,7 @@ void SongScene::processKeys(u16 keys) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
       chartReader[0]->debugOffset += DEBUG_OFFSET_CORRECTION;
       if (chartReader[0]->debugOffset == 0)
-        score->log(0);
+        scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader[0]->setMultiplier(chartReader[0]->getMultiplier() - 1))
         pixelBlink->blink();
@@ -416,7 +434,7 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::finishAndGoToEvaluation() {
-  auto evaluation = score->evaluate();
+  auto evaluation = scores[getLocalPlayerId()]->evaluate();
   bool isLastSong =
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
                           chart->level, evaluation->getGrade());
@@ -493,7 +511,7 @@ u8 SongScene::processPixelateMod() {
     case PixelateOpts::pOFF:
       return 0;
     case PixelateOpts::pLIFE:
-      minMosaic = lifeBar->getMosaicValue();
+      minMosaic = lifeBars[0]->getMosaicValue();
       break;
     case PixelateOpts::pFIXED:
     case PixelateOpts::pBLINK_IN:

@@ -18,7 +18,7 @@ Combo::Combo(u8 playerId) {
   for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{new Digit(
         DigitSize::BIG, GameState.positionX[playerId] + DIGITS_POSITION_X,
-        GameState.scorePositionY + DIGITS_POSITION_Y, i)};
+        GameState.scorePositionY + DIGITS_POSITION_Y, i, playerId > 0)};
     digits.push_back(std::move(digit));
   }
 }
@@ -66,13 +66,6 @@ void Combo::tick() {
 
   for (auto& it : digits)
     it->tick();
-}
-
-void Combo::render(std::vector<Sprite*>* sprites) {
-  sprites->push_back(title->get());
-
-  for (auto& it : digits)
-    sprites->push_back(it->get());
 }
 
 Combo::~Combo() {

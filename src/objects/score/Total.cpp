@@ -11,7 +11,7 @@ const u32 DIGITS_POSITION_X = 160;
 Total::Total(u32 y, bool isFirst) {
   for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i)};
+        new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i, false)};
     digit->showAt(0);
 
     if (i == 0 && !isFirst)

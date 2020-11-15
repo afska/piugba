@@ -8,12 +8,13 @@ const int POINT_DIFFS[] = {1000, 500, 100, -200, -500};
 const u32 ANIMATION_FRAMES = 3;
 const u32 MIN_VISIBLE_COMBO = 4;
 
-Score::Score(LifeBar* lifeBar) {
+Score::Score(LifeBar* lifeBar, u8 playerId) {
   lifeBar->setLife(life);
   this->lifeBar = lifeBar;
+  this->playerId = playerId;
 
-  feedback = std::unique_ptr<Feedback>{new Feedback(0)};
-  combo = std::unique_ptr<Combo>{new Combo(0)};
+  feedback = std::unique_ptr<Feedback>{new Feedback(playerId)};
+  combo = std::unique_ptr<Combo>{new Combo(playerId)};
 
   for (u32 i = 0; i < counters.size(); i++)
     counters[i] = 0;
@@ -56,11 +57,6 @@ void Score::relocate() {
 void Score::tick() {
   feedback->tick();
   combo->tick();
-}
-
-void Score::render(std::vector<Sprite*>* sprites) {
-  sprites->push_back(feedback->get());
-  combo->render(sprites);
 }
 
 bool Score::updateLife(FeedbackType feedbackType) {

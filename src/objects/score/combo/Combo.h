@@ -19,7 +19,9 @@ class Combo {
   void relocate();
 
   void tick();
-  void render(std::vector<Sprite*>* sprites);
+
+  inline ComboTitle* getTitle() { return title.get(); }
+  inline std::vector<std::unique_ptr<Digit>>* getDigits() { return &digits; }
 
   ~Combo();
 

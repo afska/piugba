@@ -13,15 +13,16 @@ const u32 OF_POSITION_Y = DIGITS_POSITION_Y;
 
 NumericProgress::NumericProgress() {
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{new Digit(
-        DigitSize::BIG, DIGITS_CURRENT_POSITION_X, DIGITS_POSITION_Y, i)};
+    auto digit = std::unique_ptr<Digit>{new Digit(DigitSize::BIG,
+                                                  DIGITS_CURRENT_POSITION_X,
+                                                  DIGITS_POSITION_Y, i, false)};
     digit->showAt(0);
     completedDigits.push_back(std::move(digit));
   }
 
   for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{new Digit(
-        DigitSize::BIG, DIGITS_TOTAL_POSITION_X, DIGITS_POSITION_Y, i)};
+        DigitSize::BIG, DIGITS_TOTAL_POSITION_X, DIGITS_POSITION_Y, i, false)};
     SPRITE_reuseTiles(digit->get());
     digit->showAt(0);
     totalDigits.push_back(std::move(digit));

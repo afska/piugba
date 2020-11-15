@@ -1,7 +1,9 @@
 #ifndef JUDGE_H
 #define JUDGE_H
 
+#include <array>
 #include <functional>
+#include <vector>
 
 #include "gameplay/TimingProvider.h"
 #include "gameplay/save/SaveFile.h"
@@ -18,8 +20,8 @@ class Judge {
  public:
   Judge(ObjectPool<Arrow>* arrowPool,
         std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
-        Score* score,
-        std::function<void()> onStageBreak);
+        std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores,
+        std::function<void(u8 playerId)> onStageBreak);
 
   void onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onOut(Arrow* arrow);
@@ -40,8 +42,8 @@ class Judge {
  private:
   ObjectPool<Arrow>* arrowPool;
   std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;
-  Score* score;
-  std::function<void()> onStageBreak;
+  std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores;
+  std::function<void(u8 playerId)> onStageBreak;
   bool isDisabled = false;
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {
@@ -49,7 +51,7 @@ class Judge {
   }
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
-  void updateScore(FeedbackType result, bool isLong);
+  void updateScore(FeedbackType result, u8 playerId, bool isLong);
 };
 
 #endif  // JUDGE_H

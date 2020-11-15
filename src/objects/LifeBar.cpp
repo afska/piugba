@@ -7,6 +7,7 @@
 #include "data/content/_compiled_sprites/spr_lifebar.h"
 #include "objects/ArrowInfo.h"
 #include "utils/EffectUtils.h"
+#include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
@@ -33,6 +34,9 @@ LifeBar::LifeBar(u8 playerId) {
                .withLocation(GameState.positionX[playerId] + LIFEBAR_POSITION_X,
                              GameState.positionY + LIFEBAR_POSITION_Y)
                .buildPtr();
+
+  if (playerId > 0)
+    SPRITE_reuseTiles(sprite.get());
 }
 
 void LifeBar::setLife(int life) {
