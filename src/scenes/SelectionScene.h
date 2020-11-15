@@ -64,6 +64,7 @@ class SelectionScene : public Scene {
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
   inline u32 getLastUnlockedSongIndex() {
+    return SAVEFILE_getLibrarySize() - 1;  // TODO: Test
     return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
@@ -99,6 +100,8 @@ class SelectionScene : public Scene {
 
     return SAVEFILE_getMaxLibraryType();
   }
+
+  inline bool isMultiplayer() { return IS_MULTIPLAYER(SAVEFILE_getGameMode()); }
 
   void setUpSpritesPalette();
   void setUpBackground();
@@ -139,6 +142,7 @@ class SelectionScene : public Scene {
   }
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
   void loadSelectedSongGrade(u8 songId);
+  void processMultiplayerUpdates();
 
   ~SelectionScene();
 };

@@ -1,5 +1,5 @@
-#ifndef SYNCER_H
-#define SYNCER_H
+#ifndef SYNC_H
+#define SYNC_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba/tonc_memdef.h>
@@ -32,10 +32,12 @@ class Syncer {
  public:
   Syncer() {}
 
-  inline bool isReady() {
+  inline bool isPlaying() {
     return state >= SyncState::SYNC_STATE_SELECTING_SONG;
   }
   inline bool isMaster() { return playerId == 0; }
+  inline int getLocalPlayerId() { return playerId; }
+  inline int getRemotePlayerId() { return !playerId; }
   inline SyncError getLastError() { return error; }
 
   inline SyncState getState() { return state; }
@@ -47,24 +49,25 @@ class Syncer {
     state = newState;
     timeoutCount = 0;
   }
-  inline Message getLastMessage() { return lastMessage; }
 
   void initialize(SyncMode mode);
   void update();
+  void send(u8 event, u16 payload);
+  void registerTimeout();
 
  private:
   SyncState state = SyncState::SYNC_STATE_SEND_ROM_ID;
   SyncMode mode = SyncMode::SYNC_MODE_OFFLINE;
   SyncError error = SyncError::SYNC_ERROR_NONE;
   int playerId = -1;
+  u8 $gameMode = 0;
+  u8 $libraryType = 0;
+  u8 $completedSongs = 0;
   u8 outgoingEvent = 0;
   u16 outgoingPayload = 0;
   u32 timeoutCount = 0;
-  Message lastMessage;
 
   inline bool isActive() { return playerId > -1; }
-
-  inline u16 getPressedKeys() { return ~REG_KEYS & KEY_ANY; }
 
   inline u16 getPartialRomId() {
     u32 romId = SAVEFILE_read32(SRAM->romId);
@@ -82,4 +85,4 @@ class Syncer {
 
 extern Syncer* syncer;
 
-#endif  // SYNCER_H
+#endif  // SYNC_H

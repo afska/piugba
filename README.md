@@ -105,6 +105,7 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 - `make import`: Imports the songs from `src/data/content/songs` to a GBFS file
 - `make package`: Compiles and appends the GBFS file to the ROM
 - `make start`: Starts the compiled ROM
+- `make rebuild`: Recompiles (clean+build+package) a full ROM
 - `make restart`: Recompiles and starts the ROM
 - `make reimport`: Reimport the songs and starts the ROM without recompiling
 

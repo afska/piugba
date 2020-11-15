@@ -51,19 +51,36 @@ void Syncer::update() {
 #endif
   }
 
-  if (isReady())
+  if (isPlaying()) {
     resetError();
+    // (in gameplay, messaging is handled directly by scenes)
+  } else {
+    do {
+      sync(linkState);
+    } while (isActive() && linkState->hasMessage(getRemotePlayerId()));
+  }
+}
 
-  do {
-    sync(linkState);
-  } while (isActive() && linkState->isConnected() &&
-           linkState->hasMessage(!playerId));
+void Syncer::send(u8 event, u16 payload) {
+  u16 outgoingData = SYNC_MSG_BUILD(event, payload);
+  linkConnection->send(outgoingData);
+
+#ifdef SENV_DEBUG
+  if (outgoingData != LINK_NO_DATA)
+    DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
+              DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
+#endif
+}
+
+void Syncer::registerTimeout() {
+  timeoutCount++;
+  checkTimeout();
 }
 
 void Syncer::sync(LinkState* linkState) {
-  u16 incomingData = linkState->readMessage(!playerId);
-  u8 incomingEvent = SYNCER_MSG_EVENT(incomingData);
-  u16 incomingPayload = SYNCER_MSG_PAYLOAD(incomingData);
+  u16 incomingData = linkState->readMessage(getRemotePlayerId());
+  u8 incomingEvent = SYNC_MSG_EVENT(incomingData);
+  u16 incomingPayload = SYNC_MSG_PAYLOAD(incomingData);
 
 #ifdef SENV_DEBUG
   DEBUTRACE("(" + DSTR(state) + ")<- " + DSTR(incomingData) + " (" +
@@ -89,7 +106,7 @@ void Syncer::sync(LinkState* linkState) {
     case SyncState::SYNC_STATE_SEND_PROGRESS: {
       u8 modeBit = mode == SyncMode::SYNC_MODE_COOP;
       outgoingEvent = SYNC_EVENT_PROGRESS;
-      outgoingPayload = isMaster() ? SYNCER_MSG_PROGRESS_BUILD(
+      outgoingPayload = isMaster() ? SYNC_MSG_PROGRESS_BUILD(
                                          modeBit, SAVEFILE_getMaxLibraryType(),
                                          SAVEFILE_getMaxCompletedSongs())
                                    : modeBit;
@@ -100,11 +117,11 @@ void Syncer::sync(LinkState* linkState) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         setState(SyncState::SYNC_STATE_SELECTING_SONG);
       } else {
-        u8 receivedModeBit = SYNCER_MSG_PROGRESS_MODE(incomingPayload);
+        u8 receivedModeBit = SYNC_MSG_PROGRESS_MODE(incomingPayload);
         u8 receivedLibraryType =
-            SYNCER_MSG_PROGRESS_LIBRARY_TYPE(incomingPayload);
+            SYNC_MSG_PROGRESS_LIBRARY_TYPE(incomingPayload);
         u8 receivedCompletedSongs =
-            SYNCER_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
+            SYNC_MSG_PROGRESS_COMPLETED_SONGS(incomingPayload);
 
         ASSERT(receivedModeBit == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         ASSERT(receivedLibraryType >= DifficultyLevel::NORMAL &&
@@ -114,30 +131,15 @@ void Syncer::sync(LinkState* linkState) {
                    receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
                SyncError::SYNC_ERROR_WTF);
 
+        $gameMode = receivedModeBit;
+        $libraryType = receivedLibraryType;
+        $completedSongs = receivedCompletedSongs;
         setState(SyncState::SYNC_STATE_SELECTING_SONG);
       }
 
       break;
     }
-    case SyncState::SYNC_STATE_SELECTING_SONG: {
-      outgoingEvent = SYNC_EVENT_SELECTION;
-
-      if (isMaster()) {
-        u16 keys = getPressedKeys();
-        outgoingPayload = SYNCER_MSG_SELECTION_BUILD(
-            KEY_DOWNLEFT(keys), KEY_UPLEFT(keys), KEY_CENTER(keys),
-            KEY_UPRIGHT(keys), KEY_DOWNRIGHT(keys));
-
-        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
-      } else {
-        outgoingPayload = 0;
-
-        ASSERT_EVENT(SYNC_EVENT_SELECTION, "");
-        lastMessage.event = SYNC_EVENT_SELECTION;
-        lastMessage.data1 = incomingPayload;
-      }
-
-      break;
+    default: {
     }
   }
 
@@ -146,14 +148,7 @@ void Syncer::sync(LinkState* linkState) {
 }
 
 void Syncer::sendOutgoingData() {
-  u16 outgoingData = SYNCER_MSG_BUILD(outgoingEvent, outgoingPayload);
-  linkConnection->send(outgoingData);
-
-#ifdef SENV_DEBUG
-  if (outgoingData != LINK_NO_DATA)
-    DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
-              DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
-#endif
+  send(outgoingEvent, outgoingPayload);
 }
 
 void Syncer::checkTimeout() {
@@ -189,9 +184,11 @@ void Syncer::reset() {
 }
 
 void Syncer::resetData() {
+  $gameMode = 0;
+  $libraryType = 0;
+  $completedSongs = 0;
   outgoingEvent = LINK_NO_DATA;
   outgoingPayload = LINK_NO_DATA;
-  lastMessage.event = 0;
 }
 
 void Syncer::resetError() {

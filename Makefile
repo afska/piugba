@@ -206,7 +206,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: clean assets start restart
+.PHONY: clean assets start rebuild restart
 
 assets:
 	./scripts/assets.sh
@@ -221,7 +221,9 @@ package: $(BUILD)
 start: package
 	start "$(TARGET).out.gba"
 
-restart: clean package
+rebuild: clean package
+
+restart: rebuild
 	start "$(TARGET).out.gba"
 
 reimport: import package

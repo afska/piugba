@@ -197,5 +197,5 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
 bool SEQUENCE_isMultiplayerSessionDead() {
   auto gameMode = SAVEFILE_getGameMode();
 
-  return IS_MULTIPLAYER(gameMode) && !syncer->isReady();
+  return IS_MULTIPLAYER(gameMode) && !syncer->isPlaying();
 }

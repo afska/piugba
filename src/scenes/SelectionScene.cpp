@@ -126,12 +126,6 @@ void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  if (SEQUENCE_isMultiplayerSessionDead()) {
-    player_stop();
-    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
-    return;
-  }
-
   if (init < INIT_FRAME) {
     init++;
     return;
@@ -148,9 +142,18 @@ void SelectionScene::tick(u16 keys) {
   multiplier->tick();
 
   processKeys(keys);
-  processDifficultyChangeEvents();
-  processSelectionChangeEvents();
-  processConfirmEvents();
+  if (isMultiplayer() && !syncer->isMaster())
+    processMultiplayerUpdates();
+  else {
+    processDifficultyChangeEvents();
+    processSelectionChangeEvents();
+    processConfirmEvents();
+  }
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
   processMenuEvents(keys);
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
@@ -266,30 +269,13 @@ void SelectionScene::goToSong() {
 }
 
 void SelectionScene::processKeys(u16 keys) {
-  auto gameMode = SAVEFILE_getGameMode();
-
-  if (IS_MULTIPLAYER(gameMode) && !syncer->isMaster()) {
-    auto lastMessage = syncer->getLastMessage();
-
-    if (lastMessage.event == SYNC_EVENT_SELECTION) {
-      auto receivedKeys = lastMessage.data1;
-      for (u32 i = 0; i < ARROWS_TOTAL; i++)
-        arrowSelectors[i]->setIsPressed(
-            SYNCER_MSG_SELECTION_DIRECTION(receivedKeys, i));
-    }
-  } else {
-    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(
-        KEY_DOWNRIGHT(keys));
-  }
-
-  if (!IS_MULTIPLAYER(gameMode)) {
-    multiplier->setIsPressed(keys & KEY_SELECT);
-    settingsMenuInput->setIsPressed(keys & KEY_START);
-  }
+  arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
+  arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
+  arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  multiplier->setIsPressed(keys & KEY_SELECT);
+  settingsMenuInput->setIsPressed(keys & KEY_START);
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
@@ -422,6 +408,9 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       updateSelection();
       pixelBlink->blink();
     }
+
+    if (isMultiplayer())
+      syncer->send(SYNC_EVENT_SONG_CHANGED, getSelectedSongIndex());
 
     return true;
   }
@@ -580,6 +569,38 @@ void SelectionScene::loadSelectedSongGrade(u8 songId) {
         songIndex == getSelectedSongIndex()
             ? SAVEFILE_getArcadeGradeOf(songId, getSelectedNumericLevel())
             : GradeType::UNPLAYED);
+  }
+}
+
+void SelectionScene::processMultiplayerUpdates() {
+  if (!syncer->isPlaying())
+    return;
+
+  auto linkState = linkConnection->linkState.get();
+  auto remoteId = syncer->getRemotePlayerId();
+
+  while (linkState->hasMessage(remoteId)) {
+    u16 message = linkState->readMessage(remoteId);
+    u8 event = SYNC_MSG_EVENT(message);
+    u16 payload = SYNC_MSG_PAYLOAD(message);
+
+    switch (event) {
+      case SYNC_EVENT_SONG_CHANGED: {
+        pixelBlink->blink();
+        scrollTo(payload);
+
+        break;
+      }
+      case SYNC_EVENT_LEVEL_CHANGED: {
+        break;
+      }
+      case SYNC_EVENT_START_SONG: {
+        break;
+      }
+      default: {
+        syncer->registerTimeout();
+      }
+    }
   }
 }
 

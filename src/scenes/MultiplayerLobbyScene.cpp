@@ -23,7 +23,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
-  if (syncer->isReady()) {
+  if (syncer->isPlaying()) {
     start();
     return;
   }
