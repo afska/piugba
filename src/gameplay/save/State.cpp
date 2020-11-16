@@ -15,7 +15,8 @@ void STATE_setup(Song* song, Chart* chart) {
   GameState.positionY = 0;
   GameState.scorePositionY = 0;
 
-  GameState.mods.multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
+  GameState.mods.multiplier =
+      isMultiplayer() ? 3 : SAVEFILE_read8(SRAM->mods.multiplier);
 
   switch (gameMode) {
     case GameMode::CAMPAIGN: {
