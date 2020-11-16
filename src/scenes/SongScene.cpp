@@ -455,6 +455,9 @@ void SongScene::onStageBreak(u8 playerId) {
   scores[playerId]->die();
 
   if (isMultiplayer()) {
+    if (playerId == getLocalPlayerId())
+      syncer->send(SYNC_EVENT_STAGE_BREAK, 0);
+
     bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
                    lifeBars[syncer->getRemotePlayerId()]->getIsDead();
 
@@ -639,14 +642,17 @@ void SongScene::processMultiplayerUpdates() {
             static_cast<FeedbackType>(SYNC_MSG_FEEDBACK_TYPE(payload));
         bool isLong = SYNC_MSG_FEEDBACK_IS_LONG(payload);
 
-        bool isAlive = scores[remoteId]->update(feedbackType, isLong);
-        if (!isAlive)
-          onStageBreak(remoteId);
+        scores[remoteId]->update(feedbackType, isLong);
 
         break;
       }
       case SYNC_EVENT_MULTIPLIER_CHANGE: {
         chartReader[remoteId]->setMultiplier(payload);
+
+        break;
+      }
+      case SYNC_EVENT_STAGE_BREAK: {
+        onStageBreak(remoteId);
 
         break;
       }
