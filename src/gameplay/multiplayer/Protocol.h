@@ -25,6 +25,7 @@
 #define SYNC_EVENT_KEYS 7
 #define SYNC_EVENT_FEEDBACK 8
 #define SYNC_EVENT_MULTIPLIER_CHANGE 9
+#define SYNC_EVENT_CONFIRM_SONG_END 10
 
 /*
   [Progress sync]

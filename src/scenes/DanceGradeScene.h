@@ -41,9 +41,11 @@ class DanceGradeScene : public Scene {
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void finish();
 
   void printScore();
   void playSound();
+  void processMultiplayerUpdates();
 };
 
 #endif  // DANCE_GRADE_SCENE_H

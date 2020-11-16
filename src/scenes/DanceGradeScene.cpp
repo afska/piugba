@@ -5,6 +5,7 @@
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
 #include "gameplay/Sequence.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
@@ -90,9 +91,18 @@ void DanceGradeScene::tick(u16 keys) {
     playSound();
   }
 
+  if (isMultiplayer())
+    processMultiplayerUpdates();
+
   if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
-    player_stop();
-    SEQUENCE_goToWinOrSelection(isLastSong);
+    if (isMultiplayer()) {
+      if (syncer->isMaster())
+        syncer->send(SYNC_EVENT_CONFIRM_SONG_END, 0);
+      else
+        return;
+    }
+
+    finish();
   }
 }
 
@@ -107,6 +117,11 @@ void DanceGradeScene::setUpBackground() {
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+}
+
+void DanceGradeScene::finish() {
+  player_stop();
+  SEQUENCE_goToWinOrSelection(isLastSong);
 }
 
 void DanceGradeScene::printScore() {
@@ -147,6 +162,30 @@ void DanceGradeScene::playSound() {
       break;
     }
     default: {
+    }
+  }
+}
+
+void DanceGradeScene::processMultiplayerUpdates() {
+  if (syncer->isMaster())
+    return;
+
+  auto linkState = linkConnection->linkState.get();
+  auto remoteId = syncer->getRemotePlayerId();
+
+  while (linkState->hasMessage(remoteId)) {
+    u16 message = linkState->readMessage(remoteId);
+    u8 event = SYNC_MSG_EVENT(message);
+
+    switch (event) {
+      case SYNC_EVENT_CONFIRM_SONG_END: {
+        finish();
+
+        break;
+      }
+      default: {
+        syncer->registerTimeout();
+      }
     }
   }
 }
