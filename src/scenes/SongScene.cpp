@@ -639,12 +639,9 @@ void SongScene::processMultiplayerUpdates() {
             static_cast<FeedbackType>(SYNC_MSG_FEEDBACK_TYPE(payload));
         bool isLong = SYNC_MSG_FEEDBACK_IS_LONG(payload);
 
-        scores[remoteId]->update(feedbackType, isLong);
-
-        break;
-      }
-      case SYNC_EVENT_STAGE_BREAK: {
-        onStageBreak(remoteId);
+        bool isAlive = scores[remoteId]->update(feedbackType, isLong);
+        if (!isAlive)
+          onStageBreak(remoteId);
 
         break;
       }
