@@ -154,6 +154,11 @@ void SelectionScene::tick(u16 keys) {
     processDifficultyChangeEvents();
     processSelectionChangeEvents();
     processConfirmEvents();
+
+    if (isMultiplayer() && syncer->isMaster() && (keys & KEY_SELECT)) {
+      syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
+      quit();
+    }
   }
   processMenuEvents(keys);
 
@@ -336,6 +341,9 @@ void SelectionScene::processConfirmEvents() {
 }
 
 void SelectionScene::processMenuEvents(u16 keys) {
+  if (isMultiplayer())
+    return;
+
   if (multiplier->hasBeenPressedNow()) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
       player_play(SOUND_MOD);
@@ -641,6 +649,11 @@ void SelectionScene::processMultiplayerUpdates() {
       }
     }
   }
+}
+
+void SelectionScene::quit() {
+  player_stop();
+  engine->transitionIntoScene(SEQUENCE_getMainScene(), new FadeOutScene(4));
 }
 
 SelectionScene::~SelectionScene() {

@@ -152,6 +152,7 @@ class SelectionScene : public Scene {
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
   void loadSelectedSongGrade(u8 songId);
   void processMultiplayerUpdates();
+  void quit();
 
   ~SelectionScene();
 };
