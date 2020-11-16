@@ -9,7 +9,7 @@ const int INITIAL_LIFE = 60;
 const int MAX_LIFE = 100;
 const int MIN_LIFE = -13;
 const u32 LIFEBAR_POSITION_X = 15;
-const int LIFEBAR_POSITION_Y = -11 + 2;
+const int LIFEBAR_POSITION_Y = -20 + 2;
 
 class LifeBar {
  public:
@@ -25,6 +25,7 @@ class LifeBar {
 
  private:
   std::unique_ptr<Sprite> sprite;
+  u8 playerId;
   u32 value = Div(INITIAL_LIFE, 10);
   u32 absLife = INITIAL_LIFE;
   u32 animatedValue = value;

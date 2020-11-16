@@ -9,6 +9,8 @@
 #include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
+#define LIFEBAR_COLORS 18
+
 const u32 ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
 const u32 MIN_VALUE = 0;
@@ -16,10 +18,16 @@ const u32 ALMOST_MIN_VALUE = 1;
 const u32 MAX_VALUE = 10;
 const u32 MIN_ANIMATED_VALUE = 1;
 const u32 UNIT = 2;
-const u16 PALETTE_COLORS[] = {127, 4345, 410, 7606, 2686, 1595, 766, 700,  927,
-                              894, 988,  923, 1017, 951,  974,  879, 9199, 936};
-const u8 PALETTE_INDEXES[] = {201, 203, 207, 208, 216, 214, 222, 218, 230,
-                              225, 231, 227, 232, 226, 224, 221, 229, 220};
+const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
+    {127, 4345, 410, 7606, 2686, 1595, 766, 700, 927, 894, 988, 923, 1017, 951,
+     974, 879, 9199, 936},
+    {126, 4344, 409, 7605, 1629, 1562, 733, 667, 894, 829, 923, 890, 984, 918,
+     942, 846, 8142, 904}};
+const u8 PALETTE_INDEXES[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
+    {202, 205, 211, 212, 223, 219, 232, 225, 248, 240, 249, 243, 250, 241, 238,
+     231, 245, 230},
+    {201, 204, 209, 210, 221, 216, 229, 222, 240, 235, 243, 237, 247, 236, 233,
+     228, 239, 227}};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;
@@ -37,6 +45,8 @@ LifeBar::LifeBar(u8 playerId) {
 
   if (playerId > 0)
     SPRITE_reuseTiles(sprite.get());
+
+  this->playerId = playerId;
 }
 
 void LifeBar::setLife(int life) {
@@ -53,6 +63,9 @@ void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 
+  if (playerId > 0)
+    sprite->flipVertically(true);
+
   if (wait == 0 || wait == 2)
     animatedFlag = !animatedFlag;
 
@@ -67,7 +80,7 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
 void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   bool isBorder = false;
 
-  for (u32 i = 0; i < sizeof(PALETTE_INDEXES); i++) {
+  for (u32 i = 0; i < LIFEBAR_COLORS; i++) {
     COLOR color;
 
     if (value <= ALMOST_MIN_VALUE) {
@@ -88,17 +101,18 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
       u32 index = value - 1;
       u32 animatedIndex = animatedValue - 1;
 
-      color = PALETTE_COLORS[i];
+      color = PALETTE_COLORS[playerId][i];
       if (i >= animatedIndex * UNIT)
         color = disabled;
       if (i >= index * UNIT && i <= index * UNIT + 1)
         color = cursor;
     } else {
       // blink green
-      color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR : PALETTE_COLORS[i];
+      color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR
+                                          : PALETTE_COLORS[playerId][i];
     }
 
-    foregroundPalette->change(0, PALETTE_INDEXES[i], color);
+    foregroundPalette->change(0, PALETTE_INDEXES[playerId][i], color);
     isBorder = !isBorder;
   }
 }
