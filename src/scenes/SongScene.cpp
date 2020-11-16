@@ -464,8 +464,8 @@ void SongScene::onStageBreak(u8 playerId) {
     bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
                    lifeBars[syncer->getRemotePlayerId()]->getIsDead();
 
-    // if (allDead) // TODO: RECOVER
-    //   breakStage();
+    if (allDead)
+      breakStage();
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
     breakStage();
 }

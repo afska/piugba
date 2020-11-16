@@ -98,9 +98,9 @@ void DanceGradeScene::load() {
     u8 remoteId = syncer->getRemotePlayerId();
 
     miniGrades[localId] = std::unique_ptr<GradeBadge>{
-        new GradeBadge(MINI_GRADE_X[localId], GRADE_Y, false, true)};
+        new GradeBadge(MINI_GRADE_X[localId], MINI_GRADE_Y, false, true)};
     miniGrades[remoteId] = std::unique_ptr<GradeBadge>{
-        new GradeBadge(MINI_GRADE_X[remoteId], GRADE_Y, true, true)};
+        new GradeBadge(MINI_GRADE_X[remoteId], MINI_GRADE_Y, true, true)};
     miniGrades[localId]->setType(evaluation->getGrade());
     miniGrades[remoteId]->setType(evaluation->getGrade());
 
