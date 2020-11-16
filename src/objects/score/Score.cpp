@@ -122,10 +122,16 @@ void Score::updateCombo(FeedbackType feedbackType) {
 }
 
 void Score::updateCounters(FeedbackType feedbackType) {
+  if (lifeBar->getIsDead())
+    return;
+
   counters[feedbackType]++;
 }
 
 void Score::updatePoints(FeedbackType feedbackType) {
+  if (lifeBar->getIsDead())
+    return;
+
   points = max(points + POINT_DIFFS[feedbackType], 0);
 
   bool isPerfectOrGreat = feedbackType == FeedbackType::PERFECT ||

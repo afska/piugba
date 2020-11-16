@@ -442,7 +442,7 @@ void SongScene::finishAndGoToEvaluation() {
 }
 
 void SongScene::onStageBreak(u8 playerId) {
-  lifeBars[playerId]->die();
+  scores[playerId]->die();
 
   if (isMultiplayer()) {
     bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
