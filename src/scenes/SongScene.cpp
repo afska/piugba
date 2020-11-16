@@ -446,9 +446,12 @@ void SongScene::finishAndGoToEvaluation() {
                           chart->level, evaluation->getGrade());
 
   unload();
-  engine->transitionIntoScene(
-      new DanceGradeScene(engine, fs, std::move(evaluation), isLastSong),
-      new FadeOutScene(1));
+  auto danceGradeScene =
+      new DanceGradeScene(engine, fs, std::move(evaluation), isLastSong);
+  if (isMultiplayer())
+    danceGradeScene->remoteEvaluation =
+        scores[syncer->getRemotePlayerId()]->evaluate();
+  engine->transitionIntoScene(danceGradeScene, new FadeOutScene(1));
 }
 
 void SongScene::onStageBreak(u8 playerId) {
@@ -461,8 +464,8 @@ void SongScene::onStageBreak(u8 playerId) {
     bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
                    lifeBars[syncer->getRemotePlayerId()]->getIsDead();
 
-    if (allDead)
-      breakStage();
+    // if (allDead) // TODO: RECOVER
+    //   breakStage();
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
     breakStage();
 }

@@ -7,7 +7,7 @@
 
 class GradeBadge {
  public:
-  GradeBadge(u32 x, u32 y, bool reuseTiles);
+  GradeBadge(u32 x, u32 y, bool reuseTiles, bool isEvaluation);
 
   void setType(GradeType type);
 

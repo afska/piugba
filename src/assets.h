@@ -31,6 +31,9 @@
 #define BG_GRADE_TILES ((char*)"_img_grade.img.bin")
 #define BG_GRADE_PALETTE ((char*)"_img_grade.pal.bin")
 #define BG_GRADE_MAP ((char*)"_img_grade.map.bin")
+#define BG_GRADE_MULTI_TILES ((char*)"_img_grademulti.img.bin")
+#define BG_GRADE_MULTI_PALETTE ((char*)"_img_grademulti.pal.bin")
+#define BG_GRADE_MULTI_MAP ((char*)"_img_grademulti.map.bin")
 #define ROM_ID_FILE ((char*)"_rom_id.u32")
 #define ROM_NAME_FILE ((char*)"_rom_name.txt")
 

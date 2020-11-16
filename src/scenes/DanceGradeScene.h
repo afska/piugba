@@ -7,9 +7,11 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "gameplay/Evaluation.h"
+#include "gameplay/models/Song.h"
 #include "objects/score/Feedback.h"
 #include "objects/score/Grade.h"
 #include "objects/score/Total.h"
+#include "objects/ui/GradeBadge.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
@@ -17,6 +19,8 @@ extern "C" {
 
 class DanceGradeScene : public Scene {
  public:
+  std::unique_ptr<Evaluation> remoteEvaluation = NULL;
+
   DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                   const GBFS_FILE* fs,
                   std::unique_ptr<Evaluation> evaluation,
@@ -38,6 +42,10 @@ class DanceGradeScene : public Scene {
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
   bool isLastSong;
+
+  std::array<std::unique_ptr<GradeBadge>, GAME_MAX_PLAYERS> miniGrades;
+  std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> remoteTotals;
+  std::unique_ptr<Total> remoteMaxComboTotal;
 
   void setUpSpritesPalette();
   void setUpBackground();

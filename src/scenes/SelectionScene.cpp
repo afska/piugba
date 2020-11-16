@@ -225,7 +225,7 @@ void SelectionScene::setUpChannelBadges() {
 void SelectionScene::setUpGradeBadges() {
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     gradeBadges.push_back(std::unique_ptr<GradeBadge>{
-        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0)});
+        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0, false)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
   }
 }
