@@ -411,8 +411,13 @@ void SongScene::processKeys(u16 keys) {
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader[getLocalPlayerId()]->setMultiplier(
-              chartReader[getLocalPlayerId()]->getMultiplier() + 1))
+              chartReader[getLocalPlayerId()]->getMultiplier() + 1)) {
         pixelBlink->blink();
+
+        if (isMultiplayer())
+          syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
+                       chartReader[getLocalPlayerId()]->getMultiplier());
+      }
     }
   }
 
@@ -423,8 +428,13 @@ void SongScene::processKeys(u16 keys) {
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReader[getLocalPlayerId()]->setMultiplier(
-              chartReader[getLocalPlayerId()]->getMultiplier() - 1))
+              chartReader[getLocalPlayerId()]->getMultiplier() - 1)) {
         pixelBlink->blink();
+
+        if (isMultiplayer())
+          syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
+                       chartReader[getLocalPlayerId()]->getMultiplier());
+      }
     }
   }
 }
@@ -629,9 +639,17 @@ void SongScene::processMultiplayerUpdates() {
             static_cast<FeedbackType>(SYNC_MSG_FEEDBACK_TYPE(payload));
         bool isLong = SYNC_MSG_FEEDBACK_IS_LONG(payload);
 
-        bool isAlive = scores[remoteId]->update(feedbackType, isLong);
-        if (!isAlive)
-          onStageBreak(remoteId);
+        scores[remoteId]->update(feedbackType, isLong);
+
+        break;
+      }
+      case SYNC_EVENT_STAGE_BREAK: {
+        onStageBreak(remoteId);
+
+        break;
+      }
+      case SYNC_EVENT_MULTIPLIER_CHANGE: {
+        chartReader[remoteId]->setMultiplier(payload);
 
         break;
       }

@@ -113,6 +113,10 @@ void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
   }
 
   bool isAlive = scores->at(playerId)->update(result, isLong);
-  if (!isAlive)
+  if (!isAlive) {
     onStageBreak(playerId);
+
+    if (isMultiplayer() && playerId == syncer->getLocalPlayerId())
+      syncer->send(SYNC_EVENT_STAGE_BREAK, 0);
+  }
 }

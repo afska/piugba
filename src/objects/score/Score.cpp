@@ -60,6 +60,9 @@ void Score::tick() {
 }
 
 bool Score::updateLife(FeedbackType feedbackType) {
+  if (lifeBar->getIsDead())
+    return true;
+
   u32 bonus = 0;
   if (feedbackType == FeedbackType::PERFECT) {
     halfLifeBonus = !halfLifeBonus;
@@ -122,9 +125,6 @@ void Score::updateCombo(FeedbackType feedbackType) {
 }
 
 void Score::updateCounters(FeedbackType feedbackType) {
-  if (lifeBar->getIsDead())
-    return;
-
   counters[feedbackType]++;
 }
 
