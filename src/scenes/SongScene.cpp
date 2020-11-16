@@ -602,11 +602,12 @@ void SongScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_KEYS: {
-        for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-          arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(false);
-          arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
-              SYNC_MSG_KEYS_DIRECTION(payload, i));
-        }
+        bool isTheLastOne = !linkState->hasMessage(remoteId);
+
+        if (isTheLastOne)
+          for (u32 i = 0; i < ARROWS_TOTAL; i++)
+            arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
+                SYNC_MSG_KEYS_DIRECTION(payload, i));
 
         break;
       }
