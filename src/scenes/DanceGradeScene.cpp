@@ -77,6 +77,12 @@ void DanceGradeScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();

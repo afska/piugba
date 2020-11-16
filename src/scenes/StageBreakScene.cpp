@@ -5,6 +5,7 @@
 #include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_break.h"
+#include "gameplay/Sequence.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
@@ -76,6 +77,12 @@ void StageBreakScene::load() {
 void StageBreakScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
 
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
