@@ -1,6 +1,7 @@
 #include "Judge.h"
 
 #include "models/Event.h"
+#include "multiplayer/Syncer.h"
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
              std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
@@ -101,6 +102,14 @@ void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
       result == FeedbackType::MISS) {
     onStageBreak(playerId);
     return;
+  }
+
+  if (isMultiplayer()) {
+    if (playerId == syncer->getLocalPlayerId())
+      syncer->send(SYNC_EVENT_FEEDBACK,
+                   SYNC_MSG_FEEDBACK_BUILD(result, isLong));
+    else
+      return;
   }
 
   bool isAlive = scores->at(playerId)->update(result, isLong);

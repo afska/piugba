@@ -21,6 +21,7 @@ class Score {
 
   void tick();
 
+  inline void die() { lifeBar->die(); }
   inline Feedback* getFeedback() { return feedback.get(); }
   inline Combo* getCombo() { return combo.get(); }
 

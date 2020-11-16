@@ -60,6 +60,10 @@ void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
   wait = WAIT_TIME;
 }
 
+void LifeBar::die() {
+  isDead = true;
+}
+
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 
@@ -83,7 +87,9 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   for (u32 i = 0; i < LIFEBAR_COLORS; i++) {
     COLOR color;
 
-    if (value <= ALMOST_MIN_VALUE) {
+    if (isDead)
+      color = isBorder ? DISABLED_COLOR_BORDER : BLINK_MIN_COLOR;
+    else if (value <= ALMOST_MIN_VALUE) {
       COLOR redBlink = animatedFlag ? BLINK_MIN_COLOR : DISABLED_COLOR;
       COLOR disabled = isBorder ? DISABLED_COLOR_BORDER : DISABLED_COLOR;
 

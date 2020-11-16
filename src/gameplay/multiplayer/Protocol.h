@@ -52,4 +52,13 @@
       (!!(DL))
 #define SYNC_MSG_KEYS_DIRECTION(MSG, DIRECTION) (((MSG) >> DIRECTION) & 1)
 
+/*
+  [Feedback sync]
+  3: Is long note
+  0~2: Feedback type (0 = Perfect, 1 = Great, etc...)
+*/
+#define SYNC_MSG_FEEDBACK_BUILD(TYPE, IS_LONG) (((IS_LONG) << 3) | (TYPE))
+#define SYNC_MSG_FEEDBACK_TYPE(MSG) ((MSG)&0b111)
+#define SYNC_MSG_FEEDBACK_IS_LONG(MSG) (((MSG) >> 3) & 1)
+
 #endif  // PROTOCOL_H

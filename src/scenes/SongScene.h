@@ -91,6 +91,8 @@ class SongScene : public Scene {
   void updateGameY();
   void processKeys(u16 keys);
   void finishAndGoToEvaluation();
+  void onStageBreak(u8 playerId);
+  void breakStage();
 
   void processModsLoad();
   void processModsTick();

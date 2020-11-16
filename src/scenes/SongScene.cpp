@@ -107,14 +107,8 @@ void SongScene::load() {
   }
 
   judge = std::unique_ptr<Judge>(
-      new Judge(arrowPool.get(), &arrowHolders, &scores, [this](u8 playerId) {
-        // if (GameState.mods.stageBreak != StageBreakOpts::sOFF) { // TODO:
-        // RESTORE
-        //   unload();
-        //   engine->transitionIntoScene(new StageBreakScene(engine, fs),
-        //                               new FadeOutScene(6));
-        // }
-      }));
+      new Judge(arrowPool.get(), &arrowHolders, &scores,
+                [this](u8 playerId) { onStageBreak(playerId); }));
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
@@ -447,6 +441,25 @@ void SongScene::finishAndGoToEvaluation() {
       new FadeOutScene(1));
 }
 
+void SongScene::onStageBreak(u8 playerId) {
+  lifeBars[playerId]->die();
+
+  if (isMultiplayer()) {
+    bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
+                   lifeBars[syncer->getRemotePlayerId()]->getIsDead();
+
+    if (allDead)
+      breakStage();
+  } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
+    breakStage();
+}
+
+void SongScene::breakStage() {
+  unload();
+  engine->transitionIntoScene(new StageBreakScene(engine, fs),
+                              new FadeOutScene(6));
+}
+
 void SongScene::processModsLoad() {
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
       GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
@@ -608,6 +621,17 @@ void SongScene::processMultiplayerUpdates() {
           for (u32 i = 0; i < ARROWS_TOTAL; i++)
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
+
+        break;
+      }
+      case SYNC_EVENT_FEEDBACK: {
+        auto feedbackType =
+            static_cast<FeedbackType>(SYNC_MSG_FEEDBACK_TYPE(payload));
+        bool isLong = SYNC_MSG_FEEDBACK_IS_LONG(payload);
+
+        bool isAlive = scores[remoteId]->update(feedbackType, isLong);
+        if (!isAlive)
+          onStageBreak(remoteId);
 
         break;
       }

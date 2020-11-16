@@ -19,6 +19,9 @@ class LifeBar {
 
   void setLife(int life);
   void blink(ForegroundPaletteManager* foregroundPalette);
+  void die();
+
+  inline bool getIsDead() { return isDead; }
 
   void tick(ForegroundPaletteManager* foregroundPalette);
   inline Sprite* get() { return sprite.get(); }
@@ -32,6 +35,7 @@ class LifeBar {
   u32 wait = 0;
   u8 mosaicValue = 0;
   bool animatedFlag = false;
+  bool isDead = false;
 
   void paint(ForegroundPaletteManager* foregroundPalette);
 };
