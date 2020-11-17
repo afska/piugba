@@ -660,6 +660,7 @@ void SongScene::processMultiplayerUpdates() {
         break;
       }
       default: {
+        // TODO: UNREGISTER TIMEOUTS ON VALID PACKETS
         syncer->registerTimeout();
       }
     }
