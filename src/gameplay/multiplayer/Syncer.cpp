@@ -77,6 +77,10 @@ void Syncer::registerTimeout() {
   checkTimeout();
 }
 
+void Syncer::clearTimeout() {
+  timeoutCount = 0;
+}
+
 void Syncer::sync(LinkState* linkState) {
   u16 incomingData = linkState->readMessage(getRemotePlayerId());
   u8 incomingEvent = SYNC_MSG_EVENT(incomingData);
@@ -182,8 +186,7 @@ void Syncer::reset() {
 #endif
 
   playerId = -1;
-  state = SyncState::SYNC_STATE_SEND_ROM_ID;
-  timeoutCount = 0;
+  setState(SyncState::SYNC_STATE_SEND_ROM_ID);
   resetData();
 }
 

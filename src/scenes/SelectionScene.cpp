@@ -623,6 +623,7 @@ void SelectionScene::processMultiplayerUpdates() {
         scrollTo(payload);
         pixelBlink->blink();
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
@@ -630,6 +631,7 @@ void SelectionScene::processMultiplayerUpdates() {
         player_play(SOUND_STEP);
         setNumericLevel(payload);
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_SONG_CORNER: {
@@ -637,11 +639,13 @@ void SelectionScene::processMultiplayerUpdates() {
         if (payload)
           player_play(SOUND_STEP);
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_START_SONG: {
         onConfirmOrStart(payload);
 
+        syncer->clearTimeout();
         break;
       }
       default: {

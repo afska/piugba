@@ -49,7 +49,7 @@ class Syncer {
 #endif
 
     state = newState;
-    timeoutCount = 0;
+    clearTimeout();
   }
   inline SyncMode getMode() { return mode; }
 
@@ -57,6 +57,7 @@ class Syncer {
   void update();
   void send(u8 event, u16 payload);
   void registerTimeout();
+  void clearTimeout();
 
  private:
   SyncState state = SyncState::SYNC_STATE_SEND_ROM_ID;

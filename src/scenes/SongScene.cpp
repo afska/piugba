@@ -638,6 +638,7 @@ void SongScene::processMultiplayerUpdates() {
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_FEEDBACK: {
@@ -647,20 +648,22 @@ void SongScene::processMultiplayerUpdates() {
 
         scores[remoteId]->update(feedbackType, isLong);
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_MULTIPLIER_CHANGE: {
         chartReader[remoteId]->setMultiplier(payload);
 
+        syncer->clearTimeout();
         break;
       }
       case SYNC_EVENT_STAGE_BREAK: {
         onStageBreak(remoteId);
 
+        syncer->clearTimeout();
         break;
       }
       default: {
-        // TODO: UNREGISTER TIMEOUTS ON VALID PACKETS
         syncer->registerTimeout();
       }
     }

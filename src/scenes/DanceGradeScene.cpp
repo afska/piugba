@@ -253,6 +253,7 @@ void DanceGradeScene::processMultiplayerUpdates() {
       case SYNC_EVENT_CONFIRM_SONG_END: {
         finish();
 
+        syncer->clearTimeout();
         break;
       }
       default: {
