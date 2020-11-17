@@ -10,7 +10,6 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
-#define SYNC_BUFFER_SIZE 3
 #define SYNC_TIMEOUT 60
 
 enum SyncState {

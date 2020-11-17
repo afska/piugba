@@ -14,11 +14,7 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
 void setUpInterrupts();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
-LinkConnection* linkConnection =
-    new LinkConnection(false,
-                       LinkConnection::BaudRate::BAUD_RATE_3,
-                       LINK_DEFAULT_TIMEOUT,
-                       SYNC_BUFFER_SIZE);
+LinkConnection* linkConnection = new LinkConnection();
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -56,6 +52,8 @@ void setUpInterrupts() {
 
   // LinkConnection
   irq_add(II_SERIAL, LINK_ISR_SERIAL);
+  irq_add(II_TIMER3, LINK_ISR_TIMER);
+  irq_add(II_TIMER2, NULL);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
