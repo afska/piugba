@@ -120,10 +120,9 @@ void Syncer::sync(LinkState* linkState) {
 
       if (isMaster()) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
+        resetGameState();
         $libraryType = libraryType;
         $completedSongs = completedSongs;
-        $isPlayingSong = false;
-        $availableAudioChunks = 0;
         SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
       } else {
@@ -141,10 +140,9 @@ void Syncer::sync(LinkState* linkState) {
                    receivedCompletedSongs <= SAVEFILE_getLibrarySize(),
                SyncError::SYNC_ERROR_WTF);
 
+        resetGameState();
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
-        $isPlayingSong = false;
-        $availableAudioChunks = 0;
         SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
       }
@@ -195,12 +193,16 @@ void Syncer::reset() {
 }
 
 void Syncer::resetData() {
+  resetGameState();
+  outgoingEvent = LINK_NO_DATA;
+  outgoingPayload = LINK_NO_DATA;
+}
+
+void Syncer::resetGameState() {
   $libraryType = 0;
   $completedSongs = 0;
   $isPlayingSong = false;
   $availableAudioChunks = 0;
-  outgoingEvent = LINK_NO_DATA;
-  outgoingPayload = LINK_NO_DATA;
 }
 
 void Syncer::resetError() {

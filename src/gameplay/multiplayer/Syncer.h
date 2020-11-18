@@ -83,6 +83,7 @@ class Syncer {
   void fail(SyncError error);
   void reset();
   void resetData();
+  void resetGameState();
   void resetError();
 };
 
