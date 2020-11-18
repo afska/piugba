@@ -27,6 +27,13 @@ int main() {
   player_forever([]() {
     syncer->update();
     engine->update();
+
+    u32 availableAudioChunks = syncer->$availableAudioChunks;
+    if (availableAudioChunks > 0)
+      syncer->$availableAudioChunks--;
+
+    return !syncer->isPlaying() || syncer->isMaster() ||
+           availableAudioChunks > 0;
   });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);

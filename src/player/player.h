@@ -13,6 +13,6 @@ void player_setRate(int rate);
 void player_stop();
 bool player_isPlaying();
 void player_onVBlank();
-void player_forever(void (*update)());
+void player_forever(bool (*update)());
 
 #endif  // PLAYER_H

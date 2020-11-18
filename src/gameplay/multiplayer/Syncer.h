@@ -34,6 +34,7 @@ class Syncer {
  public:
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
+  u32 $availableAudioChunks = 0;
   Syncer() {}
 
   inline bool isPlaying() { return state >= SyncState::SYNC_STATE_PLAYING; }

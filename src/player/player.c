@@ -86,7 +86,7 @@ inline void player_onVBlank() {
   PLAYER_POST_UPDATE();
 }
 
-inline void player_forever(void (*update)()) {
+inline void player_forever(bool (*update)()) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -99,16 +99,21 @@ inline void player_forever(void (*update)()) {
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
-    update();
+    bool canPlay = update();
 
-    PLAYER_PRE_UPDATE({
-      if (PlaybackState.isLooping)
-        player_seek(0);
-      else {
-        player_stop();
-        PlaybackState.hasFinished = true;
-      }
-    });
+    PLAYER_PRE_UPDATE(
+        {
+          if (!canPlay)
+            src_pos -= AUDIO_CHUNK_SIZE;
+        },
+        {
+          if (PlaybackState.isLooping)
+            player_seek(0);
+          else {
+            player_stop();
+            PlaybackState.hasFinished = true;
+          }
+        });
 
     VBlankIntrWait();
   }

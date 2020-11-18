@@ -78,7 +78,7 @@
   src_end = NULL;     \
   mute();
 
-#define PLAYER_PRE_UPDATE(ON_STOP)                    \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)           \
   dst_pos = double_buffers[cur_buffer];               \
                                                       \
   if (src_pos < src_end) {                            \
@@ -89,6 +89,7 @@
           gsm_decode(&decoder, src_pos, out_samples); \
         src_pos += sizeof(gsm_frame);                 \
         decode_pos = 0;                               \
+        ON_STEP;                                      \
       }                                               \
                                                       \
       /* 2:1 linear interpolation */                  \
