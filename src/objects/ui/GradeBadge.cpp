@@ -28,6 +28,8 @@ GradeBadge::GradeBadge(u32 x, u32 y, bool reuseTiles, bool isEvaluation) {
 }
 
 void GradeBadge::setType(GradeType type) {
+  this->type = type;
+
   if (type == GradeType::UNPLAYED)
     SPRITE_hide(sprite.get());
   else {

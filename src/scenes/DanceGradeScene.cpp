@@ -101,8 +101,8 @@ void DanceGradeScene::load() {
         new GradeBadge(MINI_GRADE_X[localId], MINI_GRADE_Y, false, true)};
     miniGrades[1] = std::unique_ptr<GradeBadge>{
         new GradeBadge(MINI_GRADE_X[remoteId], MINI_GRADE_Y, true, true)};
-    miniGrades[localId]->setType(evaluation->getGrade());
-    miniGrades[remoteId]->setType(evaluation->getGrade());
+    miniGrades[0]->setType(evaluation->getGrade());
+    miniGrades[1]->setType(remoteEvaluation->getGrade());
 
     for (u32 i = 0; i < remoteTotals.size(); i++)
       remoteTotals[i] = std::unique_ptr<Total>{
@@ -208,7 +208,10 @@ void DanceGradeScene::printScore() {
 }
 
 void DanceGradeScene::playSound() {
-  switch (grade->getType()) {
+  auto gradeType =
+      isMultiplayer() ? miniGrades[0].get()->getType() : grade->getType();
+
+  switch (gradeType) {
     case GradeType::S: {
       player_play(SOUND_RANK_S);
       break;

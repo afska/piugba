@@ -9,8 +9,9 @@ class Grade {
  public:
   Grade(GradeType type, u32 x, u32 y);
 
-  inline Sprite* get() { return sprite.get(); }
   inline GradeType getType() { return type; }
+
+  inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;
