@@ -183,7 +183,7 @@ void SongScene::tick(u16 keys) {
   if (isMultiplayer())
     processMultiplayerUpdates();
 
-  bool isNewBeat = chartReader[0]->update((int)songMsecs);
+  bool isNewBeat = chartReader[getLocalPlayerId()]->update((int)songMsecs);
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
@@ -197,7 +197,7 @@ void SongScene::tick(u16 keys) {
     processModsBeat();
   }
   if (isMultiplayer())
-    chartReader[1]->update((int)songMsecs);
+    chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
   blinkFrame = max(blinkFrame - 1, 0);
   if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
