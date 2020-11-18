@@ -122,6 +122,7 @@ void Syncer::sync(LinkState* linkState) {
         ASSERT(incomingPayload == modeBit, SyncError::SYNC_ERROR_WRONG_MODE);
         $libraryType = libraryType;
         $completedSongs = completedSongs;
+        $isPlayingSong = false;
         $availableAudioChunks = 0;
         SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
@@ -142,6 +143,7 @@ void Syncer::sync(LinkState* linkState) {
 
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
+        $isPlayingSong = false;
         $availableAudioChunks = 0;
         SAVEFILE_write8(SRAM->memory.numericLevel, 0);
         setState(SyncState::SYNC_STATE_PLAYING);
@@ -195,6 +197,7 @@ void Syncer::reset() {
 void Syncer::resetData() {
   $libraryType = 0;
   $completedSongs = 0;
+  $isPlayingSong = false;
   $availableAudioChunks = 0;
   outgoingEvent = LINK_NO_DATA;
   outgoingPayload = LINK_NO_DATA;

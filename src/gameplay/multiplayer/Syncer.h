@@ -34,6 +34,7 @@ class Syncer {
  public:
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
+  bool $isPlayingSong = false;
   u32 $availableAudioChunks = 0;
   Syncer() {}
 

@@ -87,7 +87,9 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
-  if (!isMultiplayer())
+  if (isMultiplayer())
+    syncer->$isPlayingSong = true;
+  else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
 
   SCENE_init();
@@ -687,6 +689,8 @@ bool SongScene::setRate(int rate) {
 
 void SongScene::unload() {
   player_stop();
+  if (isMultiplayer())
+    syncer->$isPlayingSong = false;
 }
 
 SongScene::~SongScene() {

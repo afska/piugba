@@ -32,7 +32,7 @@ int main() {
     if (availableAudioChunks > 0)
       syncer->$availableAudioChunks--;
 
-    return !syncer->isPlaying() || syncer->isMaster() ||
+    return !syncer->$isPlayingSong || syncer->isMaster() ||
            availableAudioChunks > 0;
   });
 
