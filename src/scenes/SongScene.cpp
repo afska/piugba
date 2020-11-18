@@ -461,7 +461,8 @@ void SongScene::onStageBreak(u8 playerId) {
     if (playerId == getLocalPlayerId())
       syncer->send(SYNC_EVENT_STAGE_BREAK, 0);
 
-    bool allDead = lifeBars[getLocalPlayerId()]->getIsDead() &&
+    bool allDead = !ENV_DEVELOPMENT &&
+                   lifeBars[getLocalPlayerId()]->getIsDead() &&
                    lifeBars[syncer->getRemotePlayerId()]->getIsDead();
 
     if (allDead)

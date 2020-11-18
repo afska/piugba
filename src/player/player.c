@@ -50,7 +50,7 @@ inline void player_loop(const char* name) {
 }
 
 inline void player_seek(unsigned int msecs) {
-  // (cursor must be a multiple of AUDIO_CHUNK)
+  // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
   // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267

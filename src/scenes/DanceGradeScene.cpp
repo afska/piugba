@@ -9,6 +9,7 @@
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
+#include "utils/StringUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -17,8 +18,8 @@ extern "C" {
 #define SCORE_TITLE "Score:"
 #define PLAYER_1_WINS "Player 1 *WINS*"
 #define PLAYER_2_WINS "Player 2 *WINS*"
-#define PLAYER_1_ARROW "<<<<<<<<<<<<<"
-#define PLAYER_2_ARROW ">>>>>>>>>>>>>"
+#define PLAYER_1_ARROW "<<<<<<<<<<<"
+#define PLAYER_2_ARROW ">>>>>>>>>>>"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
@@ -180,6 +181,12 @@ void DanceGradeScene::finish() {
   SEQUENCE_goToWinOrSelection(isLastSong);
 }
 
+std::string DanceGradeScene::pointsToString(u32 points) {
+  auto pointsStr = std::to_string(points);
+  STRING_padLeft(pointsStr, SCORE_DIGITS, '0');
+  return pointsStr;
+}
+
 void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
@@ -190,6 +197,9 @@ void DanceGradeScene::printScore() {
     auto player2Points = syncer->getLocalPlayerId() == 1
                              ? evaluation->points
                              : remoteEvaluation->points;
+
+    TextStream::instance().scroll(0, -1);
+
     if (player1Points >= player2Points) {
       SCENE_write(PLAYER_1_WINS, TEXT_ROW);
       SCENE_write(PLAYER_1_ARROW, TEXT_ROW + 1);
@@ -197,13 +207,15 @@ void DanceGradeScene::printScore() {
       SCENE_write(PLAYER_2_WINS, TEXT_ROW);
       SCENE_write(PLAYER_2_ARROW, TEXT_ROW + 1);
     }
-  } else {
-    auto points = std::to_string(evaluation->points);
-    while (points.length() < SCORE_DIGITS)
-      points = "0" + points;
 
+    auto points1Str = pointsToString(player1Points);
+    auto points2Str = pointsToString(player2Points);
+    STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
+    auto pointsStr = points1Str + points2Str;
+    SCENE_write(pointsStr, 0);
+  } else {
     SCENE_write(SCORE_TITLE, TEXT_ROW);
-    SCENE_write(points, TEXT_ROW + 1);
+    SCENE_write(pointsToString(evaluation->points), TEXT_ROW + 1);
   }
 }
 

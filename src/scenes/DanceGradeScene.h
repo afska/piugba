@@ -50,6 +50,7 @@ class DanceGradeScene : public Scene {
   void setUpSpritesPalette();
   void setUpBackground();
   void finish();
+  std::string pointsToString(u32 points);
 
   void printScore();
   void playSound();
