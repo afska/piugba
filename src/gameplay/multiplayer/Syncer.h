@@ -10,7 +10,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/LinkConnection.h"
 
-#define SYNC_TIMEOUT 60
+#define SYNC_TIMEOUT 10
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
