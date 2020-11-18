@@ -173,7 +173,7 @@ void SongScene::tick(u16 keys) {
   u32 songMsecs = PlaybackState.msecs;
 
   if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
-    finishAndGoToEvaluation();
+    onStagePass();
     return;
   }
 
@@ -441,6 +441,36 @@ void SongScene::processKeys(u16 keys) {
   }
 }
 
+void SongScene::onStageBreak(u8 playerId) {
+  scores[playerId]->die();
+
+  if (isMultiplayer()) {
+    if (playerId == getLocalPlayerId())
+      syncer->send(SYNC_EVENT_STAGE_END, false);
+
+    bool allDead = !ENV_DEVELOPMENT &&
+                   lifeBars[getLocalPlayerId()]->getIsDead() &&
+                   lifeBars[syncer->getRemotePlayerId()]->getIsDead();
+
+    if (allDead)
+      breakStage();
+  } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
+    breakStage();
+}
+
+void SongScene::onStagePass() {
+  if (isMultiplayer())
+    syncer->send(SYNC_EVENT_STAGE_END, true);
+
+  finishAndGoToEvaluation();
+}
+
+void SongScene::breakStage() {
+  unload();
+  engine->transitionIntoScene(new StageBreakScene(engine, fs),
+                              new FadeOutScene(6));
+}
+
 void SongScene::finishAndGoToEvaluation() {
   auto evaluation = scores[getLocalPlayerId()]->evaluate();
   bool isLastSong =
@@ -454,29 +484,6 @@ void SongScene::finishAndGoToEvaluation() {
     danceGradeScene->remoteEvaluation =
         scores[syncer->getRemotePlayerId()]->evaluate();
   engine->transitionIntoScene(danceGradeScene, new FadeOutScene(1));
-}
-
-void SongScene::onStageBreak(u8 playerId) {
-  scores[playerId]->die();
-
-  if (isMultiplayer()) {
-    if (playerId == getLocalPlayerId())
-      syncer->send(SYNC_EVENT_STAGE_BREAK, 0);
-
-    bool allDead = !ENV_DEVELOPMENT &&
-                   lifeBars[getLocalPlayerId()]->getIsDead() &&
-                   lifeBars[syncer->getRemotePlayerId()]->getIsDead();
-
-    if (allDead)
-      breakStage();
-  } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
-    breakStage();
-}
-
-void SongScene::breakStage() {
-  unload();
-  engine->transitionIntoScene(new StageBreakScene(engine, fs),
-                              new FadeOutScene(6));
 }
 
 void SongScene::processModsLoad() {
@@ -663,8 +670,11 @@ void SongScene::processMultiplayerUpdates() {
         syncer->clearTimeout();
         break;
       }
-      case SYNC_EVENT_STAGE_BREAK: {
-        onStageBreak(remoteId);
+      case SYNC_EVENT_STAGE_END: {
+        if (payload)
+          finishAndGoToEvaluation();
+        else
+          onStageBreak(remoteId);
 
         syncer->clearTimeout();
         break;
