@@ -87,8 +87,11 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  SCENE_init();
+  if (isMultiplayer())
+    syncer->clearTimeout();
+
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
+  SCENE_init();
 
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);
@@ -148,7 +151,7 @@ void SelectionScene::tick(u16 keys) {
 
   processKeys(keys);
 
-  if (isMultiplayer() && !syncer->isMaster())
+  if (isMultiplayer())
     processMultiplayerUpdates();
   else {
     processDifficultyChangeEvents();
@@ -613,6 +616,9 @@ void SelectionScene::processMultiplayerUpdates() {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
+
+    if (syncer->isMaster())
+      return;
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {

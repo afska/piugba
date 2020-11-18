@@ -75,6 +75,9 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 }
 
 void DanceGradeScene::load() {
+  if (isMultiplayer())
+    syncer->clearTimeout();
+
   SCENE_init();
 
   setUpSpritesPalette();
@@ -254,15 +257,15 @@ void DanceGradeScene::playSound() {
 }
 
 void DanceGradeScene::processMultiplayerUpdates() {
-  if (syncer->isMaster())
-    return;
-
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
   while (linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
+
+    if (syncer->isMaster())
+      return;
 
     switch (event) {
       case SYNC_EVENT_CONFIRM_SONG_END: {

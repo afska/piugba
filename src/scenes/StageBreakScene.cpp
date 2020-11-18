@@ -62,6 +62,9 @@ std::vector<Sprite*> StageBreakScene::sprites() {
 }
 
 void StageBreakScene::load() {
+  if (isMultiplayer())
+    syncer->clearTimeout();
+
   SCENE_init();
 
   setUpSpritesPalette();
@@ -163,15 +166,15 @@ void StageBreakScene::finish() {
 }
 
 void StageBreakScene::processMultiplayerUpdates() {
-  if (syncer->isMaster())
-    return;
-
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
   while (linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
+
+    if (syncer->isMaster())
+      return;
 
     switch (event) {
       case SYNC_EVENT_CONFIRM_SONG_END: {
