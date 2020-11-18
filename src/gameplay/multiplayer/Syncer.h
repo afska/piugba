@@ -80,6 +80,7 @@ class Syncer {
   void sync(LinkState* linkState);
   void sendOutgoingData();
   void checkTimeout();
+  void startPlaying();
   void fail(SyncError error);
   void reset();
   void resetData();

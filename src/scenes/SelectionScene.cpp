@@ -238,11 +238,8 @@ void SelectionScene::setUpLocks() {
 void SelectionScene::setUpPager() {
   count = SAVEFILE_getLibrarySize();
 
-  if (isMultiplayer())
-    scrollTo(0, 0);
-  else
-    scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
-             SAVEFILE_read8(SRAM->memory.songIndex));
+  scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
+           SAVEFILE_read8(SRAM->memory.songIndex));
 }
 
 void SelectionScene::scrollTo(u32 songIndex) {

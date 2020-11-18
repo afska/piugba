@@ -123,8 +123,7 @@ void Syncer::sync(LinkState* linkState) {
         resetGameState();
         $libraryType = libraryType;
         $completedSongs = completedSongs;
-        SAVEFILE_write8(SRAM->memory.numericLevel, 0);
-        setState(SyncState::SYNC_STATE_PLAYING);
+        startPlaying();
       } else {
         u8 receivedModeBit = SYNC_MSG_PROGRESS_MODE(incomingPayload);
         u8 receivedLibraryType =
@@ -143,8 +142,7 @@ void Syncer::sync(LinkState* linkState) {
         resetGameState();
         $libraryType = receivedLibraryType;
         $completedSongs = receivedCompletedSongs;
-        SAVEFILE_write8(SRAM->memory.numericLevel, 0);
-        setState(SyncState::SYNC_STATE_PLAYING);
+        startPlaying();
       }
 
       break;
@@ -169,6 +167,14 @@ void Syncer::checkTimeout() {
 
     reset();
   }
+}
+
+void Syncer::startPlaying() {
+  SAVEFILE_write8(SRAM->memory.pageIndex, 0);
+  SAVEFILE_write8(SRAM->memory.songIndex, 0);
+  SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+
+  setState(SyncState::SYNC_STATE_PLAYING);
 }
 
 void Syncer::fail(SyncError error) {
