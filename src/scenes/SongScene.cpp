@@ -480,12 +480,14 @@ void SongScene::finishAndGoToEvaluation() {
                           chart->level, evaluation->getGrade());
 
   unload();
-  auto danceGradeScene =
-      new DanceGradeScene(engine, fs, std::move(evaluation), isLastSong);
-  if (isMultiplayer())
-    danceGradeScene->remoteEvaluation =
-        scores[syncer->getRemotePlayerId()]->evaluate();
-  engine->transitionIntoScene(danceGradeScene, new FadeOutScene(1));
+  engine->transitionIntoScene(
+      new DanceGradeScene(
+          engine, fs, std::move(evaluation),
+          isMultiplayer() ? scores[syncer->getRemotePlayerId()]->evaluate()
+                          : NULL,
+          remoteChart != NULL && remoteChart->level != chart->level,
+          isLastSong),
+      new FadeOutScene(1));
 }
 
 void SongScene::processModsLoad() {

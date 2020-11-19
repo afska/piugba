@@ -19,11 +19,11 @@ extern "C" {
 
 class DanceGradeScene : public Scene {
  public:
-  std::unique_ptr<Evaluation> remoteEvaluation = NULL;
-
   DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                   const GBFS_FILE* fs,
                   std::unique_ptr<Evaluation> evaluation,
+                  std::unique_ptr<Evaluation> remoteEvaluation,
+                  bool differentCharts,
                   bool isLastSong);
 
   std::vector<Background*> backgrounds() override;
@@ -38,9 +38,11 @@ class DanceGradeScene : public Scene {
   const GBFS_FILE* fs;
 
   std::unique_ptr<Evaluation> evaluation;
+  std::unique_ptr<Evaluation> remoteEvaluation;
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
+  bool differentCharts;
   bool isLastSong;
 
   std::array<std::unique_ptr<GradeBadge>, GAME_MAX_PLAYERS> miniGrades;
@@ -53,7 +55,7 @@ class DanceGradeScene : public Scene {
 
   void printScore();
   std::string pointsToString(u32 points);
-  u32 getMultiplayerPointsOf(Evaluation* evaluation, bool totalNotesMatches);
+  u32 getMultiplayerPointsOf(Evaluation* evaluation);
 
   void playSound();
   void processMultiplayerUpdates();

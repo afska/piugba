@@ -39,11 +39,15 @@ const u32 MINI_GRADE_Y = 137;
 DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs,
                                  std::unique_ptr<Evaluation> evaluation,
-                                 bool isLastSong)
+                                 std::unique_ptr<Evaluation> remoteEvaluation,
+                                 bool isLastSong,
+                                 bool differentCharts)
     : Scene(engine) {
   this->fs = fs;
   this->evaluation = std::move(evaluation);
+  this->remoteEvaluation = std::move(remoteEvaluation);
   this->isLastSong = isLastSong;
+  this->differentCharts;
 }
 
 std::vector<Background*> DanceGradeScene::backgrounds() {
@@ -196,13 +200,9 @@ void DanceGradeScene::printScore() {
     auto player2Evaluation = syncer->getLocalPlayerId() == 1
                                  ? evaluation.get()
                                  : remoteEvaluation.get();
-    bool totalNotesMatches =
-        player1Evaluation->totalNotes() == player2Evaluation->totalNotes();
 
-    auto player1Points =
-        getMultiplayerPointsOf(player1Evaluation, totalNotesMatches);
-    auto player2Points =
-        getMultiplayerPointsOf(player2Evaluation, totalNotesMatches);
+    auto player1Points = getMultiplayerPointsOf(player1Evaluation);
+    auto player2Points = getMultiplayerPointsOf(player2Evaluation);
 
     if (player1Points >= player2Points) {
       SCENE_write(PLAYER_1_WINS, TEXT_ROW);
@@ -212,17 +212,17 @@ void DanceGradeScene::printScore() {
       SCENE_write(PLAYER_2_ARROW, TEXT_ROW + 1);
     }
 
-    if (totalNotesMatches) {
-      auto points1Str = pointsToString(player1Points);
-      auto points2Str = pointsToString(player2Points);
-      STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
-      auto pointsStr = points1Str + points2Str;
-      SCENE_write(pointsStr, 0);
-    } else {
+    if (differentCharts) {
       auto points1Str = std::to_string(player1Points);
       STRING_padLeft(points1Str, 3, '0');
       auto points2Str = std::to_string(player2Points);
       STRING_padLeft(points2Str, 3, '0');
+      STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
+      auto pointsStr = points1Str + points2Str;
+      SCENE_write(pointsStr, 0);
+    } else {
+      auto points1Str = pointsToString(player1Points);
+      auto points2Str = pointsToString(player2Points);
       STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
       auto pointsStr = points1Str + points2Str;
       SCENE_write(pointsStr, 0);
@@ -239,10 +239,9 @@ std::string DanceGradeScene::pointsToString(u32 points) {
   return pointsStr;
 }
 
-u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation,
-                                            bool totalNotesMatches) {
-  return !isMultiplayer() || totalNotesMatches ? evaluation->points
-                                               : evaluation->getPercent();
+u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
+  return !isMultiplayer() || differentCharts ? evaluation->getPercent()
+                                             : evaluation->points;
 }
 
 void DanceGradeScene::playSound() {
