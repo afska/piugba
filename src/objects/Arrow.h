@@ -48,7 +48,7 @@ class Arrow : public IPoolable {
                          ArrowDirection direction,
                          u8 playerId,
                          int timestamp,
-                         bool isFake) {
+                         bool isFake = false) {
     bool isHoldFill = type == ArrowType::HOLD_FILL;
     bool isHoldTail = type == ArrowType::HOLD_TAIL;
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
@@ -105,7 +105,7 @@ class Arrow : public IPoolable {
   inline void initializeHoldFill(ArrowDirection direction,
                                  u8 playerId,
                                  HoldArrow* holdArrow) {
-    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp, false);
+    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp);
     this->holdArrow = holdArrow;
   }
 

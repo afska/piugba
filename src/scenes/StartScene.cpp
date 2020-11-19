@@ -154,7 +154,7 @@ void StartScene::setUpButtons() {
 }
 
 void StartScene::setUpGameAnimation() {
-  STATE_setup(NULL, NULL);
+  STATE_setup();
   GameState.positionX[0] = GAME_X;
   GameState.positionY = GAME_Y;
 
@@ -187,7 +187,7 @@ void StartScene::animateBpm() {
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
                      static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
-                     0, 0, false);
+                     0, 0);
       it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
       it->press();
     });

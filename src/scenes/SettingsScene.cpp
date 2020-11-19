@@ -64,7 +64,7 @@ void SettingsScene::printOptions() {
 bool SettingsScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
-      engine->transitionIntoScene(new CalibrateScene(engine, fs, NULL),
+      engine->transitionIntoScene(new CalibrateScene(engine, fs),
                                   new FadeOutScene(2));
       return false;
     }

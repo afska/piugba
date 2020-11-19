@@ -137,7 +137,7 @@ void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
                                      : SyncMode::SYNC_MODE_VS));
 }
 
-void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
+void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
   auto gameMode = SAVEFILE_getGameMode();
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
@@ -176,7 +176,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
     return;
   }
 
-  goTo(new SongScene(_engine, _fs, song, chart), 4);
+  goTo(new SongScene(_engine, _fs, song, chart, remoteChart), 4);
 }
 
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {

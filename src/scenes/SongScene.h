@@ -23,10 +23,11 @@ extern "C" {
 
 class SongScene : public Scene {
  public:
-  SongScene(std::shared_ptr<GBAEngine> engine,
-            const GBFS_FILE* fs,
-            Song* song,
-            Chart* chart);
+  explicit SongScene(std::shared_ptr<GBAEngine> engine,
+                     const GBFS_FILE* fs,
+                     Song* song,
+                     Chart* chart,
+                     Chart* remoteChart = NULL);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -44,6 +45,7 @@ class SongScene : public Scene {
 
   Song* song;
   Chart* chart;
+  Chart* remoteChart;
   std::unique_ptr<ChartReader> chartReader[GAME_MAX_PLAYERS];
   std::unique_ptr<LifeBar> lifeBars[GAME_MAX_PLAYERS];
   std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS> scores;

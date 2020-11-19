@@ -87,8 +87,10 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     syncer->clearTimeout();
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+  }
 
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
   SCENE_init();
@@ -153,16 +155,11 @@ void SelectionScene::tick(u16 keys) {
 
   if (isMultiplayer())
     processMultiplayerUpdates();
-  else {
-    processDifficultyChangeEvents();
-    processSelectionChangeEvents();
-    processConfirmEvents();
 
-    if (isMultiplayer() && syncer->isMaster() && (keys & KEY_SELECT)) {
-      syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
-      quit();
-    }
-  }
+  processDifficultyChangeEvents();
+  processSelectionChangeEvents();
+  processConfirmEvents();
+
   processMenuEvents(keys);
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
@@ -278,9 +275,13 @@ void SelectionScene::goToSong() {
           ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
           : SONG_findChartByNumericLevelIndex(song,
                                               getSelectedNumericLevelIndex());
+  Chart* remoteChart =
+      remoteNumericLevel != -1
+          ? SONG_findChartByNumericLevelIndex(song, (u8)remoteNumericLevel)
+          : NULL;
 
   STATE_setup(song, chart);
-  SEQUENCE_goToMessageOrSong(song, chart);
+  SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
 void SelectionScene::processKeys(u16 keys) {
@@ -317,6 +318,9 @@ void SelectionScene::processDifficultyChangeEvents() {
 }
 
 void SelectionScene::processSelectionChangeEvents() {
+  if (isMultiplayer() && !syncer->isMaster())
+    return;
+
   bool isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
 
 #ifdef SENV_DEVELOPMENT
@@ -332,6 +336,9 @@ void SelectionScene::processSelectionChangeEvents() {
 }
 
 void SelectionScene::processConfirmEvents() {
+  if (isMultiplayer() && !syncer->isMaster())
+    return;
+
   if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
     if (isMultiplayer() && syncer->isMaster())
       syncer->send(SYNC_EVENT_START_SONG, confirmed);
@@ -341,8 +348,14 @@ void SelectionScene::processConfirmEvents() {
 }
 
 void SelectionScene::processMenuEvents(u16 keys) {
-  if (isMultiplayer())
+  if (isMultiplayer()) {
+    if (syncer->isMaster() && (keys & KEY_SELECT)) {
+      syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
+      quit();
+    }
+
     return;
+  }
 
   if (multiplier->hasBeenPressedNow()) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
@@ -392,16 +405,12 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     player_play(SOUND_STEP);
 
     if (newValue == getSelectedNumericLevelIndex()) {
-      if (isMultiplayer() && syncer->isMaster())
-        syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
-
+      syncNumericLevelChanged(newValue);
       return true;
     }
 
+    syncNumericLevelChanged(newValue);
     setNumericLevel(newValue);
-
-    if (isMultiplayer() && syncer->isMaster())
-      syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
 
     return true;
   }
@@ -617,13 +626,18 @@ void SelectionScene::processMultiplayerUpdates() {
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
-    if (syncer->isMaster())
-      return;
+    if (syncer->isMaster() && event != SYNC_EVENT_LEVEL_CHANGED) {
+      syncer->registerTimeout();
+      continue;
+    }
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {
         unconfirm();
+        if (remoteNumericLevel != -1)
+          setNumericLevel(remoteNumericLevel);
         scrollTo(payload);
+        remoteNumericLevel = getSelectedNumericLevelIndex();
         pixelBlink->blink();
 
         syncer->clearTimeout();
@@ -632,7 +646,14 @@ void SelectionScene::processMultiplayerUpdates() {
       case SYNC_EVENT_LEVEL_CHANGED: {
         unconfirm();
         player_play(SOUND_STEP);
-        setNumericLevel(payload);
+
+        if (syncer->isMaster()) {
+          setNumericLevel(getSelectedNumericLevelIndex());
+          remoteNumericLevel = payload;
+        } else {
+          setNumericLevel(payload);
+          remoteNumericLevel = payload;
+        }
 
         syncer->clearTimeout();
         break;
@@ -656,6 +677,15 @@ void SelectionScene::processMultiplayerUpdates() {
       }
     }
   }
+}
+
+void SelectionScene::syncNumericLevelChanged(u8 newValue) {
+  if (!isMultiplayer())
+    return;
+
+  syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
+  if (syncer->isMaster())
+    remoteNumericLevel = -1;
 }
 
 void SelectionScene::quit() {

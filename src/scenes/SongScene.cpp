@@ -38,11 +38,13 @@ static std::unique_ptr<Darkener> darkener{
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
                      Song* song,
-                     Chart* chart)
+                     Chart* chart,
+                     Chart* remoteChart)
     : Scene(engine) {
   this->fs = fs;
   this->song = song;
   this->chart = chart;
+  this->remoteChart = remoteChart != NULL ? remoteChart : chart;
 }
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -116,9 +118,9 @@ void SongScene::load() {
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    chartReader[playerId] = std::unique_ptr<ChartReader>(
-        new ChartReader(chart, playerId, arrowPool.get(), judge.get(),
-                        pixelBlink.get(), audioLag, multiplier));
+    chartReader[playerId] = std::unique_ptr<ChartReader>(new ChartReader(
+        playerId == getLocalPlayerId() ? chart : remoteChart, playerId,
+        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier));
 
   startInput = std::unique_ptr<InputHandler>(new InputHandler());
   selectInput = std::unique_ptr<InputHandler>(new InputHandler());
@@ -343,7 +345,7 @@ void SongScene::updateFakeHeads() {
     if (isHoldMode && isPressing && !chartReader[playerId]->isStopped()) {
       if (!isVisible) {
         fakeHeads[i]->initialize(ArrowType::HOLD_FAKE_HEAD, direction, playerId,
-                                 0, false);
+                                 0);
         isVisible = true;
       }
     } else if (isVisible) {
@@ -397,8 +399,7 @@ void SongScene::processKeys(u16 keys) {
         arrowPool->create([&arrowHolder, this](Arrow* it) {
           it->initialize(
               ArrowType::UNIQUE, arrowHolder->direction, 0,
-              chartReader[0]->getMsecs() + chartReader[0]->getArrowTime(),
-              false);
+              chartReader[0]->getMsecs() + chartReader[0]->getArrowTime());
         });
   }
 

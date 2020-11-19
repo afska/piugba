@@ -173,8 +173,10 @@ void StageBreakScene::processMultiplayerUpdates() {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
 
-    if (syncer->isMaster())
-      return;
+    if (syncer->isMaster()) {
+      syncer->registerTimeout();
+      continue;
+    }
 
     switch (event) {
       case SYNC_EVENT_CONFIRM_SONG_END: {

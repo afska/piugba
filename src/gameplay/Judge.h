@@ -51,7 +51,7 @@ class Judge {
   }
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
-  void updateScore(FeedbackType result, u8 playerId, bool isLong);
+  void updateScore(FeedbackType result, u8 playerId, bool isLong = false);
 };
 
 #endif  // JUDGE_H

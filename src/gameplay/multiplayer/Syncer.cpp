@@ -172,7 +172,6 @@ void Syncer::checkTimeout() {
 void Syncer::startPlaying() {
   SAVEFILE_write8(SRAM->memory.pageIndex, 0);
   SAVEFILE_write8(SRAM->memory.songIndex, 0);
-  SAVEFILE_write8(SRAM->memory.numericLevel, 0);
 
   setState(SyncState::SYNC_STATE_PLAYING);
 }

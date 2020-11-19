@@ -74,7 +74,7 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
 
   if (result != FeedbackType::UNKNOWN) {
     if (!arrow->isFake)
-      updateScore(result, arrow->playerId, false);
+      updateScore(result, arrow->playerId);
 
     switch (result) {
       case FeedbackType::MISS:

@@ -60,6 +60,7 @@ class SelectionScene : public Scene {
   u32 count = 0;
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
+  int remoteNumericLevel = -1;
 
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
@@ -137,8 +138,7 @@ class SelectionScene : public Scene {
                          int direction);
   void onConfirmOrStart(bool confirmed);
 
-  void updateSelection() { updateSelection(false); }
-  void updateSelection(bool isChangingLevel);
+  void updateSelection(bool isChangingLevel = false);
   void updateLevel(Song* song, bool isChangingLevel);
   void confirm();
   void unconfirm();
@@ -152,6 +152,7 @@ class SelectionScene : public Scene {
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
   void loadSelectedSongGrade(u8 songId);
   void processMultiplayerUpdates();
+  void syncNumericLevelChanged(u8 newValue);
   void quit();
 
   ~SelectionScene();

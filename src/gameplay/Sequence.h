@@ -19,7 +19,9 @@ Scene* SEQUENCE_getCalibrateOrMainScene();
 Scene* SEQUENCE_getMainScene();
 void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode);
-void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart);
+void SEQUENCE_goToMessageOrSong(Song* song,
+                                Chart* chart,
+                                Chart* remoteChart = NULL);
 void SEQUENCE_goToWinOrSelection(bool isLastSong);
 bool SEQUENCE_isMultiplayerSessionDead();
 

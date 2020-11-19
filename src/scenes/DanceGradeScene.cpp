@@ -184,24 +184,25 @@ void DanceGradeScene::finish() {
   SEQUENCE_goToWinOrSelection(isLastSong);
 }
 
-std::string DanceGradeScene::pointsToString(u32 points) {
-  auto pointsStr = std::to_string(points);
-  STRING_padLeft(pointsStr, SCORE_DIGITS, '0');
-  return pointsStr;
-}
-
 void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
   if (isMultiplayer()) {
-    auto player1Points = syncer->getLocalPlayerId() == 0
-                             ? evaluation->points
-                             : remoteEvaluation->points;
-    auto player2Points = syncer->getLocalPlayerId() == 1
-                             ? evaluation->points
-                             : remoteEvaluation->points;
-
     TextStream::instance().scroll(0, -1);
+
+    auto player1Evaluation = syncer->getLocalPlayerId() == 0
+                                 ? evaluation.get()
+                                 : remoteEvaluation.get();
+    auto player2Evaluation = syncer->getLocalPlayerId() == 1
+                                 ? evaluation.get()
+                                 : remoteEvaluation.get();
+    bool totalNotesMatches =
+        player1Evaluation->totalNotes() == player2Evaluation->totalNotes();
+
+    auto player1Points =
+        getMultiplayerPointsOf(player1Evaluation, totalNotesMatches);
+    auto player2Points =
+        getMultiplayerPointsOf(player2Evaluation, totalNotesMatches);
 
     if (player1Points >= player2Points) {
       SCENE_write(PLAYER_1_WINS, TEXT_ROW);
@@ -211,15 +212,37 @@ void DanceGradeScene::printScore() {
       SCENE_write(PLAYER_2_ARROW, TEXT_ROW + 1);
     }
 
-    auto points1Str = pointsToString(player1Points);
-    auto points2Str = pointsToString(player2Points);
-    STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
-    auto pointsStr = points1Str + points2Str;
-    SCENE_write(pointsStr, 0);
+    if (totalNotesMatches) {
+      auto points1Str = pointsToString(player1Points);
+      auto points2Str = pointsToString(player2Points);
+      STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
+      auto pointsStr = points1Str + points2Str;
+      SCENE_write(pointsStr, 0);
+    } else {
+      auto points1Str = std::to_string(player1Points);
+      STRING_padLeft(points1Str, 3, '0');
+      auto points2Str = std::to_string(player2Points);
+      STRING_padLeft(points2Str, 3, '0');
+      STRING_padLeft(points2Str, TEXT_TOTAL_COLS - points1Str.length());
+      auto pointsStr = points1Str + points2Str;
+      SCENE_write(pointsStr, 0);
+    }
   } else {
     SCENE_write(SCORE_TITLE, TEXT_ROW);
     SCENE_write(pointsToString(evaluation->points), TEXT_ROW + 1);
   }
+}
+
+std::string DanceGradeScene::pointsToString(u32 points) {
+  auto pointsStr = std::to_string(points);
+  STRING_padLeft(pointsStr, SCORE_DIGITS, '0');
+  return pointsStr;
+}
+
+u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation,
+                                            bool totalNotesMatches) {
+  return !isMultiplayer() || totalNotesMatches ? evaluation->points
+                                               : evaluation->getPercent();
 }
 
 void DanceGradeScene::playSound() {
@@ -264,8 +287,10 @@ void DanceGradeScene::processMultiplayerUpdates() {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
 
-    if (syncer->isMaster())
-      return;
+    if (syncer->isMaster()) {
+      syncer->registerTimeout();
+      continue;
+    }
 
     switch (event) {
       case SYNC_EVENT_CONFIRM_SONG_END: {
