@@ -341,7 +341,7 @@ module.exports = class Chart {
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
       .filter((it) =>
-        (this.metadata.isDouble ? NOTE_DATA_DOUBLE : NOTE_DATA_SINGLE).test(it)
+        (this.header.isDouble ? NOTE_DATA_DOUBLE : NOTE_DATA_SINGLE).test(it)
       );
   }
 
