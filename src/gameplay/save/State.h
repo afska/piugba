@@ -10,6 +10,7 @@
 const int REDUCE_MOD_POSITION_Y = 51;
 const int REDUCE_MOD_SCORE_POSITION_Y = 34;
 const u32 GAME_POSITION_X[] = {0, 72, 144};
+const u32 GAME_COOP_POSITION_X[] = {27, 117};
 
 typedef struct __attribute__((__packed__)) {
   u8 isPlaying;
