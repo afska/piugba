@@ -7,6 +7,8 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 
+#define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
+
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;

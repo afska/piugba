@@ -39,7 +39,7 @@ ChartReader::ChartReader(Chart* chart,
   frameSkipCount = FRAME_SKIP;
 };
 
-bool ChartReader::update(int songMsecs) {
+CODE_IWRAM bool ChartReader::update(int songMsecs) {
   int rythmMsecs = songMsecs - rateAudioLag + debugOffset - lastBpmChange;
   msecs =
       songMsecs - rateAudioLag + debugOffset - (int)stoppedMs + (int)warpedMs;
@@ -62,7 +62,7 @@ bool ChartReader::update(int songMsecs) {
   return processTicks(rythmMsecs, true);
 }
 
-int ChartReader::getYFor(Arrow* arrow) {
+CODE_IWRAM int ChartReader::getYFor(Arrow* arrow) {
   HoldArrow* holdArrow = arrow->getHoldArrow();
 
   int y;
@@ -105,22 +105,22 @@ int ChartReader::getYFor(Arrow* arrow) {
   return min(y, ARROW_INITIAL_Y);
 }
 
-bool ChartReader::isHoldActive(ArrowDirection direction) {
+CODE_IWRAM bool ChartReader::isHoldActive(ArrowDirection direction) {
   return holdArrowStates[direction].isActive;
 }
 
-bool ChartReader::hasJustStopped() {
+CODE_IWRAM bool ChartReader::hasJustStopped() {
   return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
 }
 
-bool ChartReader::isAboutToResume() {
+CODE_IWRAM bool ChartReader::isAboutToResume() {
   if (!hasStopped)
     return false;
 
   return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
 }
 
-int ChartReader::getYFor(int timestamp) {
+CODE_IWRAM int ChartReader::getYFor(int timestamp) {
   // arrowTime ms           -> ARROW_DISTANCE() px
   // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE() / arrowTime
   int now = hasStopped ? stopStart : msecs;
@@ -130,7 +130,7 @@ int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
-void ChartReader::processNextEvents() {
+CODE_IWRAM void ChartReader::processNextEvents() {
   if (frameSkipCount == FRAME_SKIP) {
     frameSkipCount = 0;
   } else {
@@ -214,7 +214,7 @@ void ChartReader::processNextEvents() {
       });
 }
 
-void ChartReader::processUniqueNote(Event* event) {
+CODE_IWRAM void ChartReader::processUniqueNote(Event* event) {
   std::vector<Arrow*> arrows;
 
   if (GameState.mods.randomSteps) {
@@ -236,7 +236,7 @@ void ChartReader::processUniqueNote(Event* event) {
   connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(Event* event) {
+CODE_IWRAM void ChartReader::startHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     holdArrowStates[direction].lastStartTime = event->timestamp;
 
@@ -265,7 +265,7 @@ void ChartReader::startHoldNote(Event* event) {
   });
 }
 
-void ChartReader::endHoldNote(Event* event) {
+CODE_IWRAM void ChartReader::endHoldNote(Event* event) {
   forEachDirection(event->data, [&event, this](ArrowDirection direction) {
     withLastHoldArrow(direction, [&event, &direction,
                                   this](HoldArrow* holdArrow) {
@@ -279,7 +279,7 @@ void ChartReader::endHoldNote(Event* event) {
   });
 }
 
-void ChartReader::orchestrateHoldArrows() {
+CODE_IWRAM void ChartReader::orchestrateHoldArrows() {
   holdArrows->forEachActive([this](HoldArrow* holdArrow) {
     ArrowDirection direction = holdArrow->direction;
     bool hasStarted = holdArrow->hasStarted(msecs);
@@ -334,7 +334,8 @@ void ChartReader::orchestrateHoldArrows() {
   });
 }
 
-bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
+CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
+                                          bool checkHoldArrows) {
   if (bpm == 0)
     return false;
 
@@ -379,7 +380,7 @@ bool ChartReader::processTicks(int rythmMsecs, bool checkHoldArrows) {
   return hasChanged && (tickCount == 1 || subtick == 1);
 }
 
-void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
+CODE_IWRAM void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   if (arrows.size() <= 1)
     return;
 
@@ -388,7 +389,7 @@ void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
   }
 }
 
-int ChartReader::getFillTopY(HoldArrow* holdArrow) {
+CODE_IWRAM int ChartReader::getFillTopY(HoldArrow* holdArrow) {
   int firstFillOffset = HOLD_getFirstFillOffset(holdArrow->direction);
 
   int y = holdArrow->getHeadY(
@@ -396,7 +397,7 @@ int ChartReader::getFillTopY(HoldArrow* holdArrow) {
   return y + firstFillOffset;
 }
 
-int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
+CODE_IWRAM int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
   int lastFillOffset = HOLD_getLastFillOffset(holdArrow->direction);
 
   return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
