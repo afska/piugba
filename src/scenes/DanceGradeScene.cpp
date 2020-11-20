@@ -47,7 +47,7 @@ DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
   this->evaluation = std::move(evaluation);
   this->remoteEvaluation = std::move(remoteEvaluation);
   this->isLastSong = isLastSong;
-  this->differentCharts;
+  this->differentCharts = differentCharts;
 }
 
 std::vector<Background*> DanceGradeScene::backgrounds() {
