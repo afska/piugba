@@ -51,7 +51,9 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
                         GameMode gameMode,
                         SongFile* file,
                         DifficultyLevel difficultyLevel);
-Chart* SONG_findChartByNumericLevelIndex(Song* song, u8 levelIndex);
+Chart* SONG_findChartByNumericLevelIndex(Song* song,
+                                         u8 numericLevelIndex,
+                                         bool isDouble);
 Chart* SONG_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel);
 void SONG_free(Song* song);

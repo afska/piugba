@@ -137,11 +137,20 @@ Chart* SONG_findChartByDifficultyLevel(Song* song,
   return NULL;
 }
 
-Chart* SONG_findChartByNumericLevelIndex(
-    Song* song,
-    u8 levelIndex) {  // TODO: Check isDouble
-  if (levelIndex < song->chartCount)
-    return song->charts + levelIndex;
+Chart* SONG_findChartByNumericLevelIndex(Song* song,
+                                         u8 numericLevelIndex,
+                                         bool isDouble) {
+  u32 currentIndex = 0;
+
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if (song->charts[i].isDouble != isDouble)
+      continue;
+
+    if (currentIndex == numericLevelIndex)
+      return song->charts + i;
+
+    currentIndex++;
+  }
 
   return NULL;
 }

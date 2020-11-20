@@ -30,6 +30,10 @@ inline bool isMultiplayer() {
   return IS_MULTIPLAYER(SAVEFILE_getGameMode());
 }
 
+inline bool isDouble() {
+  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP;
+}
+
 class Syncer {
  public:
   u8 $libraryType = 0;
