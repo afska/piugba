@@ -38,10 +38,12 @@ module.exports = class Chart {
         const eventsByType = this._getEventsByType(line);
 
         return _(eventsByType)
-          .map(({ type, arrows }) => {
-            const activeArrows = _.range(0, 5).map((id) =>
-              _.includes(arrows, id)
-            );
+          .flatMap(({ type, arrows }) => {
+            const activeArrows = _.range(
+              0,
+              this.header.isDouble ? 10 : 5
+            ).map((id) => _.includes(arrows, id));
+
             const arrowCount = _.sumBy(activeArrows);
             const isJump = arrowCount > 1;
             const isHold = type === Events.HOLD_START;
@@ -55,12 +57,32 @@ module.exports = class Chart {
                   (this.metadata.lastMillisecond / SECOND)
                 : null;
 
-            return {
-              timestamp,
-              type,
-              arrows: activeArrows,
-              complexity,
-            };
+            return this.header.isDouble
+              ? [
+                  {
+                    timestamp,
+                    type,
+                    playerId: 0,
+                    arrows: activeArrows.slice(0, 5),
+                    complexity,
+                  },
+                  {
+                    timestamp,
+                    type,
+                    playerId: 1,
+                    arrows: activeArrows.slice(5, 10),
+                    complexity,
+                  },
+                ]
+              : [
+                  {
+                    timestamp,
+                    type,
+                    playerId: 0,
+                    arrows: activeArrows,
+                    complexity,
+                  },
+                ];
           })
           .filter((it) => _.some(it.arrows))
           .reject(
@@ -318,7 +340,9 @@ module.exports = class Chart {
       .split(/\r?\n/)
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
-      .filter((it) => NOTE_DATA.test(it));
+      .filter((it) =>
+        (this.metadata.isDouble ? NOTE_DATA_DOUBLE : NOTE_DATA_SINGLE).test(it)
+      );
   }
 
   _getEventsByType(line) {
@@ -382,5 +406,6 @@ const MINUTE = 60 * SECOND;
 const FRAME_MS = 17;
 const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
-const NOTE_DATA = /^\d\d\d\d\d$/;
+const NOTE_DATA_SINGLE = /^\d\d\d\d\d$/;
+const NOTE_DATA_DOUBLE = /^\d\d\d\d\d\d\d\d\d\d$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;

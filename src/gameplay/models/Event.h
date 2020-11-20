@@ -52,8 +52,11 @@ typedef struct {
   u32 param2;
   u32 param3;
   // (params are not present in note-related events)
+
+  // filled at runtime:
   u32 index = 0;
   bool handled[GAME_MAX_PLAYERS];
+  u8 playerId;
 } Event;
 
 #endif  // EVENT_H

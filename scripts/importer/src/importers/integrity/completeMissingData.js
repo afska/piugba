@@ -39,21 +39,26 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   }
 
-  if (GLOBAL_OPTIONS.mode === "manual")
-    charts.forEach((it) => {
+  charts.forEach((it) => {
+    if (GLOBAL_OPTIONS.mode === "manual" || it.header.isDouble)
       it.header.mode = "NUMERIC";
-    });
+  });
+
+  const singleCharts = charts.filter((it) => !it.header.isDouble);
 
   NON_NUMERIC_LEVELS.forEach((difficulty) => {
-    if (!hasDifficulty(charts, difficulty) && GLOBAL_OPTIONS.mode === "auto")
-      autoSetDifficulty(charts, difficulty);
+    if (
+      !hasDifficulty(singleCharts, difficulty) &&
+      GLOBAL_OPTIONS.mode === "auto"
+    )
+      autoSetDifficulty(singleCharts, difficulty);
     else {
-      if (setDifficulty(charts, difficulty)) isDirty = true;
+      if (setDifficulty(singleCharts, difficulty)) isDirty = true;
     }
   });
 
-  checkLevelOrder(charts);
-  if (isDirty) writeIfNeeded(metadata, charts, content, filePath);
+  checkLevelOrder(singleCharts);
+  if (isDirty) writeIfNeeded(metadata, singleCharts, content, filePath);
 
   return {
     metadata,

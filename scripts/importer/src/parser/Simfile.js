@@ -51,8 +51,16 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    const charts = _.compact(
-      this.content.match(REGEXPS.chart.start).map((rawChart) => {
+    return _([
+      this.content
+        .match(REGEXPS.chart.single)
+        .map((rawChart) => ({ rawChart, isDouble: false })),
+      this.content
+        .match(REGEXPS.chart.double)
+        .map((rawChart) => ({ rawChart, isDouble: true })),
+    ])
+      .flatten()
+      .map(({ rawChart, isDouble }) => {
         const startIndex = this.content.indexOf(rawChart);
 
         const name =
@@ -98,6 +106,7 @@ module.exports = class Simfile {
           startIndex,
           name,
           difficulty,
+          isDouble,
           level,
           order,
           offset,
@@ -125,9 +134,9 @@ module.exports = class Simfile {
           return null;
         }
       })
-    );
-
-    return _.sortBy(charts, "header.level");
+      .compact()
+      .sortBy("header.level")
+      .value();
   }
 
   _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {
@@ -222,7 +231,8 @@ const REGEXPS = {
     custom: OBJECT("PIUGBA"),
   },
   chart: {
-    start: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
+    single: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
+    double: /\/\/-+pump-double - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
     difficulty: PROPERTY("DIFFICULTY"),
     level: PROPERTY_INT("METER"),

@@ -51,6 +51,7 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
 
     chart->difficulty = static_cast<DifficultyLevel>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
+    chart->isDouble = parse_u8(data, &cursor);
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
     if (!full) {
@@ -66,6 +67,9 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
       auto event = chart->events + j;
 
       event->timestamp = parse_s32le(data, &cursor);
+      event->playerId = event->timestamp & 1;
+      event->timestamp = event->timestamp >> 1;
+
       event->data = parse_u8(data, &cursor);
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
       if (EVENT_HAS_PARAM(eventType))
@@ -133,7 +137,9 @@ Chart* SONG_findChartByDifficultyLevel(Song* song,
   return NULL;
 }
 
-Chart* SONG_findChartByNumericLevelIndex(Song* song, u8 levelIndex) {
+Chart* SONG_findChartByNumericLevelIndex(
+    Song* song,
+    u8 levelIndex) {  // TODO: Check isDouble
   if (levelIndex < song->chartCount)
     return song->charts + levelIndex;
 

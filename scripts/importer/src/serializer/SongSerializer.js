@@ -68,6 +68,7 @@ module.exports = class SongSerializer {
 
         this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
+          .UInt8(chart.header.isDouble)
           .UInt32LE(4 /* (eventCount) */ + eventChunkSize)
           .EventArray(chart.events);
       },
@@ -75,7 +76,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.Int32LE(normalizeUInt(event.timestamp));
+        this.Int32LE((normalizeUInt(event.timestamp) << 1) | event.playerId);
 
         const { write } = EVENT_SERIALIZERS.get(event);
         write.bind(this)(event);
