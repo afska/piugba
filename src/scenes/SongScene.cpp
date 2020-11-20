@@ -149,7 +149,7 @@ void SongScene::tick(u16 keys) {
         SAVEFILE_read8(SRAM->settings.backgroundType));
 
     if (isMultiplayer()) {
-      gamePosition = syncer->getLocalPlayerId() * 2;
+      gamePosition = 0;
       type = BackgroundType::FULL_BGA_DARK;
     }
 
@@ -447,15 +447,20 @@ void SongScene::onStageBreak(u8 playerId) {
   scores[playerId]->die();
 
   if (isMultiplayer()) {
-    if (playerId == getLocalPlayerId())
+    if (isVs()) {
+      if (playerId == getLocalPlayerId())
+        syncer->send(SYNC_EVENT_STAGE_END, false);
+
+      bool allDead = !ENV_DEVELOPMENT &&
+                     lifeBars[getLocalPlayerId()]->getIsDead() &&
+                     lifeBars[syncer->getRemotePlayerId()]->getIsDead();
+
+      if (allDead)
+        breakStage();
+    } else {
       syncer->send(SYNC_EVENT_STAGE_END, false);
-
-    bool allDead = !ENV_DEVELOPMENT &&
-                   lifeBars[getLocalPlayerId()]->getIsDead() &&
-                   lifeBars[syncer->getRemotePlayerId()]->getIsDead();
-
-    if (allDead)
       breakStage();
+    }
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
     breakStage();
 }
@@ -483,8 +488,7 @@ void SongScene::finishAndGoToEvaluation() {
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
-          isMultiplayer() ? scores[syncer->getRemotePlayerId()]->evaluate()
-                          : NULL,
+          isVs() ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           remoteChart != NULL && remoteChart->level != chart->level,
           isLastSong),
       new FadeOutScene(1));

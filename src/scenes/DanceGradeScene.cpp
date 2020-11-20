@@ -60,16 +60,16 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
   for (auto& it : totals)
     it->render(&sprites);
 
-  if (isMultiplayer())
+  if (isVs())
     for (auto& it : remoteTotals)
       it->render(&sprites);
 
   maxComboTotal->render(&sprites);
 
-  if (isMultiplayer())
+  if (isVs())
     remoteMaxComboTotal->render(&sprites);
 
-  if (isMultiplayer())
+  if (isVs())
     for (auto& it : miniGrades)
       sprites.push_back(it->get());
   else
@@ -88,7 +88,7 @@ void DanceGradeScene::load() {
   setUpBackground();
   printScore();
 
-  u32 totalsX = TOTALS_X[!isMultiplayer() || syncer->getLocalPlayerId() == 1];
+  u32 totalsX = TOTALS_X[!isVs() || syncer->getLocalPlayerId() == 1];
   for (u32 i = 0; i < totals.size(); i++)
     totals[i] = std::unique_ptr<Total>{new Total(totalsX, TOTALS_Y[i], i == 0)};
   maxComboTotal =
@@ -101,7 +101,7 @@ void DanceGradeScene::load() {
   totals[FeedbackType::MISS]->setValue(evaluation->misses);
   maxComboTotal->setValue(evaluation->maxCombo);
 
-  if (isMultiplayer()) {
+  if (isVs()) {
     u8 localId = syncer->getLocalPlayerId();
     u8 remoteId = syncer->getRemotePlayerId();
 
@@ -164,13 +164,12 @@ void DanceGradeScene::tick(u16 keys) {
 void DanceGradeScene::setUpSpritesPalette() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          isMultiplayer() ? palette_grade_multiPal : palette_gradePal,
-          isMultiplayer() ? sizeof(palette_grade_multiPal)
-                          : sizeof(palette_gradePal)));
+          isVs() ? palette_grade_multiPal : palette_gradePal,
+          isVs() ? sizeof(palette_grade_multiPal) : sizeof(palette_gradePal)));
 }
 
 void DanceGradeScene::setUpBackground() {
-  if (isMultiplayer()) {
+  if (isVs()) {
     backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_PALETTE);
     bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_MULTI_TILES,
                                         BG_GRADE_MULTI_MAP, ID_MAIN_BACKGROUND);
@@ -191,7 +190,7 @@ void DanceGradeScene::finish() {
 void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
-  if (isMultiplayer()) {
+  if (isVs()) {
     TextStream::instance().scroll(0, -1);
 
     auto player1Evaluation = syncer->getLocalPlayerId() == 0
@@ -240,13 +239,11 @@ std::string DanceGradeScene::pointsToString(u32 points) {
 }
 
 u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
-  return !isMultiplayer() || differentCharts ? evaluation->getPercent()
-                                             : evaluation->points;
+  return differentCharts ? evaluation->getPercent() : evaluation->points;
 }
 
 void DanceGradeScene::playSound() {
-  auto gradeType =
-      isMultiplayer() ? miniGrades[0].get()->getType() : grade->getType();
+  auto gradeType = isVs() ? miniGrades[0].get()->getType() : grade->getType();
 
   switch (gradeType) {
     case GradeType::S: {

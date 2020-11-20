@@ -10,11 +10,6 @@ void STATE_setup(Song* song, Chart* chart) {
   if (song == NULL)
     gameMode = GameMode::ARCADE;
 
-  GameState.positionX[0] = 0;
-  GameState.positionX[1] = GAME_POSITION_X[isMultiplayer() ? 2 : 0];
-  GameState.positionY = 0;
-  GameState.scorePositionY = 0;
-
   GameState.mods.multiplier =
       isMultiplayer() ? 3 : SAVEFILE_read8(SRAM->mods.multiplier);
 
@@ -90,11 +85,15 @@ void STATE_setup(Song* song, Chart* chart) {
     }
   }
 
-  if (!GameState.mods.jump)
-    GameState.positionX[0] =
-        GAME_POSITION_X[isMultiplayer()
-                            ? 0
-                            : SAVEFILE_read8(SRAM->settings.gamePosition)];
+  GameState.positionX[0] =
+      GameState.mods.jump
+          ? 0
+          : GAME_POSITION_X[isMultiplayer()
+                                ? 0
+                                : SAVEFILE_read8(SRAM->settings.gamePosition)];
+  GameState.positionX[1] = GAME_POSITION_X[2];
+  GameState.positionY = 0;
+  GameState.scorePositionY = 0;
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {
     GameState.positionY = REDUCE_MOD_POSITION_Y;

@@ -30,7 +30,11 @@ inline bool isMultiplayer() {
   return IS_MULTIPLAYER(SAVEFILE_getGameMode());
 }
 
-inline bool isDouble() {
+inline bool isVs() {
+  return SAVEFILE_getGameMode() == GameMode::MULTI_VS;
+}
+
+inline bool isCoop() {
   return SAVEFILE_getGameMode() == GameMode::MULTI_COOP;
 }
 

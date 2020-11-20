@@ -274,10 +274,10 @@ void SelectionScene::goToSong() {
       IS_STORY(SAVEFILE_getGameMode())
           ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
           : SONG_findChartByNumericLevelIndex(
-                song, getSelectedNumericLevelIndex(), isDouble());
+                song, getSelectedNumericLevelIndex(), isCoop());
   Chart* remoteChart = remoteNumericLevel != -1
                            ? SONG_findChartByNumericLevelIndex(
-                                 song, (u8)remoteNumericLevel, isDouble())
+                                 song, (u8)remoteNumericLevel, isCoop())
                            : NULL;
 
   STATE_setup(song, chart);
@@ -295,6 +295,9 @@ void SelectionScene::processKeys(u16 keys) {
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
+  if (isCoop() && !syncer->isMaster())
+    return;
+
   if (IS_STORY(SAVEFILE_getGameMode())) {
     if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
@@ -469,7 +472,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   printNumericLevel(SONG_findChartByNumericLevelIndex(
-                        song, getSelectedNumericLevelIndex(), isDouble())
+                        song, getSelectedNumericLevelIndex(), isCoop())
                         ->difficulty);
   loadSelectedSongGrade(song->id);
   if (!isChangingLevel) {
@@ -495,7 +498,7 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   }
 
   for (u32 i = 0; i < song->chartCount; i++)
-    if (song->charts[i].isDouble == isDouble())
+    if (song->charts[i].isDouble == isCoop())
       numericLevels.push_back(song->charts[i].level);
 
   if (canUpdateLevel && !isChangingLevel)
