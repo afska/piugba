@@ -185,7 +185,9 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
 }
 
 inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
-  return ARCADE_readSingle(songId, numericLevel);
+  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP
+             ? ARCADE_readDouble(songId, numericLevel)
+             : ARCADE_readSingle(songId, numericLevel);
 }
 
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
