@@ -664,6 +664,11 @@ void SongScene::processMultiplayerUpdates() {
         break;
       }
       case SYNC_EVENT_FEEDBACK: {
+        if (syncer->isMaster()) {
+          syncer->registerTimeout();
+          break;
+        }
+
         auto feedbackType =
             static_cast<FeedbackType>(SYNC_MSG_FEEDBACK_TYPE(payload));
         bool isLong = SYNC_MSG_FEEDBACK_IS_LONG(payload);
@@ -674,7 +679,12 @@ void SongScene::processMultiplayerUpdates() {
         break;
       }
       case SYNC_EVENT_MULTIPLIER_CHANGE: {
-        chartReader[remoteId]->setMultiplier(payload);
+        if (isVs())
+          chartReader[remoteId]->setMultiplier(payload);
+        else {
+          chartReader[getLocalPlayerId()]->setMultiplier(payload);
+          pixelBlink->blink();
+        }
 
         syncer->clearTimeout();
         break;

@@ -632,7 +632,7 @@ void SelectionScene::processMultiplayerUpdates() {
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
-    if (syncer->isMaster() && event != SYNC_EVENT_LEVEL_CHANGED) {
+    if (syncer->isMaster() && (isCoop() || event != SYNC_EVENT_LEVEL_CHANGED)) {
       syncer->registerTimeout();
       continue;
     }
