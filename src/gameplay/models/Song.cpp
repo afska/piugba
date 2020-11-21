@@ -72,7 +72,7 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
 
       event->data = parse_u8(data, &cursor);
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
-      if (EVENT_HAS_PARAM(eventType))
+      if (EVENT_HAS_PARAM(eventType, chart->isDouble))
         event->param = parse_u32le(data, &cursor);
       if (EVENT_HAS_PARAM2(eventType))
         event->param2 = parse_u32le(data, &cursor);

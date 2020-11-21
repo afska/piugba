@@ -38,7 +38,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
   while (currentIndex < chart->eventCount) {
     Event* event = chart->events + currentIndex;
     EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
-    if (EVENT_HAS_PARAM(type))
+    if (EVENT_HAS_PARAM(type, false))
       break;
     currentIndex++;
   }

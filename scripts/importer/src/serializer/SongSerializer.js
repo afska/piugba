@@ -63,7 +63,7 @@ module.exports = class SongSerializer {
       write: function (chart) {
         const eventChunkSize = _.sumBy(
           chart.events,
-          (it) => 4 /* (timestamp) */ + EVENT_SERIALIZERS.get(it).size
+          (it) => 4 /* (timestamp) */ + EVENT_SERIALIZERS.get(it).size(it)
         );
 
         this.UInt8(DifficultyLevels[chart.header.difficulty])
@@ -97,25 +97,29 @@ module.exports = class SongSerializer {
   }
 };
 
+const SERIALIZE_ARROWS = (arrows) =>
+  _.range(0, 5).reduce(
+    (acum, elem) => acum | (arrows[elem] ? ARROW_MASKS[elem] : 0),
+    0
+  );
+
 const EVENT_SERIALIZERS = {
   get(event) {
     return this[event.type] || this.NOTES;
   },
   NOTES: {
     write: function (event) {
-      const data = _.range(0, 5).reduce(
-        (acum, elem) => acum | (event.arrows[elem] ? ARROW_MASKS[elem] : 0),
-        event.type
-      );
+      const data = SERIALIZE_ARROWS(event.arrows) | event.type;
       this.UInt8(data);
+      if (event.arrows2) this.UInt8(SERIALIZE_ARROWS(event.arrows2));
     },
-    size: 1,
+    size: (event) => (event.arrows2 ? 2 : 1),
   },
   [Events.SET_FAKE]: {
     write: function (event) {
       this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
     },
-    size: 1 + 4,
+    size: () => 1 + 4,
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
@@ -124,13 +128,13 @@ const EVENT_SERIALIZERS = {
         .UInt32LE(normalizeUInt(event.scrollBpm))
         .UInt32LE(normalizeUInt(event.scrollChangeFrames));
     },
-    size: 1 + 4 + 4 + 4,
+    size: () => 1 + 4 + 4 + 4,
   },
   [Events.SET_TICKCOUNT]: {
     write: function (event) {
       this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
     },
-    size: 1 + 4,
+    size: () => 1 + 4,
   },
   [Events.STOP]: {
     write: function (event) {
@@ -138,13 +142,13 @@ const EVENT_SERIALIZERS = {
         .UInt32LE(normalizeUInt(event.length))
         .UInt32LE(event.judgeable ? 1 : 0);
     },
-    size: 1 + 4 + 4,
+    size: () => 1 + 4 + 4,
   },
   [Events.WARP]: {
     write: function (event) {
       this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
     },
-    size: 1 + 4,
+    size: () => 1 + 4,
   },
 };
 

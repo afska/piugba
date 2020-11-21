@@ -38,7 +38,7 @@ module.exports = class Chart {
         const eventsByType = this._getEventsByType(line);
 
         return _(eventsByType)
-          .flatMap(({ type, arrows }) => {
+          .map(({ type, arrows }) => {
             const activeArrows = _.range(
               0,
               this.header.isDouble ? 10 : 5
@@ -57,32 +57,14 @@ module.exports = class Chart {
                   (this.metadata.lastMillisecond / SECOND)
                 : null;
 
-            return this.header.isDouble
-              ? [
-                  {
-                    timestamp,
-                    type,
-                    playerId: 0,
-                    arrows: activeArrows.slice(0, 5),
-                    complexity,
-                  },
-                  {
-                    timestamp,
-                    type,
-                    playerId: 1,
-                    arrows: activeArrows.slice(5, 10),
-                    complexity,
-                  },
-                ]
-              : [
-                  {
-                    timestamp,
-                    type,
-                    playerId: 0,
-                    arrows: activeArrows,
-                    complexity,
-                  },
-                ];
+            return {
+              timestamp,
+              type,
+              playerId: 0,
+              arrows: activeArrows.slice(0, 5),
+              arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
+              complexity,
+            };
           })
           .filter((it) => _.some(it.arrows))
           .reject(

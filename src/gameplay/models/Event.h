@@ -26,8 +26,9 @@ const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
                                 EVENT_ARROW_CENTER, EVENT_ARROW_UPRIGHT,
                                 EVENT_ARROW_DOWNRIGHT};
 
-inline bool EVENT_HAS_PARAM(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+inline bool EVENT_HAS_PARAM(EventType event, bool isDouble) {
+  return (event == EventType::NOTE && isDouble) ||
+         event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
          event == EventType::SET_FAKE || event == EventType::STOP ||
          event == EventType::WARP;
 }
