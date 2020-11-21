@@ -146,13 +146,17 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             if (arrowPool->isFull())
               return false;
 
-            processUniqueNote(event);
+            processUniqueNote(event->timestamp, event->data, event->param);
             return true;
           case EventType::HOLD_START:
-            startHoldNote(event);
+            startHoldNote(event->timestamp, event->data);
+            if (chart->isDouble)
+              startHoldNote(event->timestamp, event->param, ARROWS_TOTAL);
             return true;
           case EventType::HOLD_END:
-            endHoldNote(event);
+            endHoldNote(event->timestamp, event->data);
+            if (chart->isDouble)
+              endHoldNote(event->timestamp, event->param, ARROWS_TOTAL);
             return true;
           case EventType::SET_FAKE:
             fake = event->param;
@@ -215,41 +219,54 @@ CODE_IWRAM void ChartReader::processNextEvents() {
       });
 }
 
-CODE_IWRAM void ChartReader::processUniqueNote(Event* event) {
+CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
+                                               u8 data,
+                                               u8 param) {
   std::vector<Arrow*> arrows;
 
   if (GameState.mods.randomSteps) {
-    u8 stompSize = STOMP_SIZE_BY_DATA[event->data >> 3] - 1;
-    event->data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
-                      0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
-                  << 3;
+    u8 stompSize = STOMP_SIZE_BY_DATA[data >> 3] - 1;
+    data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
+               0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
+           << 3;
   }
 
-  forEachDirection(
-      event->data, [event, &arrows, this](ArrowDirection direction) {
-        arrowPool->create([event, &arrows, &direction, this](Arrow* it) {
-          it->initialize(ArrowType::UNIQUE, direction, playerId,
-                         event->timestamp, fake);
-          arrows.push_back(it);
-        });
+  forEachDirection(data, [&timestamp, &arrows, this](ArrowDirection direction) {
+    arrowPool->create([&timestamp, &arrows, &direction, this](Arrow* it) {
+      it->initialize(ArrowType::UNIQUE, direction, playerId, timestamp, fake);
+      arrows.push_back(it);
+    });
+  });
+
+  if (chart->isDouble)
+    forEachDirection(param, [&timestamp, &arrows,
+                             this](ArrowDirection direction) {
+      direction = static_cast<ArrowDirection>(ARROWS_TOTAL + direction);
+
+      arrowPool->create([&timestamp, &arrows, &direction, this](Arrow* it) {
+        it->initialize(ArrowType::UNIQUE, direction, playerId, timestamp, fake);
+        arrows.push_back(it);
       });
+    });
 
   connectArrows(arrows);
 }
 
-CODE_IWRAM void ChartReader::startHoldNote(Event* event) {
-  forEachDirection(event->data, [&event, this](ArrowDirection direction) {
-    holdArrowStates[direction].lastStartTime = event->timestamp;
+CODE_IWRAM void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
+  forEachDirection(data, [&timestamp, &offset, this](ArrowDirection direction) {
+    direction = static_cast<ArrowDirection>(direction + offset);
 
-    holdArrows->create([event, &direction, this](HoldArrow* holdArrow) {
-      holdArrow->startTime = event->timestamp;
+    holdArrowStates[direction].lastStartTime = timestamp;
+
+    holdArrows->create([&timestamp, &direction, this](HoldArrow* holdArrow) {
+      holdArrow->startTime = timestamp;
       holdArrow->endTime = 0;
 
-      Arrow* head = arrowPool->create([event, &direction, &holdArrow,
-                                       this](Arrow* head) {
-        head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction, playerId,
-                                   event->timestamp, holdArrow, fake);
-      });
+      Arrow* head = arrowPool->create(
+          [&timestamp, &direction, &holdArrow, this](Arrow* head) {
+            head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction,
+                                       playerId, timestamp, holdArrow, fake);
+          });
 
       if (head == NULL) {
         holdArrows->discard(holdArrow->id);
@@ -266,17 +283,20 @@ CODE_IWRAM void ChartReader::startHoldNote(Event* event) {
   });
 }
 
-CODE_IWRAM void ChartReader::endHoldNote(Event* event) {
-  forEachDirection(event->data, [&event, this](ArrowDirection direction) {
-    withLastHoldArrow(direction, [&event, &direction,
-                                  this](HoldArrow* holdArrow) {
-      holdArrow->endTime = event->timestamp;
+CODE_IWRAM void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
+  forEachDirection(data, [&timestamp, &offset, this](ArrowDirection direction) {
+    direction = static_cast<ArrowDirection>(direction + offset);
 
-      arrowPool->create([&holdArrow, &event, &direction, this](Arrow* tail) {
-        tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction, playerId,
-                                   event->timestamp, holdArrow, fake);
-      });
-    });
+    withLastHoldArrow(
+        direction, [&timestamp, &direction, this](HoldArrow* holdArrow) {
+          holdArrow->endTime = timestamp;
+
+          arrowPool->create([&holdArrow, &timestamp, &direction,
+                             this](Arrow* tail) {
+            tail->initializeHoldBorder(ArrowType::HOLD_TAIL, direction,
+                                       playerId, timestamp, holdArrow, fake);
+          });
+        });
   });
 }
 
