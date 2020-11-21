@@ -58,7 +58,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < getPanelCount(); playerId++)
     sprites.push_back(lifeBars[playerId]->get());
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
@@ -105,11 +105,12 @@ void SongScene::load() {
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++) {
+  for (u32 playerId = 0; playerId < getPanelCount(); playerId++)
     lifeBars[playerId] = std::unique_ptr<LifeBar>(new LifeBar(playerId));
+
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     scores[playerId] =
         std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
-  }
 
   judge = std::unique_ptr<Judge>(
       new Judge(arrowPool.get(), &arrowHolders, &scores,
@@ -190,7 +191,7 @@ void SongScene::tick(u16 keys) {
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
-    for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    for (u32 playerId = 0; playerId < getPanelCount(); playerId++)
       lifeBars[playerId]->blink(foregroundPalette.get());
 
     for (auto& arrowHolder : arrowHolders)
@@ -211,10 +212,10 @@ void SongScene::tick(u16 keys) {
   pixelBlink->tick(minMosaic);
   updateFakeHeads();
   updateArrows();
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++) {
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     scores[playerId]->tick();
+  for (u32 playerId = 0; playerId < getPanelCount(); playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
-  }
 
 #ifdef SENV_DEVELOPMENT
   if (chartReader[0]->debugOffset)
