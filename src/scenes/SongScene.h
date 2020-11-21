@@ -2,6 +2,7 @@
 #define SONG_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
@@ -67,8 +68,12 @@ class SongScene : public Scene {
 
   inline u8 getPanelCount() { return (u8)(1 + isMultiplayer()); }
   inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
+  inline ArrowDirection getDirectionFromIndex(u32 index) {
+    return static_cast<ArrowDirection>(isCoop() ? index
+                                                : DivMod(index, ARROWS_TOTAL));
+  }
   inline u8 getPlayerIdFromIndex(u32 index) {
-    return index >= ARROWS_TOTAL ? 1 : 0;
+    return isCoop() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
   }
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
     return playerId * ARROWS_TOTAL;

@@ -1,7 +1,6 @@
 #include "SongScene.h"
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
-#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
@@ -248,7 +247,7 @@ void SongScene::setUpArrows() {
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
   for (u32 i = 0; i < ARROWS_TOTAL * (1 + (u8)isMultiplayer()); i++) {
-    auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
+    auto direction = getDirectionFromIndex(i);
     auto arrowHolder = std::unique_ptr<ArrowHolder>{
         new ArrowHolder(direction, getPlayerIdFromIndex(i), true)};
     arrowHolder->get()->setPriority(ARROW_LAYER_BACK);
@@ -335,7 +334,7 @@ CODE_IWRAM void SongScene::updateArrows() {
 
 void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < fakeHeads.size(); i++) {
-    auto direction = static_cast<ArrowDirection>(DivMod(i, ARROWS_TOTAL));
+    auto direction = getDirectionFromIndex(i);
     u8 playerId = getPlayerIdFromIndex(i);
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
 

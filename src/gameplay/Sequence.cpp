@@ -7,6 +7,7 @@
 #include "Key.h"
 #include "SequenceMessages.h"
 #include "gameplay/Library.h"
+#include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
 #include "scenes/MultiplayerLobbyScene.h"
