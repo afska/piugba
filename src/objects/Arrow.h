@@ -13,19 +13,24 @@
 inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
   switch (direction) {
     case ArrowDirection::DOWNLEFT:
+    case ArrowDirection::DOWNLEFT_DOUBLE:
       start = ARROW_FRAMES * 0;
       break;
     case ArrowDirection::UPLEFT:
+    case ArrowDirection::UPLEFT_DOUBLE:
       start = ARROW_FRAMES * 1;
       break;
     case ArrowDirection::CENTER:
+    case ArrowDirection::CENTER_DOUBLE:
       start = ARROW_FRAMES * 2;
       break;
     case ArrowDirection::UPRIGHT:
+    case ArrowDirection::UPRIGHT_DOUBLE:
       start = ARROW_FRAMES * 1;
       flip = true;
       break;
     case ArrowDirection::DOWNRIGHT:
+    case ArrowDirection::DOWNRIGHT_DOUBLE:
       start = ARROW_FRAMES * 0;
       flip = true;
       break;

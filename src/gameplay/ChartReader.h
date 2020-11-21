@@ -74,7 +74,7 @@ class ChartReader : public TimingProvider {
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
+  std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;

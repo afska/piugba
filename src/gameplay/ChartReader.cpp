@@ -28,7 +28,7 @@ ChartReader::ChartReader(Chart* chart,
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE * (1 + isCoop()),
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+  for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
     holdArrowStates[i].isActive = false;
     holdArrowStates[i].currentStartTime = 0;
     holdArrowStates[i].lastStartTime = 0;

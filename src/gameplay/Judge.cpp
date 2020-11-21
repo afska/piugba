@@ -55,7 +55,7 @@ void Judge::onOut(Arrow* arrow) {
 void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
   bool isPressed = true;
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+  for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
     if (arrows & EVENT_HOLD_ARROW_MASKS[i] &&
         !this->isPressed(static_cast<ArrowDirection>(i), playerId)) {
       isPressed = false;
