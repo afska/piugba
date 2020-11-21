@@ -66,7 +66,7 @@ class SongScene : public Scene {
   int jumpDirection = 1;
   int reduceDirection = -1;
 
-  inline u8 getPanelCount() { return (u8)(1 + isMultiplayer()); }
+  inline u8 getPlatformCount() { return (u8)(1 + isMultiplayer()); }
   inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
   inline ArrowDirection getDirectionFromIndex(u32 index) {
     return static_cast<ArrowDirection>(isCoop() ? index
