@@ -76,7 +76,7 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.Int32LE((normalizeUInt(event.timestamp) << 1) | event.playerId);
+        this.Int32LE(normalizeUInt(event.timestamp));
 
         const { write } = EVENT_SERIALIZERS.get(event);
         write.bind(this)(event);
@@ -109,11 +109,10 @@ const EVENT_SERIALIZERS = {
   },
   NOTES: {
     write: function (event) {
-      const data = SERIALIZE_ARROWS(event.arrows) | event.type;
-      this.UInt8(data);
-      if (event.arrows2) this.UInt8(SERIALIZE_ARROWS(event.arrows2));
+      this.UInt8(SERIALIZE_ARROWS(event.arrows) | event.type);
+      if (event.arrows2) this.UInt32LE(SERIALIZE_ARROWS(event.arrows2));
     },
-    size: (event) => (event.arrows2 ? 2 : 1),
+    size: (event) => (event.arrows2 ? 1 + 4 : 1),
   },
   [Events.SET_FAKE]: {
     write: function (event) {

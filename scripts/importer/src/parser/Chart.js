@@ -66,7 +66,7 @@ module.exports = class Chart {
               complexity,
             };
           })
-          .filter((it) => _.some(it.arrows))
+          .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
           .reject(
             (it) =>
               it.type === Events.NOTE &&

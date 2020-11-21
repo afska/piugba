@@ -76,7 +76,6 @@ typedef struct {
   // filled at runtime:
   u32 index = 0;
   bool handled[GAME_MAX_PLAYERS];
-  u8 playerId;
 } Event;
 
 #endif  // EVENT_H
