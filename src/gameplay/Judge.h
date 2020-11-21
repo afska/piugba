@@ -25,7 +25,7 @@ class Judge {
 
   void onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onOut(Arrow* arrow);
-  void onHoldTick(u8 arrows, u8 playerId, bool canMiss);
+  void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
   inline void disable() { isDisabled = true; }
   inline void enable() { isDisabled = false; }

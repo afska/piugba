@@ -9,6 +9,8 @@
 
 #define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
 
+#define ARROWS_GAME_TOTAL (isCoop() ? 10 : 5)
+
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;

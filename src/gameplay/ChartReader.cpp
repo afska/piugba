@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "debug/logDebugInfo.h"
+#include "multiplayer/Syncer.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 FRAME_SKIP = 1;
@@ -25,7 +26,7 @@ ChartReader::ChartReader(Chart* chart,
   this->rateAudioLag = audioLag;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
-      HOLD_ARROW_POOL_SIZE,
+      HOLD_ARROW_POOL_SIZE * (1 + isCoop()),
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     holdArrowStates[i].isActive = false;
@@ -351,17 +352,17 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
       subtick = 0;
 
     if (checkHoldArrows) {
-      u8 arrows = 0;
+      u16 arrows = 0;
       bool isFake = false;
       bool canMiss = true;
 
-      for (u32 i = 0; i < ARROWS_TOTAL; i++) {
+      for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
         auto direction = static_cast<ArrowDirection>(i);
 
         withNextHoldArrow(direction, [&arrows, &canMiss, &direction, &isFake,
                                       this](HoldArrow* holdArrow) {
           if (holdArrow->isOccurring(msecs)) {
-            arrows |= EVENT_ARROW_MASKS[direction];
+            arrows |= EVENT_HOLD_ARROW_MASKS[direction];
             isFake = holdArrow->isFake;
 
             if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
