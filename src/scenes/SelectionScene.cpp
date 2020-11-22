@@ -275,9 +275,9 @@ void SelectionScene::goToSong() {
           ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
           : SONG_findChartByNumericLevelIndex(
                 song, getSelectedNumericLevelIndex(), isCoop());
-  Chart* remoteChart = remoteNumericLevel != -1
+  Chart* remoteChart = isVs() && remoteNumericLevel != -1
                            ? SONG_findChartByNumericLevelIndex(
-                                 song, (u8)remoteNumericLevel, isCoop())
+                                 song, (u8)remoteNumericLevel, false)
                            : NULL;
 
   STATE_setup(song, chart);

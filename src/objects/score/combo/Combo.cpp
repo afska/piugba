@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
@@ -17,7 +18,9 @@ Combo::Combo(u8 playerId) {
 
   for (u32 i = 0; i < DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{new Digit(
-        DigitSize::BIG, GameState.positionX[playerId] + DIGITS_POSITION_X,
+        DigitSize::BIG,
+        (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+            DIGITS_POSITION_X,
         GameState.scorePositionY + DIGITS_POSITION_Y, i, playerId > 0)};
     digits.push_back(std::move(digit));
   }
@@ -56,9 +59,11 @@ void Combo::relocate() {
   title->relocate();
 
   for (u32 i = 0; i < DIGITS; i++)
-    digits[i]->relocate(DigitSize::BIG,
-                        GameState.positionX[playerId] + DIGITS_POSITION_X,
-                        GameState.scorePositionY + DIGITS_POSITION_Y, i);
+    digits[i]->relocate(
+        DigitSize::BIG,
+        (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+            DIGITS_POSITION_X,
+        GameState.scorePositionY + DIGITS_POSITION_Y, i);
 }
 
 void Combo::tick() {

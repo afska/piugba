@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_combo.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
@@ -26,7 +27,9 @@ ComboTitle::ComboTitle(u8 playerId) {
 }
 
 void ComboTitle::relocate() {
-  animationPositionX = GameState.positionX[playerId] + POSITION_X;
+  animationPositionX =
+      (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+      POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 

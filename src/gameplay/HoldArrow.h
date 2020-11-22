@@ -6,8 +6,9 @@
 #include "objects/ArrowInfo.h"
 #include "utils/pool/ObjectPool.h"
 
-const int HOLD_ARROW_FIRST_FILL_OFFSETS[] = {8, 5, 2, 5, 8};
-const int HOLD_ARROW_LAST_FILL_OFFSETS[] = {7, 8, 8, 8, 7};
+// Depends on ARROWS_GAME_TOTAL
+const int HOLD_ARROW_FIRST_FILL_OFFSETS[] = {8, 5, 2, 5, 8, 8, 5, 2, 5, 8};
+const int HOLD_ARROW_LAST_FILL_OFFSETS[] = {7, 8, 8, 8, 7, 7, 8, 8, 8, 7};
 const int HOLD_NULL = -999999999;
 
 inline int HOLD_FILL_FINAL_Y() {

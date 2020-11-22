@@ -57,7 +57,7 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 playerId = 0; playerId < getPlatformCount(); playerId++)
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     sprites.push_back(lifeBars[playerId]->get());
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
@@ -104,7 +104,7 @@ void SongScene::load() {
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
 
-  for (u32 playerId = 0; playerId < getPlatformCount(); playerId++)
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     lifeBars[playerId] = std::unique_ptr<LifeBar>(new LifeBar(playerId));
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
@@ -190,7 +190,7 @@ void SongScene::tick(u16 keys) {
   if (isNewBeat) {
     blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
-    for (u32 playerId = 0; playerId < getPlatformCount(); playerId++)
+    for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
       lifeBars[playerId]->blink(foregroundPalette.get());
 
     for (auto& arrowHolder : arrowHolders)
@@ -199,7 +199,7 @@ void SongScene::tick(u16 keys) {
 
     processModsBeat();
   }
-  if (isMultiplayer())
+  if (isVs())
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
   blinkFrame = max(blinkFrame - 1, 0);
@@ -213,7 +213,7 @@ void SongScene::tick(u16 keys) {
   updateArrows();
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     scores[playerId]->tick();
-  for (u32 playerId = 0; playerId < getPlatformCount(); playerId++)
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 
 #ifdef SENV_DEVELOPMENT
@@ -246,7 +246,7 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL * (1 + (u8)isMultiplayer()); i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * getPlatformCount(); i++) {
     auto direction = getDirectionFromIndex(i);
     auto arrowHolder = std::unique_ptr<ArrowHolder>{
         new ArrowHolder(direction, getPlayerIdFromIndex(i), true)};
@@ -297,7 +297,7 @@ CODE_IWRAM void SongScene::updateArrows() {
   });
 
   // judge key press events
-  for (u32 i = 0; i < ARROWS_TOTAL * (1 + (u8)isMultiplayer()); i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * getPlatformCount(); i++) {
     auto arrow = nextArrows[i];
     u8 playerId = arrow->playerId;
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
@@ -681,7 +681,7 @@ void SongScene::processMultiplayerUpdates() {
         if (isVs())
           chartReader[remoteId]->setMultiplier(payload);
         else {
-          chartReader[getLocalPlayerId()]->setMultiplier(payload);
+          chartReader[0]->setMultiplier(payload);
           pixelBlink->blink();
         }
 

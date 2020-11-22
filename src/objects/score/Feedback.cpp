@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_feedback.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
@@ -31,7 +32,9 @@ void Feedback::setType(FeedbackType type) {
 }
 
 void Feedback::relocate() {
-  animationPositionX = GameState.positionX[playerId] + POSITION_X;
+  animationPositionX =
+      (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+      POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }
 

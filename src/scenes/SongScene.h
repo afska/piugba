@@ -79,13 +79,15 @@ class SongScene : public Scene {
     return playerId * ARROWS_TOTAL;
   }
   inline u8 getLocalBaseIndex() {
-    return getBaseIndexFromPlayerId(getLocalPlayerId());
+    return isMultiplayer()
+               ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
+               : 0;
   }
   inline u8 getRemoteBaseIndex() {
     return getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
   }
   inline u8 getLocalPlayerId() {
-    return isMultiplayer() ? syncer->getLocalPlayerId() : 0;
+    return isVs() ? syncer->getLocalPlayerId() : 0;
   }
 
   void setUpPalettes();
