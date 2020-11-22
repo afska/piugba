@@ -146,17 +146,17 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             if (arrowPool->isFull())
               return false;
 
-            processUniqueNote(event->timestamp, event->data, event->param);
+            processUniqueNote(event->timestamp, event->data, event->data2);
             return true;
           case EventType::HOLD_START:
             startHoldNote(event->timestamp, event->data);
             if (chart->isDouble)
-              startHoldNote(event->timestamp, event->param, ARROWS_TOTAL);
+              startHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
             return true;
           case EventType::HOLD_END:
             endHoldNote(event->timestamp, event->data);
             if (chart->isDouble)
-              endHoldNote(event->timestamp, event->param, ARROWS_TOTAL);
+              endHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
             return true;
           case EventType::SET_FAKE:
             fake = event->param;

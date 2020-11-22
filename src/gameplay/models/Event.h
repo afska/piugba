@@ -33,6 +33,7 @@ enum EventType {
   STOP,
   WARP,
 };
+
 const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
                                 EVENT_ARROW_CENTER, EVENT_ARROW_UPRIGHT,
                                 EVENT_ARROW_DOWNRIGHT};
@@ -45,9 +46,14 @@ const u16 EVENT_HOLD_ARROW_MASKS[] = {
     EVENT_HOLD_ARROW_UPRIGHT_DOUBLE, EVENT_HOLD_ARROW_DOWNRIGHT_DOUBLE,
 };
 
-inline bool EVENT_HAS_PARAM(EventType event, bool isDouble) {
-  return (event == EventType::NOTE && isDouble) ||
-         event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+inline bool EVENT_HAS_DATA2(EventType event, bool isDouble) {
+  return isDouble &&
+         (event == EventType::NOTE || event == EventType::HOLD_START ||
+          event == EventType::HOLD_END);
+}
+
+inline bool EVENT_HAS_PARAM(EventType event) {
+  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
          event == EventType::SET_FAKE || event == EventType::STOP ||
          event == EventType::WARP;
 }
@@ -68,12 +74,13 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
+  u8 data2;  // another 5-bit arrow array (only present in double charts)
   u32 param;
   u32 param2;
   u32 param3;
   // (params are not present in note-related events)
 
-  // filled at runtime:
+  // custom fields:
   u32 index = 0;
   bool handled[GAME_MAX_PLAYERS];
 } Event;

@@ -110,9 +110,9 @@ const EVENT_SERIALIZERS = {
   NOTES: {
     write: function (event) {
       this.UInt8(SERIALIZE_ARROWS(event.arrows) | event.type);
-      if (event.arrows2) this.UInt32LE(SERIALIZE_ARROWS(event.arrows2));
+      if (event.arrows2) this.UInt8(SERIALIZE_ARROWS(event.arrows2));
     },
-    size: (event) => (event.arrows2 ? 1 + 4 : 1),
+    size: (event) => (event.arrows2 ? 1 + 1 : 1),
   },
   [Events.SET_FAKE]: {
     write: function (event) {
