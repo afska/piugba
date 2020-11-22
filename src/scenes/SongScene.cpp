@@ -663,7 +663,7 @@ void SongScene::processMultiplayerUpdates() {
         break;
       }
       case SYNC_EVENT_FEEDBACK: {
-        if (syncer->isMaster()) {
+        if (isCoop() && syncer->isMaster()) {
           syncer->registerTimeout();
           break;
         }

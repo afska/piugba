@@ -104,8 +104,9 @@ void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
     return;
   }
 
-  if (isVs()) {
-    if (playerId == syncer->getLocalPlayerId())
+  if (isMultiplayer()) {
+    if ((isVs() && playerId == syncer->getLocalPlayerId()) ||
+        (isCoop() && syncer->isMaster()))
       syncer->send(SYNC_EVENT_FEEDBACK,
                    SYNC_MSG_FEEDBACK_BUILD(result, isLong));
     else
