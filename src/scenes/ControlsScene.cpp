@@ -110,7 +110,7 @@ void ControlsScene::setUpArrows() {
       static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
 
   buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
-  buttons[ArrowDirection::UPLEFT]->get()->moveTo(31, 59);
+  buttons[ArrowDirection::UPLEFT]->get()->moveTo(29, 25);
   buttons[ArrowDirection::CENTER]->get()->moveTo(39, 68);
   buttons[ArrowDirection::UPRIGHT]->get()->moveTo(187, 25);
   buttons[ArrowDirection::DOWNRIGHT]->get()->moveTo(199, 65);
