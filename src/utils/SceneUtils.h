@@ -1,6 +1,8 @@
 #ifndef SCENE_UTILS_H
 #define SCENE_UTILS_H
 
+#include <libgba-sprite-engine/background/text_stream.h>
+
 #include <string>
 
 #include "BackgroundUtils.h"
