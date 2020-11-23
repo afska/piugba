@@ -3,11 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/VectorUtils.h"
+
 const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
-Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
+Song* SONG_parse(const GBFS_FILE* fs,
+                 SongFile* file,
+                 bool full,
+                 std::vector<u8> levels) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -54,7 +59,11 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
     chart->isDouble = parse_u8(data, &cursor);
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
-    if (!full) {
+    bool shouldParseEvents =
+        full &&
+        ((levels.empty() && chart->difficulty != DifficultyLevel::NUMERIC) ||
+         VECTOR_contains(levels, chart->level));
+    if (!shouldParseEvents) {
       chart->eventCount = 0;
       cursor += chart->eventChunkSize;
       continue;

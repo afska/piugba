@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include <vector>
+
 #include "Chart.h"
 #include "Event.h"
 #include "SongFile.h"
@@ -46,7 +48,10 @@ typedef struct {
   std::string backgroundMapPath;
 } Song;
 
-Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full);
+Song* SONG_parse(const GBFS_FILE* fs,
+                 SongFile* file,
+                 bool full,
+                 std::vector<u8> levels = std::vector<u8>{});
 Channel SONG_getChannel(const GBFS_FILE* fs,
                         GameMode gameMode,
                         SongFile* file,

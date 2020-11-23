@@ -279,16 +279,24 @@ void SelectionScene::goToSong() {
   player_stop();
   confirmed = false;
 
-  Song* song = SONG_parse(fs, getSelectedSong(), true);
+  bool isStory = IS_STORY(SAVEFILE_getGameMode());
+  bool hasRemoteChart = isVs() && remoteNumericLevel != -1;
+  std::vector<u8> selectedLevels;
+
+  if (!isStory) {
+    selectedLevels.push_back(getSelectedNumericLevel());
+    if (hasRemoteChart)
+      selectedLevels.push_back(numericLevels[remoteNumericLevel]);
+  }
+
+  Song* song = SONG_parse(fs, getSelectedSong(), true, selectedLevels);
   Chart* chart =
-      IS_STORY(SAVEFILE_getGameMode())
-          ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
-          : SONG_findChartByNumericLevelIndex(
-                song, getSelectedNumericLevelIndex(), isCoop());
-  Chart* remoteChart = isVs() && remoteNumericLevel != -1
-                           ? SONG_findChartByNumericLevelIndex(
-                                 song, (u8)remoteNumericLevel, false)
-                           : NULL;
+      isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
+              : SONG_findChartByNumericLevelIndex(
+                    song, getSelectedNumericLevelIndex(), isCoop());
+  Chart* remoteChart = hasRemoteChart ? SONG_findChartByNumericLevelIndex(
+                                            song, (u8)remoteNumericLevel, false)
+                                      : NULL;
 
   STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
