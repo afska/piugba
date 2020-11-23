@@ -19,6 +19,9 @@ Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
+  if (fs == NULL)
+    BSOD("GBFS file not found.");
+
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
