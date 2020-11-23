@@ -208,12 +208,22 @@ void SelectionScene::setUpArrows() {
       SELECTOR_MARGIN, GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
   arrowSelectors[ArrowDirection::UPLEFT]->get()->moveTo(SELECTOR_MARGIN,
                                                         SELECTOR_MARGIN);
-  SPRITE_hide(arrowSelectors[2]->get());
+  SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
   arrowSelectors[ArrowDirection::UPRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
   arrowSelectors[ArrowDirection::DOWNRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
+
+  if (isMultiplayer() && !syncer->isMaster()) {
+    SPRITE_hide(arrowSelectors[ArrowDirection::DOWNLEFT]->get());
+    SPRITE_hide(arrowSelectors[ArrowDirection::DOWNRIGHT]->get());
+
+    if (isCoop()) {
+      SPRITE_hide(arrowSelectors[ArrowDirection::UPLEFT]->get());
+      SPRITE_hide(arrowSelectors[ArrowDirection::UPRIGHT]->get());
+    }
+  }
 }
 
 void SelectionScene::setUpChannelBadges() {
