@@ -20,6 +20,7 @@ extern "C" {
 #define SUBTITLE2 "2) Wait 4 beats"
 #define SUBTITLE3 "3) Press on beat 5"
 #define MEASURE_TITLE "- Detected audio lag -"
+#define CANCEL_TEXT "BACK"
 #define RESET_TEXT "RESET"
 #define SAVE_TEXT "SAVE"
 
@@ -84,10 +85,12 @@ void CalibrateScene::load() {
       new ArrowSelector(ArrowDirection::UPRIGHT, true, true)};
 
   calibrateButton->get()->moveTo(CALIBRATE_BUTTON_X, CALIBRATE_BUTTON_Y);
-  SPRITE_hide(resetButton->get());
+  resetButton->get()->moveTo(BUTTON_MARGIN,
+                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
   SPRITE_hide(saveButton->get());
 
   printTitle();
+  TextStream::instance().setText(CANCEL_TEXT, TEXT_ROW_BUTTONS, TEXT_COL_RESET);
 }
 
 void CalibrateScene::tick(u16 keys) {
@@ -107,9 +110,12 @@ void CalibrateScene::tick(u16 keys) {
 
   if (resetButton->hasBeenPressedNow() &&
       !SPRITE_isHidden(resetButton->get())) {
-    measuredLag = 0;
-    printTitle();
-    finish();
+    if (hasDoneChanges) {
+      measuredLag = 0;
+      printTitle();
+      finish();
+    } else
+      goBack();
   }
 
   if (saveButton->hasBeenPressedNow() && !SPRITE_isHidden(saveButton->get()))
@@ -173,6 +179,7 @@ void CalibrateScene::calibrate() {
 
 void CalibrateScene::start() {
   isMeasuring = true;
+  hasDoneChanges = true;
   player_play(SOUND_CALIBRATE);
   SPRITE_hide(resetButton->get());
   SPRITE_hide(saveButton->get());
@@ -199,7 +206,10 @@ void CalibrateScene::finish() {
 void CalibrateScene::save() {
   SAVEFILE_write32(SRAM->settings.audioLag, (u32)measuredLag);
   player_stop();
+  goBack();
+}
 
+void CalibrateScene::goBack() {
   if (onFinish != NULL)
     onFinish();
   else

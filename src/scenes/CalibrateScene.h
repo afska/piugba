@@ -38,6 +38,7 @@ class CalibrateScene : public Scene {
   std::unique_ptr<ArrowSelector> resetButton;
   std::unique_ptr<ArrowSelector> saveButton;
   bool isMeasuring = false;
+  bool hasDoneChanges = false;
   int measuredLag = 0;
 
   void setUpSpritesPalette();
@@ -49,6 +50,7 @@ class CalibrateScene : public Scene {
   void start();
   void finish();
   void save();
+  void goBack();
 };
 
 #endif  // CALIBRATE_SCENE_H
