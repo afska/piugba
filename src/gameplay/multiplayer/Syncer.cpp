@@ -165,7 +165,8 @@ void Syncer::checkTimeout() {
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
 #endif
 
-    reset();
+    fail(SyncError::SYNC_ERROR_WTF);  // TODO: RECOVER reset()
+    // reset();
   }
 }
 

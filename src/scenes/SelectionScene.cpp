@@ -632,6 +632,7 @@ void SelectionScene::processMultiplayerUpdates() {
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
+    // TODO: FIND OUT WHY IT DISCONNECTS
     if (syncer->isMaster() && (isCoop() || event != SYNC_EVENT_LEVEL_CHANGED)) {
       syncer->registerTimeout();
       continue;

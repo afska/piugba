@@ -32,8 +32,7 @@ int main() {
     if (availableAudioChunks > 0)
       syncer->$availableAudioChunks--;
 
-    return !syncer->$isPlayingSong || syncer->isMaster() ||
-           availableAudioChunks > 0;
+    return !syncer->$isPlayingSong || availableAudioChunks > 0;
   });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);

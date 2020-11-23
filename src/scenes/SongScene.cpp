@@ -90,6 +90,7 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   if (isMultiplayer()) {
     syncer->$isPlayingSong = true;
+    syncer->$availableAudioChunks = 0;
     syncer->clearTimeout();
   } else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
@@ -458,8 +459,9 @@ void SongScene::onStageBreak(u8 playerId) {
       if (allDead)
         breakStage();
     } else {
-      syncer->send(SYNC_EVENT_STAGE_END, false);
-      breakStage();
+      // TODO: RECOVER
+      // syncer->send(SYNC_EVENT_STAGE_END, false);
+      // breakStage();
     }
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
     breakStage();
@@ -656,8 +658,7 @@ void SongScene::processMultiplayerUpdates() {
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
 
-        if (!syncer->isMaster())
-          syncer->$availableAudioChunks++;
+        syncer->$availableAudioChunks++;
 
         syncer->clearTimeout();
         break;
@@ -718,8 +719,10 @@ bool SongScene::setRate(int rate) {
 void SongScene::unload() {
   player_stop();
 
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     syncer->$isPlayingSong = false;
+    syncer->$availableAudioChunks = 0;
+  }
 }
 
 SongScene::~SongScene() {
