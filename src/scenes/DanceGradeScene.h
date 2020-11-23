@@ -7,9 +7,11 @@
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "gameplay/Evaluation.h"
+#include "gameplay/models/Song.h"
 #include "objects/score/Feedback.h"
 #include "objects/score/Grade.h"
 #include "objects/score/Total.h"
+#include "objects/ui/GradeBadge.h"
 
 extern "C" {
 #include "utils/gbfs/gbfs.h"
@@ -20,6 +22,8 @@ class DanceGradeScene : public Scene {
   DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                   const GBFS_FILE* fs,
                   std::unique_ptr<Evaluation> evaluation,
+                  std::unique_ptr<Evaluation> remoteEvaluation,
+                  bool differentCharts,
                   bool isLastSong);
 
   std::vector<Background*> backgrounds() override;
@@ -34,16 +38,27 @@ class DanceGradeScene : public Scene {
   const GBFS_FILE* fs;
 
   std::unique_ptr<Evaluation> evaluation;
+  std::unique_ptr<Evaluation> remoteEvaluation;
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;
+  bool differentCharts;
   bool isLastSong;
+
+  std::array<std::unique_ptr<GradeBadge>, GAME_MAX_PLAYERS> miniGrades;
+  std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> remoteTotals;
+  std::unique_ptr<Total> remoteMaxComboTotal;
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void finish();
 
   void printScore();
+  std::string pointsToString(u32 points);
+  u32 getMultiplayerPointsOf(Evaluation* evaluation);
+
   void playSound();
+  void processMultiplayerUpdates();
 };
 
 #endif  // DANCE_GRADE_SCENE_H

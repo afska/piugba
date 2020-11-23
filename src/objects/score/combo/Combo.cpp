@@ -2,6 +2,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
@@ -10,13 +11,17 @@ const u32 DIGITS = 3;
 const u32 DIGITS_POSITION_X = 8;
 const u32 DIGITS_POSITION_Y = 89;
 
-Combo::Combo() {
-  title = std::unique_ptr<ComboTitle>{new ComboTitle()};
+Combo::Combo(u8 playerId) {
+  this->playerId = playerId;
+
+  title = std::unique_ptr<ComboTitle>{new ComboTitle(playerId)};
 
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
-                  GameState.scorePositionY + DIGITS_POSITION_Y, i)};
+    auto digit = std::unique_ptr<Digit>{new Digit(
+        DigitSize::BIG,
+        (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+            DIGITS_POSITION_X,
+        GameState.scorePositionY + DIGITS_POSITION_Y, i, playerId > 0)};
     digits.push_back(std::move(digit));
   }
 }
@@ -54,8 +59,11 @@ void Combo::relocate() {
   title->relocate();
 
   for (u32 i = 0; i < DIGITS; i++)
-    digits[i]->relocate(DigitSize::BIG, GameState.positionX + DIGITS_POSITION_X,
-                        GameState.scorePositionY + DIGITS_POSITION_Y, i);
+    digits[i]->relocate(
+        DigitSize::BIG,
+        (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+            DIGITS_POSITION_X,
+        GameState.scorePositionY + DIGITS_POSITION_Y, i);
 }
 
 void Combo::tick() {
@@ -63,13 +71,6 @@ void Combo::tick() {
 
   for (auto& it : digits)
     it->tick();
-}
-
-void Combo::render(std::vector<Sprite*>* sprites) {
-  sprites->push_back(title->get());
-
-  for (auto& it : digits)
-    sprites->push_back(it->get());
 }
 
 Combo::~Combo() {

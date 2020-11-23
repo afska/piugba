@@ -1,6 +1,8 @@
 #ifndef SCENE_UTILS_H
 #define SCENE_UTILS_H
 
+#include <libgba-sprite-engine/background/text_stream.h>
+
 #include <string>
 
 #include "BackgroundUtils.h"
@@ -8,6 +10,7 @@
 #include "SpriteUtils.h"
 
 const u32 TEXT_MIDDLE_COL = 12;
+const u32 TEXT_TOTAL_COLS = 30;
 
 inline void SCENE_init() {
   TextStream::instance().clear();

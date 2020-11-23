@@ -38,6 +38,7 @@ SRCDIRS		:= src \
 						 src/gameplay \
 						 src/gameplay/debug \
 						 src/gameplay/models \
+						 src/gameplay/multiplayer \
 						 src/gameplay/save \
 						 src/objects \
 						 src/objects/base \
@@ -125,9 +126,9 @@ SONGS ?= src/data/content/songs
 ENV ?= development
 
 ifeq ($(ENV), debug)
-	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true
 else ifeq ($(ENV), development)
-	CXXFLAGS += -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true
 else
 
 endif
@@ -205,7 +206,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: clean assets start restart
+.PHONY: clean assets start rebuild restart
 
 assets:
 	./scripts/assets.sh
@@ -220,7 +221,9 @@ package: $(BUILD)
 start: package
 	start "$(TARGET).out.gba"
 
-restart: clean package
+rebuild: clean package
+
+restart: rebuild
 	start "$(TARGET).out.gba"
 
 reimport: import package

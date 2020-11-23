@@ -14,7 +14,6 @@
 #include "PlaybackState.h"
 #include "core/gsm.h"
 #include "core/private.h" /* for sizeof(struct gsm_state) */
-#include "fxes.h"
 #include "utils/gbfs/gbfs.h"
 
 Playback PlaybackState;
@@ -34,7 +33,6 @@ PLAYER_DEFINE(REG_DMA1CNT,
 inline void player_init() {
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
-  fxes_init();
 }
 
 inline void player_play(const char* name) {
@@ -52,7 +50,7 @@ inline void player_loop(const char* name) {
 }
 
 inline void player_seek(unsigned int msecs) {
-  // (cursor must be a multiple of AUDIO_CHUNK)
+  // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
   // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
@@ -80,12 +78,15 @@ inline void player_stop() {
   rateCounter = 0;
 }
 
-inline void player_stopAll() {
-  player_stop();
-  fxes_stop();
+inline bool player_isPlaying() {
+  return src_pos != NULL;
 }
 
-inline void player_forever(void (*update)()) {
+inline void player_onVBlank() {
+  PLAYER_POST_UPDATE();
+}
+
+inline void player_forever(bool (*update)()) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -98,28 +99,22 @@ inline void player_forever(void (*update)()) {
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
-    update();
+    bool canPlay = update();
 
-    PLAYER_PRE_UPDATE({
-      if (PlaybackState.isLooping)
-        player_seek(0);
-      else {
-        player_stop();
-        PlaybackState.hasFinished = true;
-      }
-    });
-    fxes_preUpdate();
+    PLAYER_PRE_UPDATE(
+        {
+          if (!canPlay)
+            src_pos -= AUDIO_CHUNK_SIZE;
+        },
+        {
+          if (PlaybackState.isLooping)
+            player_seek(0);
+          else {
+            player_stop();
+            PlaybackState.hasFinished = true;
+          }
+        });
 
-    // --------------
-    VBlankIntrWait();  // VBLANK
-    // --------------
-
-    PLAYER_POST_UPDATE();
-    fxes_postUpdate();
+    VBlankIntrWait();
   }
-}
-
-inline void fxes_playSolo(const char* name) {
-  player_stop();
-  fxes_play(name);
 }

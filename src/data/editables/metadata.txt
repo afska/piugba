@@ -34,7 +34,7 @@ numbers:
 			Yellow/Blue = -100
 
 lifebar:
--> 56 colors
+-> 56 colors + 20 (lifebar_dual)
 
 numbers_mini:
 -> 30 colors

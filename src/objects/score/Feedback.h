@@ -11,7 +11,7 @@ const int FEEDBACK_TYPES_TOTAL = 5;
 
 class Feedback : public AnimatedIndicator {
  public:
-  Feedback();
+  Feedback(u8 playerId);
 
   void setType(FeedbackType type);
   void relocate();
@@ -22,6 +22,7 @@ class Feedback : public AnimatedIndicator {
  private:
   std::unique_ptr<Sprite> sprite;
   FeedbackType type;
+  u8 playerId;
 };
 
 #endif  // FEEDBACK_H

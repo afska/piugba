@@ -39,4 +39,9 @@ inline bool STRING_endsWith(const char* str, const char* suffix) {
   return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
+inline void STRING_padLeft(std::string& str, u32 num, char paddingChar = ' ') {
+  if (num > str.size())
+    str.insert(0, num - str.size(), paddingChar);
+}
+
 #endif  // STRING_UTILS_H

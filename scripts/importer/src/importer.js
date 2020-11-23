@@ -150,6 +150,7 @@ const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
     };
   })
   .sortBy("outputName")
+  .map((it, id) => ({ ...it, id }))
   .value();
 
 // -----------
@@ -159,7 +160,7 @@ const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 
 const processedSongs = songs.map((song, i) => {
-  const { outputName } = song;
+  const { id, outputName } = song;
   const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
 
   console.log(
@@ -170,7 +171,7 @@ const processedSongs = songs.map((song, i) => {
 
   // metadata
   const simfile = utils.report(
-    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
+    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH, id),
     "charts"
   );
 

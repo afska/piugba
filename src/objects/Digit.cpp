@@ -10,7 +10,7 @@
 const u32 DIGIT_WIDTHS[] = {26, 19};
 const u32 RED_OFFSET = 10;
 
-Digit::Digit(DigitSize size, u32 x, u32 y, u32 index) {
+Digit::Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles) {
   relocate(size, x, y, index);
   animationDirection = -1;
 
@@ -24,7 +24,7 @@ Digit::Digit(DigitSize size, u32 x, u32 y, u32 index) {
                .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();
 
-  if (index > 0)
+  if (reuseTiles || index > 0)
     SPRITE_reuseTiles(sprite.get());
 }
 

@@ -4,6 +4,7 @@
 
 #include "CalibrateScene.h"
 #include "StartScene.h"
+#include "assets.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
@@ -63,7 +64,7 @@ void SettingsScene::printOptions() {
 bool SettingsScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
-      engine->transitionIntoScene(new CalibrateScene(engine, fs, NULL),
+      engine->transitionIntoScene(new CalibrateScene(engine, fs),
                                   new FadeOutScene(2));
       return false;
     }

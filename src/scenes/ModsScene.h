@@ -1,8 +1,6 @@
 #ifndef MODS_SCENE_H
 #define MODS_SCENE_H
 
-#include <libgba-sprite-engine/sprites/sprite.h>
-
 #include "base/MenuScene.h"
 
 class ModsScene : public MenuScene {

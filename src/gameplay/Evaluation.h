@@ -27,16 +27,7 @@ class Evaluation {
   u32 longNotes = 0;
 
   inline GradeType getGrade() {
-    u32 percent = Div(max(perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
-                              MATH_fracumul(greats, FRACUMUL_0_90) +
-                              MATH_fracumul(goods, FRACUMUL_0_60) -
-                              MATH_fracumul(bads, FRACUMUL_0_45) -
-                              MATH_fracumul(misses, FRACUMUL_0_90) -
-                              MATH_fracumul(longNotes, FRACUMUL_0_20) +
-                              MATH_fracumul(maxCombo, FRACUMUL_0_05),
-                          0) *
-                          100,
-                      totalNotes());
+    u32 percent = getPercent();
 
     if (percent >= 95 && misses == 0)
       return GradeType::S;
@@ -50,6 +41,19 @@ class Evaluation {
       return GradeType::D;
     else
       return GradeType::F;
+  }
+
+  inline u32 getPercent() {
+    return Div(max(perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
+                       MATH_fracumul(greats, FRACUMUL_0_90) +
+                       MATH_fracumul(goods, FRACUMUL_0_60) -
+                       MATH_fracumul(bads, FRACUMUL_0_45) -
+                       MATH_fracumul(misses, FRACUMUL_0_90) -
+                       MATH_fracumul(longNotes, FRACUMUL_0_20) +
+                       MATH_fracumul(maxCombo, FRACUMUL_0_05),
+                   0) *
+                   100,
+               totalNotes());
   }
 
   inline u32 totalNotes() { return perfects + greats + goods + bads + misses; }

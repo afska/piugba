@@ -10,6 +10,7 @@
 const int REDUCE_MOD_POSITION_Y = 51;
 const int REDUCE_MOD_SCORE_POSITION_Y = 34;
 const u32 GAME_POSITION_X[] = {0, 72, 144};
+const u32 GAME_COOP_POSITION_X = 27;
 
 typedef struct __attribute__((__packed__)) {
   u8 isPlaying;
@@ -17,7 +18,7 @@ typedef struct __attribute__((__packed__)) {
 } State;
 
 typedef struct {
-  int positionX;
+  int positionX[GAME_MAX_PLAYERS];
   int positionY;
   int scorePositionY;
 
@@ -26,6 +27,6 @@ typedef struct {
 
 extern RAMState GameState;
 
-void STATE_setup(Song* song, Chart* chart);
+void STATE_setup(Song* song = NULL, Chart* chart = NULL);
 
 #endif  // STATE_H

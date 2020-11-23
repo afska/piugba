@@ -1,14 +1,15 @@
 #include "Judge.h"
 
 #include "models/Event.h"
+#include "multiplayer/Syncer.h"
 
 Judge::Judge(ObjectPool<Arrow>* arrowPool,
              std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
-             Score* score,
-             std::function<void()> onStageBreak) {
+             std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores,
+             std::function<void(u8 playerId)> onStageBreak) {
   this->arrowPool = arrowPool;
   this->arrowHolders = arrowHolders;
-  this->score = score;
+  this->scores = scores;
   this->onStageBreak = onStageBreak;
 }
 
@@ -51,20 +52,21 @@ void Judge::onOut(Arrow* arrow) {
                 [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
 }
 
-void Judge::onHoldTick(u8 arrows, bool canMiss) {
+void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
   bool isPressed = true;
 
-  for (u32 i = 0; i < ARROWS_TOTAL; i++) {
-    if (arrows & EVENT_ARROW_MASKS[i] && !arrowHolders->at(i)->getIsPressed()) {
+  for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
+    if (arrows & EVENT_HOLD_ARROW_MASKS[i] &&
+        !this->isPressed(static_cast<ArrowDirection>(i), playerId)) {
       isPressed = false;
       break;
     }
   }
 
   if (isPressed)
-    updateScore(FeedbackType::PERFECT, true);
+    updateScore(FeedbackType::PERFECT, playerId, true);
   else if (canMiss)
-    updateScore(FeedbackType::MISS, true);
+    updateScore(FeedbackType::MISS, playerId, true);
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
@@ -72,7 +74,7 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
 
   if (result != FeedbackType::UNKNOWN) {
     if (!arrow->isFake)
-      updateScore(result, false);
+      updateScore(result, arrow->playerId);
 
     switch (result) {
       case FeedbackType::MISS:
@@ -92,17 +94,26 @@ FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {
   return result;
 }
 
-void Judge::updateScore(FeedbackType result, bool isLong) {
+void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
   if (isDisabled)
     return;
 
   if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH &&
       result == FeedbackType::MISS) {
-    onStageBreak();
+    onStageBreak(playerId);
     return;
   }
 
-  bool isAlive = score->update(result, isLong);
+  if (isMultiplayer()) {
+    if ((isVs() && playerId == syncer->getLocalPlayerId()) ||
+        (isCoop() && syncer->isMaster()))
+      syncer->send(SYNC_EVENT_FEEDBACK,
+                   SYNC_MSG_FEEDBACK_BUILD(result, isLong));
+    else
+      return;
+  }
+
+  bool isAlive = scores->at(playerId)->update(result, isLong);
   if (!isAlive)
-    onStageBreak();
+    onStageBreak(playerId);
 }

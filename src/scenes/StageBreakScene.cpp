@@ -5,6 +5,8 @@
 #include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_break.h"
+#include "gameplay/Sequence.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
@@ -60,6 +62,9 @@ std::vector<Sprite*> StageBreakScene::sprites() {
 }
 
 void StageBreakScene::load() {
+  if (isMultiplayer())
+    syncer->clearTimeout();
+
   SCENE_init();
 
   setUpSpritesPalette();
@@ -77,6 +82,12 @@ void StageBreakScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
 
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
@@ -84,15 +95,23 @@ void StageBreakScene::tick(u16 keys) {
     player_play(SOUND_STAGE_BREAK);
   }
 
+  if (isMultiplayer())
+    processMultiplayerUpdates();
+
   animate();
   pixelBlink->tick();
   instructor->get()->flipHorizontally(isFlippedX);
   instructor->get()->flipVertically(isFlippedY);
 
   if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
-    player_stop();
-    engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(2));
+    if (isMultiplayer()) {
+      if (syncer->isMaster())
+        syncer->send(SYNC_EVENT_CONFIRM_SONG_END, 0);
+      else
+        return;
+    }
+
+    finish();
   }
 }
 
@@ -138,4 +157,37 @@ void StageBreakScene::animate() {
   WRITE(2830, "and", /*   */ 12, 8, -2, 4, false, false);
   WRITE(2970, "dance,", /**/ 13, 1, -4, -4, false, false);
   WRITE(3280, "man?", /*  */ 14, 7, 2, 4, false, false);
+}
+
+void StageBreakScene::finish() {
+  player_stop();
+  engine->transitionIntoScene(new SelectionScene(engine, fs),
+                              new FadeOutScene(2));
+}
+
+void StageBreakScene::processMultiplayerUpdates() {
+  auto linkState = linkConnection->linkState.get();
+  auto remoteId = syncer->getRemotePlayerId();
+
+  while (linkState->hasMessage(remoteId)) {
+    u16 message = linkState->readMessage(remoteId);
+    u8 event = SYNC_MSG_EVENT(message);
+
+    if (syncer->isMaster()) {
+      syncer->registerTimeout();
+      continue;
+    }
+
+    switch (event) {
+      case SYNC_EVENT_CONFIRM_SONG_END: {
+        finish();
+
+        syncer->clearTimeout();
+        break;
+      }
+      default: {
+        syncer->registerTimeout();
+      }
+    }
+  }
 }

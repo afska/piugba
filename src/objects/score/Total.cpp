@@ -6,12 +6,11 @@
 
 const u32 MAX_TOTAL = 999;
 const u32 DIGITS = 3;
-const u32 DIGITS_POSITION_X = 160;
 
-Total::Total(u32 y, bool isFirst) {
+Total::Total(u32 x, u32 y, bool isFirst) {
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{
-        new Digit(DigitSize::MINI, DIGITS_POSITION_X, y, i)};
+    auto digit =
+        std::unique_ptr<Digit>{new Digit(DigitSize::MINI, x, y, i, false)};
     digit->showAt(0);
 
     if (i == 0 && !isFirst)

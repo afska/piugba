@@ -17,9 +17,9 @@ extern "C" {
 
 class CalibrateScene : public Scene {
  public:
-  CalibrateScene(std::shared_ptr<GBAEngine> engine,
-                 const GBFS_FILE* fs,
-                 std::function<void()> onFinish);
+  explicit CalibrateScene(std::shared_ptr<GBAEngine> engine,
+                          const GBFS_FILE* fs,
+                          std::function<void()> onFinish = NULL);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;

@@ -14,6 +14,8 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
   u32 cursor = 0;
   auto song = new Song();
 
+  song->id = parse_u8(data, &cursor);
+
   song->title = (char*)malloc(TITLE_LEN);
   parse_array(data, &cursor, song->title, TITLE_LEN);
 
@@ -49,6 +51,7 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
 
     chart->difficulty = static_cast<DifficultyLevel>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
+    chart->isDouble = parse_u8(data, &cursor);
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
     if (!full) {
@@ -64,19 +67,26 @@ Song* SONG_parse(const GBFS_FILE* fs, SongFile* file, bool full) {
       auto event = chart->events + j;
 
       event->timestamp = parse_s32le(data, &cursor);
+
       event->data = parse_u8(data, &cursor);
       auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
+      event->data2 = EVENT_HAS_DATA2(eventType, chart->isDouble)
+                         ? parse_u8(data, &cursor)
+                         : 0;
+
       if (EVENT_HAS_PARAM(eventType))
         event->param = parse_u32le(data, &cursor);
       if (EVENT_HAS_PARAM2(eventType))
         event->param2 = parse_u32le(data, &cursor);
       if (EVENT_HAS_PARAM3(eventType))
         event->param3 = parse_u32le(data, &cursor);
-      event->handled = false;
+
+      event->handled[0] = false;
+      event->handled[1] = false;
     }
   }
 
-  song->id = file->id;
+  song->index = file->id;
   song->audioPath = file->getAudioFile();
   song->backgroundTilesPath = file->getBackgroundTilesFile();
   song->backgroundPalettePath = file->getBackgroundPaletteFile();
@@ -98,7 +108,7 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   u32 cursor = TITLE_LEN + ARTIST_LEN;
   auto channel = static_cast<Channel>(parse_u8(data, &cursor));
 
-  if (gameMode == GameMode::ARCADE)
+  if (gameMode != GameMode::CAMPAIGN)
     return channel;
 
   cursor +=
@@ -130,9 +140,20 @@ Chart* SONG_findChartByDifficultyLevel(Song* song,
   return NULL;
 }
 
-Chart* SONG_findChartByNumericLevelIndex(Song* song, u8 levelIndex) {
-  if (levelIndex < song->chartCount)
-    return song->charts + levelIndex;
+Chart* SONG_findChartByNumericLevelIndex(Song* song,
+                                         u8 numericLevelIndex,
+                                         bool isDouble) {
+  u32 currentIndex = 0;
+
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if (song->charts[i].isDouble != isDouble)
+      continue;
+
+    if (currentIndex == numericLevelIndex)
+      return song->charts + i;
+
+    currentIndex++;
+  }
 
   return NULL;
 }

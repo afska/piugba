@@ -2,12 +2,14 @@
 #define SONG_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
+#include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
 #include "gameplay/ChartReader.h"
 #include "gameplay/Judge.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
@@ -22,10 +24,11 @@ extern "C" {
 
 class SongScene : public Scene {
  public:
-  SongScene(std::shared_ptr<GBAEngine> engine,
-            const GBFS_FILE* fs,
-            Song* song,
-            Chart* chart);
+  explicit SongScene(std::shared_ptr<GBAEngine> engine,
+                     const GBFS_FILE* fs,
+                     Song* song,
+                     Chart* chart,
+                     Chart* remoteChart = NULL);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -43,10 +46,11 @@ class SongScene : public Scene {
 
   Song* song;
   Chart* chart;
-  std::unique_ptr<ChartReader> chartReader;
+  Chart* remoteChart;
+  std::unique_ptr<ChartReader> chartReader[GAME_MAX_PLAYERS];
+  std::unique_ptr<LifeBar> lifeBars[GAME_MAX_PLAYERS];
+  std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS> scores;
   std::unique_ptr<Judge> judge;
-  std::unique_ptr<LifeBar> lifeBar;
-  std::unique_ptr<Score> score;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::vector<std::unique_ptr<Arrow>> fakeHeads;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
@@ -62,6 +66,30 @@ class SongScene : public Scene {
   int jumpDirection = 1;
   int reduceDirection = -1;
 
+  inline u8 getPlatformCount() { return (u8)(1 + isMultiplayer()); }
+  inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
+  inline ArrowDirection getDirectionFromIndex(u32 index) {
+    return static_cast<ArrowDirection>(isCoop() ? index
+                                                : DivMod(index, ARROWS_TOTAL));
+  }
+  inline u8 getPlayerIdFromIndex(u32 index) {
+    return isCoop() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
+  }
+  inline u8 getBaseIndexFromPlayerId(u8 playerId) {
+    return playerId * ARROWS_TOTAL;
+  }
+  inline u8 getLocalBaseIndex() {
+    return isMultiplayer()
+               ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
+               : 0;
+  }
+  inline u8 getRemoteBaseIndex() {
+    return getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
+  }
+  inline u8 getLocalPlayerId() {
+    return isVs() ? syncer->getLocalPlayerId() : 0;
+  }
+
   void setUpPalettes();
   void setUpBackground();
   void setUpArrows();
@@ -72,6 +100,9 @@ class SongScene : public Scene {
   void updateGameX();
   void updateGameY();
   void processKeys(u16 keys);
+  void onStageBreak(u8 playerId);
+  void onStagePass();
+  void breakStage();
   void finishAndGoToEvaluation();
 
   void processModsLoad();
@@ -79,6 +110,7 @@ class SongScene : public Scene {
   void processModsBeat();
   u8 processPixelateMod();
   void processTrainingModeMod();
+  void processMultiplayerUpdates();
   bool setRate(int rate);
 
   void unload();

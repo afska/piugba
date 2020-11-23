@@ -7,14 +7,16 @@
 
 class GradeBadge {
  public:
-  GradeBadge(u32 x, u32 y, bool reuseTiles);
+  GradeBadge(u32 x, u32 y, bool reuseTiles, bool isEvaluation);
 
+  inline GradeType getType() { return type; }
   void setType(GradeType type);
 
   inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;
+  GradeType type = GradeType::UNPLAYED;
 
   u32 x;
   u32 y;

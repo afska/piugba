@@ -25,6 +25,7 @@ class ChartReader : public TimingProvider {
   int debugOffset = 0;
 
   ChartReader(Chart* chart,
+              u8 playerId,
               ObjectPool<Arrow>* arrowPool,
               Judge* judge,
               PixelBlink* pixelBlink,
@@ -64,6 +65,7 @@ class ChartReader : public TimingProvider {
 
  private:
   Chart* chart;
+  u8 playerId;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   PixelBlink* pixelBlink;
@@ -72,7 +74,7 @@ class ChartReader : public TimingProvider {
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
+  std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
@@ -97,16 +99,16 @@ class ChartReader : public TimingProvider {
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
-      if (event->handled) {
+      if (event->handled[playerId]) {
         currentIndex++;
         continue;
       }
 
       bool stop = false;
-      event->handled = action(type, event, &stop);
+      event->handled[playerId] = action(type, event, &stop);
       currentIndex++;
 
-      if (!event->handled)
+      if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
         eventIndex = currentIndex;
@@ -169,9 +171,9 @@ class ChartReader : public TimingProvider {
 
   int getYFor(int timestamp);
   void processNextEvents();
-  void processUniqueNote(Event* event);
-  void startHoldNote(Event* event);
-  void endHoldNote(Event* event);
+  void processUniqueNote(int timestamp, u8 data, u8 param);
+  void startHoldNote(int timestamp, u8 data, u8 offset = 0);
+  void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);

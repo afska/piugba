@@ -1,7 +1,9 @@
 #ifndef JUDGE_H
 #define JUDGE_H
 
+#include <array>
 #include <functional>
+#include <vector>
 
 #include "gameplay/TimingProvider.h"
 #include "gameplay/save/SaveFile.h"
@@ -18,12 +20,12 @@ class Judge {
  public:
   Judge(ObjectPool<Arrow>* arrowPool,
         std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders,
-        Score* score,
-        std::function<void()> onStageBreak);
+        std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores,
+        std::function<void(u8 playerId)> onStageBreak);
 
   void onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onOut(Arrow* arrow);
-  void onHoldTick(u8 arrows, bool canMiss);
+  void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
   inline void disable() { isDisabled = true; }
   inline void enable() { isDisabled = false; }
@@ -32,15 +34,16 @@ class Judge {
     return diff < FRAME_MS * getTimingWindowOf(FeedbackType::MISS);
   }
 
-  inline bool isPressed(ArrowDirection direction) {
-    return arrowHolders->at(direction)->getIsPressed();
+  inline bool isPressed(ArrowDirection direction, u8 playerId) {
+    return arrowHolders->at(playerId * ARROWS_TOTAL + direction)
+        ->getIsPressed();
   }
 
  private:
   ObjectPool<Arrow>* arrowPool;
   std::vector<std::unique_ptr<ArrowHolder>>* arrowHolders;
-  Score* score;
-  std::function<void()> onStageBreak;
+  std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores;
+  std::function<void(u8 playerId)> onStageBreak;
   bool isDisabled = false;
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {
@@ -48,7 +51,7 @@ class Judge {
   }
 
   FeedbackType onResult(Arrow* arrow, FeedbackType partialResult);
-  void updateScore(FeedbackType result, bool isLong);
+  void updateScore(FeedbackType result, u8 playerId, bool isLong = false);
 };
 
 #endif  // JUDGE_H
