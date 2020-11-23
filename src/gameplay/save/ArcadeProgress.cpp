@@ -2,23 +2,26 @@
 
 #include "SaveFile.h"
 
-#define ARCADE_read(ARRAY, SONG_INDEX, LEVEL)               \
-  u32 index = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) / 2; \
-  u32 part = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) % 2;  \
-  u8 n = SAVEFILE_read8(ARRAY[index]);                      \
-  u8 value = part == 0 ? n & 0b111 : (n & 0b111000) >> 3;   \
-  if (value == 0)                                           \
-    return GradeType::UNPLAYED;                             \
-                                                            \
-  return static_cast<GradeType>(value - 1);
+#define REGISTER_PART0 0b111
+#define REGISTER_PART1 0b111000
 
-#define ARCADE_write(ARRAY, SONG_INDEX, LEVEL, GRADE)                    \
+#define ARCADE_read(ARRAY, SONG_INDEX, LEVEL)                            \
   u32 index = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) / 2;              \
   u32 part = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) % 2;               \
   u8 n = SAVEFILE_read8(ARRAY[index]);                                   \
-  u8 value = grade + 1;                                                  \
-  u8 updatedN =                                                          \
-      part == 0 ? (n & ~0b111) | value : (n & ~0b111000) | (value << 3); \
+  u8 value = part == 0 ? n & REGISTER_PART0 : (n & REGISTER_PART1) >> 3; \
+  if (value == 0)                                                        \
+    return GradeType::UNPLAYED;                                          \
+                                                                         \
+  return static_cast<GradeType>(value - 1);
+
+#define ARCADE_write(ARRAY, SONG_INDEX, LEVEL, GRADE)             \
+  u32 index = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) / 2;       \
+  u32 part = (SONG_INDEX * ARCADE_MAX_LEVELS + LEVEL) % 2;        \
+  u8 n = SAVEFILE_read8(ARRAY[index]);                            \
+  u8 value = grade + 1;                                           \
+  u8 updatedN = part == 0 ? (n & ~REGISTER_PART0) | value         \
+                          : (n & ~REGISTER_PART1) | (value << 3); \
   SAVEFILE_write8(ARRAY[index], updatedN);
 
 void ARCADE_initialize() {

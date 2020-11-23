@@ -75,6 +75,7 @@ typedef struct {
       }
   */
   u8 data2;  // another 5-bit arrow array (only present in double charts)
+
   u32 param;
   u32 param2;
   u32 param3;
