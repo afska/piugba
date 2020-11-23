@@ -60,7 +60,6 @@ const opt = getopt
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
     ["j", "json", "generate JSON debug files"],
-    ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()
   .parseSystem();

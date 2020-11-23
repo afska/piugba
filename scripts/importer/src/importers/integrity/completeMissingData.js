@@ -62,11 +62,7 @@ module.exports = (metadata, charts, content, filePath) => {
 
   return {
     metadata,
-    charts: GLOBAL_OPTIONS.all
-      ? charts
-      : charts.filter((it) =>
-          _.includes(NON_NUMERIC_LEVELS, it.header.difficulty)
-        ),
+    charts,
     getChartByDifficulty(difficulty) {
       return getChartByDifficulty(this.charts, difficulty);
     },

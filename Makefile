@@ -212,7 +212,7 @@ assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --all
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)"
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)
