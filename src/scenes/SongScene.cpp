@@ -459,9 +459,8 @@ void SongScene::onStageBreak(u8 playerId) {
       if (allDead)
         breakStage();
     } else {
-      // TODO: RECOVER
-      // syncer->send(SYNC_EVENT_STAGE_END, false);
-      // breakStage();
+      syncer->send(SYNC_EVENT_STAGE_END, false);
+      breakStage();
     }
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
     breakStage();
