@@ -124,13 +124,14 @@ MODE ?= auto
 SORT ?= level
 SONGS ?= src/data/content/songs
 ENV ?= development
+ARCADE ?= false
 
 ifeq ($(ENV), debug)
 	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true
 else ifeq ($(ENV), development)
-	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true -DENV_ARCADE=$(ARCADE)
 else
-
+	CXXFLAGS += -DENV_ARCADE=$(ARCADE)
 endif
 
 # CXXFLAGS += -DCUSTOM_VAR_DEFINE

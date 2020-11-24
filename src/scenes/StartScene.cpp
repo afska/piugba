@@ -150,7 +150,21 @@ void StartScene::setUpButtons() {
   for (u32 i = 0; i < INPUTS; i++)
     inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
 
-  buttons[ButtonType::BLUE]->setSelected(true);
+  if (ENV_ARCADE) {
+    isExpanded = true;
+    buttons[0]->hide();
+    buttons[1]->hide();
+    buttons[2]->show();
+    buttons[3]->show();
+    buttons[4]->show();
+    buttons[5]->hide();
+    for (u32 i = 2; i <= 4; i++)
+      buttons[i]->get()->moveTo(buttons[i]->get()->getX() + 26,
+                                buttons[i]->get()->getY() + 2);
+    selectedMode = 3;
+    buttons[3]->setSelected(true);
+  } else
+    buttons[ButtonType::BLUE]->setSelected(true);
 }
 
 void StartScene::setUpGameAnimation() {
@@ -221,7 +235,9 @@ void StartScene::processKeys(u16 keys) {
 }
 
 void StartScene::processSelectionChange() {
-  if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && selectedMode > 0) {
+  bool canGoLeft =
+      (!ENV_ARCADE && selectedMode > 0) || (ENV_ARCADE && selectedMode > 2);
+  if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
     if (selectedMode == 4 && !isExpanded)
       selectedMode -= 3;
@@ -231,8 +247,9 @@ void StartScene::processSelectionChange() {
     printTitle();
   }
 
-  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() &&
-      selectedMode < BUTTONS_TOTAL - 1) {
+  bool canGoRight =
+      (!ENV_ARCADE && selectedMode < 5) || (ENV_ARCADE && selectedMode < 4);
+  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
     if (selectedMode == 2 && !isExpanded)
       selectedMode += 3;

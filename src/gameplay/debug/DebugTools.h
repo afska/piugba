@@ -17,6 +17,11 @@ extern "C" {
 #define ENV_DEVELOPMENT false
 #endif
 
+#ifndef ENV_ARCADE
+// Defined in Makefile
+#define ENV_ARCADE false
+#endif
+
 #define STRESSTEST_MODE false
 #define TIMINGTEST_MODE false
 #define IFSTRESSTEST if (STRESSTEST_MODE)

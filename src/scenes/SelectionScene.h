@@ -69,9 +69,12 @@ class SelectionScene : public Scene {
     return min(getCompletedSongs(), count - 1);
   }
   inline u32 getCompletedSongs() {
+    if (ENV_ARCADE)
+      return SAVEFILE_getLibrarySize();
+
 #ifdef SENV_DEVELOPMENT
     if (isMultiplayer())
-      return SAVEFILE_getLibrarySize() - 1;
+      return SAVEFILE_getLibrarySize();
 #endif
 
     if (isMultiplayer())
@@ -113,6 +116,9 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
+    if (ENV_ARCADE)
+      return DifficultyLevel::CRAZY;
+
     if (isMultiplayer())
       return static_cast<DifficultyLevel>(syncer->$libraryType);
 

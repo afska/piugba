@@ -87,6 +87,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
+  if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
+    BSOD("This version is ARCADE only.");
+
   if (isMultiplayer()) {
     syncer->clearTimeout();
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
