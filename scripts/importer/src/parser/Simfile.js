@@ -52,12 +52,14 @@ module.exports = class Simfile {
 
   get charts() {
     return _([
-      this.content
-        .match(REGEXPS.chart.single)
-        .map((rawChart) => ({ rawChart, isDouble: false })),
-      this.content
-        .match(REGEXPS.chart.double)
-        .map((rawChart) => ({ rawChart, isDouble: true })),
+      (this.content.match(REGEXPS.chart.single) || []).map((rawChart) => ({
+        rawChart,
+        isDouble: false,
+      })),
+      (this.content.match(REGEXPS.chart.double) || []).map((rawChart) => ({
+        rawChart,
+        isDouble: true,
+      })),
     ])
       .flatten()
       .map(({ rawChart, isDouble }) => {

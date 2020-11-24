@@ -82,12 +82,23 @@ class SelectionScene : public Scene {
                : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
   }
   inline u8 getSelectedNumericLevel() {
+    if (numericLevels.empty())
+      return 0;
+
     return numericLevels[getSelectedNumericLevelIndex()];
   }
   inline u8 getSelectedNumericLevelIndex() {
+    if (numericLevels.empty())
+      return 0;
+
     return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
   inline void setClosestNumericLevel(u8 level) {
+    if (numericLevels.empty()) {
+      SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+      return;
+    }
+
     u32 min = 0;
     u32 minDiff = abs((int)numericLevels[0] - (int)level);
     for (u32 i = 0; i < numericLevels.size(); i++) {

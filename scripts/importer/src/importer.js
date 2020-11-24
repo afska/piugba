@@ -156,6 +156,7 @@ const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
 // SONG IMPORT
 // -----------
 
+if (_.isEmpty(songs)) throw new Error("no_songs_found");
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 
 const processedSongs = songs.map((song, i) => {

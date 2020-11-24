@@ -276,6 +276,9 @@ void SelectionScene::setNumericLevel(u8 numericLevelIndex) {
 }
 
 void SelectionScene::goToSong() {
+  if (numericLevels.empty())
+    return;
+
   player_stop();
   confirmed = false;
 
@@ -611,6 +614,11 @@ void SelectionScene::setNames(std::string title, std::string artist) {
 void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
   if (IS_STORY(SAVEFILE_getGameMode()))
     return;
+
+  if (numericLevels.empty()) {
+    SCENE_write("--", NUMERIC_LEVEL_ROW + offset);
+    return;
+  }
 
   if (difficulty == DifficultyLevel::NORMAL)
     return SCENE_write("NM", NUMERIC_LEVEL_ROW + offset);
