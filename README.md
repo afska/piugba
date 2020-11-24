@@ -40,7 +40,7 @@ A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into bi
 
 Charts are converted into a format created for this project called **PIUS**. Then everything is bundled in a **GBFS** file (a filesystem created by the GBA scene) and appended to the final ROM.
 
-[See the wiki](https://github.com/rodri042/piugba/wiki) for more details!
+**[Read the wiki](https://github.com/rodri042/piugba/wiki)** for more details!
 
 ## How to a build a ROM
 
@@ -56,7 +56,9 @@ make assets
 make restart ENV=production
 ```
 
-Full guide -> [Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Building-a-ROM).
+**Full guide:**
+
+[Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Building-a-ROM)
 
 ## Install
 
@@ -69,17 +71,20 @@ Full guide -> [Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Bui
 		* `projects`
 			* `piugba`
 - Install the toolchain:
-  * [VSCode](https://code.visualstudio.com): The IDE
-  * [Git Bash](https://gitforwindows.org): The console
-  * [devkitPro](https://github.com/devkitPro/installer/releases): The devkit for compiling GBA roms. It comes with:
-    * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
-    * *gbfs*: Used to create a package with all the game assets
-  * [node.js >= 10](https://nodejs.org/en): The JS runtime
-  * [make](scripts/toolchain/programs/make-3.81.zip): The build automation tool
-  * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
-  * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files.
-  * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
-    * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+  * Dev
+    * [devkitPro](https://github.com/devkitPro/installer/releases): The devkit for compiling GBA roms. It comes with:
+      * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
+      * *gbfs*: Used to create a package with all the game assets
+    * [node.js >= 10](https://nodejs.org/en): The JS runtime
+    * [make](scripts/toolchain/programs/make-3.81.zip): The build automation tool
+  * Media Processing
+    * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
+    * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
+      * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+    * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
+  * Other
+    * [Git Bash](https://gitforwindows.org): The console
+    * [VSCode](https://code.visualstudio.com): The IDE
 - Install node dependencies:
 ```bash
 cd scripts/importer
@@ -91,7 +96,7 @@ export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
 ```
-- You can check if the tools are installed correctly running `./scripts/toolchain/check.sh`
+- You can check if the tools are installed correctly by running `./scripts/toolchain/check.sh`
 
 ### VSCode
 
@@ -119,7 +124,7 @@ Name | Values | Description
 `MODE` | **`auto`** or `manual` | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/rodri042/piugba/wiki/Autoimporting-songs).
 `SORT` | **`level`** or `dir` | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/rodri042/piugba/wiki/Song-order).
 `ENV` | **`development`**, or `debug` or `production` |`debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a *debug menu* to correct songs' offsets. See [Wiki: Correcting offsets](https://github.com/rodri042/piugba/wiki/Building-a-ROM#correcting-offsets).<br><br>If *SELECT* is pressed when a song starts, stage-break will be ON regardless of the environment.
-`ARCADE` | **false** or **true** | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both *import* and *build* commands!
+`ARCADE` | **false** or true | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both *import* and *build* commands!
 `SONGS` | *path to a directory* | Songs directory. Defaults to: `src/data/content/songs`
 
 ### Scripts
@@ -170,3 +175,4 @@ If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
 - [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019
   * Forked at: [rodri042/gba-sprite-engine](https://github.com/rodri042/gba-sprite-engine)
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
+- [rodri042/gba-link-connection](https://github.com/rodri042/gba-link-connection)
