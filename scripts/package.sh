@@ -1,11 +1,34 @@
 #!/bin/bash
 
 FILE_INPUT="piugba.gba"
+FILE_TMP="piugba.tmp.gba"
 FILE_OUTPUT="piugba.out.gba"
 DATA="src/data/content/files.gbfs"
-REQUIRED_SIZE_KB=1024 # needs to be multiple of 256
+
+KB=$((1024))
+MAX_ROM_SIZE_KB=$((32 * $KB - 1))
+INITIAL_REQUIRED_SIZE_KB=1024
 
 ROM_SIZE=$(wc -c < $FILE_INPUT)
-PAD_NEEDED=$((($REQUIRED_SIZE_KB * 1024) - $ROM_SIZE))
-dd if=/dev/zero bs=1 count=$PAD_NEEDED >> $FILE_INPUT
-cat $FILE_INPUT $DATA > $FILE_OUTPUT
+GBFS_SIZE=$(wc -c < $DATA)
+ROM_SIZE_KB=$(($ROM_SIZE / $KB))
+GBFS_SIZE_KB=$(($GBFS_SIZE / $KB))
+MAX_REQUIRED_SIZE_KB=$(($MAX_ROM_SIZE_KB - $GBFS_SIZE_KB))
+if (( $MAX_REQUIRED_SIZE_KB < $ROM_SIZE_KB )); then
+    echo ""
+    echo "[!] ERROR:"
+    echo "GBFS file too big."
+    echo ""
+    echo "GBFS_SIZE_KB=$GBFS_SIZE_KB"
+    echo "ROM_SIZE_KB=$ROM_SIZE_KB"
+    echo "(MAX_ROM_SIZE_KB=$MAX_ROM_SIZE_KB)"
+    echo ""
+    exit 1
+fi
+REQUIRED_SIZE_KB=$(($INITIAL_REQUIRED_SIZE_KB > $MAX_REQUIRED_SIZE_KB ? $MAX_REQUIRED_SIZE_KB : $INITIAL_REQUIRED_SIZE_KB))
+PAD_NEEDED=$((($REQUIRED_SIZE_KB * $KB) - $ROM_SIZE))
+
+cp $FILE_INPUT $FILE_TMP
+dd if=/dev/zero bs=1 count=$PAD_NEEDED >> $FILE_TMP
+cat $FILE_TMP $DATA > $FILE_OUTPUT
+rm $FILE_TMP
