@@ -114,7 +114,7 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
-  u32 cursor = TITLE_LEN + ARTIST_LEN;
+  u32 cursor = sizeof(u8) + TITLE_LEN + ARTIST_LEN;
   auto channel = static_cast<Channel>(parse_u8(data, &cursor));
 
   if (gameMode != GameMode::CAMPAIGN)
