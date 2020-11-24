@@ -1,15 +1,9 @@
 const Channels = require("../../parser/Channels");
 const utils = require("../../utils");
-const fs = require("fs");
 const _ = require("lodash");
 
 const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["CRAZY", "HARD", "NORMAL"];
-const PROP_REGEXP = (name) => `#${name}:((.|(\r|\n))*?);`;
-const GLOBAL_PROPERTY = (name) => new RegExp(PROP_REGEXP(name), "g");
-const PROPERTY = (name) => new RegExp(PROP_REGEXP(name));
-const CHANNEL_PROP = "SONGCATEGORY";
-const DIFFICULTY_PROP = "DIFFICULTY";
 
 const HEURISTICS = {
   NORMAL: [6, 5, 4, 3, 2, 1, 7, 8],
@@ -19,8 +13,6 @@ const HEURISTICS = {
 const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
 module.exports = (metadata, charts, content, filePath) => {
-  let isDirty = false;
-
   if (metadata.channel === "UNKNOWN") {
     if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
     else {
@@ -34,66 +26,40 @@ module.exports = (metadata, charts, content, filePath) => {
         _.range(KNOWN_CHANNELS.length)
       );
       metadata.channel = _.keys(Channels)[parseInt(channel)];
-
-      isDirty = true;
     }
   }
 
   charts.forEach((it) => {
-    if (GLOBAL_OPTIONS.mode === "manual" || it.header.isDouble)
+    if (
+      GLOBAL_OPTIONS.mode === "manual" ||
+      it.header.isDouble ||
+      GLOBAL_OPTIONS.arcade
+    )
       it.header.mode = "NUMERIC";
   });
 
-  const singleCharts = charts.filter((it) => !it.header.isDouble);
-
-  NON_NUMERIC_LEVELS.forEach((difficulty) => {
-    if (
-      !hasDifficulty(singleCharts, difficulty) &&
-      GLOBAL_OPTIONS.mode === "auto"
-    )
-      autoSetDifficulty(singleCharts, difficulty);
-    else {
-      if (setDifficulty(singleCharts, difficulty)) isDirty = true;
-    }
-  });
-
-  checkLevelOrder(singleCharts);
-  if (isDirty) writeIfNeeded(metadata, singleCharts, content, filePath);
+  if (!GLOBAL_OPTIONS.arcade) {
+    const singleCharts = charts.filter((it) => !it.header.isDouble);
+    NON_NUMERIC_LEVELS.forEach((difficulty) => {
+      if (
+        !hasDifficulty(singleCharts, difficulty) &&
+        GLOBAL_OPTIONS.mode === "auto"
+      )
+        autoSetDifficulty(singleCharts, difficulty);
+      else setDifficulty(singleCharts, difficulty);
+    });
+    checkLevelOrder(singleCharts);
+  }
 
   return {
     metadata,
     charts,
     getChartByDifficulty(difficulty) {
+      if (GLOBAL_OPTIONS.arcade) return null;
+
       return getChartByDifficulty(this.charts, difficulty);
     },
   };
-};
-
-const writeIfNeeded = (metadata, charts, content, filePath) => {
-  const writeChanges = utils.insistentChoice(
-    "Write simfile? (y/n)",
-    ["y", "n"],
-    "red"
-  );
-  if (writeChanges === "y") {
-    let newContent = content;
-
-    newContent = newContent.replace(
-      GLOBAL_PROPERTY(CHANNEL_PROP),
-      `#${CHANNEL_PROP}:${metadata.channel};`
-    );
-
-    charts.forEach(({ header }) => {
-      newContent = utils.replaceRange(
-        newContent,
-        PROPERTY(DIFFICULTY_PROP),
-        `#${DIFFICULTY_PROP}:${header.difficulty};`,
-        header.startIndex
-      );
-    });
-
-    fs.writeFileSync(filePath, newContent);
-  }
 };
 
 const autoSetDifficulty = (charts, difficultyName) => {

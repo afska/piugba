@@ -59,6 +59,7 @@ const opt = getopt
     ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
+    ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
     ["j", "json", "generate JSON debug files"],
   ])
   .bindHelp()
@@ -69,6 +70,7 @@ if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
   GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
+GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
 const SONGS_PATH = opt.options.directory || DEFAULT_SONGS_PATH;
 
 const GET_SONG_FILES = ({ path, name }) => {
@@ -200,14 +202,17 @@ const processedSongs = songs.map((song, i) => {
 // SONG SORTING
 // ------------
 
-const sortedSongsByLevel = CAMPAIGN_LEVELS.map((difficultyLevel) => {
+const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
+  ? [_.last(CAMPAIGN_LEVELS)]
+  : CAMPAIGN_LEVELS
+).map((difficultyLevel) => {
   const withIds = (songs) =>
     songs.map((it, i) => ({ ...it, id: CREATE_ID(i) }));
 
   return {
     difficultyLevel,
     songs: withIds(
-      GLOBAL_OPTIONS.sort === "dir"
+      GLOBAL_OPTIONS.arcade || GLOBAL_OPTIONS.sort === "dir"
         ? processedSongs
         : _.orderBy(
             processedSongs,
@@ -305,6 +310,8 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
       const print = (n, digits) => _.padStart(n, digits, 0);
 
       const levelOf = (chart) => {
+        if (chart === null) return "-";
+
         const level = chart.header.level;
         const complexity = Math.round(
           _.sumBy(chart.events, "complexity") * 100

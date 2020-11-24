@@ -536,10 +536,14 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
-  if (!IS_STORY(SAVEFILE_getGameMode()))
+  if (!IS_STORY(SAVEFILE_getGameMode())) {
+    if (numericLevels.empty())
+      return;
+
     numericLevelBadge->get()->moveTo(
         NUMERIC_LEVEL_BADGE_X,
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
+  }
 
   player_play(SOUND_STEP);
   confirmed = true;
