@@ -49,7 +49,7 @@ void SettingsScene::printOptions() {
   printOption(OPTION_BACKGROUND_TYPE, "Background type",
               backgroundType == 0
                   ? "RAW"
-                  : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
+                  : backgroundType == 1 ? "HALF DARK" : "FULL DARK",
               9);
   if (backgroundType > 0)
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
