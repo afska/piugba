@@ -2,6 +2,7 @@
 #define TALK_SCENE_H
 
 #include <functional>
+#include <string>
 
 #include "base/TextScene.h"
 #include "objects/ui/ArrowSelector.h"

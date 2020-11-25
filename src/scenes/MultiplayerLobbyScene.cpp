@@ -2,6 +2,8 @@
 
 #include <libgba-sprite-engine/effects/fade_out_scene.h>
 
+#include <string>
+
 #include "SelectionScene.h"
 #include "StartScene.h"
 #include "gameplay/Key.h"

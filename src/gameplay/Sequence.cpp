@@ -3,6 +3,7 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 
 #include <functional>
+#include <string>
 
 #include "Key.h"
 #include "SequenceMessages.h"

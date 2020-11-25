@@ -5,6 +5,8 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
+#include <string>
+
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_start.h"
 #include "gameplay/Key.h"

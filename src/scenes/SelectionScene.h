@@ -7,6 +7,7 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <string>
 #include <vector>
 
 #include "gameplay/Library.h"

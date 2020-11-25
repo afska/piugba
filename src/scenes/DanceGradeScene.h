@@ -6,6 +6,8 @@
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <string>
+
 #include "gameplay/Evaluation.h"
 #include "gameplay/models/Song.h"
 #include "objects/score/Feedback.h"

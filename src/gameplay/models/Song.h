@@ -3,6 +3,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#include <string>
 #include <vector>
 
 #include "Chart.h"
