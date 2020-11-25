@@ -559,17 +559,21 @@ void SongScene::processModsTick() {
 
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
     GameState.positionX[0] += jumpDirection;
+
     if (GameState.positionX[0] >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
         GameState.positionX[0] <= 0)
       jumpDirection *= -1;
+
     updateGameX();
   }
 
   if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
     GameState.positionY += reduceDirection;
+
     if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
         GameState.positionY <= 0)
       reduceDirection *= -1;
+
     updateGameY();
   }
 }
