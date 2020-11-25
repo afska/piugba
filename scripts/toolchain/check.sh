@@ -13,6 +13,18 @@ echo ""
 echo "✔️  gbfs"
 echo "✔️  pngfix"
 
+try rm --version > /dev/null
+echo "✔️  rm"
+
+try dd --version > /dev/null
+echo "✔️  dd"
+
+try md5sum --version > /dev/null
+echo "✔️  md5sum"
+
+try cut --version > /dev/null
+echo "✔️  cut"
+
 try ffmpeg -version > /dev/null
 echo "✔️  ffmpeg"
 

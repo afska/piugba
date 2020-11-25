@@ -12,6 +12,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+#define UNIQUE_MAP_FILE_NAME "_unique_map.map.bin"
+
 const u32 TILE_SIZE = 16;
 
 inline void BACKGROUND_enable(bool bg0, bool bg1, bool bg2, bool bg3) {
@@ -46,6 +48,9 @@ inline std::unique_ptr<Background> BACKGROUND_loadBackgroundFiles(
   auto backgroundTilesData =
       gbfs_get_obj(fs, tilesFileName, &backgroundTilesLength);
   auto backgroundMapData = gbfs_get_obj(fs, mapFileName, &backgroundMapLength);
+  if (backgroundMapData == NULL)
+    backgroundMapData =
+        gbfs_get_obj(fs, UNIQUE_MAP_FILE_NAME, &backgroundMapLength);
 
   return std::unique_ptr<Background>(
       new Background(bgIndex, backgroundTilesData, backgroundTilesLength,

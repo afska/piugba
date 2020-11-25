@@ -83,7 +83,7 @@ make restart ENV=production
       * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
     * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
   * Other
-    * [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `rm` or `dd`
+    * [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`
     * [VSCode](https://code.visualstudio.com): The IDE
 - Install node dependencies:
 ```bash
