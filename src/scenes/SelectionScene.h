@@ -87,7 +87,7 @@ class SelectionScene : public Scene {
                   ? SAVEFILE_getMaxCompletedSongs()
                   : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
 
-    return max(count, SAVEFILE_getLibrarySize());
+    return min(count, SAVEFILE_getLibrarySize());
   }
 
   inline u8 getSelectedNumericLevel() {
