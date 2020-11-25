@@ -252,8 +252,8 @@ void SongScene::initializeBackground() {
 void SongScene::initializeGame() {
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
-  processModsLoad();
   player_play(song->audioPath.c_str());
+  processModsLoad();
 }
 
 void SongScene::updateArrowHolders() {
@@ -517,7 +517,7 @@ void SongScene::processModsLoad() {
     targetMosaic = 0;
 
   if (SAVEFILE_getGameMode() == GameMode::IMPOSSIBLE)
-    setRate(rate + 1);
+    setRate(1);
 }
 
 void SongScene::processModsBeat() {
