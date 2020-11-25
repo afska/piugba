@@ -21,6 +21,8 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+#define ROM_ID_MASK 0xffffff00
+
 const u32 PROGRESS_REGISTERS = 6;
 const u32 PROGRESS_IMPOSSIBLE = 3;
 const u32 LIBRARY_SIZE_MASK = 0x000000FF;
@@ -74,11 +76,11 @@ inline void SAVEFILE_resetMods() {
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
-  bool isNew = SAVEFILE_read32(SRAM->romId) != romId;
+  bool isNew =
+      ((SAVEFILE_read32(SRAM->romId)) & ROM_ID_MASK) != (romId & ROM_ID_MASK);
+  SAVEFILE_write32(SRAM->romId, romId);
 
   if (isNew) {
-    SAVEFILE_write32(SRAM->romId, romId);
-
     SAVEFILE_resetSettings();
     SAVEFILE_resetMods();
 
