@@ -2,6 +2,7 @@
 #define SELECTION_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
@@ -76,15 +77,17 @@ class SelectionScene : public Scene {
       return SAVEFILE_getLibrarySize();
 #endif
 
+    u32 count;
     if (ENV_ARCADE)
-      return SAVEFILE_getLibrarySize();
+      count = SAVEFILE_getLibrarySize();
+    else if (isMultiplayer())
+      count = syncer->$completedSongs;
+    else
+      count = SAVEFILE_getGameMode() == GameMode::ARCADE
+                  ? SAVEFILE_getMaxCompletedSongs()
+                  : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
 
-    if (isMultiplayer())
-      return syncer->$completedSongs;
-
-    return SAVEFILE_getGameMode() == GameMode::ARCADE
-               ? SAVEFILE_getMaxCompletedSongs()
-               : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
+    return max(count, SAVEFILE_getLibrarySize());
   }
 
   inline u8 getSelectedNumericLevel() {

@@ -53,6 +53,7 @@ class Syncer {
   inline SyncError getLastError() { return error; }
 
   inline SyncState getState() { return state; }
+
   inline void setState(SyncState newState) {
 #ifdef SENV_DEBUG
     DEBUTRACE("--> state " + DSTR(newState));
@@ -61,6 +62,7 @@ class Syncer {
     state = newState;
     clearTimeout();
   }
+
   inline SyncMode getMode() { return mode; }
 
   void initialize(SyncMode mode);
