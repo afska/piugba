@@ -99,13 +99,18 @@ class SongScene : public Scene {
   void setUpPalettes();
   void setUpBackground();
   void setUpArrows();
+  void initializeBackground();
+  void initializeGame();
 
   void updateArrowHolders();
   void updateArrows();
   void updateFakeHeads();
+  void updateScoresAndLifebars();
   void updateGameX();
   void updateGameY();
   void processKeys(u16 keys);
+
+  void onNewBeat(bool isAnyKeyPressed);
   void onStageBreak(u8 playerId);
   void onStagePass();
   void breakStage();

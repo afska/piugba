@@ -98,9 +98,7 @@ void SongScene::load() {
   SCENE_init();
 
   setUpPalettes();
-#ifndef SENV_DEBUG
   setUpBackground();
-#endif
   setUpArrows();
 
   pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
@@ -140,37 +138,11 @@ void SongScene::tick(u16 keys) {
   }
 
   if (init == 0) {
-#ifdef SENV_DEBUG
-    BACKGROUND_setColor(0, 127);
-#endif
-#ifndef SENV_DEBUG
-    auto gamePosition =
-        GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
-    auto type = static_cast<BackgroundType>(
-        SAVEFILE_read8(SRAM->settings.backgroundType));
-
-    if (isMultiplayer()) {
-      gamePosition = 0;
-      type = BackgroundType::FULL_BGA_DARK;
-    }
-
-    darkener->initialize(gamePosition, type);
-#endif
-
-    if (GameState.mods.decolorize != DecolorizeOpts::dOFF) {
-      SCENE_decolorize(backgroundPalette.get(), GameState.mods.decolorize);
-      SCENE_decolorize(foregroundPalette.get(), GameState.mods.decolorize);
-    }
-
+    initializeBackground();
     init++;
     return;
   } else if (init == 1) {
-    BACKGROUND_enable(true, !ENV_DEBUG, false, false);
-    SPRITE_enable();
-    processModsLoad();
-
-    player_play(song->audioPath.c_str());
-
+    initializeGame();
     init++;
   }
 
@@ -188,34 +160,21 @@ void SongScene::tick(u16 keys) {
     processMultiplayerUpdates();
 
   bool isNewBeat = chartReader[getLocalPlayerId()]->update((int)songMsecs);
-  if (isNewBeat) {
-    blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
-
-    for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-      lifeBars[playerId]->blink(foregroundPalette.get());
-
-    for (auto& arrowHolder : arrowHolders)
-      if (!KEY_ANY_PRESSED(keys))
-        arrowHolder->blink();
-
-    processModsBeat();
-  }
+  if (isNewBeat)
+    onNewBeat(KEY_ANY_PRESSED(keys));
   if (isVs())
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
   blinkFrame = max(blinkFrame - 1, 0);
   if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
-
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
+
   updateFakeHeads();
   updateArrows();
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    scores[playerId]->tick();
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    lifeBars[playerId]->tick(foregroundPalette.get());
+  updateScoresAndLifebars();
 
 #ifdef SENV_DEVELOPMENT
   if (chartReader[0]->debugOffset)
@@ -234,6 +193,10 @@ void SongScene::setUpPalettes() {
 }
 
 void SongScene::setUpBackground() {
+#ifdef SENV_DEBUG
+  return;
+#endif
+
   bg = BACKGROUND_loadBackgroundFiles(fs, song->backgroundTilesPath.c_str(),
                                       song->backgroundMapPath.c_str(),
                                       MAIN_BACKGROUND_ID);
@@ -260,6 +223,37 @@ void SongScene::setUpArrows() {
 
     fakeHeads.push_back(std::move(fakeHead));
   }
+}
+
+void SongScene::initializeBackground() {
+#ifdef SENV_DEBUG
+  BACKGROUND_setColor(0, 127);
+  return;
+#endif
+
+  auto gamePosition =
+      GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
+  auto type = static_cast<BackgroundType>(
+      SAVEFILE_read8(SRAM->settings.backgroundType));
+
+  if (isMultiplayer()) {
+    gamePosition = 0;
+    type = BackgroundType::FULL_BGA_DARK;
+  }
+
+  darkener->initialize(gamePosition, type);
+
+  if (GameState.mods.decolorize != DecolorizeOpts::dOFF) {
+    SCENE_decolorize(backgroundPalette.get(), GameState.mods.decolorize);
+    SCENE_decolorize(foregroundPalette.get(), GameState.mods.decolorize);
+  }
+}
+
+void SongScene::initializeGame() {
+  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
+  SPRITE_enable();
+  processModsLoad();
+  player_play(song->audioPath.c_str());
 }
 
 void SongScene::updateArrowHolders() {
@@ -359,10 +353,14 @@ void SongScene::updateFakeHeads() {
   }
 }
 
-void SongScene::updateGameX() {
-  if (isMultiplayer())
-    return;
+void SongScene::updateScoresAndLifebars() {
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    scores[playerId]->tick();
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    lifeBars[playerId]->tick(foregroundPalette.get());
+}
 
+void SongScene::updateGameX() {
   lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
                              lifeBars[0]->get()->getY());
   for (auto& it : arrowHolders)
@@ -444,6 +442,19 @@ void SongScene::processKeys(u16 keys) {
   }
 }
 
+void SongScene::onNewBeat(bool isAnyKeyPressed) {
+  blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
+
+  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+    lifeBars[playerId]->blink(foregroundPalette.get());
+
+  for (auto& arrowHolder : arrowHolders)
+    if (!isAnyKeyPressed)
+      arrowHolder->blink();
+
+  processModsBeat();
+}
+
 void SongScene::onStageBreak(u8 playerId) {
   scores[playerId]->die();
 
@@ -496,6 +507,9 @@ void SongScene::finishAndGoToEvaluation() {
 }
 
 void SongScene::processModsLoad() {
+  if (isMultiplayer())
+    return;
+
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
       GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
     targetMosaic = 4;
@@ -507,6 +521,9 @@ void SongScene::processModsLoad() {
 }
 
 void SongScene::processModsBeat() {
+  if (isMultiplayer())
+    return;
+
   if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     mosaic = 6;
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
@@ -537,6 +554,9 @@ void SongScene::processModsBeat() {
 }
 
 void SongScene::processModsTick() {
+  if (isMultiplayer())
+    return;
+
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
     GameState.positionX[0] += jumpDirection;
     if (GameState.positionX[0] >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
