@@ -315,8 +315,6 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
       const print = (n, digits) => _.padStart(n, digits, 0);
 
       const levelOf = (chart) => {
-        if (chart === null) return "-";
-
         const level = chart.header.level;
         const complexity = Math.round(
           _.sumBy(chart.events, "complexity") * 100
@@ -324,15 +322,20 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
         return `${print(level, 2)} (Ω ${print(complexity, 4)})`;
       };
 
-      return {
+      const data = {
         id,
         title: it.metadata.title.substring(0, 25),
         artist: it.metadata.artist.substring(0, 25),
         channel: it.metadata.channel,
-        normal: levelOf(normal),
-        hard: levelOf(hard),
-        crazy: levelOf(crazy),
       };
+
+      if (!GLOBAL_OPTIONS.arcade) {
+        data.normal = levelOf(normal);
+        data.hard = levelOf(hard);
+        data.crazy = levelOf(crazy);
+      }
+
+      return data;
     })
   );
 });

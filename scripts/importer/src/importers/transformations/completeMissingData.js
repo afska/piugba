@@ -55,8 +55,6 @@ module.exports = (metadata, charts, content, filePath) => {
     metadata,
     charts,
     getChartByDifficulty(difficulty) {
-      if (GLOBAL_OPTIONS.arcade) return null;
-
       return getChartByDifficulty(this.charts, difficulty);
     },
   };
