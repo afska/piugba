@@ -322,9 +322,18 @@ module.exports = class Chart {
       .split(/\r?\n/)
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
-      .filter((it) =>
-        (this.header.isDouble ? NOTE_DATA_DOUBLE : NOTE_DATA_SINGLE).test(it)
-      );
+      .filter((it) => !_.isEmpty(it))
+      .filter((it) => {
+        it = it.replace(/[MK]/gi, "0"); // ignored SSC events
+
+        const isValid = (this.header.isDouble
+          ? NOTE_DATA_DOUBLE
+          : NOTE_DATA_SINGLE
+        ).test(it);
+
+        if (!isValid) throw new Error(`invalid_line: ${it}`);
+        return true;
+      });
   }
 
   _getEventsByType(line) {
