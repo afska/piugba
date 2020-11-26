@@ -13,9 +13,9 @@
 
 void ARCADE_initialize();
 
-GradeType ARCADE_readSingle(u8 songIndex, u8 level);
-GradeType ARCADE_readDouble(u8 songIndex, u8 level);
-void ARCADE_writeSingle(u8 songIndex, u8 level, GradeType grade);
-void ARCADE_writeDouble(u8 songIndex, u8 level, GradeType grade);
+GradeType ARCADE_readSingle(u8 songId, u8 level);
+GradeType ARCADE_readDouble(u8 songId, u8 level);
+void ARCADE_writeSingle(u8 songId, u8 level, GradeType grade);
+void ARCADE_writeDouble(u8 songId, u8 level, GradeType grade);
 
 #endif  // ARCADE_PROGRESS_H

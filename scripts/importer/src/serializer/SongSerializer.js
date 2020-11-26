@@ -15,10 +15,10 @@ module.exports = class SongSerializer {
 
   serialize() {
     const buffer = this.protocol.write();
-    const { metadata, charts } = this.simfile;
+    const { id, metadata, charts } = this.simfile;
 
     return buffer
-      .UInt8(metadata.id)
+      .UInt8(id)
       .String(metadata.title, TITLE_LEN)
       .String(metadata.artist, ARTIST_LEN)
       .UInt8(Channels[metadata.channel])
