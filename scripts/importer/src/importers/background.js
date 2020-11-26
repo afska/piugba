@@ -73,11 +73,8 @@ module.exports = (name, filePath, outputPath, transparentColor = null) => {
         .replace("\\", "")
     );
     if (mapMd5Sum === UNIQUE_MAP_MD5SUM) {
-      if (hasOptimizedUniqueMap) {
-        console.log("  ⚠️  unique map detected, reusing...");
-        utils.run(COMMAND_RM(mapFilePath));
-      } else {
-        console.log("  ⚠️  unique map detected, renaming...");
+      if (hasOptimizedUniqueMap) utils.run(COMMAND_RM(mapFilePath));
+      else {
         hasOptimizedUniqueMap = true;
         fs.renameSync(mapFilePath, $path.join(outputPath, UNIQUE_MAP_NAME));
       }
