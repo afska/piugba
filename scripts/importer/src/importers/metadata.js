@@ -1,7 +1,8 @@
 const Simfile = require("../parser/Simfile");
 const SongSerializer = require("../serializer/SongSerializer");
-const checkIntegrity = require("./integrity/checkIntegrity");
-const completeMissingData = require("./integrity/completeMissingData");
+const checkIntegrity = require("./transformations/checkIntegrity");
+const applyOffsets = require("./transformations/applyOffsets");
+const completeMissingData = require("./transformations/completeMissingData");
 const fs = require("fs");
 const $path = require("path");
 const _ = require("lodash");
@@ -14,6 +15,7 @@ module.exports = (name, filePath, outputPath, id) => {
   const { metadata, charts } = new Simfile(content, name);
 
   checkIntegrity(metadata, charts);
+  applyOffsets(metadata, charts);
   const simfile = completeMissingData(metadata, charts, content, filePath);
   simfile.id = id;
 

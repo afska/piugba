@@ -70,8 +70,8 @@ if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
   GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
+GLOBAL_OPTIONS.directory = GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH;
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
-const SONGS_PATH = opt.options.directory || DEFAULT_SONGS_PATH;
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
@@ -87,18 +87,18 @@ const GET_SONG_FILES = ({ path, name }) => {
 // CLEANUP
 // -------
 
-mkdirp(SONGS_PATH);
+mkdirp(GLOBAL_OPTIONS.directory);
 let reuseRomId = null;
 try {
   reuseRomId = fs
-    .readFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE))
+    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
     .readUInt32LE();
   console.log(
     `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
   );
   console.log(
     "To stop reusing rom ids, remove ".yellow +
-      `${$path.join(SONGS_PATH, ROM_ID_FILE_REUSE)}`.cyan
+      `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
   );
 } catch (e) {}
 utils.run(`rm -rf ${OUTPUT_PATH}`);
@@ -136,7 +136,9 @@ fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
 // SONG DETECTION
 // --------------
 
-const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
+const songs = _(
+  fs.readdirSync(GLOBAL_OPTIONS.directory, { withFileTypes: true })
+)
   .sortBy()
   .filter((it) => it.isDirectory())
   .map("name")
@@ -145,7 +147,7 @@ const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
     const outputName = NORMALIZE_FILENAME(name);
 
     return {
-      path: $path.join(SONGS_PATH, directory),
+      path: $path.join(GLOBAL_OPTIONS.directory, directory),
       name,
       outputName,
     };
@@ -279,7 +281,10 @@ else {
   romIdBuffer.writeUInt8(songs.length);
 }
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
-fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
+fs.writeFileSync(
+  $path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE),
+  romIdBuffer
+);
 
 // --------
 // ROM NAME
@@ -288,7 +293,7 @@ fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
 let name = "";
 try {
   const romName = fs
-    .readFileSync($path.join(SONGS_PATH, ROM_NAME_FILE_SOURCE))
+    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_NAME_FILE_SOURCE))
     .toString();
   name = _.padEnd(romName.substring(0, 12), 13, "\0");
 } catch (e) {}
