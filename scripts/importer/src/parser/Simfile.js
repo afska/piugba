@@ -64,6 +64,7 @@ module.exports = class Simfile {
       .flatten()
       .map(({ rawChart, isDouble }) => {
         const startIndex = this.content.indexOf(rawChart);
+        let level = "?";
 
         const name =
           this._getSingleMatch(REGEXPS.chart.name, rawChart, true) || "";
@@ -73,62 +74,65 @@ module.exports = class Simfile {
             DifficultyLevels,
             rawChart
           ) || "NUMERIC";
-        const level = utils.restrictTo(
-          this._getSingleMatch(REGEXPS.chart.level, rawChart, true),
-          0,
-          99
-        );
-        if (!_.isFinite(level)) throw new Error("no_level_info");
-        const order =
-          this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
-          level;
-
-        let chartOffset = this._getSingleMatch(REGEXPS.chart.offset, rawChart);
-        if (!_.isFinite(chartOffset)) chartOffset = 0;
-        const offset = -chartOffset * SECOND;
-
-        const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
-        if (_.isEmpty(bpms)) {
-          console.log(name, difficulty, bpms);
-          process.exit(1);
-        }
-        if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
-
-        const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
-        const tickcounts = this._getSingleMatch(
-          REGEXPS.chart.tickcounts,
-          rawChart
-        );
-        const fakes = this._getSingleMatch(REGEXPS.chart.fakes, rawChart);
-        const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
-        const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
-        const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
-        const warps = this._getSingleMatch(REGEXPS.chart.warps, rawChart);
-        const header = {
-          startIndex,
-          name,
-          difficulty,
-          isDouble,
-          level,
-          order,
-          offset,
-          bpms,
-          speeds,
-          tickcounts,
-          fakes,
-          stops,
-          delays,
-          scrolls,
-          warps,
-        };
-
-        const notesStart = startIndex + rawChart.length;
-        const rawNotes = this._getSingleMatch(
-          REGEXPS.limit,
-          this.content.substring(notesStart)
-        );
+        level = this._getSingleMatch(REGEXPS.chart.level, rawChart, true);
 
         try {
+          if (!_.isFinite(level)) throw new Error("no_level_info");
+          level = utils.restrictTo(level, 0, 99);
+
+          const type = this._getSingleMatch(REGEXPS.chart.type, rawChart, true);
+          const expectedType = isDouble ? "pump-double" : "pump-single";
+          if (_.isEmpty(type) || type != expectedType)
+            throw new Error("steps_type_doesnt_match_header");
+
+          const order =
+            this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
+            level;
+
+          let chartOffset = this._getSingleMatch(
+            REGEXPS.chart.offset,
+            rawChart
+          );
+          if (!_.isFinite(chartOffset)) chartOffset = 0;
+          const offset = -chartOffset * SECOND;
+
+          const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
+          if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
+
+          const speeds = this._getSingleMatch(REGEXPS.chart.speeds, rawChart);
+          const tickcounts = this._getSingleMatch(
+            REGEXPS.chart.tickcounts,
+            rawChart
+          );
+          const fakes = this._getSingleMatch(REGEXPS.chart.fakes, rawChart);
+          const stops = this._getSingleMatch(REGEXPS.chart.stops, rawChart);
+          const delays = this._getSingleMatch(REGEXPS.chart.delays, rawChart);
+          const scrolls = this._getSingleMatch(REGEXPS.chart.scrolls, rawChart);
+          const warps = this._getSingleMatch(REGEXPS.chart.warps, rawChart);
+          const header = {
+            startIndex,
+            name,
+            difficulty,
+            isDouble,
+            level,
+            order,
+            offset,
+            bpms,
+            speeds,
+            tickcounts,
+            fakes,
+            stops,
+            delays,
+            scrolls,
+            warps,
+          };
+
+          const notesStart = startIndex + rawChart.length;
+          const rawNotes = this._getSingleMatch(
+            REGEXPS.limit,
+            this.content.substring(notesStart)
+          );
+
           const events = new Chart(this.metadata, header, rawNotes).events;
           return { header, events };
         } catch (e) {
@@ -236,6 +240,7 @@ const REGEXPS = {
     single: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     double: /\/\/-+pump-double - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
+    type: PROPERTY("STEPSTYPE"),
     difficulty: PROPERTY("DIFFICULTY"),
     level: PROPERTY_INT("METER"),
     customOrder: PROPERTY_INT("PIUGBA_ORDER"),
