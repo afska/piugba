@@ -133,8 +133,9 @@ module.exports = class Simfile {
             this.content.substring(notesStart)
           );
 
-          const events = new Chart(this.metadata, header, rawNotes).events;
-          return { header, events };
+          const chart = new Chart(this.metadata, header, rawNotes);
+          chart.events; // (check if it can be parsed correctly)
+          return chart;
         } catch (e) {
           console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
           return null;
