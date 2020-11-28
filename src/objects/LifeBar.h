@@ -9,28 +9,33 @@ const int INITIAL_LIFE = 60;
 const int MAX_LIFE = 100;
 const int MIN_LIFE = -13;
 const u32 LIFEBAR_POSITION_X = 15;
-const int LIFEBAR_POSITION_Y = -11 + 2;
+const int LIFEBAR_POSITION_Y = -20 + 2;
 
 class LifeBar {
  public:
-  LifeBar();
+  LifeBar(u8 playerId);
 
   inline u8 getMosaicValue() { return mosaicValue; }
 
   void setLife(int life);
   void blink(ForegroundPaletteManager* foregroundPalette);
+  void die();
+
+  inline bool getIsDead() { return isDead; }
 
   void tick(ForegroundPaletteManager* foregroundPalette);
   inline Sprite* get() { return sprite.get(); }
 
  private:
   std::unique_ptr<Sprite> sprite;
+  u8 playerId;
   u32 value = Div(INITIAL_LIFE, 10);
   u32 absLife = INITIAL_LIFE;
   u32 animatedValue = value;
   u32 wait = 0;
   u8 mosaicValue = 0;
   bool animatedFlag = false;
+  bool isDead = false;
 
   void paint(ForegroundPaletteManager* foregroundPalette);
 };

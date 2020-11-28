@@ -38,6 +38,8 @@ class StageBreakScene : public Scene {
   void setUpBackground();
 
   void animate();
+  void finish();
+  void processMultiplayerUpdates();
 };
 
 #endif  // STAGE_BREAK_SCENE_H

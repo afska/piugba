@@ -1,19 +1,17 @@
 #include "State.h"
 
 #include "Savefile.h"
+#include "gameplay/multiplayer/Syncer.h"
 
 RAMState GameState;
 
 void STATE_setup(Song* song, Chart* chart) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
   if (song == NULL)
     gameMode = GameMode::ARCADE;
 
-  GameState.positionX = 0;
-  GameState.positionY = 0;
-  GameState.scorePositionY = 0;
-
-  GameState.mods.multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
+  GameState.mods.multiplier =
+      isMultiplayer() ? 3 : SAVEFILE_read8(SRAM->mods.multiplier);
 
   switch (gameMode) {
     case GameMode::CAMPAIGN: {
@@ -24,17 +22,18 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
-      GameState.mods.negative = false;
+      GameState.mods.decolorize = DecolorizeOpts::dOFF;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
-      GameState.mods.extraJudgement = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
 
       if (song->applyTo[chart->difficulty]) {
         GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
         GameState.mods.jump = static_cast<JumpOpts>(song->jump);
         GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
-        GameState.mods.negative = song->negativeColors;
+        GameState.mods.decolorize =
+            static_cast<DecolorizeOpts>(song->decolorize);
         GameState.mods.randomSpeed = song->randomSpeed;
       }
 
@@ -49,11 +48,13 @@ void STATE_setup(Song* song, Chart* chart) {
           static_cast<JumpOpts>(SAVEFILE_read8(SRAM->mods.jump));
       GameState.mods.reduce =
           static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
-      GameState.mods.negative = SAVEFILE_read8(SRAM->mods.negative);
+      GameState.mods.decolorize =
+          static_cast<DecolorizeOpts>(SAVEFILE_read8(SRAM->mods.decolorize));
       GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
-      GameState.mods.extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+      GameState.mods.trainingMode = static_cast<TrainingModeOpts>(
+          SAVEFILE_read8(SRAM->mods.trainingMode));
       break;
     }
     case GameMode::IMPOSSIBLE: {
@@ -63,19 +64,36 @@ void STATE_setup(Song* song, Chart* chart) {
               : StageBreakOpts::sOFF;
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
-      GameState.mods.reduce = ReduceOpts::rLINEAR;
-      GameState.mods.negative = false;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.decolorize = DecolorizeOpts::dGRAY;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
-      GameState.mods.extraJudgement = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
+    }
+    default: {
+      GameState.mods.stageBreak = StageBreakOpts::sON;
+      GameState.mods.pixelate = PixelateOpts::pOFF;
+      GameState.mods.jump = JumpOpts::jOFF;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.decolorize = DecolorizeOpts::dOFF;
+      GameState.mods.randomSpeed = false;
+      GameState.mods.mirrorSteps = false;
+      GameState.mods.randomSteps = false;
+      GameState.mods.trainingMode = TrainingModeOpts::tOFF;
     }
   }
 
-  if (!GameState.mods.jump)
-    GameState.positionX =
-        GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
+  GameState.positionX[0] =
+      isMultiplayer()
+          ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)
+          : GAME_POSITION_X[GameState.mods.jump
+                                ? 0
+                                : SAVEFILE_read8(SRAM->settings.gamePosition)];
+  GameState.positionX[1] = isVs() ? GAME_POSITION_X[2] : 0;
+  GameState.positionY = 0;
+  GameState.scorePositionY = 0;
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {
     GameState.positionY = REDUCE_MOD_POSITION_Y;

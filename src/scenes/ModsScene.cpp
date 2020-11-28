@@ -1,5 +1,6 @@
 #include "ModsScene.h"
 
+#include "assets.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
@@ -10,11 +11,11 @@
 #define OPTION_PIXELATE 2
 #define OPTION_JUMP 3
 #define OPTION_REDUCE 4
-#define OPTION_NEGATIVE_COLORS 5
+#define OPTION_DECOLORIZE 5
 #define OPTION_RANDOM_SPEED 6
 #define OPTION_MIRROR_STEPS 7
 #define OPTION_RANDOM_STEPS 8
-#define OPTION_EXTRA_JUDGEMENT 9
+#define OPTION_TRAINING_MODE 9
 #define OPTION_RESET 10
 
 const u32 TEXT_BLEND_ALPHA = 12;
@@ -46,16 +47,16 @@ void ModsScene::printOptions() {
   u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
   u8 jump = SAVEFILE_read8(SRAM->mods.jump);
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-  bool negative = SAVEFILE_read8(SRAM->mods.negative);
+  u8 decolorize = SAVEFILE_read8(SRAM->mods.decolorize);
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
-  bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
+  u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
               4);
   printOption(OPTION_STAGE_BREAK, "Stage break",
-              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN_DEATH",
+              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN DEATH",
               5);
   printOption(OPTION_PIXELATE, "Pixelate",
               pixelate == 0
@@ -65,8 +66,8 @@ void ModsScene::printOptions() {
                         : pixelate == 2
                               ? "FIXED"  // ° ͜ʖ ͡°)
                               : pixelate == 3
-                                    ? "BLINK_IN"  // ° ͜ʖ ͡°)
-                                    : pixelate == 4 ? "BLINK_OUT" : "RANDOM",
+                                    ? "BLINK IN"  // ° ͜ʖ ͡°)
+                                    : pixelate == 4 ? "BLINK OUT" : "RANDOM",
               6);
   printOption(OPTION_JUMP, "Jump",
               jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
@@ -75,16 +76,26 @@ void ModsScene::printOptions() {
                   ? "OFF"
                   : reduce == 1 ? "LINEAR" : reduce == 2 ? "FIXED" : "RANDOM",
               8);
-  printOption(OPTION_NEGATIVE_COLORS, "Negative colors",
-              negative ? "ON" : "OFF", 9);
+  printOption(OPTION_DECOLORIZE, "Decolorize",
+              decolorize == 0
+                  ? "OFF"  // ° ͜ʖ ͡°)
+                  : decolorize == 1
+                        ? "INVERT"  // ° ͜ʖ ͡°)
+                        : decolorize == 2
+                              ? "GRAY"  // ° ͜ʖ ͡°)
+                              : decolorize == 3
+                                    ? "RED"  // ° ͜ʖ ͡°)
+                                    : decolorize == 4 ? "GREEN" : "BLUE",
+              9);
   printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
               10);
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
               11);
   printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
               12);
-  printOption(OPTION_EXTRA_JUDGEMENT, "Extra judgement",
-              extraJudgement ? "ON" : "OFF", 13);
+  printOption(OPTION_TRAINING_MODE, "Training mode",
+              trainingMode == 0 ? "OFF" : trainingMode == 1 ? "ON" : "SILENT",
+              13);
   printOption(OPTION_RESET, "[RESET MODS]", "", 15);
 }
 
@@ -119,9 +130,9 @@ bool ModsScene::selectOption(u32 selected) {
       SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 4));
       return true;
     }
-    case OPTION_NEGATIVE_COLORS: {
-      bool negative = SAVEFILE_read8(SRAM->mods.negative);
-      SAVEFILE_write8(SRAM->mods.negative, !negative);
+    case OPTION_DECOLORIZE: {
+      u8 decolorize = SAVEFILE_read8(SRAM->mods.decolorize);
+      SAVEFILE_write8(SRAM->mods.decolorize, increment(decolorize, 6));
       return true;
     }
     case OPTION_RANDOM_SPEED: {
@@ -139,9 +150,9 @@ bool ModsScene::selectOption(u32 selected) {
       SAVEFILE_write8(SRAM->mods.randomSteps, !randomSteps);
       return true;
     }
-    case OPTION_EXTRA_JUDGEMENT: {
-      bool extraJudgement = SAVEFILE_read8(SRAM->mods.extraJudgement);
-      SAVEFILE_write8(SRAM->mods.extraJudgement, !extraJudgement);
+    case OPTION_TRAINING_MODE: {
+      u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
+      SAVEFILE_write8(SRAM->mods.trainingMode, increment(trainingMode, 3));
       return true;
     }
     case OPTION_RESET: {

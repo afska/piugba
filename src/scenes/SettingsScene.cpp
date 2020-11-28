@@ -4,6 +4,7 @@
 
 #include "CalibrateScene.h"
 #include "StartScene.h"
+#include "assets.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
@@ -48,7 +49,7 @@ void SettingsScene::printOptions() {
   printOption(OPTION_BACKGROUND_TYPE, "Background type",
               backgroundType == 0
                   ? "RAW"
-                  : backgroundType == 1 ? "HALF_DARK" : "FULL_DARK",
+                  : backgroundType == 1 ? "HALF DARK" : "FULL DARK",
               9);
   if (backgroundType > 0)
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
@@ -63,7 +64,7 @@ void SettingsScene::printOptions() {
 bool SettingsScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
-      engine->transitionIntoScene(new CalibrateScene(engine, fs, NULL),
+      engine->transitionIntoScene(new CalibrateScene(engine, fs),
                                   new FadeOutScene(2));
       return false;
     }

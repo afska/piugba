@@ -9,7 +9,7 @@ enum DigitSize { BIG, MINI };
 
 class Digit : public AnimatedIndicator {
  public:
-  Digit(DigitSize size, u32 x, u32 y, u32 index);
+  Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles);
 
   void set(u32 value, bool isRed);
   void relocate(DigitSize size, u32 x, u32 y, u32 index);

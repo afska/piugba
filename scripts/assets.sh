@@ -54,10 +54,13 @@ mv \
 grit \
   spr_arrows.bmp \
   spr_buttons.bmp \
+  spr_buttons_mini.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_start.c
 mv \
   spr_buttons.h \
   spr_buttons.c \
+  spr_buttons_mini.h \
+  spr_buttons_mini.c \
   palette_start.* \
   "$DESTINATION"
 
@@ -81,7 +84,7 @@ mv \
   palette_break.* \
   "$DESTINATION"
 
-# DanceGradeScene
+# DanceGradeScene (single player)
 grit \
   spr_numbers_mini.bmp \
   spr_grade_*.bmp \
@@ -92,6 +95,19 @@ mv \
   spr_grade_*.h \
   spr_grade_*.c \
   palette_grade.* \
+  "$DESTINATION"
+
+# DanceGradeScene (multi player)
+grit \
+  spr_numbers_mini.bmp \
+  spr_grades_mini_evaluation.bmp \
+  -ftc -pS -gB8 -gT ff00ff -O palette_grade_multi.c
+mv \
+  spr_numbers_mini.h \
+  spr_numbers_mini.c \
+  spr_grades_mini_evaluation.h \
+  spr_grades_mini_evaluation.c \
+  palette_grade_multi.* \
   "$DESTINATION"
 
 # [Cleanup]

@@ -10,7 +10,7 @@
 
 class Combo {
  public:
-  Combo();
+  Combo(u8 playerId);
 
   void setValue(int value);
   inline u32 getValue() { return value; }
@@ -19,7 +19,9 @@ class Combo {
   void relocate();
 
   void tick();
-  void render(std::vector<Sprite*>* sprites);
+
+  inline ComboTitle* getTitle() { return title.get(); }
+  inline std::vector<std::unique_ptr<Digit>>* getDigits() { return &digits; }
 
   ~Combo();
 
@@ -27,6 +29,7 @@ class Combo {
   u32 value = 0;
   std::unique_ptr<ComboTitle> title;
   std::vector<std::unique_ptr<Digit>> digits;
+  u8 playerId;
 };
 
 #endif  // COMBO_H

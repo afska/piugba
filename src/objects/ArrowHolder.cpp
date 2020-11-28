@@ -5,19 +5,23 @@
 #include "data/content/_compiled_sprites/spr_arrows.h"
 #include "utils/SpriteUtils.h"
 
-ArrowHolder::ArrowHolder(ArrowDirection direction, bool reuseTiles) {
+ArrowHolder::ArrowHolder(ArrowDirection direction,
+                         u8 playerId,
+                         bool reuseTiles) {
   u32 start = 0;
   bool flip = false;
   ARROW_initialize(direction, start, flip);
   this->direction = direction;
+  this->playerId = playerId;
   this->start = start;
   this->flip = flip;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
-               .withLocation(ARROW_CORNER_MARGIN_X() + ARROW_MARGIN * direction,
-                             ARROW_FINAL_Y())
+               .withLocation(
+                   ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
+                   ARROW_FINAL_Y())
                .buildPtr();
 
   if (reuseTiles)
@@ -32,7 +36,6 @@ void ArrowHolder::blink() {
 
 void ArrowHolder::tick() {
   sprite->flipHorizontally(flip);
-  isNewPressEvent = false;
 
   u32 currentFrame = sprite->getCurrentFrame();
 

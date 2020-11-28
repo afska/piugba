@@ -6,6 +6,7 @@
 #include <tonc_input.h>
 
 #include "ModsScene.h"
+#include "MultiplayerLobbyScene.h"
 #include "SettingsScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
@@ -15,7 +16,6 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
 #include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
@@ -80,13 +80,22 @@ std::vector<Sprite*> SelectionScene::sprites() {
   sprites.push_back(multiplier->get());
   progress->render(&sprites);
 
-  if (getGameMode() == GameMode::ARCADE)
+  if (!IS_STORY(SAVEFILE_getGameMode()))
     sprites.push_back(numericLevelBadge->get());
 
   return sprites;
 }
 
 void SelectionScene::load() {
+  if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
+    BSOD("This version is ARCADE only.");
+
+  if (isMultiplayer()) {
+    syncer->clearTimeout();
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+  }
+
+  SAVEFILE_write8(SRAM->state.isPlaying, 0);
   SCENE_init();
 
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
@@ -99,7 +108,10 @@ void SelectionScene::load() {
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
-  if (getGameMode() == GameMode::ARCADE) {
+  if (IS_STORY(SAVEFILE_getGameMode())) {
+    auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+    difficulty->setValue(static_cast<DifficultyLevel>(level));
+  } else {
     numericLevelBadge = std::unique_ptr<Button>{
         new Button(ButtonType::LEVEL_METER, NUMERIC_LEVEL_BADGE_X,
                    NUMERIC_LEVEL_BADGE_Y, false)};
@@ -107,9 +119,6 @@ void SelectionScene::load() {
 
     difficulty->setValue(DifficultyLevel::NUMERIC);
     SPRITE_hide(multiplier->get());
-  } else {
-    auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
-    difficulty->setValue(static_cast<DifficultyLevel>(level));
   }
 
   setUpSpritesPalette();
@@ -123,6 +132,12 @@ void SelectionScene::load() {
 void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  if (SEQUENCE_isMultiplayerSessionDead()) {
+    player_stop();
+    SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
+    return;
+  }
 
   if (init < INIT_FRAME) {
     init++;
@@ -140,9 +155,14 @@ void SelectionScene::tick(u16 keys) {
   multiplier->tick();
 
   processKeys(keys);
+
+  if (isMultiplayer())
+    processMultiplayerUpdates();
+
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
   processConfirmEvents();
+
   processMenuEvents(keys);
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
@@ -191,12 +211,22 @@ void SelectionScene::setUpArrows() {
       SELECTOR_MARGIN, GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
   arrowSelectors[ArrowDirection::UPLEFT]->get()->moveTo(SELECTOR_MARGIN,
                                                         SELECTOR_MARGIN);
-  SPRITE_hide(arrowSelectors[2]->get());
+  SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
   arrowSelectors[ArrowDirection::UPRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN, SELECTOR_MARGIN);
   arrowSelectors[ArrowDirection::DOWNRIGHT]->get()->moveTo(
       GBA_SCREEN_WIDTH - ARROW_SIZE - SELECTOR_MARGIN,
       GBA_SCREEN_HEIGHT - ARROW_SIZE - SELECTOR_MARGIN);
+
+  if (isMultiplayer() && !syncer->isMaster()) {
+    SPRITE_hide(arrowSelectors[ArrowDirection::DOWNLEFT]->get());
+    SPRITE_hide(arrowSelectors[ArrowDirection::DOWNRIGHT]->get());
+
+    if (isCoop()) {
+      SPRITE_hide(arrowSelectors[ArrowDirection::UPLEFT]->get());
+      SPRITE_hide(arrowSelectors[ArrowDirection::UPRIGHT]->get());
+    }
+  }
 }
 
 void SelectionScene::setUpChannelBadges() {
@@ -208,7 +238,7 @@ void SelectionScene::setUpChannelBadges() {
 void SelectionScene::setUpGradeBadges() {
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     gradeBadges.push_back(std::unique_ptr<GradeBadge>{
-        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0)});
+        new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0, false)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
   }
 }
@@ -242,19 +272,40 @@ void SelectionScene::scrollTo(u32 page, u32 selected) {
   updateSelection();
 }
 
+void SelectionScene::setNumericLevel(u8 numericLevelIndex) {
+  SAVEFILE_write8(SRAM->memory.numericLevel, numericLevelIndex);
+  updateSelection(true);
+  pixelBlink->blink();
+}
+
 void SelectionScene::goToSong() {
-  player_stopAll();
+  if (numericLevels.empty())
+    return;
+
+  player_stop();
   confirmed = false;
 
-  Song* song = SONG_parse(fs, getSelectedSong(), true);
+  bool isStory = IS_STORY(SAVEFILE_getGameMode());
+  bool hasRemoteChart = isVs() && remoteNumericLevel != -1;
+  std::vector<u8> selectedLevels;
+
+  if (!isStory) {
+    selectedLevels.push_back(getSelectedNumericLevel());
+    if (hasRemoteChart)
+      selectedLevels.push_back(numericLevels[remoteNumericLevel]);
+  }
+
+  Song* song = SONG_parse(fs, getSelectedSong(), true, selectedLevels);
   Chart* chart =
-      getGameMode() == GameMode::ARCADE
-          ? SONG_findChartByNumericLevelIndex(song,
-                                              getSelectedNumericLevelIndex())
-          : SONG_findChartByDifficultyLevel(song, difficulty->getValue());
+      isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
+              : SONG_findChartByNumericLevelIndex(
+                    song, getSelectedNumericLevelIndex(), isCoop());
+  Chart* remoteChart = hasRemoteChart ? SONG_findChartByNumericLevelIndex(
+                                            song, (u8)remoteNumericLevel, false)
+                                      : NULL;
 
   STATE_setup(song, chart);
-  SEQUENCE_goToMessageOrSong(song, chart);
+  SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
 void SelectionScene::processKeys(u16 keys) {
@@ -268,16 +319,10 @@ void SelectionScene::processKeys(u16 keys) {
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
-  if (getGameMode() == GameMode::ARCADE) {
-    auto currentIndex = getSelectedNumericLevelIndex();
-    auto previousIndex = max(currentIndex - 1, 0);
-    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
+  if (isCoop() && !syncer->isMaster())
+    return;
 
-    if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
-      return;
-
-    onNumericLevelChange(ArrowDirection::UPLEFT, previousIndex);
-  } else {
+  if (IS_STORY(SAVEFILE_getGameMode())) {
     if (onDifficultyLevelChange(
             ArrowDirection::UPRIGHT,
             static_cast<DifficultyLevel>(
@@ -287,13 +332,27 @@ void SelectionScene::processDifficultyChangeEvents() {
     onDifficultyLevelChange(
         ArrowDirection::UPLEFT,
         static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+  } else {
+    auto currentIndex = getSelectedNumericLevelIndex();
+    auto previousIndex = max(currentIndex - 1, 0);
+    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
+
+    if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
+      return;
+
+    onNumericLevelChange(ArrowDirection::UPLEFT, previousIndex);
   }
 }
 
 void SelectionScene::processSelectionChangeEvents() {
-  auto isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
-  if (ENV_DEVELOPMENT)
-    isOnListEdge = getSelectedSongIndex() == count - 1;
+  if (isMultiplayer() && !syncer->isMaster())
+    return;
+
+  bool isOnListEdge = getSelectedSongIndex() == getLastUnlockedSongIndex();
+
+#ifdef SENV_DEVELOPMENT
+  isOnListEdge = getSelectedSongIndex() == count - 1;
+#endif
 
   if (onSelectionChange(ArrowDirection::DOWNRIGHT, isOnListEdge,
                         selected == PAGE_SIZE - 1, 1))
@@ -304,28 +363,40 @@ void SelectionScene::processSelectionChangeEvents() {
 }
 
 void SelectionScene::processConfirmEvents() {
+  if (isMultiplayer() && !syncer->isMaster())
+    return;
+
   if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
-    if (confirmed)
-      goToSong();
-    else
-      confirm();
+    if (isMultiplayer() && syncer->isMaster())
+      syncer->send(SYNC_EVENT_START_SONG, confirmed);
+
+    onConfirmOrStart(confirmed);
   }
 }
 
 void SelectionScene::processMenuEvents(u16 keys) {
+  if (isMultiplayer()) {
+    if (syncer->isMaster() && (keys & KEY_SELECT)) {
+      syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
+      quit();
+    }
+
+    return;
+  }
+
   if (multiplier->hasBeenPressedNow()) {
-    if (getGameMode() == GameMode::ARCADE) {
-      player_stopAll();
+    if (IS_STORY(SAVEFILE_getGameMode())) {
+      player_play(SOUND_MOD);
+      SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
+    } else {
+      player_stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new FadeOutScene(4));
-    } else {
-      fxes_playSolo(SOUND_MOD);
-      SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     }
   }
 
   if (settingsMenuInput->hasBeenPressedNow()) {
-    player_stopAll();
+    player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new FadeOutScene(4));
   }
@@ -335,7 +406,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
                                              DifficultyLevel newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    fxes_playSolo(SOUND_STEP);
+    player_play(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -345,7 +416,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
     pixelBlink->blink();
 
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
-    player_stopAll();
+    player_stop();
     scrollTo(lastUnlockedSongIndex);
 
     return true;
@@ -358,14 +429,15 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
                                           u8 newValue) {
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    fxes_playSolo(SOUND_STEP);
+    player_play(SOUND_STEP);
 
-    if (newValue == getSelectedNumericLevelIndex())
+    if (newValue == getSelectedNumericLevelIndex()) {
+      syncNumericLevelChanged(newValue);
       return true;
+    }
 
-    SAVEFILE_write8(SRAM->memory.numericLevel, newValue);
-    updateSelection(true);
-    pixelBlink->blink();
+    syncNumericLevelChanged(newValue);
+    setNumericLevel(newValue);
 
     return true;
   }
@@ -381,22 +453,29 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
     unconfirm();
 
     if (isOnListEdge) {
-      if (arrowSelectors[selector]->hasBeenPressedNow())
-        fxes_playSolo(SOUND_STEP);
+      bool withSound = arrowSelectors[selector]->hasBeenPressedNow();
+
+      if (withSound)
+        player_play(SOUND_STEP);
+
+      if (isMultiplayer() && syncer->isMaster())
+        syncer->send(SYNC_EVENT_SONG_CORNER, withSound);
+
       return true;
     }
 
-    player_stopAll();
+    player_stop();
 
-    if (isOnPageEdge) {
+    if (isOnPageEdge)
       setPage(page + direction, direction);
-      player_play(SOUND_STEP);
-    } else {
+    else {
       selected += direction;
       updateSelection();
       pixelBlink->blink();
-      fxes_play(SOUND_STEP);
     }
+
+    if (isMultiplayer() && syncer->isMaster())
+      syncer->send(SYNC_EVENT_SONG_CHANGED, getSelectedSongIndex());
 
     return true;
   }
@@ -404,29 +483,27 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
   return false;
 }
 
+void SelectionScene::onConfirmOrStart(bool isConfirmed) {
+  if (confirmed)
+    goToSong();
+  else
+    confirm();
+}
+
 void SelectionScene::updateSelection(bool isChangingLevel) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
 
-  bool canUpdateLevel = false;
-  u8 currentLevel;
-  if (!numericLevels.empty()) {
-    canUpdateLevel = true;
-    currentLevel = getSelectedNumericLevel();
-    numericLevels.clear();
-  }
-  for (u32 i = 0; i < song->chartCount; i++)
-    numericLevels.push_back(song->charts[i].level);
-  if (canUpdateLevel && !isChangingLevel)
-    setClosestNumericLevel(currentLevel);
-  if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
-    setClosestNumericLevel(0);
-
+  updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
-  printNumericLevel(song->charts[getSelectedNumericLevelIndex()].difficulty);
+  printNumericLevel(SONG_findChartByNumericLevelIndex(
+                        song, getSelectedNumericLevelIndex(), isCoop())
+                        ->difficulty);
+  loadSelectedSongGrade(song->id);
   if (!isChangingLevel) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
   }
+
   SONG_free(song);
 
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
@@ -434,13 +511,41 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   highlighter->select(selected);
 }
 
+void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
+  bool canUpdateLevel = false;
+  u8 currentLevel;
+
+  if (!numericLevels.empty()) {
+    canUpdateLevel = true;
+    currentLevel = getSelectedNumericLevel();
+    numericLevels.clear();
+  }
+
+  for (u32 i = 0; i < song->chartCount; i++)
+    if (song->charts[i].isDouble == isCoop())
+      numericLevels.push_back(song->charts[i].level);
+
+  if (canUpdateLevel && !isChangingLevel)
+    setClosestNumericLevel(currentLevel);
+  if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
+    setClosestNumericLevel(0);
+
+  if (difficulty->getValue() != DifficultyLevel::NUMERIC)
+    setClosestNumericLevel(
+        SONG_findChartByDifficultyLevel(song, difficulty->getValue())->level);
+}
+
 void SelectionScene::confirm() {
-  if (getGameMode() == GameMode::ARCADE)
+  if (!IS_STORY(SAVEFILE_getGameMode())) {
+    if (numericLevels.empty())
+      return;
+
     numericLevelBadge->get()->moveTo(
         NUMERIC_LEVEL_BADGE_X,
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
+  }
 
-  fxes_playSolo(SOUND_STEP);
+  player_play(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
@@ -451,7 +556,7 @@ void SelectionScene::confirm() {
 
 void SelectionScene::unconfirm() {
   if (confirmed) {
-    if (getGameMode() == GameMode::ARCADE)
+    if (!IS_STORY(SAVEFILE_getGameMode()))
       numericLevelBadge->get()->moveTo(NUMERIC_LEVEL_BADGE_X,
                                        NUMERIC_LEVEL_BADGE_Y);
 
@@ -482,8 +587,8 @@ void SelectionScene::setPage(u32 page, int direction) {
 
 void SelectionScene::loadChannels() {
   for (u32 i = 0; i < songs.size(); i++) {
-    auto channel =
-        SONG_getChannel(fs, getGameMode(), songs[i].get(), getLibraryType());
+    auto channel = SONG_getChannel(fs, SAVEFILE_getGameMode(), songs[i].get(),
+                                   getLibraryType());
     channelBadges[i]->setType(channel);
   }
 
@@ -495,11 +600,14 @@ void SelectionScene::loadProgress() {
   progress->setValue(getCompletedSongs(), count);
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    auto songId = page * PAGE_SIZE + i;
-    auto grade = SAVEFILE_getGradeOf(songId, difficulty->getValue());
-    gradeBadges[i]->setType(grade);
-    locks[i]->setVisible(songId > getLastUnlockedSongIndex() &&
-                         songId <= count - 1);
+    auto songIndex = page * PAGE_SIZE + i;
+
+    gradeBadges[i]->setType(
+        IS_STORY(SAVEFILE_getGameMode())
+            ? SAVEFILE_getStoryGradeOf(songIndex, difficulty->getValue())
+            : GradeType::UNPLAYED);
+    locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
+                         songIndex <= count - 1);
   }
 }
 
@@ -511,8 +619,13 @@ void SelectionScene::setNames(std::string title, std::string artist) {
 }
 
 void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
-  if (getGameMode() != GameMode::ARCADE)
+  if (IS_STORY(SAVEFILE_getGameMode()))
     return;
+
+  if (numericLevels.empty()) {
+    SCENE_write("--", NUMERIC_LEVEL_ROW + offset);
+    return;
+  }
 
   if (difficulty == DifficultyLevel::NORMAL)
     return SCENE_write("NM", NUMERIC_LEVEL_ROW + offset);
@@ -527,6 +640,96 @@ void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
   if (levelText.size() == 1)
     levelText = "0" + levelText;
   SCENE_write(levelText, NUMERIC_LEVEL_ROW + offset);
+}
+
+void SelectionScene::loadSelectedSongGrade(u8 songId) {
+  if (IS_STORY(SAVEFILE_getGameMode()))
+    return;
+
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    auto songIndex = page * PAGE_SIZE + i;
+
+    gradeBadges[i]->setType(
+        songIndex == getSelectedSongIndex()
+            ? SAVEFILE_getArcadeGradeOf(songId, getSelectedNumericLevel())
+            : GradeType::UNPLAYED);
+  }
+}
+
+void SelectionScene::processMultiplayerUpdates() {
+  auto linkState = linkConnection->linkState.get();
+  auto remoteId = syncer->getRemotePlayerId();
+
+  while (linkState->hasMessage(remoteId)) {
+    u16 message = linkState->readMessage(remoteId);
+    u8 event = SYNC_MSG_EVENT(message);
+    u16 payload = SYNC_MSG_PAYLOAD(message);
+
+    if (syncer->isMaster() && (isCoop() || event != SYNC_EVENT_LEVEL_CHANGED)) {
+      syncer->registerTimeout();
+      continue;
+    }
+
+    switch (event) {
+      case SYNC_EVENT_SONG_CHANGED: {
+        unconfirm();
+        if (remoteNumericLevel != -1)
+          setNumericLevel(remoteNumericLevel);
+        scrollTo(payload);
+        remoteNumericLevel = getSelectedNumericLevelIndex();
+        pixelBlink->blink();
+
+        syncer->clearTimeout();
+        break;
+      }
+      case SYNC_EVENT_LEVEL_CHANGED: {
+        unconfirm();
+        player_play(SOUND_STEP);
+
+        if (syncer->isMaster()) {
+          setNumericLevel(getSelectedNumericLevelIndex());
+          remoteNumericLevel = payload;
+        } else {
+          setNumericLevel(payload);
+          remoteNumericLevel = payload;
+        }
+
+        syncer->clearTimeout();
+        break;
+      }
+      case SYNC_EVENT_SONG_CORNER: {
+        unconfirm();
+        if (payload)
+          player_play(SOUND_STEP);
+
+        syncer->clearTimeout();
+        break;
+      }
+      case SYNC_EVENT_START_SONG: {
+        onConfirmOrStart(payload);
+
+        syncer->clearTimeout();
+        break;
+      }
+      default: {
+        syncer->registerTimeout();
+      }
+    }
+  }
+}
+
+void SelectionScene::syncNumericLevelChanged(u8 newValue) {
+  if (!isMultiplayer())
+    return;
+
+  syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
+  if (syncer->isMaster())
+    remoteNumericLevel = -1;
+}
+
+void SelectionScene::quit() {
+  player_stop();
+  engine->transitionIntoScene(SEQUENCE_getMainScene(), new FadeOutScene(4));
 }
 
 SelectionScene::~SelectionScene() {

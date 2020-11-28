@@ -1,5 +1,8 @@
 const Channels = require("./parser/Channels");
 const importers = require("./importers");
+const {
+  getOffsetCorrections,
+} = require("./importers/transformations/applyOffsets");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
 const $path = require("path");
@@ -59,8 +62,8 @@ const opt = getopt
     ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
+    ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
     ["j", "json", "generate JSON debug files"],
-    ["a", "all", "include all charts, including NUMERIC difficulty levels"],
   ])
   .bindHelp()
   .parseSystem();
@@ -70,7 +73,8 @@ if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
   GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
-const SONGS_PATH = opt.options.directory || DEFAULT_SONGS_PATH;
+GLOBAL_OPTIONS.directory = GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH;
+GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
@@ -86,18 +90,18 @@ const GET_SONG_FILES = ({ path, name }) => {
 // CLEANUP
 // -------
 
-mkdirp(SONGS_PATH);
+mkdirp(GLOBAL_OPTIONS.directory);
 let reuseRomId = null;
 try {
   reuseRomId = fs
-    .readFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE))
+    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
     .readUInt32LE();
   console.log(
     `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
   );
   console.log(
     "To stop reusing rom ids, remove ".yellow +
-      `${$path.join(SONGS_PATH, ROM_ID_FILE_REUSE)}`.cyan
+      `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
   );
 } catch (e) {}
 utils.run(`rm -rf ${OUTPUT_PATH}`);
@@ -135,7 +139,9 @@ fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
 // SONG DETECTION
 // --------------
 
-const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
+const songs = _(
+  fs.readdirSync(GLOBAL_OPTIONS.directory, { withFileTypes: true })
+)
   .sortBy()
   .filter((it) => it.isDirectory())
   .map("name")
@@ -144,22 +150,24 @@ const songs = _(fs.readdirSync(SONGS_PATH, { withFileTypes: true }))
     const outputName = NORMALIZE_FILENAME(name);
 
     return {
-      path: $path.join(SONGS_PATH, directory),
+      path: $path.join(GLOBAL_OPTIONS.directory, directory),
       name,
       outputName,
     };
   })
   .sortBy("outputName")
+  .map((it, id) => ({ ...it, id }))
   .value();
 
 // -----------
 // SONG IMPORT
 // -----------
 
+if (_.isEmpty(songs)) throw new Error("no_songs_found");
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 
 const processedSongs = songs.map((song, i) => {
-  const { outputName } = song;
+  const { id, outputName } = song;
   const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
 
   console.log(
@@ -170,7 +178,7 @@ const processedSongs = songs.map((song, i) => {
 
   // metadata
   const simfile = utils.report(
-    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH),
+    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH, id),
     "charts"
   );
 
@@ -199,14 +207,17 @@ const processedSongs = songs.map((song, i) => {
 // SONG SORTING
 // ------------
 
-const sortedSongsByLevel = CAMPAIGN_LEVELS.map((difficultyLevel) => {
+const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
+  ? [_.last(CAMPAIGN_LEVELS)]
+  : CAMPAIGN_LEVELS
+).map((difficultyLevel) => {
   const withIds = (songs) =>
     songs.map((it, i) => ({ ...it, id: CREATE_ID(i) }));
 
   return {
     difficultyLevel,
     songs: withIds(
-      GLOBAL_OPTIONS.sort === "dir"
+      GLOBAL_OPTIONS.arcade || GLOBAL_OPTIONS.sort === "dir"
         ? processedSongs
         : _.orderBy(
             processedSongs,
@@ -273,7 +284,10 @@ else {
   romIdBuffer.writeUInt8(songs.length);
 }
 fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
-fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
+fs.writeFileSync(
+  $path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE),
+  romIdBuffer
+);
 
 // --------
 // ROM NAME
@@ -282,7 +296,7 @@ fs.writeFileSync($path.join(SONGS_PATH, ROM_ID_FILE_REUSE), romIdBuffer);
 let name = "";
 try {
   const romName = fs
-    .readFileSync($path.join(SONGS_PATH, ROM_NAME_FILE_SOURCE))
+    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_NAME_FILE_SOURCE))
     .toString();
   name = _.padEnd(romName.substring(0, 12), 13, "\0");
 } catch (e) {}
@@ -311,15 +325,20 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
         return `${print(level, 2)} (Ω ${print(complexity, 4)})`;
       };
 
-      return {
+      const data = {
         id,
         title: it.metadata.title.substring(0, 25),
         artist: it.metadata.artist.substring(0, 25),
         channel: it.metadata.channel,
-        normal: levelOf(normal),
-        hard: levelOf(hard),
-        crazy: levelOf(crazy),
       };
+
+      if (!GLOBAL_OPTIONS.arcade) {
+        data.normal = levelOf(normal);
+        data.hard = levelOf(hard);
+        data.crazy = levelOf(crazy);
+      }
+
+      return data;
     })
   );
 });
@@ -337,3 +356,13 @@ _.forEach(Channels, (v, k) => {
   console.log(`${k}: `.bold + count.toString().cyan);
 });
 console.log("TOTAL: ".bold + processedSongs.length.toString().cyan);
+
+// --------------------
+// UNUSED OFFSETS CHECK
+// --------------------
+
+const unusedCorrections = getOffsetCorrections().filter((it) => !it.used);
+if (!_.isEmpty(unusedCorrections)) {
+  console.error(`\n⚠️  unused offset corrections:`.yellow);
+  console.error(JSON.stringify(unusedCorrections, null, 2).yellow);
+}

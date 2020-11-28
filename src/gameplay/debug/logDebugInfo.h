@@ -24,7 +24,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
 
   LOGSTR("BPM:", 0);
   LOGN(bpm, 1);
-  LOGSTR("-> " + std::to_string(getArrowTime()), 2);
+  LOGSTR("-> " + DSTR(getArrowTime()), 2);
   LOGSTR("MSECS:", 3);
   LOGN(msecs, 4);
 
@@ -61,17 +61,17 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
         typeStr = "stop";
         break;
       default:
-        typeStr = std::to_string(type);
+        typeStr = DSTR(type);
     }
     LOGSTR("EVENT:", 11);
     LOGSTR(typeStr, 12);
     LOGN(nextEvent->timestamp, 13);
-    LOGSTR("-> " + std::to_string(nextEvent->param), 14);
+    LOGSTR("-> " + DSTR(nextEvent->param), 14);
   }
 
   LOGSTR("SPRITES:", 16);
   LOGN(activeSprites, 17);
-  LOGSTR("-> " + std::to_string(maxSprites), 18);
+  LOGSTR("-> " + DSTR(maxSprites), 18);
 }
 
 #endif  // LOG_DEBUG_INFO_H

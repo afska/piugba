@@ -38,6 +38,7 @@ SRCDIRS		:= src \
 						 src/gameplay \
 						 src/gameplay/debug \
 						 src/gameplay/models \
+						 src/gameplay/multiplayer \
 						 src/gameplay/save \
 						 src/objects \
 						 src/objects/base \
@@ -123,13 +124,14 @@ MODE ?= auto
 SORT ?= level
 SONGS ?= src/data/content/songs
 ENV ?= development
+ARCADE ?= false
 
 ifeq ($(ENV), debug)
-	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true
 else ifeq ($(ENV), development)
-	CXXFLAGS += -DENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true -DENV_ARCADE=$(ARCADE)
 else
-
+	CXXFLAGS += -DENV_ARCADE=$(ARCADE)
 endif
 
 # CXXFLAGS += -DCUSTOM_VAR_DEFINE
@@ -205,13 +207,13 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: clean assets start restart
+.PHONY: clean assets start rebuild restart
 
 assets:
 	./scripts/assets.sh
 
 import:
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --all
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --arcade=$(ARCADE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: $(BUILD)
@@ -220,7 +222,9 @@ package: $(BUILD)
 start: package
 	start "$(TARGET).out.gba"
 
-restart: clean package
+rebuild: clean package
+
+restart: rebuild
 	start "$(TARGET).out.gba"
 
 reimport: import package

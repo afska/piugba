@@ -16,12 +16,16 @@
 #include "utils/pool/ObjectPool.h"
 
 const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
+const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
+                                       472446402,  1116691497, 2319282339};
+// (0.86, 0.73, 0.47, 0, (1+)0.11, (1+)0.26, (1)+0.54)
 
 class ChartReader : public TimingProvider {
  public:
-  int offset = 0;
+  int debugOffset = 0;
 
   ChartReader(Chart* chart,
+              u8 playerId,
               ObjectPool<Arrow>* arrowPool,
               Judge* judge,
               PixelBlink* pixelBlink,
@@ -29,7 +33,6 @@ class ChartReader : public TimingProvider {
               u32 multiplier);
 
   bool update(int msecs);
-
   int getYFor(Arrow* arrow);
 
   inline u32 getMultiplier() { return multiplier; }
@@ -43,6 +46,16 @@ class ChartReader : public TimingProvider {
     return this->multiplier != oldMultiplier;
   }
 
+  inline void syncRate(u32 base, int rate) {
+    rateAudioLag = audioLag;
+    if (rate > 0)
+      rateAudioLag +=
+          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+    if (rate < 0)
+      rateAudioLag =
+          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+  }
+
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();
@@ -52,14 +65,16 @@ class ChartReader : public TimingProvider {
 
  private:
   Chart* chart;
+  u8 playerId;
   ObjectPool<Arrow>* arrowPool;
   Judge* judge;
   PixelBlink* pixelBlink;
   int audioLag;
+  int rateAudioLag;
   u32 targetArrowTime;
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
-  std::array<HoldArrowState, ARROWS_TOTAL> holdArrowStates;
+  std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
   u32 eventIndex = 0;
   u32 subtick = 0;
   u32 bpm = 0;
@@ -84,16 +99,16 @@ class ChartReader : public TimingProvider {
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
-      if (event->handled) {
+      if (event->handled[playerId]) {
         currentIndex++;
         continue;
       }
 
       bool stop = false;
-      event->handled = action(type, event, &stop);
+      event->handled[playerId] = action(type, event, &stop);
       currentIndex++;
 
-      if (!event->handled)
+      if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
         eventIndex = currentIndex;
@@ -156,9 +171,9 @@ class ChartReader : public TimingProvider {
 
   int getYFor(int timestamp);
   void processNextEvents();
-  void processUniqueNote(Event* event);
-  void startHoldNote(Event* event);
-  void endHoldNote(Event* event);
+  void processUniqueNote(int timestamp, u8 data, u8 param);
+  void startHoldNote(int timestamp, u8 data, u8 offset = 0);
+  void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);

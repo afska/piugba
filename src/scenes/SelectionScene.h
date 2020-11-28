@@ -2,13 +2,16 @@
 #define SELECTION_SCENE_H
 
 #include <libgba-sprite-engine/background/background.h>
+#include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/scene.h>
 #include <libgba-sprite-engine/sprites/sprite.h>
 
+#include <string>
 #include <vector>
 
 #include "gameplay/Library.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "objects/base/InputHandler.h"
 #include "objects/ui/ArrowSelector.h"
@@ -59,45 +62,55 @@ class SelectionScene : public Scene {
   u32 count = 0;
   bool confirmed = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
+  int remoteNumericLevel = -1;
 
-  inline GameMode getGameMode() {
-    return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
-  }
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
-  inline u32 getLastUnlockedSongIndex() {
-    return getGameMode() == GameMode::ARCADE
-               ? min(getCompletedSongs() - 1, count - 1)
-               : min(getCompletedSongs(), count - 1);
-  }
-  inline u32 getCompletedSongs() {
-    return getGameMode() == GameMode::ARCADE
-               ? SAVEFILE_getCompletedSongs()
-               : getCompletedSongsOf(difficulty->getValue());
-  }
-  inline u32 getCompletedSongsOf(DifficultyLevel difficultyLevel) {
-    switch (getGameMode()) {
-      case GameMode::CAMPAIGN:
-      case GameMode::ARCADE: {
-        return SAVEFILE_read8(SRAM->progress[difficultyLevel].completedSongs);
-      }
-      case GameMode::IMPOSSIBLE: {
-        return SAVEFILE_read8(
-            SRAM->progress[PROGRESS_IMPOSSIBLE + difficultyLevel]
-                .completedSongs);
-      }
-    }
 
-    return 0;
+  inline u32 getLastUnlockedSongIndex() {
+    return min(getCompletedSongs(), count - 1);
   }
+
+  inline u32 getCompletedSongs() {
+#ifdef SENV_DEVELOPMENT
+    if (isMultiplayer())
+      return SAVEFILE_getLibrarySize();
+#endif
+
+    u32 count;
+    if (ENV_ARCADE)
+      count = SAVEFILE_getLibrarySize();
+    else if (isMultiplayer())
+      count = syncer->$completedSongs;
+    else
+      count = SAVEFILE_getGameMode() == GameMode::ARCADE
+                  ? SAVEFILE_getMaxCompletedSongs()
+                  : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
+
+    return min(count, SAVEFILE_getLibrarySize());
+  }
+
   inline u8 getSelectedNumericLevel() {
+    if (numericLevels.empty())
+      return 0;
+
     return numericLevels[getSelectedNumericLevelIndex()];
   }
+
   inline u8 getSelectedNumericLevelIndex() {
+    if (numericLevels.empty())
+      return 0;
+
     return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
+
   inline void setClosestNumericLevel(u8 level) {
+    if (numericLevels.empty()) {
+      SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+      return;
+    }
+
     u32 min = 0;
     u32 minDiff = abs((int)numericLevels[0] - (int)level);
     for (u32 i = 0; i < numericLevels.size(); i++) {
@@ -112,23 +125,16 @@ class SelectionScene : public Scene {
   }
 
   inline DifficultyLevel getLibraryType() {
-    if (getGameMode() != GameMode::ARCADE)
+    if (ENV_ARCADE)
+      return DifficultyLevel::CRAZY;
+
+    if (isMultiplayer())
+      return static_cast<DifficultyLevel>(syncer->$libraryType);
+
+    if (IS_STORY(SAVEFILE_getGameMode()))
       return difficulty->getValue();
 
-    DifficultyLevel maxLevel;
-    u32 max = 0;
-
-    for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
-      auto difficultyLevel = static_cast<DifficultyLevel>(i);
-      auto completedSongs = getCompletedSongsOf(difficultyLevel);
-
-      if (completedSongs >= max) {
-        maxLevel = difficultyLevel;
-        max = completedSongs;
-      }
-    }
-
-    return maxLevel;
+    return SAVEFILE_getMaxLibraryType();
   }
 
   void setUpSpritesPalette();
@@ -141,6 +147,7 @@ class SelectionScene : public Scene {
 
   void scrollTo(u32 songIndex);
   void scrollTo(u32 page, u32 selected);
+  void setNumericLevel(u8 numericLevelIndex);
   void goToSong();
 
   void processKeys(u16 keys);
@@ -155,9 +162,10 @@ class SelectionScene : public Scene {
                          bool isOnListEdge,
                          bool isOnPageEdge,
                          int direction);
+  void onConfirmOrStart(bool confirmed);
 
-  void updateSelection() { updateSelection(false); }
-  void updateSelection(bool isChangingLevel);
+  void updateSelection(bool isChangingLevel = false);
+  void updateLevel(Song* song, bool isChangingLevel);
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);
@@ -168,6 +176,10 @@ class SelectionScene : public Scene {
     printNumericLevel(difficulty, 0);
   }
   void printNumericLevel(DifficultyLevel difficulty, s8 offset);
+  void loadSelectedSongGrade(u8 songId);
+  void processMultiplayerUpdates();
+  void syncNumericLevelChanged(u8 newValue);
+  void quit();
 
   ~SelectionScene();
 };

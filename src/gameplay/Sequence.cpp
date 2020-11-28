@@ -3,12 +3,15 @@
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 
 #include <functional>
+#include <string>
 
 #include "Key.h"
 #include "SequenceMessages.h"
 #include "gameplay/Library.h"
+#include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
+#include "scenes/MultiplayerLobbyScene.h"
 #include "scenes/SelectionScene.h"
 #include "scenes/SongScene.h"
 #include "scenes/StartScene.h"
@@ -41,9 +44,10 @@ Scene* SEQUENCE_getInitialScene() {
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+  auto gameMode = SAVEFILE_getGameMode();
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
 
-  if (isPlaying)
+  if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
 
   return new ControlsScene(_engine, _fs,
@@ -78,10 +82,10 @@ Scene* SEQUENCE_getMainScene() {
 }
 
 void SEQUENCE_goToGameMode(GameMode gameMode) {
-  bool isArcadeModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
+  bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
 
-  if (gameMode == GameMode::ARCADE && !isArcadeModeUnlocked) {
+  if (!IS_STORY(gameMode) && !areArcadeModesUnlocked) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
@@ -103,31 +107,40 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
-  auto lastGameMode =
-      static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto lastGameMode = SAVEFILE_getGameMode();
   if (lastGameMode != gameMode) {
-    auto songIndex =
-        gameMode == GameMode::ARCADE ? 0 : SAVEFILE_getLibrarySize() - 1;
+    auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
-  auto message =
-      gameMode == GameMode::CAMPAIGN
-          ? MODE_CAMPAIGN
-          : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
-  goTo(new TalkScene(
-      _engine, _fs, message,
-      [](u16 keys) {
-        if (KEY_CENTER(keys))
-          goTo(new SelectionScene(_engine, _fs));
-      },
-      true));
+  if (IS_MULTIPLAYER(gameMode))
+    SEQUENCE_goToMultiplayerGameMode(gameMode);
+  else {
+    auto message =
+        gameMode == GameMode::CAMPAIGN
+            ? MODE_CAMPAIGN
+            : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
+    goTo(new TalkScene(
+        _engine, _fs, message,
+        [](u16 keys) {
+          if (KEY_CENTER(keys))
+            goTo(new SelectionScene(_engine, _fs));
+        },
+        true));
+  }
 }
 
-void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
+  goTo(new MultiplayerLobbyScene(_engine, _fs,
+                                 gameMode == GameMode::MULTI_COOP
+                                     ? SyncMode::SYNC_MODE_COOP
+                                     : SyncMode::SYNC_MODE_VS));
+}
+
+void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
+  auto gameMode = SAVEFILE_getGameMode();
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
@@ -140,7 +153,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
     return;
   }
 
-  if (gameMode == GameMode::CAMPAIGN && song->id == 1) {
+  if (gameMode == GameMode::CAMPAIGN && song->index == 1) {
     goTo(new TalkScene(
              _engine, _fs, KEYS_HINT,
              [song, chart](u16 keys) {
@@ -152,13 +165,26 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart) {
     return;
   }
 
-  goTo(new SongScene(_engine, _fs, song, chart), 4);
+  if (gameMode == GameMode::ARCADE &&
+      GameState.mods.trainingMode == TrainingModeOpts::tON) {
+    goTo(new TalkScene(
+             _engine, _fs, KEYS_TRAINING_HINT,
+             [song, chart](u16 keys) {
+               if (KEY_CENTER(keys))
+                 goTo(new SongScene(_engine, _fs, song, chart), 2);
+             },
+             true),
+         4);
+    return;
+  }
+
+  goTo(new SongScene(_engine, _fs, song, chart, remoteChart), 4);
 }
 
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
-  auto gameMode = static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+  auto gameMode = SAVEFILE_getGameMode();
 
-  if (gameMode != GameMode::ARCADE && isLastSong)
+  if (IS_STORY(gameMode) && isLastSong)
     goTo(new TalkScene(_engine, _fs,
                        gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
                        [](u16 keys) {
@@ -168,4 +194,8 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
          4);
   else
     goTo(new SelectionScene(_engine, _fs));
+}
+
+bool SEQUENCE_isMultiplayerSessionDead() {
+  return isMultiplayer() && !syncer->isPlaying();
 }

@@ -39,9 +39,11 @@ module.exports = class Chart {
 
         return _(eventsByType)
           .map(({ type, arrows }) => {
-            const activeArrows = _.range(0, 5).map((id) =>
-              _.includes(arrows, id)
-            );
+            const activeArrows = _.range(
+              0,
+              this.header.isDouble ? 10 : 5
+            ).map((id) => _.includes(arrows, id));
+
             const arrowCount = _.sumBy(activeArrows);
             const isJump = arrowCount > 1;
             const isHold = type === Events.HOLD_START;
@@ -57,12 +59,15 @@ module.exports = class Chart {
 
             return {
               timestamp,
-              type,
-              arrows: activeArrows,
+              type: type === Events.FAKE_TAP ? Events.NOTE : type,
+              playerId: 0,
+              arrows: activeArrows.slice(0, 5),
+              arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
               complexity,
+              isFake: type === Events.FAKE_TAP,
             };
           })
-          .filter((it) => _.some(it.arrows))
+          .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
           .reject(
             (it) =>
               it.type === Events.NOTE &&
@@ -275,6 +280,22 @@ module.exports = class Chart {
     return _.flatMap(events, (it) => {
       let event = it;
 
+      if (it.isFake && fakeEndTime == -1) {
+        return [
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 1,
+          },
+          event,
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 0,
+          },
+        ];
+      }
+
       if (it.type === Events.SET_FAKE) {
         fakeEndTime = it.endTime;
 
@@ -318,7 +339,18 @@ module.exports = class Chart {
       .split(/\r?\n/)
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
-      .filter((it) => NOTE_DATA.test(it));
+      .filter((it) => !_.isEmpty(it))
+      .map((it) => it.replace(/{(\w)\|\w\|\w\|\w}/g, "$1")) // weird event syntax
+      .map((it) => it.replace(/[MK]/g, "0")) // ignored SSC events
+      .filter((it) => {
+        const isValid = (this.header.isDouble
+          ? NOTE_DATA_DOUBLE
+          : NOTE_DATA_SINGLE
+        ).test(it);
+
+        if (!isValid) throw new Error(`invalid_line: ${it}`);
+        return true;
+      });
   }
 
   _getEventsByType(line) {
@@ -382,5 +414,6 @@ const MINUTE = 60 * SECOND;
 const FRAME_MS = 17;
 const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
-const NOTE_DATA = /^\d\d\d\d\d$/;
+const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
+const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;

@@ -13,14 +13,17 @@
 
 class Score {
  public:
-  Score(LifeBar* lifeBar);
+  Score(LifeBar* lifeBar, u8 playerId);
 
   bool update(FeedbackType feedbackType, bool isLong);
   std::unique_ptr<Evaluation> evaluate();
   void relocate();
 
   void tick();
-  void render(std::vector<Sprite*>* sprites);
+
+  inline void die() { lifeBar->die(); }
+  inline Feedback* getFeedback() { return feedback.get(); }
+  inline Combo* getCombo() { return combo.get(); }
 
   void log(int number) {
     combo->setValue(number);
@@ -31,6 +34,7 @@ class Score {
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
   LifeBar* lifeBar;
+  u8 playerId;
 
   int life = INITIAL_LIFE;
   bool hasMissCombo = false;

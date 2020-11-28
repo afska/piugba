@@ -12,8 +12,9 @@ const u32 ARROW_HOLDER_PRESSED = 7;
 class ArrowHolder : public InputHandler {
  public:
   ArrowDirection direction;
+  u8 playerId;
 
-  ArrowHolder(ArrowDirection direction, bool reuseTiles);
+  ArrowHolder(ArrowDirection direction, u8 playerId, bool reuseTiles);
 
   void blink();
 

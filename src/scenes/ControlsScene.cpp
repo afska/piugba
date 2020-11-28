@@ -6,7 +6,7 @@
 #include "utils/SceneUtils.h"
 
 extern "C" {
-#include "player/fxes.h"
+#include "player/player.h"
 }
 
 const u32 ID_MAIN_BACKGROUND = 1;
@@ -70,7 +70,7 @@ void ControlsScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     hasStarted = true;
-    fxes_play(SOUND_ENTER);
+    player_play(SOUND_ENTER);
   }
 
   processKeys(keys);
@@ -110,7 +110,7 @@ void ControlsScene::setUpArrows() {
       static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
 
   buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
-  buttons[ArrowDirection::UPLEFT]->get()->moveTo(31, 59);
+  buttons[ArrowDirection::UPLEFT]->get()->moveTo(29, 25);
   buttons[ArrowDirection::CENTER]->get()->moveTo(39, 68);
   buttons[ArrowDirection::UPRIGHT]->get()->moveTo(187, 25);
   buttons[ArrowDirection::DOWNRIGHT]->get()->moveTo(199, 65);
@@ -150,12 +150,12 @@ void ControlsScene::processCombo() {
 }
 
 void ControlsScene::advanceCombo() {
-  fxes_play(SOUND_STEP);
+  player_play(SOUND_STEP);
   comboArrows[comboStep]->on();
   comboStep++;
 
   if (comboStep == START_COMBO_TOTAL) {
-    fxes_stop();
+    player_stop();
     onFinish();
   }
 }
@@ -164,7 +164,7 @@ void ControlsScene::resetCombo() {
   if (comboStep == 0)
     return;
 
-  fxes_play(SOUND_MOD);
+  player_play(SOUND_MOD);
   pixelBlink->blink();
 
   comboStep = 0;

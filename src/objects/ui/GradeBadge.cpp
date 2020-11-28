@@ -3,11 +3,17 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_grades_mini.h"
+#include "data/content/_compiled_sprites/spr_grades_mini_evaluation.h"
 #include "utils/SpriteUtils.h"
 
-GradeBadge::GradeBadge(u32 x, u32 y, bool reuseTiles) {
+#define TILES_SELECTION spr_grades_miniTiles
+#define TILES_EVALUATION spr_grades_mini_evaluationTiles
+
+GradeBadge::GradeBadge(u32 x, u32 y, bool reuseTiles, bool isEvaluation) {
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_grades_miniTiles, sizeof(spr_grades_miniTiles))
+  sprite = builder
+               .withData(isEvaluation ? TILES_EVALUATION : TILES_SELECTION,
+                         sizeof(spr_grades_miniTiles))
                .withSize(SIZE_16_16)
                .withLocation(x, y)
                .buildPtr();
@@ -22,6 +28,8 @@ GradeBadge::GradeBadge(u32 x, u32 y, bool reuseTiles) {
 }
 
 void GradeBadge::setType(GradeType type) {
+  this->type = type;
+
   if (type == GradeType::UNPLAYED)
     SPRITE_hide(sprite.get());
   else {

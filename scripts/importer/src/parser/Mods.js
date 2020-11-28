@@ -18,15 +18,15 @@ module.exports = {
     FIXED: 2,
     RANDOM: 3,
   },
-  NEGATIVECOLORS: {
+  DECOLORIZE: {
     OFF: 0,
-    ON: 1,
+    INVERT: 1,
+    GRAY: 2,
+    RED: 3,
+    GREEN: 4,
+    BLUE: 5,
   },
   RANDOMSPEED: {
-    OFF: 0,
-    ON: 1,
-  },
-  EXTRAJUDGEMENT: {
     OFF: 0,
     ON: 1,
   },

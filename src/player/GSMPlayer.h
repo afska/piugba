@@ -8,7 +8,7 @@
 #define CHANNEL_A_UNMUTE 0b0000001100000000
 #define CHANNEL_B_MUTE 0b1100111111111111
 #define CHANNEL_B_UNMUTE 0b0011000000000000
-#define AUDIO_CHUNK_SIZE (33 * 50)
+#define AUDIO_CHUNK_SIZE 33
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
@@ -78,7 +78,7 @@
   src_end = NULL;     \
   mute();
 
-#define PLAYER_PRE_UPDATE(ON_STOP)                    \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)           \
   dst_pos = double_buffers[cur_buffer];               \
                                                       \
   if (src_pos < src_end) {                            \
@@ -89,6 +89,7 @@
           gsm_decode(&decoder, src_pos, out_samples); \
         src_pos += sizeof(gsm_frame);                 \
         decode_pos = 0;                               \
+        ON_STEP;                                      \
       }                                               \
                                                       \
       /* 2:1 linear interpolation */                  \
