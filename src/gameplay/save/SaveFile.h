@@ -80,6 +80,7 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
       ((SAVEFILE_read32(SRAM->romId)) & ROM_ID_MASK) != (romId & ROM_ID_MASK);
   SAVEFILE_write32(SRAM->romId, romId);
 
+  // create save file
   if (isNew) {
     SAVEFILE_resetSettings();
     SAVEFILE_resetMods();
@@ -106,8 +107,12 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
+  }
 
+  // create arcade progress
+  if (ARCADE_readSingle(0, 0) != GradeType::C) {
     ARCADE_initialize();
+    ARCADE_writeSingle(0, 0, GradeType::C);
   }
 }
 
