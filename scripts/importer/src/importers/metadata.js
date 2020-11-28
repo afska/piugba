@@ -1,7 +1,7 @@
 const Simfile = require("../parser/Simfile");
 const SongSerializer = require("../serializer/SongSerializer");
 const checkIntegrity = require("./transformations/checkIntegrity");
-const applyOffsets = require("./transformations/applyOffsets");
+const { applyOffsets } = require("./transformations/applyOffsets");
 const completeMissingData = require("./transformations/completeMissingData");
 const fs = require("fs");
 const $path = require("path");

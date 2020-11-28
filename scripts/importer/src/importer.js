@@ -1,5 +1,8 @@
 const Channels = require("./parser/Channels");
 const importers = require("./importers");
+const {
+  getOffsetCorrections,
+} = require("./importers/transformations/applyOffsets");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
 const $path = require("path");
@@ -353,3 +356,13 @@ _.forEach(Channels, (v, k) => {
   console.log(`${k}: `.bold + count.toString().cyan);
 });
 console.log("TOTAL: ".bold + processedSongs.length.toString().cyan);
+
+// --------------------
+// UNUSED OFFSETS CHECK
+// --------------------
+
+const unusedCorrections = getOffsetCorrections().filter((it) => !it.used);
+if (!_.isEmpty(unusedCorrections)) {
+  console.error(`\n⚠️  unused offset corrections:`.yellow);
+  console.error(JSON.stringify(unusedCorrections, null, 2).yellow);
+}
