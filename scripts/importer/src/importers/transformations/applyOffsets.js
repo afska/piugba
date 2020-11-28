@@ -3,7 +3,7 @@ const $path = require("path");
 const _ = require("lodash");
 
 const OFFSETS_FILE = "offsets.pofs";
-const REGEXP = /([\w ]+)\[s(\d\d)\]=([-+]?\d+)/;
+const REGEXP = /(.+)\[s(\d\d)\]=([-+]?\d+)/;
 
 const getOffsetCorrections = _.memoize(() => {
   let offsetsFile;
