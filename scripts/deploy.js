@@ -17,6 +17,7 @@ const OUTPUT_BUILDS = (variant) => ({
   development: `piugba.${variant}.dev.gba`,
   production: `piugba.${variant}.prod.gba`
 });
+const ARCADE_FLAG = (variant) => variant === "arcade" ? "ARCADE=true" : ""
 const SEPARATOR = "----------";
 
 const SEARCH = process.argv[2];
@@ -40,7 +41,7 @@ if (!SEARCH) {
       log(`⌚  COMPILING: VARIANT=${variant}, ENV=${environment}`);
       run("make clean", { cwd: ROOT_DIR });
       run("make assets", { cwd: ROOT_DIR });
-      run(`make build ENV="${environment}"`, { cwd: ROOT_DIR });
+      run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, { cwd: ROOT_DIR });
       fs.copyFileSync(
         $path.join(ROOT_DIR, OUTPUT_EMPTY),
         $path.join(CONTENT_DIR, OUTPUT_BUILDS(variant)[environment])
@@ -67,7 +68,7 @@ sources.forEach(({ name, path, variant }) => {
   const shortName = fs.readFileSync($path.join(path, ROMNAME)).toString();
   log(`⌚  IMPORTING: ${name} <<${shortName}>>`);
 
-  run(`make import SONGS="${path}"`, { cwd: ROOT_DIR });
+  run(`make import SONGS="${path}" ${ARCADE_FLAG(variant)}`, { cwd: ROOT_DIR });
 
   ENVIRONMENTS.forEach((environment) => {
     fs.copyFileSync(
