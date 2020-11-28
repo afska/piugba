@@ -7,6 +7,7 @@ const events = {
   SET_TICKCOUNT: 5,
   STOP: 6,
   WARP: 7,
+  FAKE_TAP: 101,
   SET_SPEED: 104,
   STOP_ASYNC: 106,
 };
@@ -21,6 +22,8 @@ module.exports = {
         return events.HOLD_START;
       case "3":
         return events.HOLD_END;
+      case "F":
+        return events.FAKE_TAP;
       default:
         return null;
     }

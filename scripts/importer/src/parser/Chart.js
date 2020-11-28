@@ -59,11 +59,12 @@ module.exports = class Chart {
 
             return {
               timestamp,
-              type,
+              type: type === Events.FAKE_TAP ? Events.NOTE : type,
               playerId: 0,
               arrows: activeArrows.slice(0, 5),
               arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
               complexity,
+              isFake: type === Events.FAKE_TAP,
             };
           })
           .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
@@ -279,6 +280,22 @@ module.exports = class Chart {
     return _.flatMap(events, (it) => {
       let event = it;
 
+      if (it.isFake && fakeEndTime == -1) {
+        return [
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 1,
+          },
+          event,
+          {
+            timestamp: it.timestamp,
+            type: Events.SET_FAKE,
+            enabled: 0,
+          },
+        ];
+      }
+
       if (it.type === Events.SET_FAKE) {
         fakeEndTime = it.endTime;
 
@@ -323,9 +340,8 @@ module.exports = class Chart {
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
       .filter((it) => !_.isEmpty(it))
+      .map((it) => it.replace(/[MK]/g, "0")) // ignored SSC events
       .filter((it) => {
-        it = it.replace(/[MK]/gi, "0"); // ignored SSC events
-
         const isValid = (this.header.isDouble
           ? NOTE_DATA_DOUBLE
           : NOTE_DATA_SINGLE
@@ -397,6 +413,6 @@ const MINUTE = 60 * SECOND;
 const FRAME_MS = 17;
 const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
-const NOTE_DATA_SINGLE = /^\d\d\d\d\d$/;
-const NOTE_DATA_DOUBLE = /^\d\d\d\d\d\d\d\d\d\d$/;
+const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
+const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
