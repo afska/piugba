@@ -40,14 +40,14 @@ DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs,
                                  std::unique_ptr<Evaluation> evaluation,
                                  std::unique_ptr<Evaluation> remoteEvaluation,
-                                 bool isLastSong,
-                                 bool differentCharts)
+                                 bool differentCharts,
+                                 bool isLastSong)
     : Scene(engine) {
   this->fs = fs;
   this->evaluation = std::move(evaluation);
   this->remoteEvaluation = std::move(remoteEvaluation);
-  this->isLastSong = isLastSong;
   this->differentCharts = differentCharts;
+  this->isLastSong = isLastSong;
 }
 
 std::vector<Background*> DanceGradeScene::backgrounds() {

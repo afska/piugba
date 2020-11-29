@@ -12,11 +12,11 @@
 #define BACKGROUND_MAP_EXTENSION ".map.bin"
 
 typedef struct SongFile {
-  u32 id;
+  u32 index;
   std::string name;
 
-  SongFile(std::string name, u32 id) {
-    this->id = id;
+  SongFile(std::string name, u32 index) {
+    this->index = index;
     this->name = name;
   }
 
