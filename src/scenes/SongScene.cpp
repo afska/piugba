@@ -30,6 +30,9 @@ const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_TIME = 6;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
+const u32 LIFEBAR_CHARBLOCK = 4;
+const u32 LIFEBAR_TILE_START = 0;
+const u32 LIFEBAR_TILE_END = 15;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -247,6 +250,10 @@ void SongScene::initializeBackground() {
     SCENE_decolorize(backgroundPalette.get(), GameState.mods.decolorize);
     SCENE_decolorize(foregroundPalette.get(), GameState.mods.decolorize);
   }
+
+  if (!isVs())
+    for (u32 i = LIFEBAR_TILE_START; i <= LIFEBAR_TILE_END; i++)
+      BACKGROUND_createSolidTile(LIFEBAR_CHARBLOCK, i, 0);
 }
 
 void SongScene::initializeGame() {
