@@ -43,16 +43,18 @@ typedef struct __attribute__((__packed__)) {
 
 #define SRAM ((SaveFile*)sram_mem)
 
-#define SAVEFILE_read8(TARGET) *((u8*)&TARGET)
-#define SAVEFILE_write8(DEST, VALUE) *((u8*)&DEST) = VALUE;
-#define SAVEFILE_read32(TARGET)                                    \
-  (u32)(*(((char*)&TARGET) + 0) + (*(((char*)&TARGET) + 1) << 8) + \
-        (*(((char*)&TARGET) + 2) << 16) + (*(((char*)&TARGET) + 3) << 24))
-#define SAVEFILE_write32(DEST, VALUE)                          \
-  *(((char*)&DEST) + 0) = (((u32)(VALUE)) & 0x000000ff) >> 0;  \
-  *(((char*)&DEST) + 1) = (((u32)(VALUE)) & 0x0000ff00) >> 8;  \
-  *(((char*)&DEST) + 2) = (((u32)(VALUE)) & 0x00ff0000) >> 16; \
-  *(((char*)&DEST) + 3) = (((u32)(VALUE)) & 0xff000000) >> 24;
+#define SAVEFILE_read8(TARGET) (*((vu8*)&TARGET))
+#define SAVEFILE_write8(DEST, VALUE) *((vu8*)&DEST) = VALUE;
+#define SAVEFILE_read32(TARGET)                     \
+  ((u32)(*(((volatile char*)&TARGET) + 0) +         \
+         (*(((volatile char*)&TARGET) + 1) << 8) +  \
+         (*(((volatile char*)&TARGET) + 2) << 16) + \
+         (*(((volatile char*)&TARGET) + 3) << 24)))
+#define SAVEFILE_write32(DEST, VALUE)                                   \
+  *(((volatile char*)&DEST) + 0) = (((u32)(VALUE)) & 0x000000ff) >> 0;  \
+  *(((volatile char*)&DEST) + 1) = (((u32)(VALUE)) & 0x0000ff00) >> 8;  \
+  *(((volatile char*)&DEST) + 2) = (((u32)(VALUE)) & 0x00ff0000) >> 16; \
+  *(((volatile char*)&DEST) + 3) = (((u32)(VALUE)) & 0xff000000) >> 24;
 
 inline void SAVEFILE_resetSettings() {
   SAVEFILE_write32(SRAM->settings.audioLag, 0);
@@ -76,11 +78,14 @@ inline void SAVEFILE_resetMods() {
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
+  u32 librarySize = romId & LIBRARY_SIZE_MASK;
   bool isNew =
-      ((SAVEFILE_read32(SRAM->romId)) & ROM_ID_MASK) != (romId & ROM_ID_MASK);
+      (SAVEFILE_read32(SRAM->romId) & ROM_ID_MASK) != (romId & ROM_ID_MASK);
+
+  // write rom id
   SAVEFILE_write32(SRAM->romId, romId);
 
-  // create save file
+  // create save file if needed
   if (isNew) {
     SAVEFILE_resetSettings();
     SAVEFILE_resetMods();
@@ -109,11 +114,25 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
   }
 
-  // create arcade progress
+  // create arcade progress if needed
   if (ARCADE_readSingle(0, 0) != GradeType::C) {
     ARCADE_initialize();
     ARCADE_writeSingle(0, 0, GradeType::C);
   }
+
+  // limit completed songs if needed
+  u8 maxNormal =
+      SAVEFILE_read8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs);
+  u8 maxHard =
+      SAVEFILE_read8(SRAM->progress[DifficultyLevel::HARD].completedSongs);
+  u8 maxCrazy =
+      SAVEFILE_read8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs);
+  SAVEFILE_write8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs,
+                  min(maxNormal, librarySize));
+  SAVEFILE_write8(SRAM->progress[DifficultyLevel::HARD].completedSongs,
+                  min(maxHard, librarySize));
+  SAVEFILE_write8(SRAM->progress[DifficultyLevel::CRAZY].completedSongs,
+                  min(maxCrazy, librarySize));
 }
 
 inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
@@ -122,7 +141,7 @@ inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
 }
 
 inline u8 SAVEFILE_getLibrarySize() {
-  return (SAVEFILE_read32(SRAM->romId)) & LIBRARY_SIZE_MASK;
+  return SAVEFILE_read32(SRAM->romId) & LIBRARY_SIZE_MASK;
 }
 
 inline GameMode SAVEFILE_getGameMode() {
