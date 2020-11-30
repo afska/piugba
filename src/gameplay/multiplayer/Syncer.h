@@ -11,6 +11,7 @@
 #include "utils/LinkConnection.h"
 
 #define SYNC_TIMEOUT 15
+#define SYNC_BUFFER_SIZE 30
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
