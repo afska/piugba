@@ -14,6 +14,7 @@ extern "C" {
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
 void setUpInterrupts();
+void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 LinkConnection* linkConnection = new LinkConnection();
 Syncer* syncer = new Syncer();
@@ -33,9 +34,11 @@ int main() {
         syncer->update();
         engine->update();
 
+        if (syncer->$isPlayingSong && !syncer->$hasStartedAudio)
+          synchronizeSongStart();
+
         return syncer->$isPlayingSong && !syncer->isMaster()
-                   ? (syncer->$hasStartedAudio ? syncer->$availableAudioChunks
-                                               : 0)
+                   ? syncer->$availableAudioChunks
                    : -999;  // (unsynchronized)
       },
       [](u32 consumed) {
@@ -81,4 +84,19 @@ void setUpInterrupts() {
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
   irq_add(II_KEYPAD, ISR_reset);
+}
+
+void synchronizeSongStart() {
+  // discard all previous messages and wait for sync
+
+  while (linkConnection->linkState->readMessage(syncer->getRemotePlayerId()) !=
+         LINK_NO_DATA)
+    ;
+
+  IntrWait(1, IRQ_SERIAL);
+
+  if (!syncer->isMaster())
+    syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
+
+  syncer->$hasStartedAudio = true;
 }

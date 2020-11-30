@@ -696,14 +696,8 @@ void SongScene::processMultiplayerUpdates() {
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
 
-        if (!syncer->isMaster()) {
-          if (!syncer->$hasStartedAudio) {
-            syncer->$hasStartedAudio = true;
-            syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
-          }
-
+        if (!syncer->isMaster())
           syncer->$availableAudioChunks += SYNC_MSG_KEYS_AUDIO_CHUNKS(payload);
-        }
 
         syncer->clearTimeout();
         break;
