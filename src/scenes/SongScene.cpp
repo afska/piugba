@@ -480,6 +480,11 @@ void SongScene::onStageBreak(u8 playerId) {
         breakStage();
     } else {
       syncer->send(SYNC_EVENT_STAGE_END, false);
+
+#ifdef SENV_DEVELOPMENT
+      return;
+#endif
+
       breakStage();
     }
   } else if (GameState.mods.stageBreak != StageBreakOpts::sOFF)
