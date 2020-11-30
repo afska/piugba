@@ -16,7 +16,8 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
-LinkConnection* linkConnection = new LinkConnection();
+LinkConnection* linkConnection =
+    new LinkConnection(LinkConnection::BAUD_RATE_1);
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
