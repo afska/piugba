@@ -92,6 +92,7 @@ void SelectionScene::load() {
 
   if (isMultiplayer()) {
     syncer->clearTimeout();
+    syncer->$resetFlag = false;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
   }
 

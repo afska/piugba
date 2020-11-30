@@ -61,7 +61,7 @@ int main() {
 }
 
 void ISR_reset() {
-  if (syncer->$isPlayingSong) {
+  if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
     return;
   }

@@ -212,7 +212,6 @@ void Syncer::resetGameState() {
 void Syncer::resetSongState() {
   $isPlayingSong = false;
   $hasStartedAudio = false;
-  $resetFlag = false;
   $availableAudioChunks = 0;
   $consumedAudioChunks = 0;
 }
