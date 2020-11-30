@@ -93,7 +93,9 @@ std::vector<Sprite*> SongScene::sprites() {
 void SongScene::load() {
   if (isMultiplayer()) {
     syncer->$isPlayingSong = true;
+    syncer->$hasStartedAudio = false;
     syncer->$availableAudioChunks = 0;
+    syncer->$consumedAudioChunks = 0;
     syncer->clearTimeout();
   } else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
@@ -663,13 +665,14 @@ void SongScene::processTrainingModeMod() {
 }
 
 void SongScene::processMultiplayerUpdates() {
-  syncer->send(SYNC_EVENT_KEYS,
-               SYNC_MSG_KEYS_BUILD(
-                   arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 4]->getIsPressed()));
+  syncer->send(
+      SYNC_EVENT_KEYS,
+      SYNC_MSG_KEYS_BUILD(arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
+                          arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
+                          arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
+                          arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
+                          arrowHolders[getLocalBaseIndex() + 4]->getIsPressed(),
+                          syncer->$consumedAudioChunks));
 
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
@@ -688,7 +691,14 @@ void SongScene::processMultiplayerUpdates() {
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
 
-        syncer->$availableAudioChunks++;
+        if (!syncer->isMaster()) {
+          if (!syncer->$hasStartedAudio) {
+            syncer->$hasStartedAudio = true;
+            syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
+          }
+
+          syncer->$availableAudioChunks += SYNC_MSG_KEYS_AUDIO_CHUNKS(payload);
+        }
 
         syncer->clearTimeout();
         break;
@@ -751,7 +761,9 @@ void SongScene::unload() {
 
   if (isMultiplayer()) {
     syncer->$isPlayingSong = false;
+    syncer->$hasStartedAudio = false;
     syncer->$availableAudioChunks = 0;
+    syncer->$consumedAudioChunks = 0;
   }
 }
 

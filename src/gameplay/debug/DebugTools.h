@@ -28,7 +28,7 @@ extern "C" {
 #define IFTIMINGTEST if (TIMINGTEST_MODE)
 #define DSTR(EXP) std::to_string((EXP))
 #define LOGN(NUM, LINE) (LOGSTR(DSTR(NUM).c_str(), LINE))
-#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 15))
+#define LOGSTR(STR, LINE) (TextStream::instance().setText(STR, 1 + LINE, 12))
 
 #define DEBULOG(NUM) LOGN(NUM, -1)
 static int DEBULIST_LINE = -1;

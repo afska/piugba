@@ -4,6 +4,7 @@
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "player/PlaybackState.h"
 
 extern "C" {
 #include "player/player.h"
@@ -27,16 +28,29 @@ int main() {
   SEQUENCE_initialize(engine, fs);
 
   engine->setScene(SEQUENCE_getInitialScene());
-  player_forever([]() {
-    syncer->update();
-    engine->update();
+  player_forever(
+      []() {
+        syncer->update();
+        engine->update();
 
-    u32 availableAudioChunks = syncer->$availableAudioChunks;
-    if (availableAudioChunks > 0)
-      syncer->$availableAudioChunks--;
+        return syncer->$isPlayingSong && !syncer->isMaster()
+                   ? (syncer->$hasStartedAudio ? syncer->$availableAudioChunks
+                                               : 0)
+                   : -999;  // (unsynchronized)
+      },
+      [](u32 consumed) {
+        if (syncer->$isPlayingSong) {
+#ifdef SENV_DEBUG
+          LOGN(PlaybackState.msecs, -1);
+          LOGN(syncer->$availableAudioChunks, 0);
+#endif
 
-    return !syncer->$isPlayingSong || availableAudioChunks > 0;
-  });
+          if (syncer->isMaster())
+            syncer->$consumedAudioChunks = consumed;
+          else
+            syncer->$availableAudioChunks -= consumed;
+        }
+      });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 

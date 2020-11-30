@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define RATE_LEVELS 3
+#define AUDIO_SYNC_LIMIT 2
 
 void player_init();
 void player_play(const char* name);
@@ -13,6 +14,7 @@ void player_setRate(int rate);
 void player_stop();
 bool player_isPlaying();
 void player_onVBlank();
-void player_forever(bool (*update)());
+void player_forever(int (*update)(),
+                    void (*onAudioChunks)(unsigned int consumed));
 
 #endif  // PLAYER_H

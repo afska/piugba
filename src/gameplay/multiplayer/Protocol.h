@@ -42,16 +42,18 @@
 
 /*
   [Keys sync]
+  5~9: Consumed audio chunks
   4: DOWNRIGHT
   3: UPRIGHT
   2: CENTER
   1: UPLEFT
   0: DOWNLEFT
 */
-#define SYNC_MSG_KEYS_BUILD(DL, UL, C, UR, DR)                           \
+#define SYNC_MSG_KEYS_BUILD(DL, UL, C, UR, DR, AUDIO_CHUNKS)             \
   ((!!(DR)) << 4) | ((!!(UR)) << 3) | ((!!(C)) << 2) | ((!!(UL)) << 1) | \
-      (!!(DL))
+      (!!(DL)) | ((AUDIO_CHUNKS) << 5)
 #define SYNC_MSG_KEYS_DIRECTION(MSG, DIRECTION) (((MSG) >> DIRECTION) & 1)
+#define SYNC_MSG_KEYS_AUDIO_CHUNKS(MSG) (((MSG) >> 5) & 0b11111)
 
 /*
   [Feedback sync]

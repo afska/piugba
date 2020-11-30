@@ -86,7 +86,8 @@ inline void player_onVBlank() {
   PLAYER_POST_UPDATE();
 }
 
-inline void player_forever(bool (*update)()) {
+inline void player_forever(int (*update)(),
+                           void (*onAudioChunks)(unsigned int consumed)) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -99,12 +100,32 @@ inline void player_forever(bool (*update)()) {
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
-    bool canPlay = update();
+    int availableAudioChunks = update();
+    bool isSynchronized = availableAudioChunks != -999;
+    unsigned int consumedAudioChunks = 0;
+
+    if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
+      // overrun
+      unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
+
+      src_pos += AUDIO_CHUNK_SIZE * diff;
+      availableAudioChunks = AUDIO_SYNC_LIMIT;
+      consumedAudioChunks += diff;
+    }
 
     PLAYER_PRE_UPDATE(
         {
-          if (!canPlay)
-            src_pos -= AUDIO_CHUNK_SIZE;
+          if (isSynchronized) {
+            availableAudioChunks--;
+
+            if (availableAudioChunks < -AUDIO_SYNC_LIMIT) {
+              // underrun
+              src_pos -= AUDIO_CHUNK_SIZE;
+              availableAudioChunks = -AUDIO_SYNC_LIMIT;
+            } else
+              consumedAudioChunks++;
+          } else
+            consumedAudioChunks++;
         },
         {
           if (PlaybackState.isLooping)
@@ -115,6 +136,7 @@ inline void player_forever(bool (*update)()) {
           }
         });
 
+    onAudioChunks(consumedAudioChunks);
     VBlankIntrWait();
   }
 }

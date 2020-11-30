@@ -207,7 +207,9 @@ void Syncer::resetGameState() {
   $libraryType = 0;
   $completedSongs = 0;
   $isPlayingSong = false;
+  $hasStartedAudio = false;
   $availableAudioChunks = 0;
+  $consumedAudioChunks = 0;
 }
 
 void Syncer::resetError() {
