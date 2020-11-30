@@ -66,7 +66,7 @@ void Syncer::send(u8 event, u16 payload) {
   linkConnection->send(outgoingData);
 
 #ifdef SENV_DEBUG
-  if (outgoingData != LINK_NO_DATA)
+  if (outgoingData != LINK_NO_DATA && !$isPlayingSong)
     DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif

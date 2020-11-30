@@ -7,7 +7,9 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 
+#ifndef CODE_IWRAM
 #define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
+#endif
 
 #define ARROWS_GAME_TOTAL (isCoop() ? 10 : 5)
 

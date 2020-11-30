@@ -127,7 +127,7 @@ ENV ?= development
 ARCADE ?= false
 
 ifeq ($(ENV), debug)
-	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true
+	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true -DCODE_IWRAM=
 else ifeq ($(ENV), development)
 	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true -DENV_ARCADE=$(ARCADE)
 else
