@@ -107,6 +107,9 @@ void synchronizeSongStart() {
         linkState->readMessage(!linkState->currentPlayerId) == SYNC_START_SONG;
   }
 
+  while (linkState->readMessage(!linkState->currentPlayerId) != LINK_NO_DATA)
+    ;
+
   if (!syncer->isMaster())
     syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
 
