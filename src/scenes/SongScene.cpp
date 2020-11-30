@@ -692,6 +692,9 @@ void SongScene::processMultiplayerUpdates() {
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
+    if (message == SYNC_START_SONG)
+      continue;
+
     switch (event) {
       case SYNC_EVENT_KEYS: {
         bool isTheLastOne = !linkState->hasMessage(remoteId);

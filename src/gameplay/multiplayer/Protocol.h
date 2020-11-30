@@ -15,6 +15,8 @@
 #define SYNC_MSG_EVENT(MSG) (((MSG) >> 11) & SYNC_EVENT_MASK)
 #define SYNC_MSG_PAYLOAD(MSG) (((MSG) >> 1) & SYNC_PAYLOAD_MASK)
 
+#define SYNC_START_SONG 0xf000
+
 // Event IDs:
 #define SYNC_EVENT_ROM_ID 1
 #define SYNC_EVENT_PROGRESS 2

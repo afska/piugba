@@ -93,12 +93,18 @@ void setUpInterrupts() {
 
 void synchronizeSongStart() {
   // discard all previous messages and wait for sync
+  auto linkState = linkConnection->linkState.get();
 
-  while (linkConnection->linkState->readMessage(syncer->getRemotePlayerId()) !=
-         LINK_NO_DATA)
+  while (linkState->readMessage(!linkState->currentPlayerId) != LINK_NO_DATA)
     ;
 
-  IntrWait(1, IRQ_SERIAL);
+  bool isOnSync = false;
+  while (!isOnSync) {
+    linkConnection->send(SYNC_START_SONG);
+    IntrWait(1, IRQ_SERIAL);
+    isOnSync =
+        linkState->readMessage(!linkState->currentPlayerId) == SYNC_START_SONG;
+  }
 
   if (!syncer->isMaster())
     syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
