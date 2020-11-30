@@ -184,7 +184,7 @@ class LinkConnection {
       u16 data = REG_SIOMULTI[i];
 
       if (data != LINK_DISCONNECTED) {
-        if (data != LINK_NO_DATA)
+        if (data != LINK_NO_DATA && i != linkState->currentPlayerId)
           push(linkState->_incomingMessages[i], data);
         newPlayerCount++;
         linkState->_timeouts[i] = 0;
