@@ -113,6 +113,7 @@ class SongScene : public Scene {
   void onNewBeat(bool isAnyKeyPressed);
   void onStageBreak(u8 playerId);
   void onStagePass();
+  void onAbort();
   void breakStage();
   void finishAndGoToEvaluation();
 

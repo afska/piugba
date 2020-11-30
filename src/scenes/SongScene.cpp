@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
 #include "DanceGradeScene.h"
+#include "SelectionScene.h"
 #include "StageBreakScene.h"
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
@@ -92,10 +93,8 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   if (isMultiplayer()) {
+    syncer->resetSongState();
     syncer->$isPlayingSong = true;
-    syncer->$hasStartedAudio = false;
-    syncer->$availableAudioChunks = 0;
-    syncer->$consumedAudioChunks = 0;
     syncer->clearTimeout();
   } else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
@@ -498,6 +497,12 @@ void SongScene::onStagePass() {
   finishAndGoToEvaluation();
 }
 
+void SongScene::onAbort() {
+  unload();
+  engine->transitionIntoScene(new SelectionScene(engine, fs),
+                              new FadeOutScene(6));
+}
+
 void SongScene::breakStage() {
   unload();
   engine->transitionIntoScene(new StageBreakScene(engine, fs),
@@ -737,10 +742,23 @@ void SongScene::processMultiplayerUpdates() {
         syncer->clearTimeout();
         break;
       }
+      case SYNC_EVENT_ABORT: {
+        onAbort();
+
+        syncer->clearTimeout();
+        break;
+      }
       default: {
         syncer->registerTimeout();
       }
     }
+  }
+
+  if (syncer->$resetFlag) {
+    syncer->send(SYNC_EVENT_ABORT, 0);
+    syncer->clearTimeout();
+    onAbort();
+    return;
   }
 }
 
@@ -758,12 +776,8 @@ bool SongScene::setRate(int rate) {
 void SongScene::unload() {
   player_stop();
 
-  if (isMultiplayer()) {
-    syncer->$isPlayingSong = false;
-    syncer->$hasStartedAudio = false;
-    syncer->$availableAudioChunks = 0;
-    syncer->$consumedAudioChunks = 0;
-  }
+  if (isMultiplayer())
+    syncer->resetSongState();
 }
 
 SongScene::~SongScene() {

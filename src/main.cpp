@@ -61,6 +61,11 @@ int main() {
 }
 
 void ISR_reset() {
+  if (syncer->$isPlayingSong) {
+    syncer->$resetFlag = true;
+    return;
+  }
+
   RegisterRamReset(RESET_REG | RESET_VRAM);
   SoftReset();
 }

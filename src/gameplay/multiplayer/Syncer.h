@@ -44,6 +44,7 @@ class Syncer {
   u8 $completedSongs = 0;
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
+  bool $resetFlag = false;
   int $availableAudioChunks = 0;
   u32 $consumedAudioChunks = 0;
   Syncer() {}
@@ -72,6 +73,7 @@ class Syncer {
   void send(u8 event, u16 payload);
   void registerTimeout();
   void clearTimeout();
+  void resetSongState();
 
  private:
   SyncState state = SyncState::SYNC_STATE_SEND_ROM_ID;
