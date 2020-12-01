@@ -106,7 +106,7 @@ inline void player_forever(int (*update)(),
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
     int expectedAudioChunk = update();
-    bool isSynchronized = expectedAudioChunk != -1;
+    bool isSynchronized = expectedAudioChunk > 0;
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
 
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {

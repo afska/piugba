@@ -12,7 +12,7 @@
 
 #define SYNC_TIMEOUT 10
 #define SYNC_IRQ_TIMEOUT 5
-#define SYNC_BUFFER_SIZE 15
+#define SYNC_BUFFER_SIZE 30
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,

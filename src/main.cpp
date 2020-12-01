@@ -42,7 +42,7 @@ int main() {
 
         return syncer->$isPlayingSong && !syncer->isMaster()
                    ? (int)syncer->$currentAudioChunk
-                   : -1;  // (unsynchronized)
+                   : 0;  // (unsynchronized)
       },
       [](u32 current) {
         if (syncer->$isPlayingSong) {

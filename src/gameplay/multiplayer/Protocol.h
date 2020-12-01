@@ -16,8 +16,6 @@
 #define SYNC_MSG_PAYLOAD(MSG) (((MSG) >> 1) & SYNC_PAYLOAD_MASK)
 
 // Event IDs:
-#define SYNC_START_SONG 0x7000
-#define SYNC_AUDIO_CHUNK_HEADER 0x8000
 #define SYNC_EVENT_ROM_ID 1
 #define SYNC_EVENT_PROGRESS 2
 #define SYNC_EVENT_SONG_CHANGED 3
@@ -30,6 +28,8 @@
 #define SYNC_EVENT_STAGE_END 10
 #define SYNC_EVENT_CONFIRM_SONG_END 11
 #define SYNC_EVENT_ABORT 12
+#define SYNC_START_SONG 0x7000
+#define SYNC_AUDIO_CHUNK_HEADER 0x8000
 
 /*
   [Progress sync]
@@ -45,7 +45,6 @@
 
 /*
   [Keys sync]
-  5~9: Consumed audio chunks
   4: DOWNRIGHT
   3: UPRIGHT
   2: CENTER
