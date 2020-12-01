@@ -688,7 +688,7 @@ void SongScene::processMultiplayerUpdates() {
 
   bool remoteArrows[ARROWS_TOTAL];
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    remoteArrows[i] = false;
+    remoteArrows[i] = arrowHolders[getRemoteBaseIndex() + i]->getIsPressed();
 
   while (linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
