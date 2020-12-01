@@ -18,8 +18,9 @@ void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 LinkConnection* linkConnection = new LinkConnection(LinkConnection::BAUD_RATE_1,
                                                     SYNC_IRQ_TIMEOUT,
-                                                    LINK_DEFAULT_REMOTE_TIMEOUT,
-                                                    SYNC_BUFFER_SIZE);
+                                                    SYNC_REMOTE_TIMEOUT,
+                                                    SYNC_BUFFER_SIZE,
+                                                    SYNC_SEND_INTERVAL);
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
