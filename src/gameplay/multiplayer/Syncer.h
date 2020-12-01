@@ -47,8 +47,7 @@ class Syncer {
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;
-  int $availableAudioChunks = 0;
-  u32 $consumedAudioChunks = 0;
+  u32 $currentAudioChunk = 0;
   Syncer() {}
 
   inline bool isPlaying() { return state >= SyncState::SYNC_STATE_PLAYING; }

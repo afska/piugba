@@ -15,9 +15,9 @@
 #define SYNC_MSG_EVENT(MSG) (((MSG) >> 11) & SYNC_EVENT_MASK)
 #define SYNC_MSG_PAYLOAD(MSG) (((MSG) >> 1) & SYNC_PAYLOAD_MASK)
 
-#define SYNC_START_SONG 0x8000
-
 // Event IDs:
+#define SYNC_START_SONG 0x7000
+#define SYNC_AUDIO_CHUNK_HEADER 0x8000
 #define SYNC_EVENT_ROM_ID 1
 #define SYNC_EVENT_PROGRESS 2
 #define SYNC_EVENT_SONG_CHANGED 3
@@ -52,11 +52,10 @@
   1: UPLEFT
   0: DOWNLEFT
 */
-#define SYNC_MSG_KEYS_BUILD(DL, UL, C, UR, DR, AUDIO_CHUNKS)             \
+#define SYNC_MSG_KEYS_BUILD(DL, UL, C, UR, DR)                           \
   ((!!(DR)) << 4) | ((!!(UR)) << 3) | ((!!(C)) << 2) | ((!!(UL)) << 1) | \
-      (!!(DL)) | ((AUDIO_CHUNKS) << 5)
+      (!!(DL))
 #define SYNC_MSG_KEYS_DIRECTION(MSG, DIRECTION) (((MSG) >> DIRECTION) & 1)
-#define SYNC_MSG_KEYS_AUDIO_CHUNKS(MSG) (((MSG) >> 5) & 0b11111)
 
 /*
   [Feedback sync]

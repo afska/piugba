@@ -41,20 +41,21 @@ int main() {
           synchronizeSongStart();
 
         return syncer->$isPlayingSong && !syncer->isMaster()
-                   ? syncer->$availableAudioChunks
-                   : -999;  // (unsynchronized)
+                   ? (int)syncer->$currentAudioChunk
+                   : -1;  // (unsynchronized)
       },
-      [](u32 consumed) {
+      [](u32 current) {
         if (syncer->$isPlayingSong) {
-#ifdef SENV_DEBUG
-          LOGN(PlaybackState.msecs, -1);
-          LOGN(syncer->$availableAudioChunks, 0);
-#endif
+          if (syncer->isMaster()) {
+            syncer->$currentAudioChunk = current;
+            linkConnection->send(SYNC_AUDIO_CHUNK_HEADER |
+                                 ((u16)current + AUDIO_SYNC_LIMIT));
+          }
 
-          if (syncer->isMaster())
-            syncer->$consumedAudioChunks = consumed;
-          else
-            syncer->$availableAudioChunks -= consumed;
+#ifdef SENV_DEBUG
+          LOGN(current, -1);
+          LOGN(syncer->$currentAudioChunk, 0);
+#endif
         }
       });
 
@@ -112,7 +113,7 @@ void synchronizeSongStart() {
     ;
 
   if (!syncer->isMaster())
-    syncer->$availableAudioChunks += AUDIO_SYNC_LIMIT;
+    syncer->$currentAudioChunk = AUDIO_SYNC_LIMIT;
 
   syncer->$hasStartedAudio = true;
 }

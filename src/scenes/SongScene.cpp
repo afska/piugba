@@ -675,14 +675,13 @@ void SongScene::processTrainingModeMod() {
 }
 
 void SongScene::processMultiplayerUpdates() {
-  syncer->send(
-      SYNC_EVENT_KEYS,
-      SYNC_MSG_KEYS_BUILD(arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
-                          arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
-                          arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
-                          arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
-                          arrowHolders[getLocalBaseIndex() + 4]->getIsPressed(),
-                          syncer->$consumedAudioChunks));
+  syncer->send(SYNC_EVENT_KEYS,
+               SYNC_MSG_KEYS_BUILD(
+                   arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
+                   arrowHolders[getLocalBaseIndex() + 4]->getIsPressed()));
 
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
@@ -692,6 +691,12 @@ void SongScene::processMultiplayerUpdates() {
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
+    if (!syncer->isMaster() && (message & SYNC_AUDIO_CHUNK_HEADER) != 0) {
+      syncer->$currentAudioChunk = message & ~SYNC_AUDIO_CHUNK_HEADER;
+      syncer->clearTimeout();
+      continue;
+    }
+
     switch (event) {
       case SYNC_EVENT_KEYS: {
         bool isTheLastOne = !linkState->hasMessage(remoteId);
@@ -700,9 +705,6 @@ void SongScene::processMultiplayerUpdates() {
           for (u32 i = 0; i < ARROWS_TOTAL; i++)
             arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
                 SYNC_MSG_KEYS_DIRECTION(payload, i));
-
-        if (!syncer->isMaster())
-          syncer->$availableAudioChunks += SYNC_MSG_KEYS_AUDIO_CHUNKS(payload);
 
         syncer->clearTimeout();
         break;

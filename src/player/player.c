@@ -22,6 +22,7 @@ static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
 
 static int rate = 0;
 static u32 rateCounter = 0;
+static u32 currentAudioChunk = 0;
 
 PLAYER_DEFINE(REG_DMA1CNT,
               REG_DMA1SAD,
@@ -42,6 +43,7 @@ inline void player_play(const char* name) {
   PlaybackState.isLooping = false;
   rate = 0;
   rateCounter = 0;
+  currentAudioChunk = 0;
 }
 
 inline void player_loop(const char* name) {
@@ -62,11 +64,13 @@ inline void player_seek(unsigned int msecs) {
   cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
   src_pos = src + cursor;
   rateCounter = 0;
+  currentAudioChunk = 0;
 }
 
 inline void player_setRate(int newRate) {
   rate = newRate;
   rateCounter = 0;
+  currentAudioChunk = 0;
 }
 
 inline void player_stop() {
@@ -76,6 +80,7 @@ inline void player_stop() {
   PlaybackState.isLooping = false;
   rate = 0;
   rateCounter = 0;
+  currentAudioChunk = 0;
 }
 
 inline bool player_isPlaying() {
@@ -87,7 +92,7 @@ inline void player_onVBlank() {
 }
 
 inline void player_forever(int (*update)(),
-                           void (*onAudioChunks)(unsigned int consumed)) {
+                           void (*onAudioChunks)(unsigned int current)) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -100,17 +105,17 @@ inline void player_forever(int (*update)(),
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
-    int availableAudioChunks = update();
-    bool isSynchronized = availableAudioChunks != -999;
-    unsigned int consumedAudioChunks = 0;
+    int expectedAudioChunk = update();
+    bool isSynchronized = expectedAudioChunk != -1;
+    int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
 
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
-      // overrun
+      // overrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
 
       src_pos += AUDIO_CHUNK_SIZE * diff;
+      currentAudioChunk += diff;
       availableAudioChunks = AUDIO_SYNC_LIMIT;
-      consumedAudioChunks += diff;
     }
 
     PLAYER_PRE_UPDATE(
@@ -119,13 +124,13 @@ inline void player_forever(int (*update)(),
             availableAudioChunks--;
 
             if (availableAudioChunks < -AUDIO_SYNC_LIMIT) {
-              // underrun
+              // underrun (master is behind slave)
               src_pos -= AUDIO_CHUNK_SIZE;
               availableAudioChunks = -AUDIO_SYNC_LIMIT;
             } else
-              consumedAudioChunks++;
+              currentAudioChunk++;
           } else
-            consumedAudioChunks++;
+            currentAudioChunk++;
         },
         {
           if (PlaybackState.isLooping)
@@ -136,7 +141,7 @@ inline void player_forever(int (*update)(),
           }
         });
 
-    onAudioChunks(consumedAudioChunks);
+    onAudioChunks(currentAudioChunk);
     VBlankIntrWait();
   }
 }
