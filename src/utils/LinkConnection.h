@@ -195,7 +195,7 @@ class LinkConnection {
     linkState->currentPlayerId =
         (REG_SIOCNT & (0b11 << LINK_BITS_PLAYER_ID)) >> LINK_BITS_PLAYER_ID;
 
-    if (!isMaster())
+    if (!isMaster() && !isSending())
       sendPendingData();
   }
 

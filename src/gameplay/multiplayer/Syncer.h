@@ -20,7 +20,7 @@
 #define SYNC_REMOTE_TIMEOUT 16
 
 // Max message queue size
-#define SYNC_BUFFER_SIZE 30
+#define SYNC_BUFFER_SIZE 10
 
 // Number of timer ticks (61.04μs) between messages (100 = 6,104ms)
 #define SYNC_SEND_INTERVAL 100
