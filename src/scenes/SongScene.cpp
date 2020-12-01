@@ -686,6 +686,10 @@ void SongScene::processMultiplayerUpdates() {
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
+  bool remoteArrows[ARROWS_TOTAL];
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    remoteArrows[i] = false;
+
   while (linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
@@ -699,12 +703,8 @@ void SongScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_KEYS: {
-        bool isTheLastOne = !linkState->hasMessage(remoteId);
-
-        if (isTheLastOne)
-          for (u32 i = 0; i < ARROWS_TOTAL; i++)
-            arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(
-                SYNC_MSG_KEYS_DIRECTION(payload, i));
+        for (u32 i = 0; i < ARROWS_TOTAL; i++)
+          remoteArrows[i] = SYNC_MSG_KEYS_DIRECTION(payload, i);
 
         syncer->clearTimeout();
         break;
@@ -755,6 +755,9 @@ void SongScene::processMultiplayerUpdates() {
       }
     }
   }
+
+  for (u32 i = 0; i < ARROWS_TOTAL; i++)
+    arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(remoteArrows[i]);
 
   if (syncer->$resetFlag) {
     syncer->send(SYNC_EVENT_ABORT, 0);
