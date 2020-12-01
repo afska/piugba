@@ -104,11 +104,15 @@ void synchronizeSongStart() {
     ;
 
   bool isOnSync = false;
-  while (!isOnSync) {
+  while (syncer->$isPlayingSong && !isOnSync) {
     linkConnection->send(SYNC_START_SONG);
     IntrWait(1, IRQ_SERIAL);
     isOnSync = linkState->readMessage(remoteId) == SYNC_START_SONG;
+    if (!isOnSync)
+      syncer->registerTimeout();
   }
+  if (!isOnSync)
+    return;
 
   while (linkState->readMessage(remoteId) != LINK_NO_DATA)
     ;
