@@ -95,6 +95,7 @@ void SongScene::load() {
   if (isMultiplayer()) {
     syncer->resetSongState();
     syncer->$isPlayingSong = true;
+    syncer->$currentSongId = song->id;
     syncer->clearTimeout();
   } else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);

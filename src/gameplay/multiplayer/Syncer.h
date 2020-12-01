@@ -58,6 +58,7 @@ class Syncer {
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;
+  u8 $currentSongId = 0;
   u32 $currentAudioChunk = 0;
   Syncer() {}
 
