@@ -759,7 +759,7 @@ void SongScene::processMultiplayerUpdates() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(remoteArrows[i]);
 
-  if (syncer->$resetFlag) {
+  if (syncer->$resetFlag && !engine->isTransitioning()) {
     syncer->send(SYNC_EVENT_ABORT, 0);
     syncer->clearTimeout();
     onAbort();
