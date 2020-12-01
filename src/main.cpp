@@ -16,7 +16,10 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
-LinkConnection* linkConnection = new LinkConnection();
+LinkConnection* linkConnection = new LinkConnection(LinkConnection::BAUD_RATE_1,
+                                                    SYNC_IRQ_TIMEOUT,
+                                                    LINK_DEFAULT_REMOTE_TIMEOUT,
+                                                    SYNC_BUFFER_SIZE);
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -93,19 +96,19 @@ void setUpInterrupts() {
 void synchronizeSongStart() {
   // discard all previous messages and wait for sync
   auto linkState = linkConnection->linkState.get();
+  u8 remoteId = !linkState->currentPlayerId;
 
-  while (linkState->readMessage(!linkState->currentPlayerId) != LINK_NO_DATA)
+  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
     ;
 
   bool isOnSync = false;
   while (!isOnSync) {
     linkConnection->send(SYNC_START_SONG);
     IntrWait(1, IRQ_SERIAL);
-    isOnSync =
-        linkState->readMessage(!linkState->currentPlayerId) == SYNC_START_SONG;
+    isOnSync = linkState->readMessage(remoteId) == SYNC_START_SONG;
   }
 
-  while (linkState->readMessage(!linkState->currentPlayerId) != LINK_NO_DATA)
+  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
     ;
 
   if (!syncer->isMaster())

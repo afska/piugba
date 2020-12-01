@@ -53,4 +53,16 @@ inline void SCENE_decolorize(PaletteManager* palette, u8 mode) {
   }
 }
 
+inline void SCENE_wait(u32 verticalLines) {
+  u32 lines = 0;
+  u32 vCount = REG_VCOUNT;
+
+  while (lines < verticalLines) {
+    if (REG_VCOUNT != vCount) {
+      lines++;
+      vCount = REG_VCOUNT;
+    }
+  };
+}
+
 #endif  // SCENE_UTILS_H
