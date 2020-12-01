@@ -146,8 +146,11 @@ void DanceGradeScene::tick(u16 keys) {
     playSound();
   }
 
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     processMultiplayerUpdates();
+    if (!syncer->isPlaying())
+      return;
+  }
 
   if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
     if (isMultiplayer()) {
@@ -279,7 +282,7 @@ void DanceGradeScene::processMultiplayerUpdates() {
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
-  while (linkState->hasMessage(remoteId)) {
+  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
 

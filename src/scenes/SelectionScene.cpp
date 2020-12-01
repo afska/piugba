@@ -157,8 +157,11 @@ void SelectionScene::tick(u16 keys) {
 
   processKeys(keys);
 
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     processMultiplayerUpdates();
+    if (!syncer->isPlaying())
+      return;
+  }
 
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
@@ -662,7 +665,7 @@ void SelectionScene::processMultiplayerUpdates() {
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
-  while (linkState->hasMessage(remoteId)) {
+  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);

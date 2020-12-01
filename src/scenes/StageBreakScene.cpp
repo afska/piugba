@@ -95,8 +95,11 @@ void StageBreakScene::tick(u16 keys) {
     player_play(SOUND_STAGE_BREAK);
   }
 
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     processMultiplayerUpdates();
+    if (!syncer->isPlaying())
+      return;
+  }
 
   animate();
   pixelBlink->tick();
@@ -169,7 +172,7 @@ void StageBreakScene::processMultiplayerUpdates() {
   auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
-  while (linkState->hasMessage(remoteId)) {
+  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
 

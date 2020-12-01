@@ -63,8 +63,8 @@ class Syncer {
 
   inline bool isPlaying() { return state >= SyncState::SYNC_STATE_PLAYING; }
   inline bool isMaster() { return playerId == 0; }
-  inline int getLocalPlayerId() { return playerId; }
-  inline int getRemotePlayerId() { return !playerId; }
+  inline int getLocalPlayerId() { return isActive() ? playerId : 0; }
+  inline int getRemotePlayerId() { return isActive() ? !playerId : 0; }
   inline SyncError getLastError() { return error; }
 
   inline SyncState getState() { return state; }

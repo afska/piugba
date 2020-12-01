@@ -160,8 +160,11 @@ void SongScene::tick(u16 keys) {
   updateArrowHolders();
   processKeys(keys);
 
-  if (isMultiplayer())
+  if (isMultiplayer()) {
     processMultiplayerUpdates();
+    if (!syncer->isPlaying())
+      return;
+  }
 
   bool isNewBeat = chartReader[getLocalPlayerId()]->update((int)songMsecs);
   if (isNewBeat)
@@ -690,7 +693,7 @@ void SongScene::processMultiplayerUpdates() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     remoteArrows[i] = arrowHolders[getRemoteBaseIndex() + i]->getIsPressed();
 
-  while (linkState->hasMessage(remoteId)) {
+  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
     u16 message = linkState->readMessage(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
