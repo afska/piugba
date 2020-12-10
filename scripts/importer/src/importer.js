@@ -90,7 +90,7 @@ const GET_SONG_FILES = ({ path, name }) => {
 // CLEANUP
 // -------
 
-mkdirp(GLOBAL_OPTIONS.directory);
+mkdirp.sync(GLOBAL_OPTIONS.directory);
 let reuseRomId = null;
 try {
   reuseRomId = fs

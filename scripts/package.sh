@@ -5,6 +5,13 @@ FILE_TMP="piugba.tmp.gba"
 FILE_OUTPUT="piugba.out.gba"
 DATA="src/data/content/files.gbfs"
 
+if [ ! -f "$DATA" ]; then
+    echo ""
+    echo "The file $DATA does not exist. Run make import first!"
+    echo ""
+    exit 1
+fi
+
 KB=$((1024))
 MAX_ROM_SIZE_KB=$((32 * $KB - 1))
 INITIAL_REQUIRED_SIZE_KB=1024

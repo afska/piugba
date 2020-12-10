@@ -72,15 +72,16 @@ make restart ENV=production
 			* `piugba`
 - Install the toolchain:
   * Dev
-    * [devkitPro](https://github.com/devkitPro/installer/releases): The devkit for compiling GBA roms. It comes with:
+    * [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA roms. It comes with:
       * *grit*: Used to convert paletted bitmaps to C arrays or raw binary files
       * *gbfs*: Used to create a package with all the game assets
-    * [node.js >= 10](https://nodejs.org/en): The JS runtime
-    * [make](scripts/toolchain/programs/make-3.81.zip): The build automation tool
+    * [node.js 10](https://nodejs.org/en): The JS runtime
+    * [make 3.81](scripts/toolchain/programs/make-3.81.zip): The build automation tool
   * Media Processing
-    * [ImageMagick](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
-    * [ffmpeg *(with libgsm)*](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
+    * [ImageMagick 7.0.10.3](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
+    * [ffmpeg *(with libgsm)* 3.3.3](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
       * To avoid using the `ffmpeg.exe` binary included with *ImageMagick*, add it to `PATH` first!
+      * Check this running `where ffmpeg`
     * [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
   * Other
     * [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`
@@ -92,6 +93,10 @@ npm install
 ```
 - Add to `~/.bash_profile`:
 ```bash
+# set your ImageMagick install path here:
+export PATH=$PATH:/c/Program\ Files/ImageMagick-7.0.10-Q16
+
+export DEVKITPRO=$PATH:/d/work/gba/tools/devkitPro
 export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
 export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin

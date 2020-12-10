@@ -5,9 +5,8 @@
 
 # --- Paths ---
 export BASE_DIR = D:\work\gba\projects\piugba
-export DEVKIT_PRO = D:\work\gba\projects\piugba\..\..\tools\devkitPro
 
-export TONCLIB := $(DEVKIT_PRO)/libtonc
+export TONCLIB := $(DEVKITPRO)/libtonc
 include  $(BASE_DIR)/tonc_rules
 
 # --- Main path ---
