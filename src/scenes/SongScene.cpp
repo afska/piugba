@@ -35,7 +35,9 @@ const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
-const u32 RUMBLE_FRAMES = 6;
+const u32 RUMBLE_FRAMES = 4;
+const u32 RUMBLE_PRELOAD_FRAMES = 2;
+const u32 RUMBLE_IDLE_FREQUENCY = 5;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -403,17 +405,27 @@ void SongScene::updateRumble() {
 
   if (localChartReader->beatDurationFrames != -1 &&
       localChartReader->beatFrame ==
-          localChartReader->beatDurationFrames - RUMBLE_FRAMES) {
-    rumbleFrame = 0;
+          localChartReader->beatDurationFrames - RUMBLE_PRELOAD_FRAMES) {
+    rumbleIdleFrame = 0;
+    rumbleBeatFrame = 0;
     RUMBLE_start();
   }
 
-  if (rumbleFrame > -1) {
-    rumbleFrame++;
+  if (rumbleBeatFrame > -1) {
+    rumbleBeatFrame++;
 
-    if (rumbleFrame == RUMBLE_FRAMES) {
-      rumbleFrame = -1;
+    if (rumbleBeatFrame == RUMBLE_FRAMES) {
+      rumbleBeatFrame = -1;
       RUMBLE_stop();
+    }
+  } else {
+    rumbleIdleFrame++;
+
+    if (rumbleIdleFrame == 1)
+      RUMBLE_stop();
+    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
+      RUMBLE_start();
+      rumbleIdleFrame = 0;
     }
   }
 }

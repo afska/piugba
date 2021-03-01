@@ -65,7 +65,8 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = -1;
-  int rumbleFrame = -1;
+  int rumbleBeatFrame = -1;
+  int rumbleIdleFrame = 0;
 
   inline u8 getPlatformCount() { return (u8)(1 + isMultiplayer()); }
   inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
