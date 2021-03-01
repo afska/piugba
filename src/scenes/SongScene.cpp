@@ -35,8 +35,7 @@ const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
-const u32 RUMBLE_FRAMES = 4;
-const u32 RUMBLE_IDLE_FREQUENCY = 5;
+const u32 RUMBLE_FRAMES = 6;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -185,27 +184,10 @@ void SongScene::tick(u16 keys) {
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
 
-  if (rumbleBeatFrame > -1) {
-    rumbleBeatFrame++;
-
-    if (rumbleBeatFrame == RUMBLE_FRAMES) {
-      rumbleBeatFrame = -1;
-      RUMBLE_stop();
-    }
-  } else {
-    rumbleIdleFrame++;
-
-    if (rumbleIdleFrame == 1)
-      RUMBLE_stop();
-    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
-      RUMBLE_start();
-      rumbleIdleFrame = 0;
-    }
-  }
-
   updateFakeHeads();
   updateArrows();
   updateScoresAndLifebars();
+  updateRumble();
 
 #ifdef SENV_DEVELOPMENT
   if (chartReader[0]->debugOffset)
@@ -416,6 +398,26 @@ void SongScene::updateGameY() {
     it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
 }
 
+void SongScene::updateRumble() {
+  auto localChartReader = chartReader[getLocalPlayerId()].get();
+
+  if (localChartReader->beatDurationFrames != -1 &&
+      localChartReader->beatFrame ==
+          localChartReader->beatDurationFrames - RUMBLE_FRAMES) {
+    rumbleFrame = 0;
+    RUMBLE_start();
+  }
+
+  if (rumbleFrame > -1) {
+    rumbleFrame++;
+
+    if (rumbleFrame == RUMBLE_FRAMES) {
+      rumbleFrame = -1;
+      RUMBLE_stop();
+    }
+  }
+}
+
 void SongScene::processKeys(u16 keys) {
   arrowHolders[getLocalBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowHolders[getLocalBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
@@ -489,9 +491,9 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
 
   processModsBeat();
 
-  rumbleIdleFrame = -1;
-  rumbleBeatFrame = 0;
-  RUMBLE_start();
+  auto localChartReader = chartReader[getLocalPlayerId()].get();
+  localChartReader->beatDurationFrames = localChartReader->beatFrame;
+  localChartReader->beatFrame = 0;
 }
 
 void SongScene::onStageBreak(u8 playerId) {

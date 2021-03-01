@@ -179,6 +179,8 @@ CODE_IWRAM void ChartReader::processNextEvents() {
                 lastBpmChange = event->timestamp;
                 lastTick = 0;
                 subtick = 0;
+                beatDurationFrames = -1;
+                beatFrame = 0;
               }
 
               if (event->param3 > 0) {
@@ -397,6 +399,7 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
   }
 
   lastTick = tick;
+  beatFrame++;
 
   return hasChanged && (tickCount == 1 || subtick == 1);
 }

@@ -65,8 +65,7 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = -1;
-  int rumbleBeatFrame = -1;
-  int rumbleIdleFrame = 0;
+  int rumbleFrame = -1;
 
   inline u8 getPlatformCount() { return (u8)(1 + isMultiplayer()); }
   inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
@@ -110,6 +109,7 @@ class SongScene : public Scene {
   void updateScoresAndLifebars();
   void updateGameX();
   void updateGameY();
+  void updateRumble();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);
