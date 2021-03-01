@@ -13,6 +13,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"
+#include "utils/Rumble.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
@@ -34,6 +35,8 @@ const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
+const u32 RUMBLE_FRAMES = 4;
+const u32 RUMBLE_IDLE_FREQUENCY = 5;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -92,6 +95,8 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  RUMBLE_init();
+
   if (isMultiplayer()) {
     syncer->resetSongState();
     syncer->$isPlayingSong = true;
@@ -179,6 +184,24 @@ void SongScene::tick(u16 keys) {
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
+
+  if (rumbleBeatFrame > -1) {
+    rumbleBeatFrame++;
+
+    if (rumbleBeatFrame == RUMBLE_FRAMES) {
+      rumbleBeatFrame = -1;
+      RUMBLE_stop();
+    }
+  } else {
+    rumbleIdleFrame++;
+
+    if (rumbleIdleFrame == 1)
+      RUMBLE_stop();
+    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
+      RUMBLE_start();
+      rumbleIdleFrame = 0;
+    }
+  }
 
   updateFakeHeads();
   updateArrows();
@@ -465,6 +488,10 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
       arrowHolder->blink();
 
   processModsBeat();
+
+  rumbleIdleFrame = -1;
+  rumbleBeatFrame = 0;
+  RUMBLE_start();
 }
 
 void SongScene::onStageBreak(u8 playerId) {
@@ -784,6 +811,7 @@ bool SongScene::setRate(int rate) {
 
 void SongScene::unload() {
   player_stop();
+  RUMBLE_stop();
 
   if (isMultiplayer())
     syncer->resetSongState();
