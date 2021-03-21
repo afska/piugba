@@ -39,6 +39,8 @@ typedef struct __attribute__((__packed__)) {
 
   u8 singleArcadeProgress[ARCADE_PROGRESS_SIZE];
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
+
+  u8 beat;
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)

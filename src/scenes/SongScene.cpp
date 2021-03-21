@@ -182,6 +182,17 @@ void SongScene::tick(u16 keys) {
   blinkFrame = max(blinkFrame - 1, 0);
   if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
+  if (!isMultiplayer()) {
+    // TODO: Add I/O SD-Bit Blink Settings
+    // TODO: Move blink to another function
+
+    if (blinkFrame > 0)
+      // Turn on SD bit
+      REG_RCNT |= 0b10;
+    else
+      // Turn off SD bit
+      REG_RCNT &= 0b1111111111111101;
+  }
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
@@ -401,6 +412,8 @@ void SongScene::updateGameY() {
 }
 
 void SongScene::updateRumble() {
+  // TODO: Add rumble settings
+
   auto localChartReader = chartReader[getLocalPlayerId()].get();
 
   if (localChartReader->beatDurationFrames != -1 &&
@@ -492,6 +505,9 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
+  // TODO: Add Everdrive LED blink settings
+  SAVEFILE_write8(SRAM->beat, !SAVEFILE_read8(SRAM->beat));
+
   blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
@@ -829,6 +845,10 @@ void SongScene::unload() {
 
   if (isMultiplayer())
     syncer->resetSongState();
+  else {
+    // TODO: Extract SD blink
+    REG_RCNT &= 0b1111111111111101;
+  }
 }
 
 SongScene::~SongScene() {
