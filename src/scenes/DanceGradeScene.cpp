@@ -117,16 +117,16 @@ void DanceGradeScene::load() {
           new Total(TOTALS_X[remoteId], TOTALS_Y[i], false)};
     remoteMaxComboTotal = std::unique_ptr<Total>{
         new Total(TOTALS_X[remoteId], TOTAL_MAX_COMBO_Y, false)};
+
+    remoteTotals[FeedbackType::PERFECT]->setValue(remoteEvaluation->perfects);
+    remoteTotals[FeedbackType::GREAT]->setValue(remoteEvaluation->greats);
+    remoteTotals[FeedbackType::GOOD]->setValue(remoteEvaluation->goods);
+    remoteTotals[FeedbackType::BAD]->setValue(remoteEvaluation->bads);
+    remoteTotals[FeedbackType::MISS]->setValue(remoteEvaluation->misses);
+    remoteMaxComboTotal->setValue(remoteEvaluation->maxCombo);
   } else
     grade = std::unique_ptr<Grade>{
         new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
-
-  remoteTotals[FeedbackType::PERFECT]->setValue(remoteEvaluation->perfects);
-  remoteTotals[FeedbackType::GREAT]->setValue(remoteEvaluation->greats);
-  remoteTotals[FeedbackType::GOOD]->setValue(remoteEvaluation->goods);
-  remoteTotals[FeedbackType::BAD]->setValue(remoteEvaluation->bads);
-  remoteTotals[FeedbackType::MISS]->setValue(remoteEvaluation->misses);
-  remoteMaxComboTotal->setValue(remoteEvaluation->maxCombo);
 }
 
 void DanceGradeScene::tick(u16 keys) {
