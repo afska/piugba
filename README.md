@@ -64,7 +64,7 @@ make restart ENV=production
 
 ### Windows
 
-- Use this file structure in `D:\work\gba`:
+- Choose a folder (from now, `GBA_DIR`), and use this file structure:
 	* `gba`
 		* `tools`
 			* `devkitPro`
@@ -96,10 +96,13 @@ npm install
 # set your ImageMagick install path here:
 export PATH=$PATH:/c/Program\ Files/ImageMagick-7.0.10-Q16
 
-export DEVKITPRO=$PATH:/d/work/gba/tools/devkitPro
-export PATH=$PATH:/d/work/gba/tools/devkitPro/bin
-export PATH=$PATH:/d/work/gba/tools/devkitPro/devkitARM/bin
-export PATH=$PATH:/d/work/gba/tools/devkitPro/tools/bin
+export GBA_DIR="/c/Work/gba" # <<< CHANGE THIS PATH
+export GBA_DIR_WIN="C:\Work\gba" # <<< CHANGE THIS PATH
+
+export DEVKITPRO="$GBA_DIR/tools/devkitPro"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/bin"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/devkitARM/bin"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 ```
 - You can check if the tools are installed correctly by running `./scripts/toolchain/check.sh`
 

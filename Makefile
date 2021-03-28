@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 # --- Paths ---
-export BASE_DIR = D:\work\gba\projects\piugba
+export BASE_DIR = $(GBA_DIR_WIN)\projects\piugba
 
 export TONCLIB := $(DEVKITPRO)/libtonc
 include  $(BASE_DIR)/tonc_rules
@@ -206,27 +206,37 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: clean assets start rebuild restart
+.PHONY: check-env clean assets start rebuild restart
 
-assets:
+check-env:
+ifndef GBA_DIR
+	$(warning Missing environment variable: GBA_DIR. See README.md)
+	$(error "Aborting")
+endif
+ifndef GBA_DIR_WIN
+	$(warning Missing environment variable: GBA_DIR_WIN. See README.md)
+	$(error "Aborting")
+endif
+
+assets: check-env
 	./scripts/assets.sh
 
-import:
+import: check-env
 	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --arcade=$(ARCADE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
-package: $(BUILD)
+package: check-env $(BUILD)
 	./scripts/package.sh
 
-start: package
+start: check-env package
 	start "$(TARGET).out.gba"
 
-rebuild: clean package
+rebuild: check-env clean package
 
-restart: rebuild
+restart: check-env rebuild
 	start "$(TARGET).out.gba"
 
-reimport: import package
+reimport: check-env import package
 	start "$(TARGET).out.gba"
 
 # EOF
