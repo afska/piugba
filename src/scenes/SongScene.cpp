@@ -112,30 +112,30 @@ void SongScene::load() {
   setUpBackground();
   setUpArrows();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    lifeBars[playerId] = std::unique_ptr<LifeBar>(new LifeBar(playerId));
+    lifeBars[playerId] = std::unique_ptr<LifeBar>{new LifeBar(playerId)};
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     scores[playerId] =
         std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
 
-  judge = std::unique_ptr<Judge>(
+  judge = std::unique_ptr<Judge>{
       new Judge(arrowPool.get(), &arrowHolders, &scores,
-                [this](u8 playerId) { onStageBreak(playerId); }));
+                [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    chartReader[playerId] = std::unique_ptr<ChartReader>(new ChartReader(
+    chartReader[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
         playerId == getLocalPlayerId() ? chart : remoteChart, playerId,
-        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier));
+        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier)};
 
-  startInput = std::unique_ptr<InputHandler>(new InputHandler());
-  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
-  aInput = std::unique_ptr<InputHandler>(new InputHandler());
-  bInput = std::unique_ptr<InputHandler>(new InputHandler());
+  startInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  selectInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  aInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  bInput = std::unique_ptr<InputHandler>{new InputHandler()};
 }
 
 void SongScene::tick(u16 keys) {
@@ -211,8 +211,8 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::setUpPalettes() {
-  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
+      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal))};
 
   backgroundPalette =
       BACKGROUND_loadPaletteFile(fs, song->backgroundPalettePath.c_str());

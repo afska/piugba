@@ -85,7 +85,7 @@ void StartScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   setUpButtons();
   setUpGameAnimation();
@@ -118,8 +118,8 @@ void StartScene::tick(u16 keys) {
 }
 
 void StartScene::setUpSpritesPalette() {
-  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(palette_startPal, sizeof(palette_startPal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
+      new ForegroundPaletteManager(palette_startPal, sizeof(palette_startPal))};
 }
 
 void StartScene::setUpBackground() {

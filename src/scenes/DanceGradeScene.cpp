@@ -166,9 +166,9 @@ void DanceGradeScene::tick(u16 keys) {
 
 void DanceGradeScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
           isVs() ? palette_grade_multiPal : palette_gradePal,
-          isVs() ? sizeof(palette_grade_multiPal) : sizeof(palette_gradePal)));
+          isVs() ? sizeof(palette_grade_multiPal) : sizeof(palette_gradePal))};
 }
 
 void DanceGradeScene::setUpBackground() {

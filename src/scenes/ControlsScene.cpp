@@ -55,7 +55,7 @@ void ControlsScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   setUpArrows();
   instructor = std::unique_ptr<Instructor>{
@@ -86,8 +86,8 @@ void ControlsScene::tick(u16 keys) {
 
 void ControlsScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_controlsPal, sizeof(palette_controlsPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_controlsPal, sizeof(palette_controlsPal))};
 }
 
 void ControlsScene::setUpBackground() {

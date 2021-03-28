@@ -35,8 +35,8 @@ inline std::unique_ptr<BackgroundPaletteManager> BACKGROUND_loadPaletteFile(
   auto backgroundPaletteData =
       (COLOR*)gbfs_get_obj(fs, fileName, &backgroundPaletteLength);
 
-  return std::unique_ptr<BackgroundPaletteManager>(new BackgroundPaletteManager(
-      backgroundPaletteData, backgroundPaletteLength));
+  return std::unique_ptr<BackgroundPaletteManager>{new BackgroundPaletteManager(
+      backgroundPaletteData, backgroundPaletteLength)};
 }
 
 inline std::unique_ptr<Background> BACKGROUND_loadBackgroundFiles(
@@ -52,9 +52,9 @@ inline std::unique_ptr<Background> BACKGROUND_loadBackgroundFiles(
     backgroundMapData =
         gbfs_get_obj(fs, UNIQUE_MAP_FILE_NAME, &backgroundMapLength);
 
-  return std::unique_ptr<Background>(
+  return std::unique_ptr<Background>{
       new Background(bgIndex, backgroundTilesData, backgroundTilesLength,
-                     backgroundMapData, backgroundMapLength));
+                     backgroundMapData, backgroundMapLength)};
 }
 
 inline void BACKGROUND_loadPalette(const unsigned int data[],

@@ -36,7 +36,7 @@ bool Score::update(FeedbackType feedbackType, bool isLong) {
 }
 
 std::unique_ptr<Evaluation> Score::evaluate() {
-  auto evaluation = new Evaluation();
+  auto evaluation = std::unique_ptr<Evaluation>{new Evaluation()};
   evaluation->perfects = counters[FeedbackType::PERFECT];
   evaluation->greats = counters[FeedbackType::GREAT];
   evaluation->goods = counters[FeedbackType::GOOD];
@@ -46,7 +46,7 @@ std::unique_ptr<Evaluation> Score::evaluate() {
   evaluation->points = points;
   evaluation->longNotes = longNotes;
 
-  return std::unique_ptr<Evaluation>(evaluation);
+  return evaluation;
 }
 
 void Score::relocate() {

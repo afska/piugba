@@ -102,7 +102,7 @@ void SelectionScene::load() {
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   multiplier = std::unique_ptr<Multiplier>{
       new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
@@ -176,8 +176,8 @@ void SelectionScene::tick(u16 keys) {
 
 void SelectionScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_selectionPal, sizeof(palette_selectionPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_selectionPal, sizeof(palette_selectionPal))};
 }
 
 void SelectionScene::setUpBackground() {

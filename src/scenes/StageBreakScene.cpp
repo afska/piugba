@@ -70,7 +70,7 @@ void StageBreakScene::load() {
   setUpSpritesPalette();
   setUpBackground();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
 
@@ -119,8 +119,8 @@ void StageBreakScene::tick(u16 keys) {
 }
 
 void StageBreakScene::setUpSpritesPalette() {
-  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(palette_breakPal, sizeof(palette_breakPal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
+      new ForegroundPaletteManager(palette_breakPal, sizeof(palette_breakPal))};
 }
 
 void StageBreakScene::setUpBackground() {

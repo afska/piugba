@@ -76,8 +76,8 @@ void TextScene::write(std::string text) {
 
 void TextScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_controlsPal, sizeof(palette_controlsPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_controlsPal, sizeof(palette_controlsPal))};
 }
 
 void TextScene::setUpBackground() {
