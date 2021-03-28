@@ -164,6 +164,7 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
+  __qran_seed += keys;
   updateArrowHolders();
   processKeys(keys);
 

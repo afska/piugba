@@ -9,6 +9,7 @@
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 FRAME_SKIP = 1;
+u8 LAST_RANDOM_STEP_DATA = 0;
 
 ChartReader::ChartReader(Chart* chart,
                          u8 playerId,
@@ -227,10 +228,17 @@ CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
   std::vector<Arrow*> arrows;
 
   if (GameState.mods.randomSteps) {
-    u8 stompSize = STOMP_SIZE_BY_DATA[data >> 3] - 1;
+  retry:
+    u8 stompSize = STOMP_SIZE_BY_DATA[data >> EVENT_TYPE_BITS] - 1;
     data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
                0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
-           << 3;
+           << EVENT_TYPE_BITS;
+
+    if (stompSize == 0) {
+      if (data == LAST_RANDOM_STEP_DATA)
+        goto retry;
+      LAST_RANDOM_STEP_DATA = data;
+    }
   }
 
   forEachDirection(data, [&timestamp, &arrows, this](ArrowDirection direction) {

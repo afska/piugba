@@ -3,6 +3,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
+#define EVENT_TYPE_BITS 3
 #define EVENT_TYPE /*             */ 0b00000111
 #define EVENT_ARROW_DOWNLEFT /*   */ 0b00001000
 #define EVENT_ARROW_UPLEFT /*     */ 0b00010000
