@@ -613,7 +613,7 @@ void SongScene::processModsBeat() {
     auto previousTargetMosaic = targetMosaic;
     targetMosaic = qran_range(1, 5);
     if (previousTargetMosaic == targetMosaic)
-      mosaic = 1;
+      mosaic = 0;
   }
 
   if (GameState.mods.jump == JumpOpts::jRANDOM) {
