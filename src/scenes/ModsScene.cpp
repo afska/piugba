@@ -72,9 +72,11 @@ void ModsScene::printOptions() {
   printOption(OPTION_JUMP, "Jump",
               jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
   printOption(OPTION_REDUCE, "Reduce",
-              reduce == 0
-                  ? "OFF"
-                  : reduce == 1 ? "LINEAR" : reduce == 2 ? "FIXED" : "RANDOM",
+              reduce == 0 ? "OFF"
+                          : reduce == 1 ? "LINEAR"
+                                        : reduce == 2 ? "FIXED"
+                                                      : reduce == 3 ? "RANDOM"
+                                                                    : "MICRO",
               8);
   printOption(OPTION_DECOLORIZE, "Decolorize",
               decolorize == 0
@@ -127,7 +129,7 @@ bool ModsScene::selectOption(u32 selected) {
     }
     case OPTION_REDUCE: {
       u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 4));
+      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 5));
       return true;
     }
     case OPTION_DECOLORIZE: {

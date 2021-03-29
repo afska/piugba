@@ -64,7 +64,7 @@ void STATE_setup(Song* song, Chart* chart) {
               : StageBreakOpts::sOFF;
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
-      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.reduce = ReduceOpts::rMICRO;
       GameState.mods.decolorize = DecolorizeOpts::dOFF;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
@@ -96,7 +96,10 @@ void STATE_setup(Song* song, Chart* chart) {
   GameState.scorePositionY = 0;
 
   if (GameState.mods.reduce != ReduceOpts::rOFF) {
-    GameState.positionY = REDUCE_MOD_POSITION_Y;
-    GameState.scorePositionY = REDUCE_MOD_SCORE_POSITION_Y;
+    GameState.positionY = GameState.mods.reduce == ReduceOpts::rMICRO
+                              ? REDUCE_MOD_POSITION_Y_MICRO
+                              : REDUCE_MOD_POSITION_Y;
+    if (GameState.mods.reduce != ReduceOpts::rMICRO)
+      GameState.scorePositionY = REDUCE_MOD_SCORE_POSITION_Y;
   }
 }

@@ -648,11 +648,15 @@ void SongScene::processModsTick() {
     updateGameX();
   }
 
-  if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
+  if (GameState.mods.reduce == ReduceOpts::rLINEAR ||
+      GameState.mods.reduce == ReduceOpts::rMICRO) {
     GameState.positionY += reduceDirection;
 
-    if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
-        GameState.positionY <= 0)
+    int positionY = GameState.mods.reduce == ReduceOpts::rLINEAR
+                        ? REDUCE_MOD_POSITION_Y
+                        : REDUCE_MOD_POSITION_Y_MICRO;
+
+    if (GameState.positionY >= positionY || GameState.positionY <= 0)
       reduceDirection *= -1;
 
     updateGameY();
