@@ -59,10 +59,11 @@ void MultiplayerLobbyScene::refresh(int newMessageId) {
 
 void MultiplayerLobbyScene::start() {
   engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new FadeOutScene(2));
+                              new PixelTransitionEffect());
 }
 
 void MultiplayerLobbyScene::goBack() {
-  engine->transitionIntoScene(new StartScene(engine, fs), new FadeOutScene(2));
+  engine->transitionIntoScene(new StartScene(engine, fs),
+                              new PixelTransitionEffect());
   syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
 }

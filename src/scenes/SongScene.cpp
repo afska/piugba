@@ -562,13 +562,13 @@ void SongScene::onStagePass() {
 void SongScene::onAbort() {
   unload();
   engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new FadeOutScene(6));
+                              new PixelTransitionEffect());
 }
 
 void SongScene::breakStage() {
   unload();
   engine->transitionIntoScene(new StageBreakScene(engine, fs),
-                              new FadeOutScene(6));
+                              new PixelTransitionEffect());
 }
 
 void SongScene::finishAndGoToEvaluation() {
@@ -584,7 +584,7 @@ void SongScene::finishAndGoToEvaluation() {
           isVs() ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           remoteChart != NULL && remoteChart->level != chart->level,
           isLastSong),
-      new FadeOutScene(1));
+      new PixelTransitionEffect());
 }
 
 void SongScene::processModsLoad() {

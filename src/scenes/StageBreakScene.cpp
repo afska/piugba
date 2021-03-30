@@ -165,7 +165,7 @@ void StageBreakScene::animate() {
 void StageBreakScene::finish() {
   player_stop();
   engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new FadeOutScene(2));
+                              new PixelTransitionEffect());
 }
 
 void StageBreakScene::processMultiplayerUpdates() {

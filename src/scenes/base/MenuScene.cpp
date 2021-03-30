@@ -130,7 +130,7 @@ void MenuScene::processKeys(u16 keys) {
   if (closeInput->hasBeenPressedNow()) {
     player_stop();
     engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(2));
+                                new PixelTransitionEffect());
   }
 }
 

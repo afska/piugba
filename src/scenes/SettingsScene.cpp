@@ -65,7 +65,7 @@ bool SettingsScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
       engine->transitionIntoScene(new CalibrateScene(engine, fs),
-                                  new FadeOutScene(2));
+                                  new PixelTransitionEffect());
       return false;
     }
     case OPTION_GAME_POSITION: {
@@ -92,7 +92,7 @@ bool SettingsScene::selectOption(u32 selected) {
     }
     case OPTION_QUIT: {
       engine->transitionIntoScene(new StartScene(engine, fs),
-                                  new FadeOutScene(2));
+                                  new PixelTransitionEffect());
       return false;
     }
   }

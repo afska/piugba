@@ -7,6 +7,7 @@
 
 #include "BackgroundUtils.h"
 #include "EffectUtils.h"
+#include "PixelTransitionEffect.h"
 #include "SpriteUtils.h"
 
 const u32 TEXT_MIDDLE_COL = 12;

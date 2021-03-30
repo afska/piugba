@@ -395,14 +395,14 @@ void SelectionScene::processMenuEvents(u16 keys) {
     } else {
       player_stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
-                                  new FadeOutScene(4));
+                                  new PixelTransitionEffect());
     }
   }
 
   if (settingsMenuInput->hasBeenPressedNow()) {
     player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(4));
+                                new PixelTransitionEffect());
   }
 }
 
@@ -734,7 +734,8 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
 
 void SelectionScene::quit() {
   player_stop();
-  engine->transitionIntoScene(SEQUENCE_getMainScene(), new FadeOutScene(4));
+  engine->transitionIntoScene(SEQUENCE_getMainScene(),
+                              new PixelTransitionEffect());
 }
 
 SelectionScene::~SelectionScene() {

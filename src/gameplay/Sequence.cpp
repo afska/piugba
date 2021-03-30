@@ -20,12 +20,8 @@
 static std::shared_ptr<GBAEngine> _engine;
 static const GBFS_FILE* _fs;
 
-static void goTo(Scene* scene, int delay) {
-  _engine->transitionIntoScene(scene, new FadeOutScene(delay));
-}
-
 static void goTo(Scene* scene) {
-  goTo(scene, 2);
+  _engine->transitionIntoScene(scene, new PixelTransitionEffect());
 }
 
 void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
@@ -147,38 +143,35 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(_engine, _fs, std::string(song->message),
                        [song, chart](u16 keys) {
                          if (KEY_CENTER(keys))
-                           goTo(new SongScene(_engine, _fs, song, chart), 2);
-                       }),
-         4);
+                           goTo(new SongScene(_engine, _fs, song, chart));
+                       }));
     return;
   }
 
   if (gameMode == GameMode::CAMPAIGN && song->index == 1) {
     goTo(new TalkScene(
-             _engine, _fs, KEYS_HINT,
-             [song, chart](u16 keys) {
-               if (KEY_CENTER(keys))
-                 goTo(new SongScene(_engine, _fs, song, chart), 2);
-             },
-             true),
-         4);
+        _engine, _fs, KEYS_HINT,
+        [song, chart](u16 keys) {
+          if (KEY_CENTER(keys))
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
     return;
   }
 
   if (gameMode == GameMode::ARCADE &&
       GameState.mods.trainingMode == TrainingModeOpts::tON) {
     goTo(new TalkScene(
-             _engine, _fs, KEYS_TRAINING_HINT,
-             [song, chart](u16 keys) {
-               if (KEY_CENTER(keys))
-                 goTo(new SongScene(_engine, _fs, song, chart), 2);
-             },
-             true),
-         4);
+        _engine, _fs, KEYS_TRAINING_HINT,
+        [song, chart](u16 keys) {
+          if (KEY_CENTER(keys))
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
     return;
   }
 
-  goTo(new SongScene(_engine, _fs, song, chart, remoteChart), 4);
+  goTo(new SongScene(_engine, _fs, song, chart, remoteChart));
 }
 
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
@@ -190,8 +183,7 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
                        [](u16 keys) {
                          if (KEY_CENTER(keys))
                            goTo(new SelectionScene(_engine, _fs));
-                       }),
-         4);
+                       }));
   else
     goTo(new SelectionScene(_engine, _fs));
 }

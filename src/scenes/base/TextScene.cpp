@@ -42,6 +42,7 @@ std::vector<Sprite*> TextScene::sprites() {
 
 void TextScene::load() {
   SCENE_init();
+  TextStream::instance().setMosaic(true);
 
   setUpSpritesPalette();
   setUpBackground();
@@ -86,6 +87,7 @@ void TextScene::setUpBackground() {
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
 }
 
 void TextScene::alignText() {

@@ -214,5 +214,5 @@ void CalibrateScene::goBack() {
     onFinish();
   else
     engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(2));
+                                new PixelTransitionEffect());
 }

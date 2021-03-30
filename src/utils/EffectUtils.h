@@ -5,6 +5,8 @@
 
 const u32 MIN_OPACITY = 0;
 const u32 MAX_OPACITY = 16;
+const u32 MIN_MOSAIC = 0;
+const u32 MAX_MOSAIC = 15;
 const u8 BLD_BG[] = {BLD_BG0, BLD_BG1, BLD_BG2, BLD_BG3};
 const u8 BLD_MODE_OFF = 0;
 const u8 BLD_MODE_NORMAL = 1;
@@ -23,7 +25,7 @@ inline void EFFECT_turnOffBlend() {
   REG_BLDCNT = BLD_BUILD(0, 0, BLD_MODE_OFF);
 }
 
-// Value is in [0, 15]
+// Value is in [0, MAX_MOSAIC]
 inline void EFFECT_setMosaic(u8 value) {
   REG_MOSAIC = MOS_BUILD(value, value, value, value);
 }

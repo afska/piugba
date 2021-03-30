@@ -83,6 +83,7 @@ void DanceGradeScene::load() {
     syncer->clearTimeout();
 
   SCENE_init();
+  TextStream::instance().setMosaic(true);
 
   setUpSpritesPalette();
   setUpBackground();
@@ -183,6 +184,7 @@ void DanceGradeScene::setUpBackground() {
   }
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
 }
 
 void DanceGradeScene::finish() {
