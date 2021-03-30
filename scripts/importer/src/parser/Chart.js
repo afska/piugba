@@ -340,7 +340,11 @@ module.exports = class Chart {
       .map((it) => it.replace(/\/\/.*/g, ""))
       .map((it) => it.trim())
       .filter((it) => !_.isEmpty(it))
-      .map((it) => it.replace(/{(\w)\|\w\|\w\|\w}/g, "$1")) // weird event syntax
+      .map((it) =>
+        it.replace(/{(\w)\|\w\|(\w)\|\w}/g, (__, note, fake) =>
+          fake === "1" ? "F" : note
+        )
+      ) // weird f2 event syntax
       .map((it) => it.replace(/[MK]/g, "0")) // ignored SSC events
       .filter((it) => {
         const isValid = (this.header.isDouble
