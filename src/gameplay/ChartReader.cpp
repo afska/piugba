@@ -178,8 +178,8 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             if (oldBpm > 0) {
               if (oldBpm != bpm) {
                 lastBpmChange = event->timestamp;
+                lastBeat = -1;
                 lastTick = 0;
-                subtick = 0;
                 beatDurationFrames = -1;
                 beatFrame = 0;
               }
@@ -195,7 +195,6 @@ CODE_IWRAM void ChartReader::processNextEvents() {
           case EventType::SET_TICKCOUNT:
             tickCount = event->param;
             lastTick = -1;
-            subtick = 0;
             return true;
           case EventType::STOP:
             if (hasStopped)
@@ -371,16 +370,18 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
     return false;
 
   // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> beat = msecs * BPM / 60000
+  // rythmMsecs ms      -> beat = rythmMsecs * BPM / 60000
+
+  int beat = Div(rythmMsecs * bpm, MINUTE);
+  bool isNewBeat = beat != lastBeat;
+  lastBeat = beat;
+
   int tick =
       MATH_fracumul(rythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
-  bool hasChanged = tick != lastTick;
+  bool isNewTick = tick != lastTick;
+  lastTick = tick;
 
-  if (hasChanged) {
-    subtick++;
-    if (subtick == tickCount)
-      subtick = 0;
-
+  if (isNewTick) {
     if (checkHoldArrows) {
       u16 arrows = 0;
       bool isFake = false;
@@ -406,10 +407,9 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
     }
   }
 
-  lastTick = tick;
   beatFrame++;
 
-  return hasChanged && (tickCount == 1 || subtick == 1);
+  return isNewBeat;
 }
 
 CODE_IWRAM void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
