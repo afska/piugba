@@ -3,7 +3,7 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum ArcadeCharts : u8 { SINGLE, DOUBLE };
+enum ArcadeChartsOpts : u8 { SINGLE, DOUBLE };
 enum RumbleOpts : u8 { RUMBLE_OFF, RUMBLE_LOW, RUMBLE_HIGH };
 enum IOBlinkOpts : u8 {
   IO_BLINK_OFF,
@@ -11,7 +11,7 @@ enum IOBlinkOpts : u8 {
   IO_BLINK_ON_HIT,
   IO_BLINK_ON_KEY
 };
-enum SRAMBlink : u8 {
+enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_OFF,
   SRAM_BLINK_ON_BEAT,
   SRAM_BLINK_ON_HIT,

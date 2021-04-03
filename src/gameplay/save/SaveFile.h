@@ -116,6 +116,12 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
+
+    SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
+    SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::RUMBLE_OFF);
+    SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
+    SAVEFILE_write8(SRAM->adminSettings.sramBlink,
+                    SRAMBlinkOpts::SRAM_BLINK_OFF);
   }
 
   // create arcade progress if needed

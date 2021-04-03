@@ -12,7 +12,7 @@
 #define OPTION_IO_BLINK 2
 #define OPTION_SRAM_BLINK 3
 #define OPTION_RESET_ARCADE_PROGRESS 4
-#define OPTION_RESET_ALL_PROGRESS 5
+#define OPTION_DELETE_ALL_DATA 5
 
 AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
@@ -54,7 +54,7 @@ void AdminScene::printOptions() {
           : sramBlink == 1 ? "ON BEAT" : sramBlink == 2 ? "ON HIT" : "ON KEY",
       11);
   printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
-  printOption(OPTION_RESET_ALL_PROGRESS, "[RESET ALL PROGRESS]", "", 15);
+  printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);
 }
 
 bool AdminScene::selectOption(u32 selected) {
@@ -83,7 +83,7 @@ bool AdminScene::selectOption(u32 selected) {
       // TODO: IMPLEMENT
       return true;
     }
-    case OPTION_RESET_ALL_PROGRESS: {
+    case OPTION_DELETE_ALL_DATA: {
       // TODO: IMPLEMENT
       return true;
     }
