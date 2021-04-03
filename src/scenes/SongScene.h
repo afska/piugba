@@ -106,6 +106,7 @@ class SongScene : public Scene {
 
   void updateArrowHolders();
   void updateArrows();
+  void updateBlink();
   void updateFakeHeads();
   void updateScoresAndLifebars();
   void updateGameX();

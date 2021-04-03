@@ -179,24 +179,11 @@ void SongScene::tick(u16 keys) {
   if (isVs())
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
-  blinkFrame = max(blinkFrame - 1, 0);
-  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
-    EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
-  if (!isMultiplayer()) {
-    // TODO: Add I/O SD-Bit Blink Settings
-    // TODO: Move blink to another function
-
-    if (blinkFrame > 0)
-      // Turn on SD bit
-      REG_RCNT |= 0b10;
-    else
-      // Turn off SD bit
-      REG_RCNT &= 0b1111111111111101;
-  }
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
 
+  updateBlink();
   updateFakeHeads();
   updateArrows();
   updateScoresAndLifebars();
@@ -354,6 +341,21 @@ CODE_IWRAM void SongScene::updateArrows() {
         arrowHolders[baseIndex + direction]->hasBeenPressedNow();
     if (canBeJudged && hasBeenPressedNow)
       judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+  }
+}
+
+void SongScene::updateBlink() {
+  blinkFrame = max(blinkFrame - 1, 0);
+
+  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
+    EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
+
+  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
+                              IOBlinkOpts::IO_BLINK_ON_BEAT) {
+    if (blinkFrame > 0)
+      IOPORT_sdHigh();
+    else
+      IOPORT_sdLow();
   }
 }
 
@@ -849,10 +851,8 @@ void SongScene::unload() {
 
   if (isMultiplayer())
     syncer->resetSongState();
-  else {
-    // TODO: Extract SD blink
-    REG_RCNT &= 0b1111111111111101;
-  }
+  else
+    IOPORT_sdLow();
 }
 
 SongScene::~SongScene() {

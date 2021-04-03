@@ -256,9 +256,8 @@ class LinkConnection {
   void stop() {
     stopTimer();
 
-    // [!] Modified to set SD=OUTPUT
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_SD);
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_LOW);
+    // [!] Modified to toggle between GPIO Mode (SD=OUTPUT) and MULTIPLAYER Mode
+    REG_RCNT = 0;
     LINK_SET_HIGH(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
     LINK_SET_HIGH(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_SD);
   }
@@ -266,9 +265,8 @@ class LinkConnection {
   void start() {
     startTimer();
 
-    // [!] Modified to set SD=OUTPUT
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_SD);
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
+    // [!] Modified to toggle between GPIO Mode (SD=OUTPUT) and MULTIPLAYER Mode
+    REG_RCNT = 0;
     REG_SIOCNT = baudRate;
     REG_SIOMLT_SEND = 0;
     setBitHigh(LINK_BIT_MULTIPLAYER);
