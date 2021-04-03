@@ -339,8 +339,14 @@ CODE_IWRAM void SongScene::updateArrows() {
 
     bool hasBeenPressedNow =
         arrowHolders[baseIndex + direction]->hasBeenPressedNow();
-    if (canBeJudged && hasBeenPressedNow)
-      judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+    if (canBeJudged && hasBeenPressedNow) {
+      auto isHit =
+          judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+
+      if (isHit && SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
+                       SRAMBlinkOpts::SRAM_BLINK_ON_HIT)
+        SAVEFILE_write8(SRAM->beat, 0);
+    }
   }
 }
 
@@ -466,6 +472,14 @@ void SongScene::processKeys(u16 keys) {
         });
   }
 
+  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
+                              IOBlinkOpts::IO_BLINK_ON_KEY) {
+    if (KEY_ANY_PRESSED(keys))
+      IOPORT_sdHigh();
+    else
+      IOPORT_sdLow();
+  }
+
   if (GameState.mods.trainingMode != TrainingModeOpts::tOFF) {
     processTrainingModeMod();
     return;
@@ -507,9 +521,6 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
-  // TODO: Add Everdrive LED blink settings
-  SAVEFILE_write8(SRAM->beat, 0);
-
   blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
@@ -524,6 +535,10 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
   auto localChartReader = chartReader[getLocalPlayerId()].get();
   localChartReader->beatDurationFrames = localChartReader->beatFrame;
   localChartReader->beatFrame = 0;
+
+  if (SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
+      SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
+    SAVEFILE_write8(SRAM->beat, 0);
 }
 
 void SongScene::onStageBreak(u8 playerId) {

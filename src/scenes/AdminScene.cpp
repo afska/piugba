@@ -52,15 +52,12 @@ void AdminScene::printOptions() {
   printOption(OPTION_RUMBLE, "Rumble",
               rumble == 0 ? "OFF" : rumble == 1 ? "LOW" : "HIGH", 7);
   printOption(OPTION_IO_BLINK, "I/O SD Blink",
-              ioBlink == 0 ? "OFF"
-                           : ioBlink == 1 ? "ON BEAT"
-                                          : ioBlink == 2 ? "ON HIT" : "ON KEY",
-              9);
+              ioBlink == 0 ? "OFF" : ioBlink == 1 ? "ON BEAT" : "ON KEY", 9);
   printOption(
       OPTION_SRAM_BLINK, "SRAM LED Blink",
       sramBlink == 0
           ? "OFF"
-          : sramBlink == 1 ? "ON BEAT" : sramBlink == 2 ? "ON HIT" : "ON KEY",
+          : sramBlink == 1 ? "OFF" : ioBlink == 1 ? "ON BEAT" : "ON HIT",
       11);
   printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
   printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);
@@ -101,12 +98,12 @@ bool AdminScene::selectOption(u32 selected) {
     }
     case OPTION_IO_BLINK: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
-      SAVEFILE_write8(SRAM->adminSettings.ioBlink, increment(value, 4));
+      SAVEFILE_write8(SRAM->adminSettings.ioBlink, increment(value, 3));
       return true;
     }
     case OPTION_SRAM_BLINK: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
-      SAVEFILE_write8(SRAM->adminSettings.sramBlink, increment(value, 4));
+      SAVEFILE_write8(SRAM->adminSettings.sramBlink, increment(value, 3));
       return true;
     }
     case OPTION_RESET_ARCADE_PROGRESS: {

@@ -5,17 +5,11 @@
 
 enum ArcadeChartsOpts : u8 { SINGLE, DOUBLE };
 enum RumbleOpts : u8 { RUMBLE_OFF, RUMBLE_LOW, RUMBLE_HIGH };
-enum IOBlinkOpts : u8 {
-  IO_BLINK_OFF,
-  IO_BLINK_ON_BEAT,
-  IO_BLINK_ON_HIT,
-  IO_BLINK_ON_KEY
-};
+enum IOBlinkOpts : u8 { IO_BLINK_OFF, IO_BLINK_ON_BEAT, IO_BLINK_ON_KEY };
 enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_OFF,
   SRAM_BLINK_ON_BEAT,
-  SRAM_BLINK_ON_HIT,
-  SRAM_BLINK_ON_KEY
+  SRAM_BLINK_ON_HIT
 };
 
 typedef struct __attribute__((__packed__)) {

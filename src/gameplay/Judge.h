@@ -23,7 +23,7 @@ class Judge {
         std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores,
         std::function<void(u8 playerId)> onStageBreak);
 
-  void onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
+  bool onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onOut(Arrow* arrow);
   void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
