@@ -14,6 +14,9 @@ class AdminScene : public MenuScene {
   void printOptions() override;
   bool selectOption(u32 selected) override;
   void close() override;
+
+ private:
+  int areYouSure = -1;
 };
 
 #endif  // ADMIN_SCENE_H

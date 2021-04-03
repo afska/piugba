@@ -22,7 +22,7 @@ u16 AdminScene::getCloseKey() {
 }
 
 u32 AdminScene::getOptionsCount() {
-  return OPTIONS_COUNT;
+  return areYouSure > -1 ? 2 : OPTIONS_COUNT;
 }
 
 void AdminScene::loadBackground(u32 id) {
@@ -31,6 +31,15 @@ void AdminScene::loadBackground(u32 id) {
 }
 
 void AdminScene::printOptions() {
+  if (areYouSure > -1) {
+    SCENE_write("ARE YOU SURE?!", 2);
+
+    printOption(0, "[NO]", "", 13);
+    printOption(1, "[YES]", "", 15);
+
+    return;
+  }
+
   SCENE_write(TITLE, 2);
 
   u8 charts = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
@@ -58,6 +67,27 @@ void AdminScene::printOptions() {
 }
 
 bool AdminScene::selectOption(u32 selected) {
+  if (areYouSure > -1) {
+    if (selected) {
+      switch (areYouSure) {
+        case OPTION_RESET_ARCADE_PROGRESS: {
+          SAVEFILE_resetArcade();
+          SCENE_softReset();
+          return true;
+        }
+        case OPTION_DELETE_ALL_DATA: {
+          SAVEFILE_reset();
+          SCENE_softReset();
+          return true;
+        }
+      }
+    }
+
+    areYouSure = -1;
+    this->selected = 0;
+    return true;
+  }
+
   switch (selected) {
     case OPTION_ARCADE_CHARTS: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
@@ -80,11 +110,13 @@ bool AdminScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_RESET_ARCADE_PROGRESS: {
-      // TODO: IMPLEMENT
+      areYouSure = OPTION_RESET_ARCADE_PROGRESS;
+      this->selected = 0;
       return true;
     }
     case OPTION_DELETE_ALL_DATA: {
-      // TODO: IMPLEMENT
+      areYouSure = OPTION_DELETE_ALL_DATA;
+      this->selected = 0;
       return true;
     }
   }

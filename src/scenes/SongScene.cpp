@@ -13,7 +13,6 @@
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "ui/Darkener.h"
-#include "utils/Rumble.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {

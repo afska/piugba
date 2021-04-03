@@ -29,6 +29,7 @@ class MenuScene : public Scene {
  protected:
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
+  u32 selected = 0;
 
   virtual u16 getCloseKey() = 0;
   virtual u32 getOptionsCount() = 0;
@@ -48,7 +49,6 @@ class MenuScene : public Scene {
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
   std::unique_ptr<InputHandler> closeInput;
-  u32 selected = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();

@@ -284,4 +284,13 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
   return false;
 }
 
+inline void SAVEFILE_resetArcade() {
+  ARCADE_writeSingle(0, 0, GradeType::A);
+}
+
+inline void SAVEFILE_reset() {
+  SAVEFILE_resetArcade();
+  SAVEFILE_write32(SRAM->romId, 0);
+}
+
 #endif  // SAVE_FILE_H
