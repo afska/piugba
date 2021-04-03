@@ -173,17 +173,17 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             bpm = event->param;
             scrollBpm = event->param2;
 
+            if (oldBpm != bpm) {
+              lastBpmChange = event->timestamp;
+              lastBeat = -1;
+              lastTick = 0;
+              beatDurationFrames = -1;
+              beatFrame = 0;
+            }
+
             syncScrollSpeed();
 
             if (oldBpm > 0) {
-              if (oldBpm != bpm) {
-                lastBpmChange = event->timestamp;
-                lastBeat = -1;
-                lastTick = 0;
-                beatDurationFrames = -1;
-                beatFrame = 0;
-              }
-
               if (event->param3 > 0) {
                 u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
                 maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
