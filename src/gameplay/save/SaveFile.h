@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
+#include "AdminSettings.h"
 #include "ArcadeProgress.h"
 #include "Memory.h"
 #include "Mods.h"
@@ -40,6 +41,7 @@ typedef struct __attribute__((__packed__)) {
   u8 singleArcadeProgress[ARCADE_PROGRESS_SIZE];
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
+  AdminSettings adminSettings;
   u8 beat;
 } SaveFile;
 

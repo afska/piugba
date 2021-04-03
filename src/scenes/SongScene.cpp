@@ -507,7 +507,7 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
   // TODO: Add Everdrive LED blink settings
-  SAVEFILE_write8(SRAM->beat, !SAVEFILE_read8(SRAM->beat));
+  SAVEFILE_write8(SRAM->beat, 0);
 
   blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
 

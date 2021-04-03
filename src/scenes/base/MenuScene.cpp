@@ -127,11 +127,8 @@ void MenuScene::processKeys(u16 keys) {
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
   closeInput->setIsPressed(keys & getCloseKey());
 
-  if (closeInput->hasBeenPressedNow()) {
-    player_stop();
-    engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new PixelTransitionEffect());
-  }
+  if (closeInput->hasBeenPressedNow())
+    close();
 }
 
 void MenuScene::processSelection() {
@@ -174,4 +171,10 @@ void MenuScene::select() {
     printMenu();
   else
     player_stop();
+}
+
+void MenuScene::close() {
+  player_stop();
+  engine->transitionIntoScene(new SelectionScene(engine, fs),
+                              new PixelTransitionEffect());
 }

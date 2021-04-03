@@ -35,6 +35,7 @@ class MenuScene : public Scene {
   virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;
   virtual bool selectOption(u32 selected) = 0;
+  virtual void close();
 
   void printOption(u32 id, std::string name, std::string value, u32 row);
   u8 increment(u8 value, u8 max);

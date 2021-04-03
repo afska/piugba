@@ -14,6 +14,7 @@
 #include "gameplay/TimingProvider.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
+#include "scenes/AdminScene.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
@@ -115,6 +116,7 @@ void StartScene::tick(u16 keys) {
 
   processKeys(keys);
   processSelectionChange();
+  navigateToAdminMenuIfNeeded(keys);
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -266,6 +268,15 @@ void StartScene::processSelectionChange() {
 
   for (u32 i = 0; i < BUTTONS_TOTAL; i++)
     buttons[i]->setSelected(selectedMode == i);
+}
+
+void StartScene::navigateToAdminMenuIfNeeded(u16 keys) {
+  if (KEY_DOWNLEFT(keys) && KEY_UPLEFT(keys) && KEY_UPRIGHT(keys) &&
+      KEY_DOWNRIGHT(keys)) {
+    player_stop();
+    engine->transitionIntoScene(new AdminScene(engine, fs),
+                                new PixelTransitionEffect());
+  }
 }
 
 void StartScene::goToGame() {
