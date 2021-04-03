@@ -49,16 +49,12 @@ void AdminScene::printOptions() {
 
   printOption(OPTION_ARCADE_CHARTS, "Arcade charts",
               charts == 0 ? "SINGLE" : "DOUBLE", 5);
-  printOption(OPTION_RUMBLE, "Rumble",
-              rumble == 0 ? "OFF" : rumble == 1 ? "LOW" : "HIGH", 7);
+  printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 7);
   printOption(OPTION_IO_BLINK, "I/O SD Blink",
               ioBlink == 0 ? "OFF" : ioBlink == 1 ? "ON BEAT" : "ON KEY", 9);
-  printOption(
-      OPTION_SRAM_BLINK, "SRAM LED Blink",
-      sramBlink == 0
-          ? "OFF"
-          : sramBlink == 1 ? "OFF" : ioBlink == 1 ? "ON BEAT" : "ON HIT",
-      11);
+  printOption(OPTION_SRAM_BLINK, "SRAM LED Blink",
+              sramBlink == 0 ? "OFF" : sramBlink == 1 ? "ON BEAT" : "ON HIT",
+              11);
   printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
   printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);
 }
@@ -93,7 +89,7 @@ bool AdminScene::selectOption(u32 selected) {
     }
     case OPTION_RUMBLE: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.rumble);
-      SAVEFILE_write8(SRAM->adminSettings.rumble, increment(value, 3));
+      SAVEFILE_write8(SRAM->adminSettings.rumble, increment(value, 2));
       return true;
     }
     case OPTION_IO_BLINK: {

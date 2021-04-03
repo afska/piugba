@@ -420,7 +420,8 @@ void SongScene::updateGameY() {
 }
 
 void SongScene::updateRumble() {
-  // TODO: Add rumble settings
+  if (!SAVEFILE_read8(SRAM->adminSettings.rumble))
+    return;
 
   auto localChartReader = chartReader[getLocalPlayerId()].get();
 
