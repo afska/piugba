@@ -18,7 +18,7 @@ AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
 
 u16 AdminScene::getCloseKey() {
-  return KEY_START;
+  return KEY_START | KEY_SELECT;
 }
 
 u32 AdminScene::getOptionsCount() {
