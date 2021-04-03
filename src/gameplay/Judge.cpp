@@ -32,6 +32,8 @@ bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
 
     return true;
   }
+
+  return false;
 }
 
 void Judge::onOut(Arrow* arrow) {
