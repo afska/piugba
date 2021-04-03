@@ -4,7 +4,7 @@
 .SUFFIXES:
 
 # --- Paths ---
-export BASE_DIR = $(GBA_DIR_WIN)\projects\piugba
+export BASE_DIR = $(GBA_DIR)\projects\piugba
 
 export TONCLIB := $(DEVKITPRO)/libtonc
 include  $(BASE_DIR)/tonc_rules
@@ -211,10 +211,6 @@ endif		# End BUILD switch
 check-env:
 ifndef GBA_DIR
 	$(warning Missing environment variable: GBA_DIR. See README.md)
-	$(error "Aborting")
-endif
-ifndef GBA_DIR_WIN
-	$(warning Missing environment variable: GBA_DIR_WIN. See README.md)
 	$(error "Aborting")
 endif
 

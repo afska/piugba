@@ -97,7 +97,6 @@ npm install
 export PATH=$PATH:/c/Program\ Files/ImageMagick-7.0.10-Q16
 
 export GBA_DIR="/c/Work/gba" # <<< CHANGE THIS PATH
-export GBA_DIR_WIN="C:\Work\gba" # <<< CHANGE THIS PATH
 
 export DEVKITPRO="$GBA_DIR/tools/devkitPro"
 export PATH="$PATH:$GBA_DIR/tools/devkitPro/bin"
