@@ -80,6 +80,13 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
 }
 
+inline void SAVEFILE_resetAdminSettings() {
+  SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
+  SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::RUMBLE_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
+}
+
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   u32 librarySize = romId & LIBRARY_SIZE_MASK;
@@ -117,18 +124,18 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
 
-    SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
-    SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::RUMBLE_OFF);
-    SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
-    SAVEFILE_write8(SRAM->adminSettings.sramBlink,
-                    SRAMBlinkOpts::SRAM_BLINK_OFF);
+    ARCADE_initialize();
+    SAVEFILE_resetAdminSettings();
   }
 
-  // create arcade progress if needed
-  if (ARCADE_readSingle(0, 0) != GradeType::C) {
+  // create arcade progress if needed (v1.3.0)
+  if (!ARCADE_isInitialized())
     ARCADE_initialize();
-    ARCADE_writeSingle(0, 0, GradeType::C);
-  }
+
+  // create admin settings if needed (v1.4.0)
+  if (SAVEFILE_read8(SRAM->adminSettings.arcadeCharts) >
+      ArcadeChartsOpts::DOUBLE)
+    SAVEFILE_resetAdminSettings();
 
   // limit completed songs if needed
   u8 maxNormal =

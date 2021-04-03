@@ -29,6 +29,12 @@ void ARCADE_initialize() {
     SAVEFILE_write8(SRAM->singleArcadeProgress[i], 0);
     SAVEFILE_write8(SRAM->doubleArcadeProgress[i], 0);
   }
+
+  ARCADE_writeSingle(0, 0, GradeType::C);
+}
+
+bool ARCADE_isInitialized() {
+  return ARCADE_readSingle(0, 0) == GradeType::C;
 }
 
 GradeType ARCADE_readSingle(u8 songId, u8 level) {
