@@ -104,7 +104,7 @@ class SongScene : public Scene {
   void setUpBackground();
   void setUpArrows();
   void initializeBackground();
-  void initializeGame();
+  void initializeGame(u16 keys);
 
   void updateArrowHolders();
   void updateArrows();

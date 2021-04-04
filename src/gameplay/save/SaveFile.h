@@ -256,7 +256,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
       return false;
 
     u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
-    if (grade < currentGrade)
+    if (grade < currentGrade || grade == GradeType::DEFECTIVE)
       ARCADE_writeDouble(songId, numericLevel, grade);
 
     return false;
@@ -298,7 +298,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
           return false;
 
         u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
-        if (grade < currentGrade)
+        if (grade < currentGrade || grade == GradeType::DEFECTIVE)
           ARCADE_writeSingle(songId, numericLevel, grade);
 
         return false;

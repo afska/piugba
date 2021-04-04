@@ -152,7 +152,7 @@ void SongScene::tick(u16 keys) {
     init++;
     return;
   } else if (init == 1) {
-    initializeGame();
+    initializeGame(keys);
     init++;
   }
 
@@ -266,11 +266,20 @@ void SongScene::initializeBackground() {
       BACKGROUND_createSolidTile(LIFEBAR_CHARBLOCK, i, 0);
 }
 
-void SongScene::initializeGame() {
+void SongScene::initializeGame(u16 keys) {
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
   player_play(song->audioPath.c_str());
   processModsLoad();
+
+  if (SAVEFILE_getGameMode() == GameMode::ARCADE && (keys & KEY_START) &&
+      (keys & KEY_SELECT)) {
+    // (if START and SELECT are pressed on start, the chart will be marked as
+    // defective and return to the selection scene)
+    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
+                        GradeType::DEFECTIVE);
+    onAbort();
+  }
 }
 
 void SongScene::updateArrowHolders() {
