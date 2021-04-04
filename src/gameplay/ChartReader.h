@@ -181,6 +181,7 @@ class ChartReader : public TimingProvider {
   void connectArrows(std::vector<Arrow*>& arrows);
   int getFillTopY(HoldArrow* holdArrow);
   int getFillBottomY(HoldArrow* holdArrow, int topY);
+  u8 getRandomStep(int timestamp, u8 data);
 };
 
 class CHART_DEBUG;

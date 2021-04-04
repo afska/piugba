@@ -9,7 +9,8 @@
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 FRAME_SKIP = 1;
-u8 LAST_RANDOM_STEP_DATA = 0;
+const u32 RANDOM_STEPS_MAX_RETRIES = 5;
+u8 RANDOM_STEPS_LAST_DATA = 0;
 
 ChartReader::ChartReader(Chart* chart,
                          u8 playerId,
@@ -224,21 +225,10 @@ CODE_IWRAM void ChartReader::processNextEvents() {
 CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
                                                u8 data,
                                                u8 param) {
+  if (GameState.mods.randomSteps)
+    data = getRandomStep(timestamp, data);
+
   std::vector<Arrow*> arrows;
-
-  if (GameState.mods.randomSteps) {
-  retry:
-    u8 stompSize = STOMP_SIZE_BY_DATA[data >> EVENT_TYPE_BITS] - 1;
-    data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
-               0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
-           << EVENT_TYPE_BITS;
-
-    if (stompSize == 0) {
-      if (data == LAST_RANDOM_STEP_DATA)
-        goto retry;
-      LAST_RANDOM_STEP_DATA = data;
-    }
-  }
 
   forEachDirection(data, [&timestamp, &arrows, this](ArrowDirection direction) {
     arrowPool->create([&timestamp, &arrows, &direction, this](Arrow* it) {
@@ -435,4 +425,25 @@ CODE_IWRAM int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
   return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
     return max(getYFor(holdArrow->endTime) + lastFillOffset, topY) + ARROW_SIZE;
   });
+}
+
+u8 ChartReader::getRandomStep(int timestamp, u8 data) {
+  u32 retries = 0;
+retry:
+  retries++;
+
+  u8 stompSize = STOMP_SIZE_BY_DATA[data >> EVENT_TYPE_BITS] - 1;
+  data = DATA_BY_STOMP_SIZE[stompSize]
+                           [qran_range(0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
+         << EVENT_TYPE_BITS;
+
+  if (stompSize == 0) {
+    bool isRepeatedNote = data == RANDOM_STEPS_LAST_DATA;
+    if (isRepeatedNote && retries < RANDOM_STEPS_MAX_RETRIES)
+      goto retry;
+
+    RANDOM_STEPS_LAST_DATA = data;
+  }
+
+  return data;
 }
