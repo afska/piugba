@@ -11,7 +11,7 @@
 #define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
 #endif
 
-#define ARROWS_GAME_TOTAL (isCoop() ? 10 : 5)
+#define ARROWS_GAME_TOTAL (isDouble() ? 10 : 5)
 
 const u32 ARROWS_TOTAL = 5;
 const u32 ARROW_FRAMES = 10;

@@ -28,7 +28,7 @@ ComboTitle::ComboTitle(u8 playerId) {
 
 void ComboTitle::relocate() {
   animationPositionX =
-      (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+      (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
       POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }

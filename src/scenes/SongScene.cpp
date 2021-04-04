@@ -249,7 +249,7 @@ void SongScene::initializeBackground() {
   auto type = static_cast<BackgroundType>(
       SAVEFILE_read8(SRAM->settings.backgroundType));
 
-  if (isMultiplayer()) {
+  if (isMultiplayer() || isSinglePlayerDouble()) {
     gamePosition = 0;
     type = BackgroundType::FULL_BGA_DARK;
   }
@@ -458,6 +458,15 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[getLocalBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
   arrowHolders[getLocalBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[getLocalBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
+
+  if (isSinglePlayerDouble()) {
+    arrowHolders[getLocalBaseIndex() + 5]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[getLocalBaseIndex() + 6]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[getLocalBaseIndex() + 7]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[getLocalBaseIndex() + 8]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[getLocalBaseIndex() + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
+  }
+
   startInput->setIsPressed(keys & KEY_START);
   selectInput->setIsPressed(keys & KEY_SELECT);
   aInput->setIsPressed(keys & KEY_A);

@@ -303,7 +303,7 @@ void SelectionScene::goToSong() {
   Chart* chart =
       isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
               : SONG_findChartByNumericLevelIndex(
-                    song, getSelectedNumericLevelIndex(), isCoop());
+                    song, getSelectedNumericLevelIndex(), isDouble());
   Chart* remoteChart = hasRemoteChart ? SONG_findChartByNumericLevelIndex(
                                             song, (u8)remoteNumericLevel, false)
                                       : NULL;
@@ -501,7 +501,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   printNumericLevel(SONG_findChartByNumericLevelIndex(
-                        song, getSelectedNumericLevelIndex(), isCoop())
+                        song, getSelectedNumericLevelIndex(), isDouble())
                         ->difficulty);
   loadSelectedSongGrade(song->id);
   if (!isChangingLevel) {
@@ -527,7 +527,7 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   }
 
   for (u32 i = 0; i < song->chartCount; i++)
-    if (song->charts[i].isDouble == isCoop())
+    if (song->charts[i].isDouble == isDouble())
       numericLevels.push_back(song->charts[i].level);
 
   if (canUpdateLevel && !isChangingLevel)

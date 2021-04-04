@@ -28,7 +28,7 @@ ChartReader::ChartReader(Chart* chart,
   this->rateAudioLag = audioLag;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
-      HOLD_ARROW_POOL_SIZE * (1 + isCoop()),
+      HOLD_ARROW_POOL_SIZE * (1 + chart->isDouble),
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
   for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
     holdArrowStates[i].isActive = false;

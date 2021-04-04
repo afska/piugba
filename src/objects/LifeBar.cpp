@@ -40,8 +40,8 @@ LifeBar::LifeBar(u8 playerId) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
-               .withLocation((isCoop() ? GAME_POSITION_X[1]
-                                       : GameState.positionX[playerId]) +
+               .withLocation((isDouble() ? GAME_POSITION_X[1]
+                                         : GameState.positionX[playerId]) +
                                  LIFEBAR_POSITION_X,
                              GameState.positionY + LIFEBAR_POSITION_Y)
                .buildPtr();
