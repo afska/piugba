@@ -43,15 +43,6 @@ inline bool isMultiplayer() {
   return IS_MULTIPLAYER(SAVEFILE_getGameMode());
 }
 
-inline bool isSinglePlayerDouble() {
-  bool gameMode = SAVEFILE_getGameMode();
-  bool arcadeCharts = static_cast<ArcadeChartsOpts>(
-      SAVEFILE_read8(SRAM->adminSettings.arcadeCharts));
-
-  return gameMode == GameMode::ARCADE &&
-         arcadeCharts == ArcadeChartsOpts::DOUBLE;
-}
-
 inline bool isVs() {
   return SAVEFILE_getGameMode() == GameMode::MULTI_VS;
 }
@@ -60,8 +51,12 @@ inline bool isCoop() {
   return SAVEFILE_getGameMode() == GameMode::MULTI_COOP;
 }
 
+inline bool isSinglePlayerDouble() {
+  return SAVEFILE_isPlayingSinglePlayerDouble();
+}
+
 inline bool isDouble() {
-  return isCoop() || isSinglePlayerDouble();
+  return SAVEFILE_isPlayingDouble();
 }
 
 class Syncer {

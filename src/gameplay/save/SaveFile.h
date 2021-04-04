@@ -165,6 +165,20 @@ inline GameMode SAVEFILE_getGameMode() {
   return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
 }
 
+inline bool SAVEFILE_isPlayingSinglePlayerDouble() {
+  u8 gameMode = SAVEFILE_getGameMode();
+  bool arcadeCharts = static_cast<ArcadeChartsOpts>(
+      SAVEFILE_read8(SRAM->adminSettings.arcadeCharts));
+
+  return gameMode == GameMode::ARCADE &&
+         arcadeCharts == ArcadeChartsOpts::DOUBLE;
+}
+
+inline bool SAVEFILE_isPlayingDouble() {
+  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP ||
+         SAVEFILE_isPlayingSinglePlayerDouble();
+}
+
 inline u8 SAVEFILE_getMaxCompletedSongs() {
   u8 a = SAVEFILE_read8(SRAM->progress[DifficultyLevel::NORMAL].completedSongs);
   u8 b = SAVEFILE_read8(SRAM->progress[DifficultyLevel::HARD].completedSongs);
@@ -227,9 +241,8 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
 }
 
 inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
-  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP
-             ? ARCADE_readDouble(songId, numericLevel)
-             : ARCADE_readSingle(songId, numericLevel);
+  return SAVEFILE_isPlayingDouble() ? ARCADE_readDouble(songId, numericLevel)
+                                    : ARCADE_readSingle(songId, numericLevel);
 }
 
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
@@ -237,6 +250,18 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 u8 songId,
                                 u8 numericLevel,
                                 GradeType grade) {
+  if (SAVEFILE_isPlayingDouble()) {
+    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
+        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+      return false;
+
+    u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
+    if (grade < currentGrade)
+      ARCADE_writeDouble(songId, numericLevel, grade);
+
+    return false;
+  }
+
   auto gameMode = SAVEFILE_getGameMode();
 
   switch (gameMode) {
@@ -278,13 +303,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
 
         return false;
     }
-    {
-      case GameMode::MULTI_COOP:
-        u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
-        if (grade < currentGrade)
-          ARCADE_writeDouble(songId, numericLevel, grade);
-
-        return false;
+    default: {
     }
   }
 
