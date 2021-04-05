@@ -23,6 +23,8 @@ const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
 class ChartReader : public TimingProvider {
  public:
   int debugOffset = 0;
+  int beatDurationFrames = -1;
+  u32 beatFrame = 0;
 
   ChartReader(Chart* chart,
               u8 playerId,
@@ -76,13 +78,13 @@ class ChartReader : public TimingProvider {
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
   u32 eventIndex = 0;
-  u32 subtick = 0;
   u32 bpm = 0;
   u32 scrollBpm = 0;
   u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
   bool fake = false;
+  int lastBeat = -1;
   int lastTick = -1;
   u32 stoppedMs = 0;
   u32 warpedMs = 0;
@@ -179,6 +181,7 @@ class ChartReader : public TimingProvider {
   void connectArrows(std::vector<Arrow*>& arrows);
   int getFillTopY(HoldArrow* holdArrow);
   int getFillBottomY(HoldArrow* holdArrow, int topY);
+  u8 getRandomStep(int timestamp, u8 data);
 };
 
 class CHART_DEBUG;

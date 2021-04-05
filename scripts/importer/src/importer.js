@@ -163,6 +163,8 @@ const songs = _(
 // SONG IMPORT
 // -----------
 
+if (_.uniqBy(songs, "outputName").length !== songs.length)
+  throw new Error("repeated_song_names");
 if (_.isEmpty(songs)) throw new Error("no_songs_found");
 if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
 

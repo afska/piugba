@@ -17,6 +17,7 @@ module.exports = {
     LINEAR: 1,
     FIXED: 2,
     RANDOM: 3,
+    MICRO: 4,
   },
   DECOLORIZE: {
     OFF: 0,

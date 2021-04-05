@@ -7,7 +7,10 @@
 
 #include "BackgroundUtils.h"
 #include "EffectUtils.h"
+#include "PixelTransitionEffect.h"
 #include "SpriteUtils.h"
+#include "utils/IOPort.h"
+#include "utils/Rumble.h"
 
 const u32 TEXT_MIDDLE_COL = 12;
 const u32 TEXT_TOTAL_COLS = 30;
@@ -63,6 +66,13 @@ inline void SCENE_wait(u32 verticalLines) {
       vCount = REG_VCOUNT;
     }
   };
+}
+
+inline void SCENE_softReset() {
+  RUMBLE_stop();
+  IOPORT_sdLow();
+  RegisterRamReset(RESET_REG | RESET_VRAM);
+  SoftReset();
 }
 
 #endif  // SCENE_UTILS_H

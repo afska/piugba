@@ -34,6 +34,9 @@ const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
+const u32 RUMBLE_FRAMES = 4;
+const u32 RUMBLE_PRELOAD_FRAMES = 2;
+const u32 RUMBLE_IDLE_FREQUENCY = 5;
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -92,6 +95,8 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  RUMBLE_init();
+
   if (isMultiplayer()) {
     syncer->resetSongState();
     syncer->$isPlayingSong = true;
@@ -106,30 +111,30 @@ void SongScene::load() {
   setUpBackground();
   setUpArrows();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    lifeBars[playerId] = std::unique_ptr<LifeBar>(new LifeBar(playerId));
+    lifeBars[playerId] = std::unique_ptr<LifeBar>{new LifeBar(playerId)};
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     scores[playerId] =
         std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
 
-  judge = std::unique_ptr<Judge>(
+  judge = std::unique_ptr<Judge>{
       new Judge(arrowPool.get(), &arrowHolders, &scores,
-                [this](u8 playerId) { onStageBreak(playerId); }));
+                [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u32 multiplier = GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
-    chartReader[playerId] = std::unique_ptr<ChartReader>(new ChartReader(
+    chartReader[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
         playerId == getLocalPlayerId() ? chart : remoteChart, playerId,
-        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier));
+        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier)};
 
-  startInput = std::unique_ptr<InputHandler>(new InputHandler());
-  selectInput = std::unique_ptr<InputHandler>(new InputHandler());
-  aInput = std::unique_ptr<InputHandler>(new InputHandler());
-  bInput = std::unique_ptr<InputHandler>(new InputHandler());
+  startInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  selectInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  aInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  bInput = std::unique_ptr<InputHandler>{new InputHandler()};
 }
 
 void SongScene::tick(u16 keys) {
@@ -147,7 +152,8 @@ void SongScene::tick(u16 keys) {
     init++;
     return;
   } else if (init == 1) {
-    initializeGame();
+    if (!initializeGame(keys))
+      return;
     init++;
   }
 
@@ -158,6 +164,7 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
+  __qran_seed += keys;
   updateArrowHolders();
   processKeys(keys);
 
@@ -173,16 +180,15 @@ void SongScene::tick(u16 keys) {
   if (isVs())
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
-  blinkFrame = max(blinkFrame - 1, 0);
-  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
-    EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
 
+  updateBlink();
   updateFakeHeads();
   updateArrows();
   updateScoresAndLifebars();
+  updateRumble();
 
 #ifdef SENV_DEVELOPMENT
   if (chartReader[0]->debugOffset)
@@ -193,8 +199,8 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::setUpPalettes() {
-  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>(
-      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal)));
+  foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
+      new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal))};
 
   backgroundPalette =
       BACKGROUND_loadPaletteFile(fs, song->backgroundPalettePath.c_str());
@@ -244,7 +250,7 @@ void SongScene::initializeBackground() {
   auto type = static_cast<BackgroundType>(
       SAVEFILE_read8(SRAM->settings.backgroundType));
 
-  if (isMultiplayer()) {
+  if (isMultiplayer() || isSinglePlayerDouble()) {
     gamePosition = 0;
     type = BackgroundType::FULL_BGA_DARK;
   }
@@ -261,11 +267,30 @@ void SongScene::initializeBackground() {
       BACKGROUND_createSolidTile(LIFEBAR_CHARBLOCK, i, 0);
 }
 
-void SongScene::initializeGame() {
+bool SongScene::initializeGame(u16 keys) {
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
   player_play(song->audioPath.c_str());
   processModsLoad();
+
+  if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
+      (keys & KEY_SELECT)) {
+    // (if START and SELECT are pressed on start, the chart will be marked as
+    // defective and return to the selection scene)
+    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
+                        GradeType::DEFECTIVE);
+
+    if (isMultiplayer()) {
+      syncer->send(SYNC_EVENT_ABORT, 0);
+      syncer->clearTimeout();
+    }
+
+    onAbort();
+
+    return false;
+  }
+
+  return true;
 }
 
 void SongScene::updateArrowHolders() {
@@ -334,8 +359,29 @@ CODE_IWRAM void SongScene::updateArrows() {
 
     bool hasBeenPressedNow =
         arrowHolders[baseIndex + direction]->hasBeenPressedNow();
-    if (canBeJudged && hasBeenPressedNow)
-      judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+    if (canBeJudged && hasBeenPressedNow) {
+      auto isHit =
+          judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+
+      if (isHit && SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
+                       SRAMBlinkOpts::SRAM_BLINK_ON_HIT)
+        SAVEFILE_write8(SRAM->beat, 0);
+    }
+  }
+}
+
+void SongScene::updateBlink() {
+  blinkFrame = max(blinkFrame - 1, 0);
+
+  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
+    EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
+
+  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
+                              IOBlinkOpts::IO_BLINK_ON_BEAT) {
+    if (blinkFrame > 0)
+      IOPORT_sdHigh();
+    else
+      IOPORT_sdLow();
   }
 }
 
@@ -393,12 +439,54 @@ void SongScene::updateGameY() {
     it->get()->moveTo(it->get()->getX(), ARROW_FINAL_Y());
 }
 
+void SongScene::updateRumble() {
+  if (!SAVEFILE_read8(SRAM->adminSettings.rumble))
+    return;
+
+  auto localChartReader = chartReader[getLocalPlayerId()].get();
+
+  if (localChartReader->beatDurationFrames != -1 &&
+      localChartReader->beatFrame ==
+          localChartReader->beatDurationFrames - RUMBLE_PRELOAD_FRAMES) {
+    rumbleIdleFrame = 0;
+    rumbleBeatFrame = 0;
+    RUMBLE_start();
+  }
+
+  if (rumbleBeatFrame > -1) {
+    rumbleBeatFrame++;
+
+    if (rumbleBeatFrame == RUMBLE_FRAMES) {
+      rumbleBeatFrame = -1;
+      RUMBLE_stop();
+    }
+  } else {
+    rumbleIdleFrame++;
+
+    if (rumbleIdleFrame == 1)
+      RUMBLE_stop();
+    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
+      RUMBLE_start();
+      rumbleIdleFrame = 0;
+    }
+  }
+}
+
 void SongScene::processKeys(u16 keys) {
   arrowHolders[getLocalBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowHolders[getLocalBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
   arrowHolders[getLocalBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
   arrowHolders[getLocalBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
   arrowHolders[getLocalBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
+
+  if (isSinglePlayerDouble()) {
+    arrowHolders[getLocalBaseIndex() + 5]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[getLocalBaseIndex() + 6]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[getLocalBaseIndex() + 7]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[getLocalBaseIndex() + 8]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[getLocalBaseIndex() + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
+  }
+
   startInput->setIsPressed(keys & KEY_START);
   selectInput->setIsPressed(keys & KEY_SELECT);
   aInput->setIsPressed(keys & KEY_A);
@@ -412,6 +500,14 @@ void SongScene::processKeys(u16 keys) {
               ArrowType::UNIQUE, arrowHolder->direction, 0,
               chartReader[0]->getMsecs() + chartReader[0]->getArrowTime());
         });
+  }
+
+  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
+                              IOBlinkOpts::IO_BLINK_ON_KEY) {
+    if (KEY_ANY_PRESSED(keys))
+      IOPORT_sdHigh();
+    else
+      IOPORT_sdLow();
   }
 
   if (GameState.mods.trainingMode != TrainingModeOpts::tOFF) {
@@ -465,6 +561,14 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
       arrowHolder->blink();
 
   processModsBeat();
+
+  auto localChartReader = chartReader[getLocalPlayerId()].get();
+  localChartReader->beatDurationFrames = localChartReader->beatFrame;
+  localChartReader->beatFrame = 0;
+
+  if (SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
+      SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
+    SAVEFILE_write8(SRAM->beat, 0);
 }
 
 void SongScene::onStageBreak(u8 playerId) {
@@ -504,13 +608,13 @@ void SongScene::onStagePass() {
 void SongScene::onAbort() {
   unload();
   engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new FadeOutScene(6));
+                              new PixelTransitionEffect());
 }
 
 void SongScene::breakStage() {
   unload();
   engine->transitionIntoScene(new StageBreakScene(engine, fs),
-                              new FadeOutScene(6));
+                              new PixelTransitionEffect());
 }
 
 void SongScene::finishAndGoToEvaluation() {
@@ -526,7 +630,7 @@ void SongScene::finishAndGoToEvaluation() {
           isVs() ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           remoteChart != NULL && remoteChart->level != chart->level,
           isLastSong),
-      new FadeOutScene(1));
+      new PixelTransitionEffect());
 }
 
 void SongScene::processModsLoad() {
@@ -555,7 +659,7 @@ void SongScene::processModsBeat() {
     auto previousTargetMosaic = targetMosaic;
     targetMosaic = qran_range(1, 5);
     if (previousTargetMosaic == targetMosaic)
-      mosaic = 1;
+      mosaic = 0;
   }
 
   if (GameState.mods.jump == JumpOpts::jRANDOM) {
@@ -590,11 +694,15 @@ void SongScene::processModsTick() {
     updateGameX();
   }
 
-  if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
+  if (GameState.mods.reduce == ReduceOpts::rLINEAR ||
+      GameState.mods.reduce == ReduceOpts::rMICRO) {
     GameState.positionY += reduceDirection;
 
-    if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
-        GameState.positionY <= 0)
+    int positionY = GameState.mods.reduce == ReduceOpts::rLINEAR
+                        ? REDUCE_MOD_POSITION_Y
+                        : REDUCE_MOD_POSITION_Y_MICRO;
+
+    if (GameState.positionY >= positionY || GameState.positionY <= 0)
       reduceDirection *= -1;
 
     updateGameY();
@@ -784,9 +892,12 @@ bool SongScene::setRate(int rate) {
 
 void SongScene::unload() {
   player_stop();
+  RUMBLE_stop();
 
   if (isMultiplayer())
     syncer->resetSongState();
+  else
+    IOPORT_sdLow();
 }
 
 SongScene::~SongScene() {

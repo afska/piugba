@@ -49,7 +49,7 @@ void MenuScene::load() {
   setUpSpritesPalette();
   setUpBackground();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   selectButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
@@ -110,8 +110,8 @@ u8 MenuScene::increment(u8 value, u8 optionsCount) {
 
 void MenuScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_selectionPal, sizeof(palette_selectionPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_selectionPal, sizeof(palette_selectionPal))};
 }
 
 void MenuScene::setUpBackground() {
@@ -127,11 +127,8 @@ void MenuScene::processKeys(u16 keys) {
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
   closeInput->setIsPressed(keys & getCloseKey());
 
-  if (closeInput->hasBeenPressedNow()) {
-    player_stop();
-    engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                new FadeOutScene(2));
-  }
+  if (closeInput->hasBeenPressedNow())
+    close();
 }
 
 void MenuScene::processSelection() {
@@ -174,4 +171,10 @@ void MenuScene::select() {
     printMenu();
   else
     player_stop();
+}
+
+void MenuScene::close() {
+  player_stop();
+  engine->transitionIntoScene(new SelectionScene(engine, fs),
+                              new PixelTransitionEffect());
 }

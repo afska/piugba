@@ -25,6 +25,7 @@
 #define LINK_BIT_START 7
 #define LINK_BIT_MULTIPLAYER 13
 #define LINK_BIT_IRQ 14
+#define LINK_BIT_GENERAL_PURPOSE_SD 5
 #define LINK_BIT_GENERAL_PURPOSE_LOW 14
 #define LINK_BIT_GENERAL_PURPOSE_HIGH 15
 #define LINK_SET_HIGH(REG, BIT) REG |= 1 << BIT
@@ -255,14 +256,17 @@ class LinkConnection {
   void stop() {
     stopTimer();
 
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_LOW);
+    // [!] Modified to toggle between GPIO Mode (SD=OUTPUT) and MULTIPLAYER Mode
+    REG_RCNT = 0;
     LINK_SET_HIGH(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
+    LINK_SET_HIGH(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_SD);
   }
 
   void start() {
     startTimer();
 
-    LINK_SET_LOW(REG_RCNT, LINK_BIT_GENERAL_PURPOSE_HIGH);
+    // [!] Modified to toggle between GPIO Mode (SD=OUTPUT) and MULTIPLAYER Mode
+    REG_RCNT = 0;
     REG_SIOCNT = baudRate;
     REG_SIOMLT_SEND = 0;
     setBitHigh(LINK_BIT_MULTIPLAYER);

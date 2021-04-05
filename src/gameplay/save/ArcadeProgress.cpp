@@ -19,7 +19,7 @@
   u32 index = (SONG_ID * ARCADE_MAX_LEVELS + LEVEL) / 2;          \
   u32 part = (SONG_ID * ARCADE_MAX_LEVELS + LEVEL) % 2;           \
   u8 n = SAVEFILE_read8(ARRAY[index]);                            \
-  u8 value = grade + 1;                                           \
+  u8 value = grade == GradeType::UNPLAYED ? 0 : grade + 1;        \
   u8 updatedN = part == 0 ? (n & ~REGISTER_PART0) | value         \
                           : (n & ~REGISTER_PART1) | (value << 3); \
   SAVEFILE_write8(ARRAY[index], updatedN);
@@ -29,6 +29,12 @@ void ARCADE_initialize() {
     SAVEFILE_write8(SRAM->singleArcadeProgress[i], 0);
     SAVEFILE_write8(SRAM->doubleArcadeProgress[i], 0);
   }
+
+  ARCADE_writeSingle(0, 0, GradeType::C);
+}
+
+bool ARCADE_isInitialized() {
+  return ARCADE_readSingle(0, 0) == GradeType::C;
 }
 
 GradeType ARCADE_readSingle(u8 songId, u8 level) {

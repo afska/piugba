@@ -55,6 +55,7 @@ class StartScene : public Scene {
   void printTitle();
   void processKeys(u16 keys);
   void processSelectionChange();
+  void navigateToAdminMenuIfNeeded(u16 keys);
   void goToGame();
 
   ~StartScene();

@@ -51,6 +51,14 @@ inline bool isCoop() {
   return SAVEFILE_getGameMode() == GameMode::MULTI_COOP;
 }
 
+inline bool isSinglePlayerDouble() {
+  return SAVEFILE_isPlayingSinglePlayerDouble();
+}
+
+inline bool isDouble() {
+  return SAVEFILE_isPlayingDouble();
+}
+
 class Syncer {
  public:
   u8 $libraryType = 0;

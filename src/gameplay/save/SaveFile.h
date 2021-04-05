@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
+#include "AdminSettings.h"
 #include "ArcadeProgress.h"
 #include "Memory.h"
 #include "Mods.h"
@@ -39,6 +40,9 @@ typedef struct __attribute__((__packed__)) {
 
   u8 singleArcadeProgress[ARCADE_PROGRESS_SIZE];
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
+
+  AdminSettings adminSettings;
+  u8 beat;
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
@@ -74,6 +78,13 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
   SAVEFILE_write8(SRAM->mods.randomSteps, false);
   SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
+}
+
+inline void SAVEFILE_resetAdminSettings() {
+  SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
+  SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::RUMBLE_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
 }
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
@@ -112,13 +123,19 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 
     SAVEFILE_write8(SRAM->state.isPlaying, false);
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
+
+    ARCADE_initialize();
+    SAVEFILE_resetAdminSettings();
   }
 
-  // create arcade progress if needed
-  if (ARCADE_readSingle(0, 0) != GradeType::C) {
+  // create arcade progress if needed (v1.3.0)
+  if (!ARCADE_isInitialized())
     ARCADE_initialize();
-    ARCADE_writeSingle(0, 0, GradeType::C);
-  }
+
+  // create admin settings if needed (v1.4.0)
+  if (SAVEFILE_read8(SRAM->adminSettings.arcadeCharts) >
+      ArcadeChartsOpts::DOUBLE)
+    SAVEFILE_resetAdminSettings();
 
   // limit completed songs if needed
   u8 maxNormal =
@@ -146,6 +163,20 @@ inline u8 SAVEFILE_getLibrarySize() {
 
 inline GameMode SAVEFILE_getGameMode() {
   return static_cast<GameMode>(SAVEFILE_read8(SRAM->state.gameMode));
+}
+
+inline bool SAVEFILE_isPlayingSinglePlayerDouble() {
+  u8 gameMode = SAVEFILE_getGameMode();
+  bool arcadeCharts = static_cast<ArcadeChartsOpts>(
+      SAVEFILE_read8(SRAM->adminSettings.arcadeCharts));
+
+  return gameMode == GameMode::ARCADE &&
+         arcadeCharts == ArcadeChartsOpts::DOUBLE;
+}
+
+inline bool SAVEFILE_isPlayingDouble() {
+  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP ||
+         SAVEFILE_isPlayingSinglePlayerDouble();
 }
 
 inline u8 SAVEFILE_getMaxCompletedSongs() {
@@ -210,9 +241,13 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
 }
 
 inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
-  return SAVEFILE_getGameMode() == GameMode::MULTI_COOP
-             ? ARCADE_readDouble(songId, numericLevel)
-             : ARCADE_readSingle(songId, numericLevel);
+  return SAVEFILE_isPlayingDouble() ? ARCADE_readDouble(songId, numericLevel)
+                                    : ARCADE_readSingle(songId, numericLevel);
+}
+
+inline GradeType SAVEFILE_toggleDefectiveGrade(u8 currentGrade) {
+  return currentGrade == GradeType::DEFECTIVE ? GradeType::UNPLAYED
+                                              : GradeType::DEFECTIVE;
 }
 
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
@@ -220,6 +255,25 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 u8 songId,
                                 u8 numericLevel,
                                 GradeType grade) {
+  if (SAVEFILE_isPlayingDouble()) {
+    u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
+
+    if (grade == GradeType::DEFECTIVE) {
+      ARCADE_writeDouble(songId, numericLevel,
+                         SAVEFILE_toggleDefectiveGrade(currentGrade));
+      return false;
+    }
+
+    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
+        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+      return false;
+
+    if (grade < currentGrade)
+      ARCADE_writeDouble(songId, numericLevel, grade);
+
+    return false;
+  }
+
   auto gameMode = SAVEFILE_getGameMode();
 
   switch (gameMode) {
@@ -251,27 +305,37 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
     {
       case GameMode::ARCADE:
       case GameMode::MULTI_VS:
+        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
+
+        if (grade == GradeType::DEFECTIVE) {
+          ARCADE_writeSingle(songId, numericLevel,
+                             SAVEFILE_toggleDefectiveGrade(currentGrade));
+          return false;
+        }
+
         if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
             GameState.mods.trainingMode != TrainingModeOpts::tOFF)
           return false;
 
-        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
         if (grade < currentGrade)
           ARCADE_writeSingle(songId, numericLevel, grade);
 
         return false;
     }
-    {
-      case GameMode::MULTI_COOP:
-        u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
-        if (grade < currentGrade)
-          ARCADE_writeDouble(songId, numericLevel, grade);
-
-        return false;
+    default: {
     }
   }
 
   return false;
+}
+
+inline void SAVEFILE_resetArcade() {
+  ARCADE_writeSingle(0, 0, GradeType::A);
+}
+
+inline void SAVEFILE_reset() {
+  SAVEFILE_resetArcade();
+  SAVEFILE_write32(SRAM->romId, 0);
 }
 
 #endif  // SAVE_FILE_H

@@ -9,6 +9,8 @@
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
 const u32 FRAME_SKIP = 1;
+const u32 RANDOM_STEPS_MAX_RETRIES = 5;
+u8 RANDOM_STEPS_LAST_DATA = 0;
 
 ChartReader::ChartReader(Chart* chart,
                          u8 playerId,
@@ -26,7 +28,7 @@ ChartReader::ChartReader(Chart* chart,
   this->rateAudioLag = audioLag;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
-      HOLD_ARROW_POOL_SIZE * (1 + isCoop()),
+      HOLD_ARROW_POOL_SIZE * (1 + chart->isDouble),
       [](u32 id) -> HoldArrow* { return new HoldArrow(id); })};
   for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
     holdArrowStates[i].isActive = false;
@@ -172,15 +174,17 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             bpm = event->param;
             scrollBpm = event->param2;
 
+            if (oldBpm != bpm) {
+              lastBpmChange = event->timestamp;
+              lastBeat = -1;
+              lastTick = 0;
+              beatDurationFrames = -1;
+              beatFrame = 0;
+            }
+
             syncScrollSpeed();
 
             if (oldBpm > 0) {
-              if (oldBpm != bpm) {
-                lastBpmChange = event->timestamp;
-                lastTick = 0;
-                subtick = 0;
-              }
-
               if (event->param3 > 0) {
                 u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
                 maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
@@ -192,7 +196,6 @@ CODE_IWRAM void ChartReader::processNextEvents() {
           case EventType::SET_TICKCOUNT:
             tickCount = event->param;
             lastTick = -1;
-            subtick = 0;
             return true;
           case EventType::STOP:
             if (hasStopped)
@@ -222,14 +225,10 @@ CODE_IWRAM void ChartReader::processNextEvents() {
 CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
                                                u8 data,
                                                u8 param) {
-  std::vector<Arrow*> arrows;
+  if (GameState.mods.randomSteps)
+    data = getRandomStep(timestamp, data);
 
-  if (GameState.mods.randomSteps) {
-    u8 stompSize = STOMP_SIZE_BY_DATA[data >> 3] - 1;
-    data = DATA_BY_STOMP_SIZE[stompSize][qran_range(
-               0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
-           << 3;
-  }
+  std::vector<Arrow*> arrows;
 
   forEachDirection(data, [&timestamp, &arrows, this](ArrowDirection direction) {
     arrowPool->create([&timestamp, &arrows, &direction, this](Arrow* it) {
@@ -253,6 +252,11 @@ CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
 }
 
 CODE_IWRAM void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
+  if (GameState.mods.randomSteps) {
+    // (when using random steps, hold notes are converted to unique notes)
+    return processUniqueNote(timestamp, getRandomStep(timestamp, data), 0);
+  }
+
   forEachDirection(data, [&timestamp, &offset, this](ArrowDirection direction) {
     direction = static_cast<ArrowDirection>(direction + offset);
 
@@ -284,6 +288,9 @@ CODE_IWRAM void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
 }
 
 CODE_IWRAM void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
+  if (GameState.mods.randomSteps)
+    return;
+
   forEachDirection(data, [&timestamp, &offset, this](ArrowDirection direction) {
     direction = static_cast<ArrowDirection>(direction + offset);
 
@@ -361,16 +368,18 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
     return false;
 
   // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> beat = msecs * BPM / 60000
+  // rythmMsecs ms      -> beat = rythmMsecs * BPM / 60000
+
+  int beat = Div(rythmMsecs * bpm, MINUTE);
+  bool isNewBeat = beat != lastBeat;
+  lastBeat = beat;
+
   int tick =
       MATH_fracumul(rythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
-  bool hasChanged = tick != lastTick;
+  bool isNewTick = tick != lastTick;
+  lastTick = tick;
 
-  if (hasChanged) {
-    subtick++;
-    if (subtick == tickCount)
-      subtick = 0;
-
+  if (isNewTick) {
     if (checkHoldArrows) {
       u16 arrows = 0;
       bool isFake = false;
@@ -396,9 +405,9 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
     }
   }
 
-  lastTick = tick;
+  beatFrame++;
 
-  return hasChanged && (tickCount == 1 || subtick == 1);
+  return isNewBeat;
 }
 
 CODE_IWRAM void ChartReader::connectArrows(std::vector<Arrow*>& arrows) {
@@ -424,4 +433,25 @@ CODE_IWRAM int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
   return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
     return max(getYFor(holdArrow->endTime) + lastFillOffset, topY) + ARROW_SIZE;
   });
+}
+
+u8 ChartReader::getRandomStep(int timestamp, u8 data) {
+  u32 retries = 0;
+retry:
+  retries++;
+
+  u8 stompSize = STOMP_SIZE_BY_DATA[data >> EVENT_TYPE_BITS] - 1;
+  data = DATA_BY_STOMP_SIZE[stompSize]
+                           [qran_range(0, DATA_BY_STOMP_SIZE_COUNTS[stompSize])]
+         << EVENT_TYPE_BITS;
+
+  if (stompSize == 0) {
+    bool isRepeatedNote = data == RANDOM_STEPS_LAST_DATA;
+    if (isRepeatedNote && retries < RANDOM_STEPS_MAX_RETRIES)
+      goto retry;
+
+    RANDOM_STEPS_LAST_DATA = data;
+  }
+
+  return data;
 }

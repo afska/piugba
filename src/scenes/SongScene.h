@@ -65,17 +65,21 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = -1;
+  int rumbleBeatFrame = -1;
+  int rumbleIdleFrame = 0;
 
-  inline u8 getPlatformCount() { return (u8)(1 + isMultiplayer()); }
+  inline u8 getPlatformCount() {
+    return isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
+  }
   inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
 
   inline ArrowDirection getDirectionFromIndex(u32 index) {
-    return static_cast<ArrowDirection>(isCoop() ? index
-                                                : DivMod(index, ARROWS_TOTAL));
+    return static_cast<ArrowDirection>(
+        isDouble() ? index : DivMod(index, ARROWS_TOTAL));
   }
 
   inline u8 getPlayerIdFromIndex(u32 index) {
-    return isCoop() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
+    return isDouble() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
   }
 
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
@@ -100,14 +104,16 @@ class SongScene : public Scene {
   void setUpBackground();
   void setUpArrows();
   void initializeBackground();
-  void initializeGame();
+  bool initializeGame(u16 keys);
 
   void updateArrowHolders();
   void updateArrows();
+  void updateBlink();
   void updateFakeHeads();
   void updateScoresAndLifebars();
   void updateGameX();
   void updateGameY();
+  void updateRumble();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);

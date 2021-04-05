@@ -75,7 +75,7 @@ void CalibrateScene::load() {
   setUpSpritesPalette();
   setUpBackground();
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   calibrateButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true)};
@@ -132,8 +132,8 @@ void CalibrateScene::tick(u16 keys) {
 
 void CalibrateScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_selectionPal, sizeof(palette_selectionPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_selectionPal, sizeof(palette_selectionPal))};
 }
 
 void CalibrateScene::setUpBackground() {
@@ -214,5 +214,5 @@ void CalibrateScene::goBack() {
     onFinish();
   else
     engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(2));
+                                new PixelTransitionEffect());
 }

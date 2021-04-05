@@ -5,6 +5,7 @@
 #include "CalibrateScene.h"
 #include "StartScene.h"
 #include "assets.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
@@ -43,20 +44,28 @@ void SettingsScene::printOptions() {
   bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
   printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
-  printOption(
-      OPTION_GAME_POSITION, "Game position",
-      gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 7);
-  printOption(OPTION_BACKGROUND_TYPE, "Background type",
-              backgroundType == 0
-                  ? "RAW"
-                  : backgroundType == 1 ? "HALF DARK" : "FULL DARK",
-              9);
-  if (backgroundType > 0)
+
+  if (isSinglePlayerDouble()) {
+    printOption(OPTION_GAME_POSITION, "Game position", "---", 7);
+    printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 9);
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
                 bgaDarkBlink ? "ON" : "OFF", 11);
-  else
-    printOption(OPTION_BGA_DARK_BLINK, "----------------",
-                bgaDarkBlink ? "---" : "---", 11);
+  } else {
+    printOption(
+        OPTION_GAME_POSITION, "Game position",
+        gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 7);
+    printOption(OPTION_BACKGROUND_TYPE, "Background type",
+                backgroundType == 0
+                    ? "RAW"
+                    : backgroundType == 1 ? "HALF DARK" : "FULL DARK",
+                9);
+    if (backgroundType > 0)
+      printOption(OPTION_BGA_DARK_BLINK, "Background blink",
+                  bgaDarkBlink ? "ON" : "OFF", 11);
+    else
+      printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 11);
+  }
+
   printOption(OPTION_RESET, "[RESET OPTIONS]", "", 13);
   printOption(OPTION_QUIT, "[QUIT TO MAIN MENU]", "", 15);
 }
@@ -65,15 +74,21 @@ bool SettingsScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
       engine->transitionIntoScene(new CalibrateScene(engine, fs),
-                                  new FadeOutScene(2));
+                                  new PixelTransitionEffect());
       return false;
     }
     case OPTION_GAME_POSITION: {
+      if (isSinglePlayerDouble())
+        return true;
+
       u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
       SAVEFILE_write8(SRAM->settings.gamePosition, increment(gamePosition, 3));
       return true;
     }
     case OPTION_BACKGROUND_TYPE: {
+      if (isSinglePlayerDouble())
+        return true;
+
       u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
       SAVEFILE_write8(SRAM->settings.backgroundType,
                       increment(backgroundType, 3));
@@ -82,6 +97,10 @@ bool SettingsScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_BGA_DARK_BLINK: {
+      u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
+      if (backgroundType == 0)
+        return true;
+
       bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
       SAVEFILE_write8(SRAM->settings.bgaDarkBlink, !bgaDarkBlink);
       return true;
@@ -92,7 +111,7 @@ bool SettingsScene::selectOption(u32 selected) {
     }
     case OPTION_QUIT: {
       engine->transitionIntoScene(new StartScene(engine, fs),
-                                  new FadeOutScene(2));
+                                  new PixelTransitionEffect());
       return false;
     }
   }

@@ -1,6 +1,7 @@
 #include "ModsScene.h"
 
 #include "assets.h"
+#include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
@@ -69,12 +70,17 @@ void ModsScene::printOptions() {
                                     ? "BLINK IN"  // ° ͜ʖ ͡°)
                                     : pixelate == 4 ? "BLINK OUT" : "RANDOM",
               6);
-  printOption(OPTION_JUMP, "Jump",
-              jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
+  if (isSinglePlayerDouble()) {
+    printOption(OPTION_JUMP, "Jump", "---", 7);
+  } else
+    printOption(OPTION_JUMP, "Jump",
+                jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
   printOption(OPTION_REDUCE, "Reduce",
-              reduce == 0
-                  ? "OFF"
-                  : reduce == 1 ? "LINEAR" : reduce == 2 ? "FIXED" : "RANDOM",
+              reduce == 0 ? "OFF"
+                          : reduce == 1 ? "LINEAR"
+                                        : reduce == 2 ? "FIXED"
+                                                      : reduce == 3 ? "RANDOM"
+                                                                    : "MICRO",
               8);
   printOption(OPTION_DECOLORIZE, "Decolorize",
               decolorize == 0
@@ -91,8 +97,11 @@ void ModsScene::printOptions() {
               10);
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
               11);
-  printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
-              12);
+  if (isSinglePlayerDouble())
+    printOption(OPTION_RANDOM_STEPS, "Random steps", "---", 12);
+  else
+    printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
+                12);
   printOption(OPTION_TRAINING_MODE, "Training mode",
               trainingMode == 0 ? "OFF" : trainingMode == 1 ? "ON" : "SILENT",
               13);
@@ -121,13 +130,16 @@ bool ModsScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_JUMP: {
+      if (isSinglePlayerDouble())
+        return true;
+
       u8 jump = SAVEFILE_read8(SRAM->mods.jump);
       SAVEFILE_write8(SRAM->mods.jump, increment(jump, 3));
       return true;
     }
     case OPTION_REDUCE: {
       u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 4));
+      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 5));
       return true;
     }
     case OPTION_DECOLORIZE: {
@@ -146,6 +158,9 @@ bool ModsScene::selectOption(u32 selected) {
       return true;
     }
     case OPTION_RANDOM_STEPS: {
+      if (isSinglePlayerDouble())
+        return true;
+
       bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
       SAVEFILE_write8(SRAM->mods.randomSteps, !randomSteps);
       return true;

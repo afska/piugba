@@ -42,6 +42,7 @@ std::vector<Sprite*> TextScene::sprites() {
 
 void TextScene::load() {
   SCENE_init();
+  TextStream::instance().setMosaic(true);
 
   setUpSpritesPalette();
   setUpBackground();
@@ -76,8 +77,8 @@ void TextScene::write(std::string text) {
 
 void TextScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_controlsPal, sizeof(palette_controlsPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_controlsPal, sizeof(palette_controlsPal))};
 }
 
 void TextScene::setUpBackground() {
@@ -86,6 +87,7 @@ void TextScene::setUpBackground() {
                                       ID_MAIN_BACKGROUND);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
+  bg->setMosaic(true);
 }
 
 void TextScene::alignText() {

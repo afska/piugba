@@ -12,6 +12,7 @@
 // => 2 registers per byte (3 bit each) => 5000 bytes total
 
 void ARCADE_initialize();
+bool ARCADE_isInitialized();
 
 GradeType ARCADE_readSingle(u8 songId, u8 level);
 GradeType ARCADE_readDouble(u8 songId, u8 level);

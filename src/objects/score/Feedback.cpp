@@ -33,7 +33,7 @@ void Feedback::setType(FeedbackType type) {
 
 void Feedback::relocate() {
   animationPositionX =
-      (isCoop() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+      (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
       POSITION_X;
   animationPositionY = GameState.scorePositionY + POSITION_Y;
 }

@@ -6,7 +6,7 @@
 enum StageBreakOpts : u8 { sON, sOFF, sSUDDEN_DEATH };
 enum PixelateOpts : u8 { pOFF, pLIFE, pFIXED, pBLINK_IN, pBLINK_OUT, pRANDOM };
 enum JumpOpts : u8 { jOFF, jLINEAR, jRANDOM };
-enum ReduceOpts : u8 { rOFF, rLINEAR, rFIXED, rRANDOM };
+enum ReduceOpts : u8 { rOFF, rLINEAR, rFIXED, rRANDOM, rMICRO };
 enum DecolorizeOpts : u8 { dOFF, dINVERT, dGRAY, dRED, dGREEN, dBLUE };
 enum TrainingModeOpts : u8 { tOFF, tON, tSILENT };
 

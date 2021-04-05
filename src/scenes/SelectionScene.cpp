@@ -102,7 +102,7 @@ void SelectionScene::load() {
   TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);
 
-  pixelBlink = std::unique_ptr<PixelBlink>(new PixelBlink(PIXEL_BLINK_LEVEL));
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
   multiplier = std::unique_ptr<Multiplier>{
       new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
@@ -176,8 +176,8 @@ void SelectionScene::tick(u16 keys) {
 
 void SelectionScene::setUpSpritesPalette() {
   foregroundPalette =
-      std::unique_ptr<ForegroundPaletteManager>(new ForegroundPaletteManager(
-          palette_selectionPal, sizeof(palette_selectionPal)));
+      std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
+          palette_selectionPal, sizeof(palette_selectionPal))};
 }
 
 void SelectionScene::setUpBackground() {
@@ -303,7 +303,7 @@ void SelectionScene::goToSong() {
   Chart* chart =
       isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
               : SONG_findChartByNumericLevelIndex(
-                    song, getSelectedNumericLevelIndex(), isCoop());
+                    song, getSelectedNumericLevelIndex(), isDouble());
   Chart* remoteChart = hasRemoteChart ? SONG_findChartByNumericLevelIndex(
                                             song, (u8)remoteNumericLevel, false)
                                       : NULL;
@@ -380,7 +380,7 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents(u16 keys) {
   if (isMultiplayer()) {
-    if (syncer->isMaster() && (keys & KEY_SELECT)) {
+    if (syncer->isMaster() && (keys & KEY_SELECT) && !(keys & KEY_START)) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
       quit();
     }
@@ -395,14 +395,14 @@ void SelectionScene::processMenuEvents(u16 keys) {
     } else {
       player_stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
-                                  new FadeOutScene(4));
+                                  new PixelTransitionEffect());
     }
   }
 
   if (settingsMenuInput->hasBeenPressedNow()) {
     player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
-                                new FadeOutScene(4));
+                                new PixelTransitionEffect());
   }
 }
 
@@ -501,7 +501,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   printNumericLevel(SONG_findChartByNumericLevelIndex(
-                        song, getSelectedNumericLevelIndex(), isCoop())
+                        song, getSelectedNumericLevelIndex(), isDouble())
                         ->difficulty);
   loadSelectedSongGrade(song->id);
   if (!isChangingLevel) {
@@ -527,7 +527,7 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   }
 
   for (u32 i = 0; i < song->chartCount; i++)
-    if (song->charts[i].isDouble == isCoop())
+    if (song->charts[i].isDouble == isDouble())
       numericLevels.push_back(song->charts[i].level);
 
   if (canUpdateLevel && !isChangingLevel)
@@ -734,7 +734,8 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
 
 void SelectionScene::quit() {
   player_stop();
-  engine->transitionIntoScene(SEQUENCE_getMainScene(), new FadeOutScene(4));
+  engine->transitionIntoScene(SEQUENCE_getMainScene(),
+                              new PixelTransitionEffect());
 }
 
 SelectionScene::~SelectionScene() {

@@ -5,6 +5,7 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -71,8 +72,7 @@ void ISR_reset() {
     return;
   }
 
-  RegisterRamReset(RESET_REG | RESET_VRAM);
-  SoftReset();
+  SCENE_softReset();
 }
 
 void ISR_vblank() {
