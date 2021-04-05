@@ -280,7 +280,7 @@ bool SongScene::initializeGame(u16 keys) {
     SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
                         GradeType::DEFECTIVE);
 
-    if (isMultiplayer) {
+    if (isMultiplayer()) {
       syncer->send(SYNC_EVENT_ABORT, 0);
       syncer->clearTimeout();
     }
