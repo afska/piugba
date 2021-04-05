@@ -245,18 +245,30 @@ inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
                                     : ARCADE_readSingle(songId, numericLevel);
 }
 
+inline GradeType SAVEFILE_toggleDefectiveGrade(u8 currentGrade) {
+  return currentGrade == GradeType::DEFECTIVE ? GradeType::UNPLAYED
+                                              : GradeType::DEFECTIVE;
+}
+
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 u8 songId,
                                 u8 numericLevel,
                                 GradeType grade) {
   if (SAVEFILE_isPlayingDouble()) {
+    u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
+
+    if (grade == GradeType::DEFECTIVE) {
+      ARCADE_writeDouble(songId, numericLevel,
+                         SAVEFILE_toggleDefectiveGrade(currentGrade));
+      return false;
+    }
+
     if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
         GameState.mods.trainingMode != TrainingModeOpts::tOFF)
       return false;
 
-    u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
-    if (grade < currentGrade || grade == GradeType::DEFECTIVE)
+    if (grade < currentGrade)
       ARCADE_writeDouble(songId, numericLevel, grade);
 
     return false;
@@ -293,12 +305,19 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
     {
       case GameMode::ARCADE:
       case GameMode::MULTI_VS:
+        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
+
+        if (grade == GradeType::DEFECTIVE) {
+          ARCADE_writeSingle(songId, numericLevel,
+                             SAVEFILE_toggleDefectiveGrade(currentGrade));
+          return false;
+        }
+
         if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
             GameState.mods.trainingMode != TrainingModeOpts::tOFF)
           return false;
 
-        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
-        if (grade < currentGrade || grade == GradeType::DEFECTIVE)
+        if (grade < currentGrade)
           ARCADE_writeSingle(songId, numericLevel, grade);
 
         return false;
