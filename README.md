@@ -17,7 +17,7 @@ Created by [[r]labs](https://r-labs.io).
 - Multiple **game modes**:
   * Campaign: Play, unlock songs and defeat bosses
   * Arcade: Play songs in any numerical difficulty level
-    * Single: Single (5-panel) charts
+    * Single: 1 player, either Single (5-panel) or Double (10-panel) charts
     * Multi VS: VS battles via Link Cable
     * Multi Coop: Double (10-panel) charts via Link Cable
   * Impossible: Hardcore charts with insane mods
@@ -30,6 +30,10 @@ Created by [[r]labs](https://r-labs.io).
   * Random speed
   * Mirror and random steps
   * Training mode: Rate and checkpoints
+- Hardware **integrations**:
+  * Rumble
+  * I/O LED Sync
+  * SRAM LED Sync
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~70 songs per ROM file.
