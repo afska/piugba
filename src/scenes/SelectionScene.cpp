@@ -380,7 +380,7 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents(u16 keys) {
   if (isMultiplayer()) {
-    if (syncer->isMaster() && (keys & KEY_SELECT) && !(keys & KEY_START)) {
+    if (syncer->isMaster() && multiplier->hasBeenPressedNow()) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
       quit();
     }
