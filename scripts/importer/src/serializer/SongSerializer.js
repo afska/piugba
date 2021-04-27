@@ -99,7 +99,7 @@ module.exports = class SongSerializer {
 
 const SERIALIZE_ARROWS = (arrows) =>
   _.range(0, 5).reduce(
-    (acum, elem) => acum | (arrows[elem] ? ARROW_MASKS[elem] : 0),
+    (accum, elem) => accum | (arrows[elem] ? ARROW_MASKS[elem] : 0),
     0
   );
 
