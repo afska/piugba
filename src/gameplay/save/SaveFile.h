@@ -212,7 +212,7 @@ inline u32 SAVEFILE_getCompletedSongsOf(DifficultyLevel difficultyLevel) {
 }
 
 inline DifficultyLevel SAVEFILE_getMaxLibraryType() {
-  DifficultyLevel maxLevel;
+  DifficultyLevel maxLevel = DifficultyLevel::NORMAL;
   u32 max = 0;
 
   for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {

@@ -518,7 +518,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
 
 void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   bool canUpdateLevel = false;
-  u8 currentLevel;
+  u8 currentLevel = 0;
 
   if (!numericLevels.empty()) {
     canUpdateLevel = true;
