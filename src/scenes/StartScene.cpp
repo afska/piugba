@@ -271,12 +271,19 @@ void StartScene::processSelectionChange() {
 }
 
 void StartScene::navigateToAdminMenuIfNeeded(u16 keys) {
-  if (KEY_DOWNLEFT(keys) && KEY_UPLEFT(keys) && KEY_UPRIGHT(keys) &&
-      KEY_DOWNRIGHT(keys)) {
+  if (!isPressingAdminCombo(keys))
+    wasNotPressingAdminCombo = true;
+
+  if (wasNotPressingAdminCombo && isPressingAdminCombo(keys)) {
     player_stop();
     engine->transitionIntoScene(new AdminScene(engine, fs),
                                 new PixelTransitionEffect());
   }
+}
+
+bool StartScene::isPressingAdminCombo(u16 keys) {
+  return KEY_DOWNLEFT(keys) && KEY_UPLEFT(keys) && KEY_UPRIGHT(keys) &&
+         KEY_DOWNRIGHT(keys);
 }
 
 void StartScene::goToGame() {

@@ -40,6 +40,7 @@ class StartScene : public Scene {
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   bool isExpanded = false;
+  bool wasNotPressingAdminCombo = false;
   int lastBeat = 0;
   u8 selectedMode = 0;
   u8 darkenerOpacity;
@@ -56,6 +57,7 @@ class StartScene : public Scene {
   void processKeys(u16 keys);
   void processSelectionChange();
   void navigateToAdminMenuIfNeeded(u16 keys);
+  bool isPressingAdminCombo(u16 keys);
   void goToGame();
 
   ~StartScene();
