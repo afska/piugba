@@ -50,8 +50,8 @@ int main() {
         if (syncer->$isPlayingSong) {
           if (syncer->isMaster()) {
             syncer->$currentAudioChunk = current;
-            linkConnection->send(SYNC_AUDIO_CHUNK_HEADER |
-                                 ((u16)current + AUDIO_SYNC_LIMIT));
+            syncer->directSend(SYNC_AUDIO_CHUNK_HEADER |
+                               ((u16)current + AUDIO_SYNC_LIMIT));
           }
 
 #ifdef SENV_DEBUG
@@ -106,7 +106,7 @@ void synchronizeSongStart() {
   u16 start = SYNC_START_SONG | syncer->$currentSongId;
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
-    linkConnection->send(start);
+    syncer->directSend(start);
     IntrWait(1, IRQ_SERIAL);
     isOnSync = linkState->readMessage(remoteId) == start;
     if (!isOnSync)

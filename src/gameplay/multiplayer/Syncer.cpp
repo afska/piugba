@@ -63,13 +63,17 @@ void Syncer::update() {
 
 void Syncer::send(u8 event, u16 payload) {
   u16 outgoingData = SYNC_MSG_BUILD(event, payload);
-  linkConnection->send(outgoingData);
+  directSend(outgoingData);
 
 #ifdef SENV_DEBUG
   if (outgoingData != LINK_NO_DATA && !$isPlayingSong)
     DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
+}
+
+void Syncer::directSend(u16 data) {
+  linkConnection->send(data);
 }
 
 void Syncer::registerTimeout() {

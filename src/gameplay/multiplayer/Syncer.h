@@ -92,6 +92,7 @@ class Syncer {
   void initialize(SyncMode mode);
   void update();
   void send(u8 event, u16 payload);
+  void directSend(u16 data);
   void registerTimeout();
   void clearTimeout();
   void resetSongState();
