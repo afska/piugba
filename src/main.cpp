@@ -88,6 +88,7 @@ void setUpInterrupts() {
 
   // LinkUniversal
   // TODO: MIGRATE TO libugba
+  // TODO: PUT SD DOWN WHEN DEACTIVATING!
   irq_add(II_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
   irq_add(II_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
 
@@ -107,8 +108,8 @@ void synchronizeSongStart() {
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
     syncer->directSend(start);
-    linkUniversal->sync();
     VBlankIntrWait();
+    linkUniversal->sync();
     isOnSync = linkUniversal->read(remoteId) == start;
     if (!isOnSync)
       syncer->registerTimeout();
