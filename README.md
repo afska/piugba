@@ -128,7 +128,7 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 - `make start`: Starts the compiled ROM
 - `make rebuild`: Recompiles (clean+build+package) a full ROM
 - `make restart`: Recompiles and starts the ROM
-- `make reimport`: Reimport the songs and starts the ROM without recompiling
+- `make reimport`: Reimports the songs and starts the ROM without recompiling
 
 #### Parameters
 
