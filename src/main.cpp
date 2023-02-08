@@ -17,11 +17,10 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
-LinkConnection* linkConnection = new LinkConnection(LinkConnection::BAUD_RATE_1,
-                                                    SYNC_IRQ_TIMEOUT,
-                                                    SYNC_REMOTE_TIMEOUT,
-                                                    SYNC_BUFFER_SIZE,
-                                                    SYNC_SEND_INTERVAL);
+LinkUniversal* linkUniversal =
+    new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
+                      "piuGBA",
+                      SYNC_BUFFER_SIZE);
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -29,6 +28,7 @@ int main() {
   if (fs == NULL)
     BSOD("GBFS file not found.");
 
+  linkUniversal->deactivate();
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
@@ -77,7 +77,7 @@ void ISR_reset() {
 
 void ISR_vblank() {
   player_onVBlank();
-  LINK_ISR_VBLANK();
+  LINK_UNIVERSAL_ISR_VBLANK();
 }
 
 void setUpInterrupts() {
@@ -86,9 +86,10 @@ void setUpInterrupts() {
   // VBlank
   irq_add(II_VBLANK, ISR_vblank);
 
-  // LinkConnection
-  irq_add(II_SERIAL, LINK_ISR_SERIAL);
-  irq_add(II_TIMER3, LINK_ISR_TIMER);
+  // LinkUniversal
+  // TODO: MIGRATE TO libugba
+  irq_add(II_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
+  irq_add(II_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
@@ -97,25 +98,26 @@ void setUpInterrupts() {
 
 void synchronizeSongStart() {
   // discard all previous messages and wait for sync
-  auto linkState = linkConnection->linkState.get();
-  u8 remoteId = !linkState->currentPlayerId;
+  u8 remoteId = syncer->getRemotePlayerId();
 
-  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
+  while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
+
+  // TODO: FIX
 
   u16 start = SYNC_START_SONG | syncer->$currentSongId;
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
     syncer->directSend(start);
     IntrWait(1, IRQ_SERIAL);
-    isOnSync = linkState->readMessage(remoteId) == start;
+    isOnSync = linkUniversal->read(remoteId) == start;
     if (!isOnSync)
       syncer->registerTimeout();
   }
   if (!isOnSync)
     return;
 
-  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
+  while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
 
   if (!syncer->isMaster())

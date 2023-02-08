@@ -8,22 +8,13 @@
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/LinkConnection.h"
+#include "utils/LinkUniversal.h"
 
 // Max invalid messages
 #define SYNC_TIMEOUT 10
 
-// Max frames without a serial IRQ
-#define SYNC_IRQ_TIMEOUT 8
-
-// Max 0xFFFF messages before marking remote player as disconnected
-#define SYNC_REMOTE_TIMEOUT 16
-
 // Max message queue size
 #define SYNC_BUFFER_SIZE 10
-
-// Number of timer ticks (61.04μs) between messages (100 = 6,104ms)
-#define SYNC_SEND_INTERVAL 100
 
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
@@ -113,7 +104,7 @@ class Syncer {
     return (romId & 0b00000000000111111111100000000000) >> 11;
   }
 
-  void sync(LinkState* linkState);
+  void sync();
   void sendOutgoingData();
   void checkTimeout();
   void startPlaying();
