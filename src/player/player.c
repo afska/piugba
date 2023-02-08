@@ -6,7 +6,6 @@
 #include <gba_sound.h>
 #include <gba_systemcalls.h>
 #include <gba_timers.h>
-#include <gba_video.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>  // for memset
@@ -93,8 +92,7 @@ inline void player_onVBlank() {
 }
 
 inline void player_forever(int (*update)(),
-                           void (*onAudioChunks)(unsigned int current),
-                           void (*onVDrawStarts)()) {
+                           void (*onAudioChunks)(unsigned int current)) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
@@ -144,11 +142,6 @@ inline void player_forever(int (*update)(),
         });
 
     onAudioChunks(currentAudioChunk);
-
-    while (REG_VCOUNT >= 160)
-      ;               // wait till VDraw
-    onVDrawStarts();  // TODO: TEST
-    while (REG_VCOUNT < 160)
-      ;  // wait till VBlank
+    VBlankIntrWait();
   }
 }
