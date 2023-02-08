@@ -241,7 +241,7 @@ class LinkUniversal {
 
   void receiveWirelessMessages() {
     std::vector<LinkWireless::Message> messages;
-    linkWireless->receiveMany(messages, LINK_UNIVERSAL_WIRELESS_TX_PER_FRAME);
+    linkWireless->receive(messages);  // [!]
 
     for (auto& message : messages)
       push(incomingMessages[message.playerId], (u16)message.data[0]);

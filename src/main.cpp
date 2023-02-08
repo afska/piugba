@@ -103,13 +103,12 @@ void synchronizeSongStart() {
   while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
 
-  // TODO: FIX
-
   u16 start = SYNC_START_SONG | syncer->$currentSongId;
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
     syncer->directSend(start);
-    IntrWait(1, IRQ_SERIAL);
+    linkUniversal->sync();
+    VBlankIntrWait();
     isOnSync = linkUniversal->read(remoteId) == start;
     if (!isOnSync)
       syncer->registerTimeout();
