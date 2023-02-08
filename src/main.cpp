@@ -36,7 +36,6 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
-        syncer->update();
         engine->update();
 
         if (syncer->$isPlayingSong && !syncer->$hasStartedAudio)
@@ -59,7 +58,8 @@ int main() {
           LOGN(syncer->$currentAudioChunk, 0);
 #endif
         }
-      });
+      },
+      []() { syncer->update(); });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 
