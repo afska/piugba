@@ -31,7 +31,7 @@
 //     That can cause packet loss. You might want to use libugba's instead.
 //     (see examples)
 // --------------------------------------------------------------------------
-// `data` restrictions:
+// `send(...)` restrictions:
 // - 0xFFFF and 0x0 are reserved values, so don't use them!
 //   (they mean 'disconnected' and 'no data' respectively)
 // --------------------------------------------------------------------------
@@ -42,10 +42,10 @@
 #define LINK_CABLE_MAX_PLAYERS 4
 #define LINK_CABLE_DISCONNECTED 0xFFFF
 #define LINK_CABLE_NO_DATA 0x0
-#define LINK_CABLE_DEFAULT_TIMEOUT 8          // [!]
-#define LINK_CABLE_DEFAULT_REMOTE_TIMEOUT 16  // [!]
+#define LINK_CABLE_DEFAULT_TIMEOUT 3
+#define LINK_CABLE_DEFAULT_REMOTE_TIMEOUT 5
 #define LINK_CABLE_DEFAULT_BUFFER_SIZE 30
-#define LINK_CABLE_DEFAULT_INTERVAL 100  // [!]
+#define LINK_CABLE_DEFAULT_INTERVAL 50
 #define LINK_CABLE_DEFAULT_SEND_TIMER_ID 3
 #define LINK_CABLE_BASE_FREQUENCY TM_FREQ_1024
 #define LINK_CABLE_REMOTE_TIMEOUT_OFFLINE -1
@@ -63,11 +63,11 @@
 #define LINK_CABLE_SET_LOW(REG, BIT) REG &= ~(1 << BIT)
 #define LINK_CABLE_BARRIER asm volatile("" ::: "memory")
 
-static volatile char LINK_CABLE_VERSION[] = "LinkCable/v4.3.0";
+static volatile char LINK_CABLE_VERSION[] = "LinkCable/v5.0.0";
 
 void LINK_CABLE_ISR_VBLANK();
-void LINK_CABLE_ISR_TIMER();
 void LINK_CABLE_ISR_SERIAL();
+void LINK_CABLE_ISR_TIMER();
 u16 LINK_CABLE_QUEUE_POP(std::queue<u16>& q);
 void LINK_CABLE_QUEUE_CLEAR(std::queue<u16>& q);
 const u16 LINK_CABLE_TIMER_IRQ_IDS[] = {IRQ_TIMER0, IRQ_TIMER1, IRQ_TIMER2,
@@ -75,19 +75,6 @@ const u16 LINK_CABLE_TIMER_IRQ_IDS[] = {IRQ_TIMER0, IRQ_TIMER1, IRQ_TIMER2,
 
 class LinkCable {
  public:
-  struct PublicState {
-    std::queue<u16> incomingMessages[LINK_CABLE_MAX_PLAYERS];
-    u8 playerCount;
-    u8 currentPlayerId;
-  };
-
-  struct InternalState {
-    std::queue<u16> outgoingMessages;
-    int timeouts[LINK_CABLE_MAX_PLAYERS];
-    bool IRQFlag;
-    u32 IRQTimeout;
-  };
-
   enum BaudRate {
     BAUD_RATE_0,  // 9600 bps
     BAUD_RATE_1,  // 38400 bps
@@ -101,12 +88,12 @@ class LinkCable {
                      u32 bufferSize = LINK_CABLE_DEFAULT_BUFFER_SIZE,
                      u16 interval = LINK_CABLE_DEFAULT_INTERVAL,
                      u8 sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID) {
-    this->baudRate = baudRate;
-    this->timeout = timeout;
-    this->remoteTimeout = remoteTimeout;
-    this->bufferSize = bufferSize;
-    this->interval = interval;
-    this->sendTimerId = sendTimerId;
+    this->config.baudRate = baudRate;
+    this->config.timeout = timeout;
+    this->config.remoteTimeout = remoteTimeout;
+    this->config.bufferSize = bufferSize;
+    this->config.interval = interval;
+    this->config.sendTimerId = sendTimerId;
   }
 
   bool isActive() { return isEnabled; }
@@ -185,22 +172,6 @@ class LinkCable {
     copyState();
   }
 
-  void _onTimer() {
-    if (!isEnabled)
-      return;
-
-    if (didTimeout()) {
-      reset();
-      copyState();
-      return;
-    }
-
-    if (isMaster() && isReady() && !isSending())
-      sendPendingData();
-
-    copyState();
-  }
-
   void _onSerial() {
     if (!isEnabled)
       return;
@@ -225,7 +196,7 @@ class LinkCable {
       } else if (_state.timeouts[i] > LINK_CABLE_REMOTE_TIMEOUT_OFFLINE) {
         _state.timeouts[i]++;
 
-        if (_state.timeouts[i] >= (int)remoteTimeout) {
+        if (_state.timeouts[i] >= (int)config.remoteTimeout) {
           LINK_CABLE_QUEUE_CLEAR(state.incomingMessages[i]);
           _state.timeouts[i] = LINK_CABLE_REMOTE_TIMEOUT_OFFLINE;
         } else
@@ -244,27 +215,60 @@ class LinkCable {
     copyState();
   }
 
+  void _onTimer() {
+    if (!isEnabled)
+      return;
+
+    if (didTimeout()) {
+      reset();
+      copyState();
+      return;
+    }
+
+    if (isMaster() && isReady() && !isSending())
+      sendPendingData();
+
+    copyState();
+  }
+
  private:
-  PublicState state;     // (updated state / back buffer)
-  PublicState $state;    // (visible state / front buffer)
+  struct Config {
+    BaudRate baudRate;
+    u32 timeout;
+    u32 remoteTimeout;
+    u32 bufferSize;
+    u32 interval;
+    u8 sendTimerId;
+  };
+
+  struct ExternalState {
+    std::queue<u16> incomingMessages[LINK_CABLE_MAX_PLAYERS];
+    u8 playerCount;
+    u8 currentPlayerId;
+  };
+
+  struct InternalState {
+    std::queue<u16> outgoingMessages;
+    int timeouts[LINK_CABLE_MAX_PLAYERS];
+    bool IRQFlag;
+    u32 IRQTimeout;
+  };
+
+  ExternalState state;   // (updated state / back buffer)
+  ExternalState $state;  // (visible state / front buffer)
   InternalState _state;  // (internal state)
-  BaudRate baudRate;
-  u32 timeout;
-  u32 remoteTimeout;
-  u32 bufferSize;
-  u32 interval;
-  u8 sendTimerId;
+  Config config;
   bool isEnabled = false;
-  bool isStateReady = false;
-  bool isStateConsumed = false;
-  bool isAddingMessage = false;
-  bool isResetting = false;
+  volatile bool isStateReady = false;
+  volatile bool isStateConsumed = false;
+  volatile bool isAddingMessage = false;
+  volatile bool isResetting = false;
 
   bool isReady() { return isBitHigh(LINK_CABLE_BIT_READY); }
   bool hasError() { return isBitHigh(LINK_CABLE_BIT_ERROR); }
   bool isMaster() { return !isBitHigh(LINK_CABLE_BIT_SLAVE); }
   bool isSending() { return isBitHigh(LINK_CABLE_BIT_START); }
-  bool didTimeout() { return _state.IRQTimeout >= timeout; }
+  bool didTimeout() { return _state.IRQTimeout >= config.timeout; }
 
   void sendPendingData() {
     if (isAddingMessage)
@@ -325,19 +329,21 @@ class LinkCable {
     startTimer();
 
     LINK_CABLE_SET_LOW(REG_RCNT, LINK_CABLE_BIT_GENERAL_PURPOSE_HIGH);
-    REG_SIOCNT = baudRate;
+    REG_SIOCNT = config.baudRate;
     REG_SIOMLT_SEND = 0;
     setBitHigh(LINK_CABLE_BIT_MULTIPLAYER);
     setBitHigh(LINK_CABLE_BIT_IRQ);
   }
 
   void stopTimer() {
-    REG_TM[sendTimerId].cnt = REG_TM[sendTimerId].cnt & (~TM_ENABLE);
+    REG_TM[config.sendTimerId].cnt =
+        REG_TM[config.sendTimerId].cnt & (~TM_ENABLE);
   }
 
   void startTimer() {
-    REG_TM[sendTimerId].start = -interval;
-    REG_TM[sendTimerId].cnt = TM_ENABLE | TM_IRQ | LINK_CABLE_BASE_FREQUENCY;
+    REG_TM[config.sendTimerId].start = -config.interval;
+    REG_TM[config.sendTimerId].cnt =
+        TM_ENABLE | TM_IRQ | LINK_CABLE_BASE_FREQUENCY;
   }
 
   void copyState() {
@@ -358,7 +364,7 @@ class LinkCable {
   }
 
   void push(std::queue<u16>& q, u16 value) {
-    if (q.size() >= bufferSize)
+    if (q.size() >= config.bufferSize)
       LINK_CABLE_QUEUE_POP(q);
 
     q.push(value);
@@ -375,12 +381,12 @@ inline void LINK_CABLE_ISR_VBLANK() {
   linkCable->_onVBlank();
 }
 
-inline void LINK_CABLE_ISR_TIMER() {
-  linkCable->_onTimer();
-}
-
 inline void LINK_CABLE_ISR_SERIAL() {
   linkCable->_onSerial();
+}
+
+inline void LINK_CABLE_ISR_TIMER() {
+  linkCable->_onTimer();
 }
 
 inline u16 LINK_CABLE_QUEUE_POP(std::queue<u16>& q) {
