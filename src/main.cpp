@@ -20,7 +20,18 @@ static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 LinkUniversal* linkUniversal =
     new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
                       "piuGBA",
-                      SYNC_BUFFER_SIZE);
+                      (LinkUniversal::CableOptions){
+                          .baudRate = LinkCable::BAUD_RATE_1,
+                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
+                          .interval = SYNC_SEND_INTERVAL,
+                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
+                      (LinkUniversal::WirelessOptions){
+                          .maxPlayers = 2,
+                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
+                          .interval = SYNC_SEND_INTERVAL,
+                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID});
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -53,7 +64,6 @@ int main() {
             syncer->directSend(SYNC_AUDIO_CHUNK_HEADER |
                                ((u16)current + AUDIO_SYNC_LIMIT));
           }
-
 #ifdef SENV_DEBUG
           LOGN(current, -1);
           LOGN(syncer->$currentAudioChunk, 0);

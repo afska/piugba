@@ -67,19 +67,19 @@ class LinkUniversal {
   enum Protocol { AUTODETECT, CABLE, WIRELESS };
 
   struct CableOptions {
-    LinkCable::BaudRate baudRate = LinkCable::BaudRate::BAUD_RATE_1;
-    u32 timeout = LINK_CABLE_DEFAULT_TIMEOUT;
-    u32 remoteTimeout = LINK_CABLE_DEFAULT_REMOTE_TIMEOUT;
-    u16 interval = LINK_CABLE_DEFAULT_INTERVAL;
-    u8 sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID;
+    LinkCable::BaudRate baudRate;
+    u32 timeout;
+    u32 remoteTimeout;
+    u16 interval;
+    u8 sendTimerId;
   };
 
   struct WirelessOptions {
-    u32 maxPlayers = LINK_WIRELESS_MAX_PLAYERS;
-    u32 timeout = LINK_WIRELESS_DEFAULT_TIMEOUT;
-    u32 remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT;
-    u16 interval = LINK_WIRELESS_DEFAULT_INTERVAL;
-    u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID;
+    u32 maxPlayers;
+    u32 timeout;
+    u32 remoteTimeout;
+    u16 interval;
+    u8 sendTimerId;
   };
 
   explicit LinkUniversal(
