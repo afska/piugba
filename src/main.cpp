@@ -1,6 +1,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
+#include "../libs/interrupt.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/multiplayer/Syncer.h"
@@ -22,13 +23,6 @@ LinkUniversal* linkUniversal =
                       "piuGBA",
                       (LinkUniversal::CableOptions){
                           .baudRate = LinkCable::BAUD_RATE_1,
-                          .timeout = SYNC_IRQ_TIMEOUT,
-                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
-                          .interval = SYNC_SEND_INTERVAL,
-                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
-                      (LinkUniversal::WirelessOptions){
-                          .retransmission = false,
-                          .maxPlayers = 2,
                           .timeout = SYNC_IRQ_TIMEOUT,
                           .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
@@ -94,20 +88,22 @@ void ISR_vblank() {
 void setUpInterrupts() {
   irq_init(NULL);
 
+  interrupt_init();
+
   // VBlank
-  irq_add(II_VBLANK, ISR_vblank);
+  interrupt_set_handler(INTR_VBLANK, ISR_vblank);
+  interrupt_enable(INTR_VBLANK);
 
   // LinkUniversal
-  // TODO: MIGRATE TO libugba
-  // TODO: PUT SD DOWN WHEN DEACTIVATING!
-  // TODO: SELECT TO FORCE CABLE
-  // TODO: START TO FORCE WIRELESS
-  irq_add(II_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
-  irq_add(II_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
+  interrupt_set_handler(INTR_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
+  interrupt_enable(INTR_SERIAL);
+  interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
+  interrupt_enable(INTR_TIMER3);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
-  irq_add(II_KEYPAD, ISR_reset);
+  interrupt_set_handler(INTR_KEYPAD, ISR_reset);
+  interrupt_enable(INTR_KEYPAD);
 }
 
 void synchronizeSongStart() {

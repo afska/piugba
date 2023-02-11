@@ -27,7 +27,7 @@ export PATH	:=	$(DEVKITARM)/bin:$(PATH)
 export PROJ	?= $(notdir $(CURDIR))
 TITLE		:= $(PROJ)
 
-LIBS		:= -ltonc -lgba -lgba-sprite-engine
+LIBS		:= -ltonc -lgba -lgba-sprite-engine -lugba
 
 BUILD		:= build
 SRCDIRS		:= src \
@@ -51,10 +51,11 @@ SRCDIRS		:= src \
 						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gbfs \
-						 src/utils/pool
+						 src/utils/pool \
+						 libs
 DATADIRS	:=
 INCDIRS		:= src
-LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine
+LIBDIRS		:= $(TONCLIB) $(LIBGBA) $(BASE_DIR)/libs/libgba-sprite-engine $(BASE_DIR)/libs/libugba
 
 # --- switches ---
 
