@@ -68,7 +68,7 @@
 #define LINK_WIRELESS_MIN_PLAYERS 2
 #define LINK_WIRELESS_DEFAULT_TIMEOUT 5
 #define LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT 10
-#define LINK_WIRELESS_DEFAULT_INTERVAL 50
+#define LINK_WIRELESS_DEFAULT_INTERVAL 100
 #define LINK_WIRELESS_DEFAULT_SEND_TIMER_ID 3
 #define LINK_WIRELESS_BASE_FREQUENCY TM_FREQ_1024
 #define LINK_WIRELESS_MSG_CONFIRMATION 0
@@ -484,22 +484,20 @@ class LinkWireless {
       return;
 
     linkSPI->_onSerial(true);
-    copyOutgoingState();
 
     bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
-    if (hasNewData)
+    if (hasNewData) {
       if (!acknowledge()) {
         reset();
         lastError = ACKNOWLEDGE_FAILED;
-        copyState();
         return;
       }
+    } else
+      return;
     u32 newData = linkSPI->getAsyncData();
 
-    if (!isSessionActive()) {
-      copyState();
+    if (!isSessionActive())
       return;
-    }
 
     if (asyncCommand.isActive) {
       if (asyncCommand.state == AsyncCommand::State::PENDING) {
@@ -512,30 +510,23 @@ class LinkWireless {
           processAsyncCommand();
       }
     }
-
-    copyState();
   }
 
   void _onTimer() {
     if (!isEnabled)
       return;
 
-    if (!isSessionActive()) {
-      copyState();
+    if (!isSessionActive())
       return;
-    }
 
     if (sessionState.recvTimeout >= config.timeout) {
       reset();
       lastError = TIMEOUT;
-      copyState();
       return;
     }
 
     if (!asyncCommand.isActive)
       acceptConnectionsOrSendData();
-
-    copyState();
   }
 
  private:
