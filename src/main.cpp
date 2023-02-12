@@ -26,7 +26,14 @@ LinkUniversal* linkUniversal =
                           .timeout = SYNC_IRQ_TIMEOUT,
                           .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
-                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID});
+                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
+                      (LinkUniversal::WirelessOptions){
+                          .retransmission = false,
+                          .maxPlayers = 2,
+                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
+                          .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
+                          .interval = SYNC_SEND_INTERVAL,
+                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID});
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 

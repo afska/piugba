@@ -217,7 +217,7 @@ class LinkUniversal {
     if (mode == LINK_CABLE)
       linkCable->send(data);
     else
-      linkWireless->send(std::vector<u32>{data});
+      linkWireless->send(data);
   }
 
   State getState() { return state; }
@@ -283,7 +283,7 @@ class LinkUniversal {
     linkWireless->receive(messages);
 
     for (auto& message : messages)
-      push(incomingMessages[message.playerId], (u16)message.data[0]);
+      push(incomingMessages[message.playerId], message.data);
   }
 
   bool autoDiscoverWirelessConnections() {
