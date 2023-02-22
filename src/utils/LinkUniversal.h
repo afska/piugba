@@ -108,6 +108,9 @@ class LinkUniversal {
     this->config.gameName = gameName;
   }
 
+  // [!]
+  void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
+
   bool isActive() { return isEnabled; }
 
   void activate() {

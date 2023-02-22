@@ -17,6 +17,11 @@ const std::string messages[] = {
 void MultiplayerLobbyScene::load() {
   TextScene::load();
 
+  u16 keys = ~REG_KEYS & KEY_ANY;
+  linkUniversal->setProtocol((keys & KEY_START)
+                                 ? LinkUniversal::Protocol::WIRELESS_CLIENT
+                                 : LinkUniversal::Protocol::AUTODETECT);
+
   syncer->initialize(mode);
   refresh(0);
 }
