@@ -93,8 +93,6 @@ void ISR_vblank() {
 }
 
 void setUpInterrupts() {
-  irq_init(NULL);
-
   interrupt_init();
 
   // VBlank
