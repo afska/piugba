@@ -259,6 +259,7 @@ class LinkUniversal {
     std::string gameName;
   };
 
+  std::vector<LinkWireless::Message> tmpMessages;  // [!]
   std::queue<u16> incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
   LinkCable* linkCable;
   LinkWireless* linkWireless;
@@ -279,10 +280,10 @@ class LinkUniversal {
   }
 
   void receiveWirelessMessages() {
-    std::vector<LinkWireless::Message> messages;
-    linkWireless->receive(messages);
+    tmpMessages.clear();                 // [!]
+    linkWireless->receive(tmpMessages);  // [!]
 
-    for (auto& message : messages)
+    for (auto& message : tmpMessages)  // [!]
       push(incomingMessages[message.playerId], message.data);
   }
 
