@@ -10,9 +10,12 @@
 #include "utils/SceneUtils.h"
 
 const std::string messages[] = {
-    "Connecting...\r\n\r\n(Press SELECT to cancel)", "ERROR:\r\nwtf?!",
-    "ERROR:\r\nToo many players!", "ERROR:\r\nROM IDs don't match!",
-    "ERROR:\r\nMixed game modes!"};
+    "Connecting...\r\n\r\n(Press SELECT to cancel)",
+    "ERROR:\r\nwtf?!",
+    "ERROR:\r\nToo many players!",
+    "ERROR:\r\nROM IDs don't match!",
+    "ERROR:\r\nMixed game modes!",
+    "Connecting... [wireless]\r\n\r\n(Press SELECT to cancel)"};
 
 void MultiplayerLobbyScene::load() {
   TextScene::load();
@@ -56,6 +59,10 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 }
 
 void MultiplayerLobbyScene::refresh(int newMessageId) {
+  if (newMessageId == 0 &&
+      linkUniversal->getProtocol() == LinkUniversal::Protocol::WIRELESS_CLIENT)
+    newMessageId = 5;
+
   if (newMessageId != messageId) {
     messageId = newMessageId;
     write(messages[messageId]);

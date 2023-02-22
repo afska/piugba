@@ -110,6 +110,8 @@ class LinkUniversal {
 
   // [!]
   void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
+  // [!]
+  Protocol getProtocol() { return this->config.protocol; }
 
   bool isActive() { return isEnabled; }
 
