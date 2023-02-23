@@ -676,6 +676,11 @@ void SelectionScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {
+        if (payload > getLastUnlockedSongIndex()) {
+          syncer->registerTimeout();
+          continue;
+        }
+
         unconfirm();
         if (remoteNumericLevel != -1)
           setNumericLevel(remoteNumericLevel);
