@@ -15,7 +15,7 @@ const std::string messages[] = {
     "ERROR:\r\nToo many players!",
     "ERROR:\r\nROM IDs don't match!",
     "ERROR:\r\nMixed game modes!",
-    "Connecting... [wireless]\r\n\r\n(Press SELECT to cancel)"};
+    "Connecting... [w/guest]\r\n\r\n(Press SELECT to cancel)"};
 
 void MultiplayerLobbyScene::load() {
   TextScene::load();

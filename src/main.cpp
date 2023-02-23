@@ -118,7 +118,7 @@ void synchronizeSongStart() {
   while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
 
-  u16 start = SYNC_START_SONG | syncer->$currentSongId;
+  u16 start = SYNC_START_SONG | syncer->$currentSongChecksum;
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
     syncer->directSend(start);
