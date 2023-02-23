@@ -586,6 +586,7 @@ void SelectionScene::setPage(u32 page, int direction) {
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
       updateSelection();
+      unconfirm();
     });
   }
 }
