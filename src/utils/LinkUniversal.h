@@ -37,15 +37,12 @@
 // --------------------------------------------------------------------------
 
 #include <tonc_core.h>
-#include <queue>
-#include <vector>
 #include "LinkCable.h"
 #include "LinkWireless.h"
 
 #define LINK_UNIVERSAL_MAX_PLAYERS LINK_CABLE_MAX_PLAYERS
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
 #define LINK_UNIVERSAL_NO_DATA LINK_CABLE_NO_DATA
-#define LINK_UNIVERSAL_BUFFER_SIZE LINK_WIRELESS_QUEUE_SIZE
 #define LINK_UNIVERSAL_MAX_ROOM_NUMBER 32000
 #define LINK_UNIVERSAL_INIT_WAIT_FRAMES 10
 #define LINK_UNIVERSAL_SWITCH_WAIT_FRAMES 25
@@ -54,7 +51,7 @@
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES 60
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM 30
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.0.1";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.0.2";
 
 void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
@@ -95,10 +92,9 @@ class LinkUniversal {
           true, LINK_WIRELESS_MAX_PLAYERS, LINK_WIRELESS_DEFAULT_TIMEOUT,
           LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT, LINK_WIRELESS_DEFAULT_INTERVAL,
           LINK_WIRELESS_DEFAULT_SEND_TIMER_ID}) {
-    this->linkCable =
-        new LinkCable(cableOptions.baudRate, cableOptions.timeout,
-                      cableOptions.remoteTimeout, LINK_UNIVERSAL_BUFFER_SIZE,
-                      cableOptions.interval, cableOptions.sendTimerId);
+    this->linkCable = new LinkCable(
+        cableOptions.baudRate, cableOptions.timeout, cableOptions.remoteTimeout,
+        cableOptions.interval, cableOptions.sendTimerId);
     this->linkWireless = new LinkWireless(
         wirelessOptions.retransmission, true, wirelessOptions.maxPlayers,
         wirelessOptions.timeout, wirelessOptions.remoteTimeout,
@@ -107,11 +103,6 @@ class LinkUniversal {
     this->config.protocol = protocol;
     this->config.gameName = gameName;
   }
-
-  // [!]
-  void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
-  // [!]
-  Protocol getProtocol() { return this->config.protocol; }
 
   bool isActive() { return isEnabled; }
 
@@ -126,6 +117,9 @@ class LinkUniversal {
     linkCable->deactivate();
     linkWireless->deactivate();
   }
+
+  void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
+  Protocol getProtocol() { return this->config.protocol; }
 
   bool isConnected() { return state == CONNECTED; }
 
@@ -209,11 +203,9 @@ class LinkUniversal {
       linkCable->consume();
   }
 
-  bool canRead(u8 playerId) { return !incomingMessages[playerId].empty(); }
+  bool canRead(u8 playerId) { return !incomingMessages[playerId].isEmpty(); }
 
-  u16 read(u8 playerId) {
-    return LINK_CABLE_QUEUE_POP(incomingMessages[playerId]);
-  }
+  u16 read(u8 playerId) { return incomingMessages[playerId].pop(); }
 
   void send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
@@ -264,8 +256,7 @@ class LinkUniversal {
     std::string gameName;
   };
 
-  std::queue<u16> incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
-  std::vector<LinkWireless::Message> tmpMessages;
+  LinkCable::U16Queue incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
   LinkCable* linkCable;
   LinkWireless* linkWireless;
   Config config;
@@ -280,16 +271,21 @@ class LinkUniversal {
   void receiveCableMessages() {
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
       while (linkCable->canRead(i))
-        push(incomingMessages[i], linkCable->read(i));
+        incomingMessages[i].push(linkCable->read(i));
     }
   }
 
   void receiveWirelessMessages() {
-    tmpMessages.clear();
-    linkWireless->receive(tmpMessages);
+    LinkWireless::Message messages[LINK_WIRELESS_MAX_TRANSFER_LENGTH];
+    linkWireless->receive(messages);
 
-    for (auto& message : tmpMessages)
-      push(incomingMessages[message.playerId], message.data);
+    for (u32 i = 0; i < LINK_WIRELESS_MAX_TRANSFER_LENGTH; i++) {
+      auto message = messages[i];
+      if (message.packetId == LINK_WIRELESS_END)
+        break;
+
+      incomingMessages[message.playerId].push(message.data);
+    }
   }
 
   bool autoDiscoverWirelessConnections() {
@@ -335,14 +331,17 @@ class LinkUniversal {
   }
 
   bool tryConnectOrServeWirelessSession() {
-    std::vector<LinkWireless::Server> servers;
+    LinkWireless::Server servers[LINK_WIRELESS_MAX_SERVERS];
     if (!linkWireless->getServersAsyncEnd(servers))
       return false;
 
     u32 maxRandomNumber = 0;
     u32 serverIndex = 0;
-    for (u32 i = 0; i < servers.size(); i++) {
+    for (u32 i = 0; i < LINK_WIRELESS_MAX_SERVERS; i++) {
       auto server = servers[i];
+      if (server.id == LINK_WIRELESS_END)
+        break;
+
       u32 randomNumber = std::stoi(server.userName);
 
       if (server.gameName == config.gameName &&
@@ -437,14 +436,7 @@ class LinkUniversal {
     subWaitCount = 0;
     serveWait = 0;
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++)
-      LINK_CABLE_QUEUE_CLEAR(incomingMessages[i]);
-  }
-
-  void push(std::queue<u16>& q, u16 value) {
-    if (q.size() >= LINK_UNIVERSAL_BUFFER_SIZE)
-      LINK_CABLE_QUEUE_POP(q);
-
-    q.push(value);
+      incomingMessages[i].clear();
   }
 };
 
