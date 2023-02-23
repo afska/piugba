@@ -165,7 +165,11 @@ void Syncer::sendOutgoingData() {
 }
 
 void Syncer::checkTimeout() {
-  if (timeoutCount >= SYNC_TIMEOUT) {
+  u32 timeout = linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS
+                    ? SYNC_WIRELESS_TIMEOUT
+                    : SYNC_CABLE_TIMEOUT;
+
+  if (timeoutCount >= timeout) {
 #ifdef SENV_DEBUG
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
 #endif

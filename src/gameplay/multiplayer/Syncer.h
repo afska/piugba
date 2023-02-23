@@ -11,7 +11,8 @@
 #include "utils/LinkUniversal.h"
 
 // Max invalid messages
-#define SYNC_TIMEOUT 10
+#define SYNC_CABLE_TIMEOUT 10
+#define SYNC_WIRELESS_TIMEOUT 30
 
 // Max frames without a serial IRQ
 #define SYNC_IRQ_TIMEOUT 8
