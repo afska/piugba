@@ -111,13 +111,17 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
-  if (IS_MULTIPLAYER(gameMode))
+  if (IS_MULTIPLAYER(gameMode)) {
+    u16 keys = ~REG_KEYS & KEY_ANY;
+    linkUniversal->setProtocol((keys & KEY_START)
+                                   ? LinkUniversal::Protocol::WIRELESS_CLIENT
+                                   : LinkUniversal::Protocol::AUTODETECT);
+
     SEQUENCE_goToMultiplayerGameMode(gameMode);
-  else {
-    auto message =
-        gameMode == GameMode::CAMPAIGN
-            ? MODE_CAMPAIGN
-            : gameMode == GameMode::ARCADE ? MODE_ARCADE : MODE_IMPOSSIBLE;
+  } else {
+    auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
+                   : gameMode == GameMode::ARCADE ? MODE_ARCADE
+                                                  : MODE_IMPOSSIBLE;
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {
