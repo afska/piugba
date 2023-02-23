@@ -28,7 +28,7 @@ LinkUniversal* linkUniversal =
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
                       (LinkUniversal::WirelessOptions){
-                          .retransmission = false,
+                          .retransmission = true,
                           .maxPlayers = 2,
                           .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                           .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
