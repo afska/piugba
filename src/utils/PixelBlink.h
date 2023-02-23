@@ -15,8 +15,6 @@ class PixelBlink {
   inline void tick() { tick(0); }
   void tick(u8 minValue);
 
-  bool getIsBlinking() { return isBlinking; }
-
  private:
   u32 targetValue;
   u32 step = 0;

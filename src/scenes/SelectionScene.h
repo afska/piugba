@@ -61,6 +61,7 @@ class SelectionScene : public Scene {
   u32 selected = 0;
   u32 count = 0;
   bool confirmed = false;
+  bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
   int remoteNumericLevel = -1;
 

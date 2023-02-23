@@ -541,7 +541,7 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
-  if (pixelBlink->getIsBlinking())
+  if (isCrossingPage)
     return;
 
   if (!IS_STORY(SAVEFILE_getGameMode())) {
@@ -584,11 +584,13 @@ void SelectionScene::setPage(u32 page, int direction) {
   if (direction == 0)
     setUpBackground();
   else {
+    this->isCrossingPage = true;
     this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
     highlighter->select(selected);
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
       updateSelection();
+      this->isCrossingPage = false;
     });
   }
 }
