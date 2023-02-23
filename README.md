@@ -200,4 +200,4 @@ If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
   - Forked at: [rodri042/gba-sprite-engine](https://github.com/rodri042/gba-sprite-engine)
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
-- [rodri042/gba-link-connection](https://github.com/rodri042/gba-link-connection): v5.0.0
+- [rodri042/gba-link-connection](https://github.com/rodri042/gba-link-connection): v5.0.1
