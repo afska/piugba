@@ -489,7 +489,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 }
 
 void SelectionScene::onConfirmOrStart(bool isConfirmed) {
-  if (confirmed)
+  if (isConfirmed)
     goToSong();
   else
     confirm();
@@ -541,6 +541,9 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
+  if (pixelBlink->getIsBlinking())
+    return;
+
   if (!IS_STORY(SAVEFILE_getGameMode())) {
     if (numericLevels.empty())
       return;
@@ -586,7 +589,6 @@ void SelectionScene::setPage(u32 page, int direction) {
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
       updateSelection();
-      unconfirm();
     });
   }
 }

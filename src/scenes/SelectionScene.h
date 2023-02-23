@@ -162,7 +162,7 @@ class SelectionScene : public Scene {
                          bool isOnListEdge,
                          bool isOnPageEdge,
                          int direction);
-  void onConfirmOrStart(bool confirmed);
+  void onConfirmOrStart(bool isConfirmed);
 
   void updateSelection(bool isChangingLevel = false);
   void updateLevel(Song* song, bool isChangingLevel);
