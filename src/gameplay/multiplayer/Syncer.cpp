@@ -19,9 +19,9 @@
 
 void Syncer::initialize(SyncMode mode) {
   if (mode != SyncMode::SYNC_MODE_OFFLINE)
-    linkConnection->activate();
+    linkUniversal->activate();
   else
-    linkConnection->deactivate();
+    linkUniversal->deactivate();
 
   this->mode = mode;
   reset();
@@ -32,19 +32,20 @@ void Syncer::update() {
   if (mode == SyncMode::SYNC_MODE_OFFLINE)
     return;
 
-  LinkState* linkState = linkConnection->linkState.get();
+  linkUniversal->sync();
 
 #ifdef SENV_DEBUG
-  if (!linkState->isConnected())
+  if (!linkUniversal->isConnected())
     DEBUTRACE("disconnected...");
 #endif
 
-  ASSERT(linkState->isConnected(), SyncError::SYNC_ERROR_NONE);
-  ASSERT(linkState->playerCount == 2, SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
+  ASSERT(linkUniversal->isConnected(), SyncError::SYNC_ERROR_NONE);
+  ASSERT(linkUniversal->playerCount() == 2,
+         SyncError::SYNC_ERROR_TOO_MANY_PLAYERS);
 
   if (!isActive()) {
     reset();
-    playerId = linkState->currentPlayerId;
+    playerId = linkUniversal->currentPlayerId();
 
 #ifdef SENV_DEBUG
     DEBUTRACE("* init: player " + DSTR(playerId));
@@ -56,20 +57,24 @@ void Syncer::update() {
     // (in gameplay, messaging is handled directly by scenes)
   } else {
     do {
-      sync(linkState);
-    } while (isActive() && linkState->hasMessage(getRemotePlayerId()));
+      sync();
+    } while (isActive() && linkUniversal->canRead(getRemotePlayerId()));
   }
 }
 
 void Syncer::send(u8 event, u16 payload) {
   u16 outgoingData = SYNC_MSG_BUILD(event, payload);
-  linkConnection->send(outgoingData);
+  directSend(outgoingData);
 
 #ifdef SENV_DEBUG
-  if (outgoingData != LINK_NO_DATA && !$isPlayingSong)
+  if (outgoingData != LINK_CABLE_NO_DATA && !$isPlayingSong)
     DEBUTRACE("(" + DSTR(state) + ")...-> " + DSTR(outgoingData) + " (" +
               DSTR(outgoingEvent) + "-" + DSTR(outgoingPayload) + ")");
 #endif
+}
+
+void Syncer::directSend(u16 data) {
+  linkUniversal->send(data);
 }
 
 void Syncer::registerTimeout() {
@@ -81,8 +86,8 @@ void Syncer::clearTimeout() {
   timeoutCount = 0;
 }
 
-void Syncer::sync(LinkState* linkState) {
-  u16 incomingData = linkState->readMessage(getRemotePlayerId());
+void Syncer::sync() {
+  u16 incomingData = linkUniversal->read(getRemotePlayerId());
   u8 incomingEvent = SYNC_MSG_EVENT(incomingData);
   u16 incomingPayload = SYNC_MSG_PAYLOAD(incomingData);
 
@@ -91,8 +96,8 @@ void Syncer::sync(LinkState* linkState) {
             DSTR(incomingEvent) + "-" + DSTR(incomingPayload) + ")");
 #endif
 
-  outgoingEvent = LINK_NO_DATA;
-  outgoingPayload = LINK_NO_DATA;
+  outgoingEvent = LINK_CABLE_NO_DATA;
+  outgoingPayload = LINK_CABLE_NO_DATA;
 
   switch (state) {
     case SyncState::SYNC_STATE_SEND_ROM_ID: {
@@ -160,7 +165,11 @@ void Syncer::sendOutgoingData() {
 }
 
 void Syncer::checkTimeout() {
-  if (timeoutCount >= SYNC_TIMEOUT) {
+  u32 timeout = linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS
+                    ? SYNC_WIRELESS_TIMEOUT
+                    : SYNC_CABLE_TIMEOUT;
+
+  if (timeoutCount >= timeout) {
 #ifdef SENV_DEBUG
     DEBUTRACE("! state timeout: " + DSTR(timeoutCount));
 #endif
@@ -199,8 +208,8 @@ void Syncer::reset() {
 
 void Syncer::resetData() {
   resetGameState();
-  outgoingEvent = LINK_NO_DATA;
-  outgoingPayload = LINK_NO_DATA;
+  outgoingEvent = LINK_CABLE_NO_DATA;
+  outgoingPayload = LINK_CABLE_NO_DATA;
 }
 
 void Syncer::resetGameState() {
@@ -212,7 +221,7 @@ void Syncer::resetGameState() {
 void Syncer::resetSongState() {
   $isPlayingSong = false;
   $hasStartedAudio = false;
-  $currentSongId = 0;
+  $currentSongChecksum = 0;
   $currentAudioChunk = 0;
 }
 

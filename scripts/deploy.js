@@ -15,9 +15,9 @@ const OUTPUT_EMPTY = "piugba.gba";
 const OUTPUT_FULL = "piugba.out.gba";
 const OUTPUT_BUILDS = (variant) => ({
   development: `piugba.${variant}.dev.gba`,
-  production: `piugba.${variant}.prod.gba`
+  production: `piugba.${variant}.prod.gba`,
 });
-const ARCADE_FLAG = (variant) => variant === "arcade" ? "ARCADE=true" : ""
+const ARCADE_FLAG = (variant) => (variant === "arcade" ? "ARCADE=true" : "");
 const SEPARATOR = "----------";
 
 const SEARCH = process.argv[2];
@@ -41,7 +41,9 @@ if (!SEARCH) {
       log(`⌚  COMPILING: VARIANT=${variant}, ENV=${environment}`);
       run("make clean", { cwd: ROOT_DIR });
       run("make assets", { cwd: ROOT_DIR });
-      run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, { cwd: ROOT_DIR });
+      run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
+        cwd: ROOT_DIR,
+      });
       fs.copyFileSync(
         $path.join(ROOT_DIR, OUTPUT_EMPTY),
         $path.join(CONTENT_DIR, OUTPUT_BUILDS(variant)[environment])
@@ -54,13 +56,14 @@ if (!SEARCH) {
 // IMPORTING
 // ---------
 
-const sources = fs.readdirSync(SONG_PACKS_DIR)
+const sources = fs
+  .readdirSync(SONG_PACKS_DIR)
   .filter((it) => !it.startsWith("#"))
-  .filter((it) => SEARCH != null ? it.startsWith(`(${SEARCH})`) : true)
+  .filter((it) => (SEARCH != null ? it.startsWith(`(${SEARCH})`) : true))
   .map((it) => ({
     name: it,
     path: $path.join(SONG_PACKS_DIR, it),
-    variant: it.includes(ARCADE_SIGNAL) ? "arcade" : "full"
+    variant: it.includes(ARCADE_SIGNAL) ? "arcade" : "full",
   }));
 
 sources.forEach(({ name, path, variant }) => {
@@ -80,19 +83,12 @@ sources.forEach(({ name, path, variant }) => {
     if (environment === "production") {
       fs.copyFileSync(
         $path.join(ROOT_DIR, OUTPUT_FULL),
-        $path.join(
-          ROM_PACKS_DIR,
-          name,
-          outputName
-        )
+        $path.join(ROM_PACKS_DIR, name, outputName)
       );
     } else {
       fs.copyFileSync(
         $path.join(ROOT_DIR, OUTPUT_FULL),
-        $path.join(
-          DEV_DIR,
-          outputName
-        )
+        $path.join(DEV_DIR, outputName)
       );
     }
   });

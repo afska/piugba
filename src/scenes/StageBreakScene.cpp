@@ -169,11 +169,10 @@ void StageBreakScene::finish() {
 }
 
 void StageBreakScene::processMultiplayerUpdates() {
-  auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
-  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
-    u16 message = linkState->readMessage(remoteId);
+  while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
+    u16 message = linkUniversal->read(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
 
     if (syncer->isMaster()) {

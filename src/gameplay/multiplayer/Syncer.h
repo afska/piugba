@@ -8,10 +8,11 @@
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/LinkConnection.h"
+#include "utils/LinkUniversal.h"
 
 // Max invalid messages
-#define SYNC_TIMEOUT 10
+#define SYNC_CABLE_TIMEOUT 10
+#define SYNC_WIRELESS_TIMEOUT 30
 
 // Max frames without a serial IRQ
 #define SYNC_IRQ_TIMEOUT 8
@@ -66,7 +67,7 @@ class Syncer {
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;
-  u8 $currentSongId = 0;
+  u8 $currentSongChecksum = 0;
   u32 $currentAudioChunk = 0;
   Syncer() {}
 
@@ -92,6 +93,7 @@ class Syncer {
   void initialize(SyncMode mode);
   void update();
   void send(u8 event, u16 payload);
+  void directSend(u16 data);
   void registerTimeout();
   void clearTimeout();
   void resetSongState();
@@ -112,7 +114,7 @@ class Syncer {
     return (romId & 0b00000000000111111111100000000000) >> 11;
   }
 
-  void sync(LinkState* linkState);
+  void sync();
   void sendOutgoingData();
   void checkTimeout();
   void startPlaying();

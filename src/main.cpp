@@ -1,6 +1,7 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
+#include "../libs/interrupt.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/multiplayer/Syncer.h"
@@ -17,11 +18,22 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
-LinkConnection* linkConnection = new LinkConnection(LinkConnection::BAUD_RATE_1,
-                                                    SYNC_IRQ_TIMEOUT,
-                                                    SYNC_REMOTE_TIMEOUT,
-                                                    SYNC_BUFFER_SIZE,
-                                                    SYNC_SEND_INTERVAL);
+LinkUniversal* linkUniversal =
+    new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
+                      "piuGBA",
+                      (LinkUniversal::CableOptions){
+                          .baudRate = LinkCable::BAUD_RATE_1,
+                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
+                          .interval = SYNC_SEND_INTERVAL,
+                          .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
+                      (LinkUniversal::WirelessOptions){
+                          .retransmission = true,
+                          .maxPlayers = 2,
+                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
+                          .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
+                          .interval = SYNC_SEND_INTERVAL,
+                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID});
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -29,6 +41,7 @@ int main() {
   if (fs == NULL)
     BSOD("GBFS file not found.");
 
+  linkUniversal->deactivate();
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
@@ -50,10 +63,9 @@ int main() {
         if (syncer->$isPlayingSong) {
           if (syncer->isMaster()) {
             syncer->$currentAudioChunk = current;
-            linkConnection->send(SYNC_AUDIO_CHUNK_HEADER |
-                                 ((u16)current + AUDIO_SYNC_LIMIT));
+            syncer->directSend(SYNC_AUDIO_CHUNK_HEADER |
+                               ((u16)current + AUDIO_SYNC_LIMIT));
           }
-
 #ifdef SENV_DEBUG
           LOGN(current, -1);
           LOGN(syncer->$currentAudioChunk, 0);
@@ -77,45 +89,49 @@ void ISR_reset() {
 
 void ISR_vblank() {
   player_onVBlank();
-  LINK_ISR_VBLANK();
+  LINK_UNIVERSAL_ISR_VBLANK();
 }
 
 void setUpInterrupts() {
-  irq_init(NULL);
+  interrupt_init();
 
   // VBlank
-  irq_add(II_VBLANK, ISR_vblank);
+  interrupt_set_handler(INTR_VBLANK, ISR_vblank);
+  interrupt_enable(INTR_VBLANK);
 
-  // LinkConnection
-  irq_add(II_SERIAL, LINK_ISR_SERIAL);
-  irq_add(II_TIMER3, LINK_ISR_TIMER);
+  // LinkUniversal
+  interrupt_set_handler(INTR_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
+  interrupt_enable(INTR_SERIAL);
+  interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
+  interrupt_enable(INTR_TIMER3);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
-  irq_add(II_KEYPAD, ISR_reset);
+  interrupt_set_handler(INTR_KEYPAD, ISR_reset);
+  interrupt_enable(INTR_KEYPAD);
 }
 
 void synchronizeSongStart() {
   // discard all previous messages and wait for sync
-  auto linkState = linkConnection->linkState.get();
-  u8 remoteId = !linkState->currentPlayerId;
+  u8 remoteId = syncer->getRemotePlayerId();
 
-  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
+  while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
 
-  u16 start = SYNC_START_SONG | syncer->$currentSongId;
+  u16 start = SYNC_START_SONG | syncer->$currentSongChecksum;
   bool isOnSync = false;
   while (syncer->$isPlayingSong && !isOnSync) {
-    linkConnection->send(start);
-    IntrWait(1, IRQ_SERIAL);
-    isOnSync = linkState->readMessage(remoteId) == start;
+    syncer->directSend(start);
+    VBlankIntrWait();
+    linkUniversal->sync();
+    isOnSync = linkUniversal->read(remoteId) == start;
     if (!isOnSync)
       syncer->registerTimeout();
   }
   if (!isOnSync)
     return;
 
-  while (linkState->readMessage(remoteId) != LINK_NO_DATA)
+  while (linkUniversal->read(remoteId) != LINK_CABLE_NO_DATA)
     ;
 
   if (!syncer->isMaster())

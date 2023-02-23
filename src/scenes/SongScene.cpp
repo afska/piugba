@@ -100,7 +100,7 @@ void SongScene::load() {
   if (isMultiplayer()) {
     syncer->resetSongState();
     syncer->$isPlayingSong = true;
-    syncer->$currentSongId = song->id;
+    syncer->$currentSongChecksum = song->id + chart->level + remoteChart->level;
     syncer->clearTimeout();
   } else
     SAVEFILE_write8(SRAM->state.isPlaying, 1);
@@ -196,7 +196,9 @@ void SongScene::tick(u16 keys) {
   if (chartReader[0]->debugOffset)
     scores[0]->log(chartReader[0]->debugOffset);
 
-  IFTIMINGTEST { chartReader[0]->logDebugInfo<CHART_DEBUG>(); }
+  IFTIMINGTEST {
+    chartReader[0]->logDebugInfo<CHART_DEBUG>();
+  }
 #endif
 }
 
@@ -797,15 +799,14 @@ void SongScene::processMultiplayerUpdates() {
                    arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
                    arrowHolders[getLocalBaseIndex() + 4]->getIsPressed()));
 
-  auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
   bool remoteArrows[ARROWS_TOTAL];
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     remoteArrows[i] = arrowHolders[getRemoteBaseIndex() + i]->getIsPressed();
 
-  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
-    u16 message = linkState->readMessage(remoteId);
+  while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
+    u16 message = linkUniversal->read(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 

@@ -61,6 +61,7 @@ class SelectionScene : public Scene {
   u32 selected = 0;
   u32 count = 0;
   bool confirmed = false;
+  bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
   int remoteNumericLevel = -1;
 
@@ -162,7 +163,7 @@ class SelectionScene : public Scene {
                          bool isOnListEdge,
                          bool isOnPageEdge,
                          int direction);
-  void onConfirmOrStart(bool confirmed);
+  void onConfirmOrStart(bool isConfirmed);
 
   void updateSelection(bool isChangingLevel = false);
   void updateLevel(Song* song, bool isChangingLevel);

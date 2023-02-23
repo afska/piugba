@@ -489,7 +489,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
 }
 
 void SelectionScene::onConfirmOrStart(bool isConfirmed) {
-  if (confirmed)
+  if (isConfirmed)
     goToSong();
   else
     confirm();
@@ -518,7 +518,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
 
 void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   bool canUpdateLevel = false;
-  u8 currentLevel;
+  u8 currentLevel = 0;
 
   if (!numericLevels.empty()) {
     canUpdateLevel = true;
@@ -541,6 +541,9 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 }
 
 void SelectionScene::confirm() {
+  if (isCrossingPage)
+    return;
+
   if (!IS_STORY(SAVEFILE_getGameMode())) {
     if (numericLevels.empty())
       return;
@@ -581,11 +584,13 @@ void SelectionScene::setPage(u32 page, int direction) {
   if (direction == 0)
     setUpBackground();
   else {
+    this->isCrossingPage = true;
     this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
     highlighter->select(selected);
     pixelBlink->blinkAndThen([this]() {
       setUpBackground();
       updateSelection();
+      this->isCrossingPage = false;
     });
   }
 }
@@ -662,11 +667,10 @@ void SelectionScene::loadSelectedSongGrade(u8 songId) {
 }
 
 void SelectionScene::processMultiplayerUpdates() {
-  auto linkState = linkConnection->linkState.get();
   auto remoteId = syncer->getRemotePlayerId();
 
-  while (syncer->isPlaying() && linkState->hasMessage(remoteId)) {
-    u16 message = linkState->readMessage(remoteId);
+  while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
+    u16 message = linkUniversal->read(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
     u16 payload = SYNC_MSG_PAYLOAD(message);
 
@@ -677,6 +681,11 @@ void SelectionScene::processMultiplayerUpdates() {
 
     switch (event) {
       case SYNC_EVENT_SONG_CHANGED: {
+        if (payload > getLastUnlockedSongIndex()) {
+          syncer->registerTimeout();
+          continue;
+        }
+
         unconfirm();
         if (remoteNumericLevel != -1)
           setNumericLevel(remoteNumericLevel);
