@@ -16,6 +16,8 @@
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"
 
+#define REG_VCOUNT *(vu16*)(REG_BASE + 0x0006)  //!< Scanline count
+
 Playback PlaybackState;
 
 static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
@@ -142,6 +144,10 @@ inline void player_forever(int (*update)(),
         });
 
     onAudioChunks(currentAudioChunk);
-    VBlankIntrWait();
+
+    while (REG_VCOUNT >= 160)
+      ;  // wait till VDraw
+    while (REG_VCOUNT < 160)
+      ;  // wait till VBlank
   }
 }
