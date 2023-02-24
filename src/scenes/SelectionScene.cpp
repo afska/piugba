@@ -150,7 +150,8 @@ void SelectionScene::tick(u16 keys) {
     init++;
   }
 
-  pixelBlink->tick();
+  if (pixelBlink->tick() && isCrossingPage)
+    stopPageCross();
   for (auto& it : arrowSelectors)
     it->tick();
   multiplier->tick();
@@ -408,6 +409,9 @@ void SelectionScene::processMenuEvents(u16 keys) {
 
 bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
                                              DifficultyLevel newValue) {
+  if (isCrossingPage)
+    return true;
+
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
     player_play(SOUND_STEP);
@@ -431,6 +435,9 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
 
 bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
                                           u8 newValue) {
+  if (isCrossingPage)
+    return true;
+
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
     player_play(SOUND_STEP);
@@ -583,16 +590,21 @@ void SelectionScene::setPage(u32 page, int direction) {
 
   if (direction == 0)
     setUpBackground();
-  else {
-    this->isCrossingPage = true;
-    this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
-    highlighter->select(selected);
-    pixelBlink->blinkAndThen([this]() {
-      setUpBackground();
-      updateSelection();
-      this->isCrossingPage = false;
-    });
-  }
+  else
+    startPageCross(direction);
+}
+
+void SelectionScene::startPageCross(int direction) {
+  this->isCrossingPage = true;
+  this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
+  highlighter->select(selected);
+  pixelBlink->blink();
+}
+
+void SelectionScene::stopPageCross() {
+  setUpBackground();
+  updateSelection();
+  this->isCrossingPage = false;
 }
 
 void SelectionScene::loadChannels() {

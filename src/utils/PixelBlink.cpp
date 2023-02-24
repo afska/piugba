@@ -13,26 +13,22 @@ void PixelBlink::blink() {
   isBlinking = true;
 }
 
-void PixelBlink::blinkAndThen(std::function<void()> callback) {
-  blink();
-  this->callback = callback;
-}
-
-void PixelBlink::tick(u8 minValue) {
+bool PixelBlink::tick(u8 minValue) {
   if (!isBlinking && step == 0)
-    return;
+    return false;
+
+  bool hasEnded = false;
 
   if (isBlinking) {
     step++;
     if (step == targetValue) {
       isBlinking = false;
-      if (callback != NULL) {
-        callback();
-        callback = NULL;
-      }
+      hasEnded = true;
     }
   } else
     step--;
 
   EFFECT_setMosaic(max(step, minValue));
+
+  return hasEnded;
 }

@@ -170,6 +170,8 @@ class SelectionScene : public Scene {
   void confirm();
   void unconfirm();
   void setPage(u32 page, int direction);
+  void startPageCross(int direction);
+  void stopPageCross();
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
