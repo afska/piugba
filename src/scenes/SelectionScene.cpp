@@ -751,6 +751,8 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
   syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
   if (syncer->isMaster())
     remoteNumericLevel = -1;
+  else if (remoteNumericLevel == -1)
+    remoteNumericLevel = getSelectedNumericLevelIndex();
 }
 
 void SelectionScene::quit() {
