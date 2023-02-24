@@ -586,7 +586,7 @@ void SelectionScene::setPage(u32 page, int direction) {
   this->page = page;
 
   songs.clear();
-  songs = library->loadSongs(getLibraryType(), getPageStart());
+  library->loadSongs(songs, getLibraryType(), getPageStart());
 
   if (direction == 0)
     setUpBackground();
