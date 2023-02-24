@@ -39,7 +39,7 @@
 #include <tonc_core.h>
 
 // Buffer size
-#define LINK_CABLE_QUEUE_SIZE 30
+#define LINK_CABLE_QUEUE_SIZE 10  // [!]
 
 #define LINK_CABLE_MAX_PLAYERS 4
 #define LINK_CABLE_DISCONNECTED 0xFFFF

@@ -60,10 +60,10 @@
 // #include <functional>
 
 // Buffer size
-#define LINK_WIRELESS_QUEUE_SIZE 30
+#define LINK_WIRELESS_QUEUE_SIZE 10  // [!]
 
 // Max command response length
-#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 50
+#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30  // [!]
 
 #define LINK_WIRELESS_MAX_PLAYERS 5
 #define LINK_WIRELESS_MIN_PLAYERS 2
