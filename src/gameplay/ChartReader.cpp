@@ -133,7 +133,7 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
-CODE_IWRAM void ChartReader::processNextEvents() {
+void ChartReader::processNextEvents() {
   if (frameSkipCount == FRAME_SKIP) {
     frameSkipCount = 0;
   } else {
