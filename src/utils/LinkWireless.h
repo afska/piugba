@@ -998,8 +998,9 @@ class LinkWireless {
   }
 
   u32 getDeviceTransferLength() {  // (irq only)
-    return state == SERVING ? LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
-                            : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
+    return state == SERVING
+               ? /*LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH*/ 8  // [!]
+               : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
   }
 
   void copyState() {  // (irq only)
