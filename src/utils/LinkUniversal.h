@@ -250,6 +250,11 @@ class LinkUniversal {
       linkWireless->_onTimer();
   }
 
+  void _onACKTimer() {
+    if (mode == LINK_WIRELESS)
+      linkWireless->_onACKTimer();
+  }
+
  private:
   struct Config {
     Protocol protocol;
@@ -452,6 +457,11 @@ inline void LINK_UNIVERSAL_ISR_SERIAL() {
 
 inline void LINK_UNIVERSAL_ISR_TIMER() {
   linkUniversal->_onTimer();
+}
+
+// [!]
+inline void LINK_UNIVERSAL_ISR_ACK_TIMER() {
+  linkUniversal->_onACKTimer();
 }
 
 #endif  // LINK_UNIVERSAL_H

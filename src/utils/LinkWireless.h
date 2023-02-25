@@ -65,6 +65,9 @@
 // Max command response length
 #define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30  // [!]
 
+// ACK Timer [!]
+#define LINK_WIRELESS_ACK_TIMER 2
+
 #define LINK_WIRELESS_MAX_PLAYERS 5
 #define LINK_WIRELESS_MIN_PLAYERS 2
 #define LINK_WIRELESS_END 0
@@ -510,6 +513,48 @@ class LinkWireless {
     copyState();
   }
 
+  // [!]
+  void _onACKTimer() {
+    if (!isEnabled || !asyncCommand.isActive ||
+        asyncCommand.ackStep == AsyncCommand::ACKStep::READY)
+      return;
+
+    if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_HIGH) {
+      if (!linkSPI->_isSIHigh())
+        return;
+
+      linkSPI->_setSOHigh();
+      asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_LOW;
+    } else if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_LOW) {
+      if (linkSPI->_isSIHigh())
+        return;
+
+      linkSPI->_setSOLow();
+      asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
+      _stopACKTimer();
+
+      if (asyncCommand.state == AsyncCommand::State::PENDING) {
+        updateAsyncCommand(asyncCommand.pendingData);
+
+        if (asyncCommand.state == AsyncCommand::State::COMPLETED)
+          processAsyncCommand();
+      }
+    }
+  }
+
+  // [!]
+  void _startACKTimer() {
+    REG_TM[LINK_WIRELESS_ACK_TIMER].start = -1;
+    REG_TM[LINK_WIRELESS_ACK_TIMER].cnt =
+        TM_ENABLE | TM_IRQ | LINK_WIRELESS_BASE_FREQUENCY;
+  }
+
+  // [!]
+  void _stopACKTimer() {
+    REG_TM[LINK_WIRELESS_ACK_TIMER].cnt =
+        REG_TM[LINK_WIRELESS_ACK_TIMER].cnt & (~TM_ENABLE);
+  }
+
   void _onSerial() {
     if (!isEnabled)
       return;
@@ -517,29 +562,23 @@ class LinkWireless {
     linkSPI->_onSerial(true);
 
     bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
-    if (hasNewData) {
-      if (!acknowledge()) {
-        reset();
-        lastError = ACKNOWLEDGE_FAILED;
-        return;
-      }
-    } else
-      return;
-    u32 newData = linkSPI->getAsyncData();
+    u32 newData = linkSPI->getAsyncData();  // [!]
 
     if (!isSessionActive())
       return;
 
+    // [!]
     if (asyncCommand.isActive) {
-      if (asyncCommand.state == AsyncCommand::State::PENDING) {
-        if (hasNewData)
-          updateAsyncCommand(newData);
-        else
-          asyncCommand.state = AsyncCommand::State::COMPLETED;
+      if (asyncCommand.ackStep != AsyncCommand::ACKStep::READY)
+        return;
 
-        if (asyncCommand.state == AsyncCommand::State::COMPLETED)
-          processAsyncCommand();
-      }
+      if (hasNewData) {
+        linkSPI->_setSOLow();
+        asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_HIGH;
+        asyncCommand.pendingData = newData;
+        _startACKTimer();
+      } else
+        return;
     }
   }
 
@@ -684,6 +723,8 @@ class LinkWireless {
       DATA_REQUEST
     };
 
+    enum ACKStep { READY, WAITING_FOR_HIGH, WAITING_FOR_LOW };  // [!]
+
     u8 type;
     u32 parameters[LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH];
     u32 responses[LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH];
@@ -692,6 +733,8 @@ class LinkWireless {
     Step step;
     u32 sentParameters, totalParameters;
     u32 receivedResponses, totalResponses;
+    u32 pendingData;  // [!]
+    ACKStep ackStep;  // [!]
     bool isActive;
   };
 
@@ -1156,6 +1199,7 @@ class LinkWireless {
 
   void stop() {
     stopTimer();
+    _stopACKTimer();  // [!]
 
     linkSPI->deactivate();
   }
@@ -1283,6 +1327,8 @@ class LinkWireless {
     asyncCommand.totalParameters = withData ? nextCommandDataSize : 0;
     asyncCommand.receivedResponses = 0;
     asyncCommand.totalResponses = 0;
+    asyncCommand.pendingData = 0;                         // [!]
+    asyncCommand.ackStep = AsyncCommand::ACKStep::READY;  // [!]
     asyncCommand.isActive = true;
 
     u32 command = buildCommand(type, asyncCommand.totalParameters);
