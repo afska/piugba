@@ -174,7 +174,7 @@ class LinkWireless {
   struct Server {
     u16 id = 0;
     std::string gameName;
-    std::string userName;
+    u32 userName;  // [!]
   };
 
   explicit LinkWireless(
@@ -215,7 +215,7 @@ class LinkWireless {
     stop();
   }
 
-  bool serve(std::string gameName = "", std::string userName = "") {
+  bool serve(std::string gameName = "", u32 userName = 0) {  // [!]
     LINK_WIRELESS_RESET_IF_NEEDED
     if (state != AUTHENTICATED) {
       lastError = WRONG_STATE;
@@ -225,12 +225,9 @@ class LinkWireless {
       lastError = GAME_NAME_TOO_LONG;
       return false;
     }
-    if (userName.length() > LINK_WIRELESS_MAX_GAME_NAME_LENGTH) {
-      lastError = USER_NAME_TOO_LONG;
-      return false;
-    }
+
+    // [!]
     gameName.append(LINK_WIRELESS_MAX_GAME_NAME_LENGTH - gameName.length(), 0);
-    userName.append(LINK_WIRELESS_MAX_USER_NAME_LENGTH - userName.length(), 0);
 
     addData(buildU32(buildU16(gameName[1], gameName[0]), buildU16(0x02, 0x02)),
             true);
@@ -240,10 +237,8 @@ class LinkWireless {
                      buildU16(gameName[7], gameName[6])));
     addData(buildU32(buildU16(gameName[13], gameName[12]),
                      buildU16(gameName[11], gameName[10])));
-    addData(buildU32(buildU16(userName[3], userName[2]),
-                     buildU16(userName[1], userName[0])));
-    addData(buildU32(buildU16(userName[7], userName[6]),
-                     buildU16(userName[5], userName[4])));
+    addData(0);         // [!]
+    addData(userName);  // [!]
     bool success = sendCommand(LINK_WIRELESS_COMMAND_BROADCAST, true).success &&
                    sendCommand(LINK_WIRELESS_COMMAND_START_HOST).success;
 
@@ -336,8 +331,7 @@ class LinkWireless {
       recoverName(server.gameName, result.responses[start + 2]);
       recoverName(server.gameName, result.responses[start + 3]);
       recoverName(server.gameName, result.responses[start + 4]);
-      recoverName(server.userName, result.responses[start + 5]);
-      recoverName(server.userName, result.responses[start + 6]);
+      server.userName = start + 6;  // [!]
 
       servers[i] = server;
     }

@@ -347,7 +347,7 @@ class LinkUniversal {
       if (server.id == LINK_WIRELESS_END)
         break;
 
-      u32 randomNumber = std::stoi(server.userName);
+      u32 randomNumber = server.userName;  // [!]
 
       if (server.gameName == config.gameName &&
           randomNumber > maxRandomNumber) {
@@ -367,7 +367,7 @@ class LinkUniversal {
       serveWait = LINK_UNIVERSAL_SERVE_WAIT_FRAMES +
                   qran_range(1, LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM);
       u32 randomNumber = qran_range(1, LINK_UNIVERSAL_MAX_ROOM_NUMBER);
-      if (!linkWireless->serve(config.gameName, std::to_string(randomNumber)))
+      if (!linkWireless->serve(config.gameName, randomNumber))  // [!]
         return false;
     }
 
