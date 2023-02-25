@@ -488,54 +488,6 @@ class LinkWireless {
                : sessionState.outgoingMessages.peek().packetId;
   }
 
-  void _onVBlank() {
-    if (!isEnabled)
-      return;
-
-    if (!isSessionActive()) {
-      copyState();
-      return;
-    }
-
-    if (isConnected() && sessionState.frameRecvCount == 0)
-      sessionState.recvTimeout++;
-
-    sessionState.frameRecvCount = 0;
-    sessionState.acceptCalled = false;
-    sessionState.pingSent = false;
-
-    copyState();
-  }
-
-  // [!]
-  void _onACKTimer() {
-    if (!isEnabled || !asyncCommand.isActive ||
-        asyncCommand.ackStep == AsyncCommand::ACKStep::READY)
-      return;
-
-    if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_HIGH) {
-      if (!linkSPI->_isSIHigh())
-        return;
-
-      linkSPI->_setSOHigh();
-      asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_LOW;
-    } else if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_LOW) {
-      if (linkSPI->_isSIHigh())
-        return;
-
-      linkSPI->_setSOLow();
-      asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
-      _stopACKTimer();
-
-      if (asyncCommand.state == AsyncCommand::State::PENDING) {
-        updateAsyncCommand(asyncCommand.pendingData);
-
-        if (asyncCommand.state == AsyncCommand::State::COMPLETED)
-          processAsyncCommand();
-      }
-    }
-  }
-
   // [!]
   void _startACKTimer() {
     REG_TM[LINK_WIRELESS_ACK_TIMER].start = -1;
@@ -549,49 +501,10 @@ class LinkWireless {
         REG_TM[LINK_WIRELESS_ACK_TIMER].cnt & (~TM_ENABLE);
   }
 
-  void _onSerial() {
-    if (!isEnabled)
-      return;
-
-    linkSPI->_onSerial(true);
-
-    bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
-    u32 newData = linkSPI->getAsyncData();  // [!]
-
-    if (!isSessionActive())
-      return;
-
-    // [!]
-    if (asyncCommand.isActive) {
-      if (asyncCommand.ackStep != AsyncCommand::ACKStep::READY)
-        return;
-
-      if (hasNewData) {
-        linkSPI->_setSOLow();
-        asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_HIGH;
-        asyncCommand.pendingData = newData;
-        _startACKTimer();
-      } else
-        return;
-    }
-  }
-
-  void _onTimer() {
-    if (!isEnabled)
-      return;
-
-    if (!isSessionActive())
-      return;
-
-    if (sessionState.recvTimeout >= config.timeout) {
-      reset();
-      lastError = TIMEOUT;
-      return;
-    }
-
-    if (!asyncCommand.isActive)
-      acceptConnectionsOrSendData();
-  }
+  void _onVBlank();    // [!]
+  void _onACKTimer();  // [!]
+  void _onSerial();    // [!]
+  void _onTimer();     // [!]
 
  private:
   struct Config {
@@ -1115,16 +1028,7 @@ class LinkWireless {
     }
   }
 
-  void copyIncomingState() {  // (irq only)
-    if (!isReadingMessages) {
-      while (!sessionState.tmpMessagesToReceive.isEmpty()) {
-        auto message = sessionState.tmpMessagesToReceive.pop();
-
-        if (state == SERVING || state == CONNECTED)
-          sessionState.incomingMessages.push(message);
-      }
-    }
-  }
+  void copyIncomingState();  // (irq only) [!]
 
   u32 newPacketId() {  // (irq only)
     return ++sessionState.lastPacketId;
