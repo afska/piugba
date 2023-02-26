@@ -48,14 +48,15 @@
                                                                                \
   static void unmute() { DSOUNDCTRL = DSOUNDCTRL | UNMUTE; }
 
-#define PLAYER_TURN_ON_SOUND() \
-  SETSNDRES(1);                \
-  SNDSTAT = SNDSTAT_ENABLE;    \
-  DSOUNDCTRL = 0b1111101100001110;
+#define PLAYER_LOAD() fs = find_first_gbfs_file(0);
+
+#define PLAYER_TURN_ON_SOUND()     \
+  SETSNDRES(1);                    \
+  SNDSTAT = SNDSTAT_ENABLE;        \
+  DSOUNDCTRL = 0b1111101100001110; \
+  mute();
 
 #define PLAYER_INIT(TM_CNT_L, TM_CNT_H)        \
-  fs = find_first_gbfs_file(0);                \
-                                               \
   /* TMxCNT_L is count; TMxCNT_H is control */ \
   TM_CNT_H = 0;                                \
   TM_CNT_L = 0x10000 - (924 / 2);              \

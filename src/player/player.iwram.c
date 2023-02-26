@@ -33,12 +33,18 @@ PLAYER_DEFINE(REG_DMA1CNT,
               CHANNEL_A_MUTE,
               CHANNEL_A_UNMUTE);
 
-inline void player_init() {
+void player_init() {
+  PLAYER_LOAD();
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
 }
 
-inline void player_play(const char* name) {
+void player_reinit() {
+  mute();
+  PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
+}
+
+void player_play(const char* name) {
   PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -48,12 +54,12 @@ inline void player_play(const char* name) {
   currentAudioChunk = 0;
 }
 
-inline void player_loop(const char* name) {
+void player_loop(const char* name) {
   player_play(name);
   PlaybackState.isLooping = true;
 }
 
-inline void player_seek(unsigned int msecs) {
+void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
@@ -69,13 +75,13 @@ inline void player_seek(unsigned int msecs) {
   currentAudioChunk = 0;
 }
 
-inline void player_setRate(int newRate) {
+void player_setRate(int newRate) {
   rate = newRate;
   rateCounter = 0;
   currentAudioChunk = 0;
 }
 
-inline void player_stop() {
+void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -85,16 +91,16 @@ inline void player_stop() {
   currentAudioChunk = 0;
 }
 
-inline bool player_isPlaying() {
+bool player_isPlaying() {
   return src_pos != NULL;
 }
 
-inline void player_onVBlank() {
+void player_onVBlank() {
   PLAYER_POST_UPDATE();
 }
 
-inline void player_forever(int (*update)(),
-                           void (*onAudioChunks)(unsigned int current)) {
+void player_forever(int (*update)(),
+                    void (*onAudioChunks)(unsigned int current)) {
   while (1) {
     if (rate != 0) {
       rateCounter++;
