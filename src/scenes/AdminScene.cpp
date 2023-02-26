@@ -5,7 +5,7 @@
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
-#define TITLE "ADMIN MENU (v1.5.1)"
+#define TITLE "ADMIN MENU (v1.5.2)"
 #define OPTIONS_COUNT 6
 #define OPTION_ARCADE_CHARTS 0
 #define OPTION_RUMBLE 1
@@ -51,9 +51,14 @@ void AdminScene::printOptions() {
               charts == 0 ? "SINGLE" : "DOUBLE", 5);
   printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 7);
   printOption(OPTION_IO_BLINK, "I/O SD Blink",
-              ioBlink == 0 ? "OFF" : ioBlink == 1 ? "ON BEAT" : "ON KEY", 9);
+              ioBlink == 0   ? "OFF"
+              : ioBlink == 1 ? "ON BEAT"
+                             : "ON KEY",
+              9);
   printOption(OPTION_SRAM_BLINK, "SRAM LED Blink",
-              sramBlink == 0 ? "OFF" : sramBlink == 1 ? "ON BEAT" : "ON HIT",
+              sramBlink == 0   ? "OFF"
+              : sramBlink == 1 ? "ON BEAT"
+                               : "ON HIT",
               11);
   printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
   printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);

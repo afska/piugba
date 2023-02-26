@@ -13,9 +13,9 @@
   ARROW_FINAL_Y() = ARROW_INITIAL_Y + ARROW_SPEED * t
   t = abs(ARROW_INITIAL_Y - ARROW_FINAL_Y()) px / ARROW_SPEED px/frame
   t = (160 - 15) / 3 = (48.33 frames) * 16.73322954 ms/frame = 808,77 ms
-  => Look-up table for speeds 0, 1, 2, 3, 4 and 5 px/frame
+  => Look-up table for speeds 0, 1, 2, 3, 4, 5 and 6 px/frame
 */
-const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607, 485};
+const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607, 485, 404};
 
 const u32 MAX_ARROW_TIME_JUMP = 100;
 const u32 MINUTE = 60000;
