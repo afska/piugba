@@ -150,10 +150,6 @@ void player_forever(int (*update)(),
         });
 
     onAudioChunks(currentAudioChunk);
-
-    while (REG_VCOUNT >= 160)
-      ;  // wait till VDraw
-    while (REG_VCOUNT < 160)
-      ;  // wait till VBlank
+    VBlankIntrWait();
   }
 }
