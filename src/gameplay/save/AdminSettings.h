@@ -17,7 +17,7 @@ typedef struct __attribute__((__packed__)) {
   u8 rumble;
   u8 ioBlink;
   u8 sramBlink;
-  u8 beat;
+  u8 ___;  // (unused)
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

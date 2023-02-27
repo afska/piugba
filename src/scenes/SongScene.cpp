@@ -335,11 +335,12 @@ CODE_IWRAM void SongScene::updateArrows() {
   // judge key press events
   for (u32 i = 0; i < ARROWS_TOTAL * getPlatformCount(); i++) {
     auto arrow = nextArrows[i];
+    if (arrow == NULL)
+      continue;
+
     u8 playerId = arrow->playerId;
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
     bool isStopped = chartReader[playerId]->isStopped();
-    if (arrow == NULL)
-      continue;
 
     ArrowDirection direction = arrow->direction;
     bool canBeJudged = true;
