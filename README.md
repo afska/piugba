@@ -46,7 +46,7 @@ A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into bi
 
 Charts are converted into a format created for this project called **PIUS**. Then everything is bundled in a **GBFS** file (a filesystem created by the GBA scene) and appended to the final ROM.
 
-**[Read the wiki](https://github.com/rodri042/piugba/wiki)** for more details!
+**[Read the wiki](https://github.com/afska/piugba/wiki)** for more details!
 
 ## How to a build a ROM
 
@@ -65,7 +65,7 @@ make restart ENV=production
 
 **Full guide:**
 
-[Wiki: Building a ROM](https://github.com/rodri042/piugba/wiki/Building-a-ROM)
+[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)
 
 ## Install
 
@@ -137,13 +137,13 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 
 #### Parameters
 
-| Name     | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| -------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MODE`   | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/rodri042/piugba/wiki/Autoimporting-songs).                                                                                                                                                                                                                                                                                                                          |
-| `SORT`   | **`level`** or `dir`                          | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/rodri042/piugba/wiki/Song-order).                                                                                                                                                                                                                                                                                                                                                       |
-| `ENV`    | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a _debug menu_ to correct songs' offsets. See [Wiki: Correcting offsets](https://github.com/rodri042/piugba/wiki/Building-a-ROM#correcting-offsets).<br><br>If _SELECT_ is pressed when a song starts, stage-break will be ON regardless of the environment. |
-| `ARCADE` | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                                 |
-| `SONGS`  | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Name     | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MODE`   | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/afska/piugba/wiki/Autoimporting-songs).                                                                                                                                                                                                                                                                                                                          |
+| `SORT`   | **`level`** or `dir`                          | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/afska/piugba/wiki/Song-order).                                                                                                                                                                                                                                                                                                                                                       |
+| `ENV`    | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a _debug menu_ to correct songs' offsets. See [Wiki: Correcting offsets](https://github.com/afska/piugba/wiki/Building-a-ROM#correcting-offsets).<br><br>If _SELECT_ is pressed when a song starts, stage-break will be ON regardless of the environment. |
+| `ARCADE` | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                              |
+| `SONGS`  | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ### Scripts
 
@@ -197,7 +197,7 @@ If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
 ## Open-source projects involved
 
 - [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019
-  - Forked at: [rodri042/gba-sprite-engine](https://github.com/rodri042/gba-sprite-engine)
+  - Forked at: [afska/gba-sprite-engine](https://github.com/afska/gba-sprite-engine)
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
-- [rodri042/gba-link-connection](https://github.com/rodri042/gba-link-connection): v5.0.2
+- [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v5.0.2
