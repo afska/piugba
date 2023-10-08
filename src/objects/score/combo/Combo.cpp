@@ -8,8 +8,8 @@
 
 const u32 MAX_COMBO = 999;
 const u32 DIGITS = 3;
-const u32 DIGITS_POSITION_X = 8;
-const u32 DIGITS_POSITION_Y = 89;
+const u32 DIGITS_POSITION_X = 7;
+const u32 DIGITS_POSITION_Y = 91;
 
 Combo::Combo(u8 playerId) {
   this->playerId = playerId;
