@@ -168,7 +168,6 @@ void SongScene::tick(u16 keys) {
   }
 
   __qran_seed += keys;
-  updateArrowHolders();
   processKeys(keys);
 
   if (isMultiplayer()) {
@@ -183,6 +182,7 @@ void SongScene::tick(u16 keys) {
   if (isVs())
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
+  updateArrowHolders();
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
