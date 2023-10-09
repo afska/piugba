@@ -41,7 +41,7 @@ void SettingsScene::printOptions() {
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
-  bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+  u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
   printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
 
@@ -49,19 +49,27 @@ void SettingsScene::printOptions() {
     printOption(OPTION_GAME_POSITION, "Game position", "---", 7);
     printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 9);
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                bgaDarkBlink ? "ON" : "OFF", 11);
+                bgaDarkBlink == 0   ? "OFF"
+                : bgaDarkBlink == 1 ? "FAST"
+                                    : "SLOW",
+                11);
   } else {
-    printOption(
-        OPTION_GAME_POSITION, "Game position",
-        gamePosition == 0 ? "LEFT" : gamePosition == 1 ? "CENTER" : "RIGHT", 7);
+    printOption(OPTION_GAME_POSITION, "Game position",
+                gamePosition == 0   ? "LEFT"
+                : gamePosition == 1 ? "CENTER"
+                                    : "RIGHT",
+                7);
     printOption(OPTION_BACKGROUND_TYPE, "Background type",
-                backgroundType == 0
-                    ? "RAW"
-                    : backgroundType == 1 ? "HALF DARK" : "FULL DARK",
+                backgroundType == 0   ? "RAW"
+                : backgroundType == 1 ? "HALF DARK"
+                                      : "FULL DARK",
                 9);
     if (backgroundType > 0)
       printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                  bgaDarkBlink ? "ON" : "OFF", 11);
+                  bgaDarkBlink == 0   ? "OFF"
+                  : bgaDarkBlink == 1 ? "FAST"
+                                      : "SLOW",
+                  11);
     else
       printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 11);
   }
@@ -101,8 +109,8 @@ bool SettingsScene::selectOption(u32 selected) {
       if (backgroundType == 0)
         return true;
 
-      bool bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
-      SAVEFILE_write8(SRAM->settings.bgaDarkBlink, !bgaDarkBlink);
+      u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+      SAVEFILE_write8(SRAM->settings.bgaDarkBlink, increment(bgaDarkBlink, 3));
       return true;
     }
     case OPTION_RESET: {

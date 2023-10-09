@@ -28,7 +28,8 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
-const u32 ALPHA_BLINK_TIME = 6;
+const u32 ALPHA_BLINK_TIME_FAST = 6;
+const u32 ALPHA_BLINK_TIME_SLOW = 10;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
@@ -556,7 +557,11 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
-  blinkFrame = min(blinkFrame + ALPHA_BLINK_TIME, ALPHA_BLINK_LEVEL);
+  u8 alphaBlinkTime =
+      SAVEFILE_read8(SRAM->settings.bgaDarkBlink) == BGADarkBlink::BLINK_SLOW
+          ? ALPHA_BLINK_TIME_SLOW
+          : ALPHA_BLINK_TIME_FAST;
+  blinkFrame = min(blinkFrame + alphaBlinkTime, ALPHA_BLINK_LEVEL);
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     lifeBars[playerId]->blink(foregroundPalette.get());
