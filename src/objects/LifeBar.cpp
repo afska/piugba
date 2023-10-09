@@ -122,6 +122,10 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
     }
 
     foregroundPalette->change(0, PALETTE_INDEXES[playerId][i], color);
+    if (GameState.mods.decolorize != DecolorizeOpts::dOFF)
+      SCENE_decolorizeIndex(foregroundPalette, 0, PALETTE_INDEXES[playerId][i],
+                            GameState.mods.decolorize);
+
     isBorder = !isBorder;
   }
 }
