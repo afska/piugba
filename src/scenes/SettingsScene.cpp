@@ -50,8 +50,8 @@ void SettingsScene::printOptions() {
     printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 9);
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
                 bgaDarkBlink == 0   ? "OFF"
-                : bgaDarkBlink == 1 ? "FAST"
-                                    : "SLOW",
+                : bgaDarkBlink == 1 ? "SLOW"
+                                    : "FAST",
                 11);
   } else {
     printOption(OPTION_GAME_POSITION, "Game position",
@@ -67,8 +67,8 @@ void SettingsScene::printOptions() {
     if (backgroundType > 0)
       printOption(OPTION_BGA_DARK_BLINK, "Background blink",
                   bgaDarkBlink == 0   ? "OFF"
-                  : bgaDarkBlink == 1 ? "FAST"
-                                      : "SLOW",
+                  : bgaDarkBlink == 1 ? "SLOW"
+                                      : "FAST",
                   11);
     else
       printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 11);
@@ -101,7 +101,7 @@ bool SettingsScene::selectOption(u32 selected) {
       SAVEFILE_write8(SRAM->settings.backgroundType,
                       increment(backgroundType, 3));
       if (backgroundType == 0)
-        SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
+        SAVEFILE_write8(SRAM->settings.bgaDarkBlink, 1);
       return true;
     }
     case OPTION_BGA_DARK_BLINK: {
