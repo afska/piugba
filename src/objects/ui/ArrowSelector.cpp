@@ -16,11 +16,9 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
                              bool reuseTiles,
                              bool reactive) {
   u32 start = 0;
-  bool flip = false;
-  ARROW_initialize(direction, start, flip);
+  ARROW_initialize(direction, start, this->flip);
   this->direction = direction;
   this->start = start;
-  this->flip = flip;
   this->reactive = reactive;
 
   SpriteBuilder<Sprite> builder;
@@ -60,7 +58,10 @@ bool ArrowSelector::shouldFireEvent() {
 }
 
 void ArrowSelector::tick() {
-  sprite->flipHorizontally(flip);
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
 
   globalLastPressFrame++;
   currentLastPressFrame++;
@@ -69,11 +70,15 @@ void ArrowSelector::tick() {
     return;
 
   u32 currentFrame = sprite->getCurrentFrame();
+  u32 idleFrame = start + ARROW_HOLDER_IDLE(direction) + 1;
+  u32 pressedFrame = start + ARROW_HOLDER_PRESSED(direction);
 
-  if (isPressed && currentFrame < start + ARROW_HOLDER_PRESSED) {
-    SPRITE_goToFrame(sprite.get(),
-                     max(currentFrame + 1, start + ARROW_HOLDER_IDLE + 1));
-  } else if (!isPressed && currentFrame >= start + ARROW_HOLDER_IDLE) {
+  if (isPressed && currentFrame != pressedFrame) {
+    if (currentFrame < idleFrame || currentFrame > pressedFrame)
+      SPRITE_goToFrame(sprite.get(), idleFrame);
+    else
+      SPRITE_goToFrame(sprite.get(), max(currentFrame + 1, pressedFrame));
+  } else if (!isPressed && currentFrame >= idleFrame &&
+             currentFrame <= pressedFrame)
     sprite->makeAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY);
-  }
 }

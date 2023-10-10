@@ -61,5 +61,6 @@ enum ArrowDirection {
   DOWNRIGHT_DOUBLE
 };
 enum ArrowState { ACTIVE, OUT };
+enum ArrowFlip { NO_FLIP, FLIP_X, FLIP_Y, FLIP_BOTH };
 
 #endif  // ARROW_ENUMS_H

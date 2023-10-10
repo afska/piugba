@@ -6,7 +6,6 @@
 #include "data/content/_compiled_sprites/spr_arrows.h"
 #include "utils/SpriteUtils.h"
 
-const u32 END_ANIMATION_START = 5;
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
 
 Arrow::Arrow(u32 id) {
@@ -58,7 +57,10 @@ void Arrow::press() {
 }
 
 ArrowState Arrow::tick(int newY, bool isPressing) {
-  sprite->flipHorizontally(flip);
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
   if (SPRITE_isHidden(get()))
     return ArrowState::OUT;
 
@@ -66,24 +68,25 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
                      type == ArrowType::HOLD_TAIL ||
                      type == ArrowType::HOLD_FILL;
   bool isHoldFill = type == ArrowType::HOLD_FILL;
+  bool isFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
   int newX = ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction;
 
-  if (type == ArrowType::HOLD_FAKE_HEAD || hasEnded) {
+  if (isFakeHead || hasEnded) {
     endAnimationFrame++;
     sprite->moveTo(newX, sprite->getY());
 
     if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES) {
       if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 1)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
+        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
       else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 2)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
+        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
       else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 3)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 3);
+        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 3);
       else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 4)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 2);
+        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
       else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 5)
-        SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START + 1);
-      else if (endAnimationFrame > END_ANIMATION_DELAY_FRAMES * 5) {
+        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
+      else if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES * 6) {
         if (type == ArrowType::HOLD_FAKE_HEAD)
           animatePress();
         else
@@ -123,7 +126,7 @@ void Arrow::animatePress() {
   endAnimationFrame = 0;
   sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
                  ARROW_FINAL_Y());
-  SPRITE_goToFrame(sprite.get(), this->start + END_ANIMATION_START);
+  SPRITE_goToFrame(sprite.get(), endAnimationStartFrame);
 }
 
 bool Arrow::isAligned() {

@@ -10,30 +10,44 @@
 #include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
 
-inline void ARROW_initialize(ArrowDirection direction, u32& start, bool& flip) {
-  switch (direction) {
-    case ArrowDirection::DOWNLEFT:
-    case ArrowDirection::DOWNLEFT_DOUBLE:
-      start = ARROW_FRAMES * 0;
-      break;
-    case ArrowDirection::UPLEFT:
-    case ArrowDirection::UPLEFT_DOUBLE:
-      start = ARROW_FRAMES * 1;
-      break;
-    case ArrowDirection::CENTER:
-    case ArrowDirection::CENTER_DOUBLE:
-      start = ARROW_FRAMES * 2;
-      break;
-    case ArrowDirection::UPRIGHT:
-    case ArrowDirection::UPRIGHT_DOUBLE:
-      start = ARROW_FRAMES * 1;
-      flip = true;
-      break;
-    case ArrowDirection::DOWNRIGHT:
-    case ArrowDirection::DOWNRIGHT_DOUBLE:
-      start = ARROW_FRAMES * 0;
-      flip = true;
-      break;
+#define ARROW_ANIMATION_START_OFFSET(direction)   \
+  ((direction == ArrowDirection::UPLEFT ||        \
+    direction == ArrowDirection::UPRIGHT ||       \
+    direction == ArrowDirection::UPLEFT_DOUBLE || \
+    direction == ArrowDirection::UPRIGHT_DOUBLE)  \
+       ? -5                                       \
+       : 5)
+
+#define BOUNCE_ANIMATION_START 15
+
+inline void ARROW_initialize(ArrowDirection direction,
+                             u32& start,
+                             ArrowFlip& flip) {
+  ArrowDirection singleDirection =
+      static_cast<ArrowDirection>(direction % ARROWS_TOTAL);
+  if (singleDirection == ArrowDirection::CENTER) {
+    start = ARROW_FRAMES * 2;
+    flip = ArrowFlip::NO_FLIP;
+  } else {
+    start = ARROW_FRAMES *
+            (singleDirection % 2);  // 0 for DOWNLEFT and DOWNRIGHT cases,
+                                    // 1 for UPLEFT and UPRIGHT cases
+
+    switch (singleDirection) {
+      case ArrowDirection::DOWNLEFT:
+        flip = ArrowFlip::NO_FLIP;
+        break;
+      case ArrowDirection::UPLEFT:
+        flip = ArrowFlip::FLIP_Y;
+        break;
+      case ArrowDirection::UPRIGHT:
+        flip = ArrowFlip::FLIP_BOTH;
+        break;
+      case ArrowDirection::DOWNRIGHT:
+        flip = ArrowFlip::FLIP_X;
+      default:
+        break;
+    }
   }
 }
 
@@ -59,15 +73,16 @@ class Arrow : public IPoolable {
     bool isHoldFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
 
     u32 start = 0;
-    bool flip = false;
-    ARROW_initialize(direction, start, flip);
+    ARROW_initialize(direction, start, this->flip);
     this->type = type;
     this->direction = direction;
     this->playerId = playerId;
     this->timestamp = timestamp;
     this->isFake = isFake;
     this->start = start;
-    this->flip = flip;
+    this->endAnimationStartFrame =
+        isHoldFakeHead ? start + ARROW_ANIMATION_START_OFFSET(direction)
+                       : BOUNCE_ANIMATION_START;
 
     sprite->enabled = true;
     sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
@@ -148,12 +163,13 @@ class Arrow : public IPoolable {
  private:
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
-  bool flip = false;
+  ArrowFlip flip = ArrowFlip::NO_FLIP;
   int siblingId = -1;
   HoldArrow* holdArrow = NULL;
   bool isLastFill = false;
   FeedbackType partialResult = FeedbackType::UNKNOWN;
   bool hasEnded = false;
+  u32 endAnimationStartFrame = 0;
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;

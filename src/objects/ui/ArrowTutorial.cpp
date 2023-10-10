@@ -7,11 +7,9 @@
 
 ArrowTutorial::ArrowTutorial(ArrowDirection direction) {
   u32 start = 0;
-  bool flip = false;
-  ARROW_initialize(direction, start, flip);
+  ARROW_initialize(direction, start, this->flip);
   this->direction = direction;
   this->start = start;
-  this->flip = flip;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
@@ -23,6 +21,11 @@ ArrowTutorial::ArrowTutorial(ArrowDirection direction) {
 }
 
 void ArrowTutorial::tick() {
-  sprite->flipHorizontally(flip);
-  SPRITE_goToFrame(sprite.get(), isOn ? start : start + ARROW_HOLDER_IDLE);
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
+
+  SPRITE_goToFrame(sprite.get(),
+                   isOn ? start : start + ARROW_HOLDER_IDLE(direction));
 }

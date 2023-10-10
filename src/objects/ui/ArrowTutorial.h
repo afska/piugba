@@ -21,7 +21,7 @@ class ArrowTutorial {
  private:
   std::unique_ptr<Sprite> sprite;
   u32 start = 0;
-  bool flip = false;
+  ArrowFlip flip = ArrowFlip::NO_FLIP;
   bool isOn = false;
 };
 

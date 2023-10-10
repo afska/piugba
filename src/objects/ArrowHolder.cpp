@@ -9,12 +9,10 @@ ArrowHolder::ArrowHolder(ArrowDirection direction,
                          u8 playerId,
                          bool reuseTiles) {
   u32 start = 0;
-  bool flip = false;
-  ARROW_initialize(direction, start, flip);
+  ARROW_initialize(direction, start, this->flip);
   this->direction = direction;
   this->playerId = playerId;
   this->start = start;
-  this->flip = flip;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
@@ -27,7 +25,7 @@ ArrowHolder::ArrowHolder(ArrowDirection direction,
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
 
-  SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE);
+  SPRITE_goToFrame(sprite.get(), start + ARROW_HOLDER_IDLE(direction));
 }
 
 void ArrowHolder::blink() {
@@ -35,16 +33,20 @@ void ArrowHolder::blink() {
 }
 
 void ArrowHolder::tick() {
-  sprite->flipHorizontally(flip);
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
 
   u32 currentFrame = sprite->getCurrentFrame();
+  u32 idleFrame = start + ARROW_HOLDER_IDLE(direction);
+  u32 pressedFrame = start + ARROW_HOLDER_PRESSED(direction);
 
-  if ((isPressed || isBlinking) &&
-      currentFrame < start + ARROW_HOLDER_PRESSED) {
+  if ((isPressed || isBlinking) && currentFrame < pressedFrame) {
     SPRITE_goToFrame(sprite.get(), currentFrame + 1);
 
-    if (currentFrame + 1 == start + ARROW_HOLDER_PRESSED)
+    if (currentFrame + 1 == pressedFrame)
       isBlinking = false;
-  } else if (!isPressed && currentFrame > start + ARROW_HOLDER_IDLE)
+  } else if (!isPressed && currentFrame > idleFrame)
     SPRITE_goToFrame(sprite.get(), currentFrame - 1);
 }
