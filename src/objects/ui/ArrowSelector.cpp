@@ -15,16 +15,18 @@ const u32 AUTOFIRE_SPEEDS = 4;
 ArrowSelector::ArrowSelector(ArrowDirection direction,
                              bool reuseTiles,
                              bool reactive) {
-  u32 start = 0;
-  ARROW_initialize(direction, start, this->flip);
+  u32 startTile = 0;
+  u32 endTile = 0;
+  ARROW_initialize(direction, startTile, endTile, this->flip);
   this->direction = direction;
-  this->start = start;
+  this->startTile = startTile;
+  this->endTile = endTile;
   this->reactive = reactive;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
                .withSize(SIZE_16_16)
-               .withAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY)
+               .withAnimated(startTile, ANIMATION_FRAMES, ANIMATION_DELAY)
                .withLocation(0, 0)
                .buildPtr();
 
@@ -70,8 +72,8 @@ void ArrowSelector::tick() {
     return;
 
   u32 currentFrame = sprite->getCurrentFrame();
-  u32 idleFrame = start + ARROW_HOLDER_IDLE(direction) + 1;
-  u32 pressedFrame = start + ARROW_HOLDER_PRESSED(direction);
+  u32 idleFrame = endTile + 1;
+  u32 pressedFrame = endTile + ARROW_HOLDER_PRESSED_OFFSET;
 
   if (isPressed && currentFrame != pressedFrame) {
     if (currentFrame < idleFrame || currentFrame > pressedFrame)
@@ -80,5 +82,5 @@ void ArrowSelector::tick() {
       SPRITE_goToFrame(sprite.get(), max(currentFrame + 1, pressedFrame));
   } else if (!isPressed && currentFrame >= idleFrame &&
              currentFrame <= pressedFrame)
-    sprite->makeAnimated(start, ANIMATION_FRAMES, ANIMATION_DELAY);
+    sprite->makeAnimated(startTile, ANIMATION_FRAMES, ANIMATION_DELAY);
 }

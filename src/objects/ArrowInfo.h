@@ -14,17 +14,11 @@
 #define ARROWS_GAME_TOTAL (isDouble() ? 10 : 5)
 
 const u32 ARROWS_TOTAL = 5;
-const u32 ARROW_FRAMES = 10;
 const int ARROW_OFFSCREEN_LIMIT = -13;
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 const u32 ARROW_LAYER_FRONT = 0;
 const u32 ARROW_LAYER_MIDDLE = 1;
 const u32 ARROW_LAYER_BACK = 2;
-const u32 ARROW_ANIMATION_FRAMES = 5;
-const u32 ARROW_ANIMATION_DELAY = 2;
-const u32 ARROW_HOLD_FILL_TILE = 9;
-const u32 ARROW_HOLD_TAIL_TILE = 0;
-const u32 ARROW_FAKE_TILE = 7;
 
 const u32 ARROW_MIN_MULTIPLIER = 1;
 const u32 ARROW_MAX_MULTIPLIER = 6;
@@ -62,5 +56,16 @@ enum ArrowDirection {
 };
 enum ArrowState { ACTIVE, OUT };
 enum ArrowFlip { NO_FLIP, FLIP_X, FLIP_Y, FLIP_BOTH };
+
+const u32 ARROW_ANIMATION_FRAMES = 5;
+const u32 ARROW_ANIMATION_DELAY = 2;
+const u8 ARROW_BASE_TILE[] = {0, 10, 20, 10, 0};
+const u8 ARROW_END_TILE[] = {5, 5, 25, 5, 5};
+const ArrowFlip ARROW_FLIP_TILE[] = {ArrowFlip::NO_FLIP, ArrowFlip::FLIP_Y,
+                                     ArrowFlip::NO_FLIP, ArrowFlip::FLIP_BOTH,
+                                     ArrowFlip::FLIP_X};
+const u32 ARROW_HOLD_FILL_TILE = 9;
+const u32 ARROW_HOLD_TAIL_TILE = 0;
+const u32 ARROW_FAKE_TILE = 2;
 
 #endif  // ARROW_ENUMS_H

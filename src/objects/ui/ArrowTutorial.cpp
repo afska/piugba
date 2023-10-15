@@ -6,10 +6,12 @@
 #include "utils/SpriteUtils.h"
 
 ArrowTutorial::ArrowTutorial(ArrowDirection direction) {
-  u32 start = 0;
-  ARROW_initialize(direction, start, this->flip);
+  u32 startTile = 0;
+  u32 endTile = 0;
+  ARROW_initialize(direction, startTile, endTile, this->flip);
   this->direction = direction;
-  this->start = start;
+  this->startTile = startTile;
+  this->endTile = endTile;
 
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
@@ -26,6 +28,5 @@ void ArrowTutorial::tick() {
   sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
                          flip == ArrowFlip::FLIP_BOTH);
 
-  SPRITE_goToFrame(sprite.get(),
-                   isOn ? start : start + ARROW_HOLDER_IDLE(direction));
+  SPRITE_goToFrame(sprite.get(), isOn ? startTile : endTile);
 }

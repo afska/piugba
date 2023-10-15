@@ -20,7 +20,8 @@ class ArrowSelector : public InputHandler {
 
  private:
   std::unique_ptr<Sprite> sprite;
-  u32 start = 0;
+  u32 startTile = 0;
+  u32 endTile = 0;
   ArrowFlip flip = ArrowFlip::NO_FLIP;
   bool reactive = true;
   u32 globalLastPressFrame = 0;

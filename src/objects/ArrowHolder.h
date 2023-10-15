@@ -6,15 +6,7 @@
 #include "Arrow.h"
 #include "base/InputHandler.h"
 
-#define ARROW_HOLDER_IDLE(direction)              \
-  ((direction == ArrowDirection::UPLEFT ||        \
-    direction == ArrowDirection::UPRIGHT ||       \
-    direction == ArrowDirection::UPLEFT_DOUBLE || \
-    direction == ArrowDirection::UPRIGHT_DOUBLE)  \
-       ? -5                                       \
-       : 5)
-
-#define ARROW_HOLDER_PRESSED(direction) (ARROW_HOLDER_IDLE(direction) + 2)
+#define ARROW_HOLDER_PRESSED_OFFSET 2
 
 class ArrowHolder : public InputHandler {
  public:
@@ -30,7 +22,8 @@ class ArrowHolder : public InputHandler {
 
  private:
   std::unique_ptr<Sprite> sprite;
-  u32 start = 0;
+  u32 startTile = 0;
+  u32 endTile = 0;
   ArrowFlip flip = ArrowFlip::NO_FLIP;
   bool isBlinking = false;
 };
