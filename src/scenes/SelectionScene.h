@@ -63,7 +63,6 @@ class SelectionScene : public Scene {
   bool confirmed = false;
   bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
-  int remoteNumericLevel = -1;
 
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }

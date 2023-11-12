@@ -93,7 +93,6 @@ void SelectionScene::load() {
   if (isMultiplayer()) {
     syncer->clearTimeout();
     syncer->$resetFlag = false;
-    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
   }
 
   SAVEFILE_write8(SRAM->state.isPlaying, 0);
@@ -291,13 +290,13 @@ void SelectionScene::goToSong() {
   confirmed = false;
 
   bool isStory = IS_STORY(SAVEFILE_getGameMode());
-  bool hasRemoteChart = isVs() && remoteNumericLevel != -1;
+  bool hasRemoteChart = isVs() && syncer->$remoteNumericLevel != -1;
   std::vector<u8> selectedLevels;
 
   if (!isStory) {
     selectedLevels.push_back(getSelectedNumericLevel());
     if (hasRemoteChart)
-      selectedLevels.push_back(numericLevels[remoteNumericLevel]);
+      selectedLevels.push_back(numericLevels[syncer->$remoteNumericLevel]);
   }
 
   Song* song = SONG_parse(fs, getSelectedSong(), true, selectedLevels);
@@ -305,9 +304,10 @@ void SelectionScene::goToSong() {
       isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
               : SONG_findChartByNumericLevelIndex(
                     song, getSelectedNumericLevelIndex(), isDouble());
-  Chart* remoteChart = hasRemoteChart ? SONG_findChartByNumericLevelIndex(
-                                            song, (u8)remoteNumericLevel, false)
-                                      : NULL;
+  Chart* remoteChart = hasRemoteChart
+                           ? SONG_findChartByNumericLevelIndex(
+                                 song, (u8)syncer->$remoteNumericLevel, false)
+                           : NULL;
 
   STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
@@ -699,10 +699,10 @@ void SelectionScene::processMultiplayerUpdates() {
         }
 
         unconfirm();
-        if (remoteNumericLevel != -1)
-          setNumericLevel(remoteNumericLevel);
+        if (syncer->$remoteNumericLevel != -1)
+          setNumericLevel(syncer->$remoteNumericLevel);
         scrollTo(payload);
-        remoteNumericLevel = getSelectedNumericLevelIndex();
+        syncer->$remoteNumericLevel = getSelectedNumericLevelIndex();
         pixelBlink->blink();
 
         syncer->clearTimeout();
@@ -714,10 +714,10 @@ void SelectionScene::processMultiplayerUpdates() {
 
         if (syncer->isMaster()) {
           setNumericLevel(getSelectedNumericLevelIndex());
-          remoteNumericLevel = payload;
+          syncer->$remoteNumericLevel = payload;
         } else {
           setNumericLevel(payload);
-          remoteNumericLevel = payload;
+          syncer->$remoteNumericLevel = payload;
         }
 
         syncer->clearTimeout();
@@ -750,9 +750,9 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
 
   syncer->send(SYNC_EVENT_LEVEL_CHANGED, newValue);
   if (syncer->isMaster())
-    remoteNumericLevel = -1;
-  else if (remoteNumericLevel == -1)
-    remoteNumericLevel = getSelectedNumericLevelIndex();
+    syncer->$remoteNumericLevel = -1;
+  else if (syncer->$remoteNumericLevel == -1)
+    syncer->$remoteNumericLevel = getSelectedNumericLevelIndex();
 }
 
 void SelectionScene::quit() {
