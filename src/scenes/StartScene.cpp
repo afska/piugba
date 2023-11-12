@@ -114,6 +114,7 @@ void StartScene::tick(u16 keys) {
   animateBpm();
   animateArrows();
 
+  __qran_seed += keys;
   processKeys(keys);
   processSelectionChange();
   navigateToAdminMenuIfNeeded(keys);
