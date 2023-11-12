@@ -38,7 +38,8 @@ module.exports = class Simfile {
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
         "UNKNOWN",
       lastMillisecond: this._toMilliseconds(
-        this._getSingleMatch(REGEXPS.metadata.lastSecondHint) || 999999
+        this._getSingleMatch(REGEXPS.metadata.lastSecondHint) ||
+          Chart.MAX_SECONDS
       ),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)

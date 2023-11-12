@@ -2,10 +2,16 @@ const Events = require("./Events");
 const _ = require("lodash");
 
 module.exports = class Chart {
+  static get MAX_SECONDS() {
+    return MAX_TIMESTAMP / 1000;
+  }
+
   constructor(metadata, header, content) {
     this.metadata = metadata;
     this.header = header;
     this.content = content;
+
+    this._calculateLastTimestamp();
   }
 
   get events() {
@@ -49,12 +55,12 @@ module.exports = class Chart {
             const isHold = type === Events.HOLD_START;
             const complexity =
               (type === Events.NOTE || isHold) &&
-              this.metadata.lastMillisecond < 999999
+              this.lastTimestamp < MAX_TIMESTAMP
                 ? ((1 - subdivision) *
                     Math.log(bpm) *
                     (isJump ? Math.log2(2 + arrowCount) : 1) *
                     (isHold ? 1.3 : 1)) /
-                  (this.metadata.lastMillisecond / SECOND)
+                  (this.lastTimestamp / SECOND)
                 : null;
 
             return {
@@ -411,6 +417,17 @@ module.exports = class Chart {
         timestamp < event.timestamp + event.length
     );
   }
+
+  _calculateLastTimestamp() {
+    this.lastTimestamp = MAX_TIMESTAMP;
+
+    try {
+      this.lastTimestamp =
+        this.metadata.lastMillisecond < MAX_TIMESTAMP
+          ? this.metadata.lastMillisecond
+          : _.last(this.events).timestamp;
+    } catch (e) {}
+  }
 };
 
 const SECOND = 1000;
@@ -421,3 +438,4 @@ const FAST_BPM_WARP = 9999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
 const FUSE = 1 / 2 / 2 / 2 / 2;
+const MAX_TIMESTAMP = 3600000;
