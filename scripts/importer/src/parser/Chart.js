@@ -28,7 +28,6 @@ module.exports = class Chart {
   _getNoteEvents(timingEvents) {
     const measures = this._getMeasures();
     let cursor = 0;
-    let lastNoteTimestamp = 0;
 
     return _.flatMap(measures, (measure, measureIndex) => {
       // 1 measure = 1 whole note = BEAT_UNIT beats
@@ -54,10 +53,9 @@ module.exports = class Chart {
             const complexity = this._calculateComplexity(
               type,
               activeArrows,
-              timestamp,
-              lastNoteTimestamp
+              subdivision,
+              bpm
             );
-            if (complexity != null) lastNoteTimestamp = timestamp;
 
             return {
               timestamp,
@@ -425,34 +423,23 @@ module.exports = class Chart {
     } catch (e) {}
   }
 
-  _calculateComplexity(type, activeArrows, timestamp, lastNoteTimestamp) {
-    const arrowCount = _.sumBy(activeArrows);
-    const isJump = arrowCount > 1;
+  _calculateComplexity(type, activeArrows, subdivision, bpm) {
     const isHold = type === Events.HOLD_START;
+    const arrowCount = _.sumBy(activeArrows);
+
     if (type !== Events.NOTE && !isHold) return null;
+    if (this.lastTimestamp == MAX_TIMESTAMP) return null;
 
-    const subdivisionComplexity = (function () {
-      function interpolate(x, x0, x1, y0, y1) {
-        return y0 + ((x - x0) * (y1 - y0)) / (x1 - x0);
-      }
-
-      const elapsedTime = timestamp - lastNoteTimestamp;
-      if (elapsedTime <= 50) return interpolate(elapsedTime, 0, 50, 20, 15);
-      else if (elapsedTime <= 150)
-        return interpolate(elapsedTime, 50, 150, 10, 5);
-      else if (elapsedTime <= 250)
-        return interpolate(elapsedTime, 150, 250, 4, 3);
-      else if (elapsedTime <= 500)
-        return interpolate(elapsedTime, 250, 500, 2, 1);
-      else return 1;
-    })();
-    const jumpComplexity = isJump ? Math.log2(2 + arrowCount) * 1.25 : 1;
+    const isJump = arrowCount > 1;
+    const subdivisionComplexity = Math.pow(1.075, 1 / subdivision) / 2;
+    const jumpComplexity = isJump ? Math.log2(2 + arrowCount) * 0.75 : 1;
     const holdComplexity = isHold ? 1.3 : 1;
-    const songLength = this.lastTimestamp / SECOND;
 
-    return (
-      (subdivisionComplexity * jumpComplexity * holdComplexity) / songLength
-    );
+    const duration = this.lastTimestamp / SECOND;
+    const complexity =
+      subdivisionComplexity * jumpComplexity * holdComplexity * Math.log(bpm);
+
+    return complexity / duration;
   }
 };
 

@@ -39,7 +39,7 @@ module.exports = class Simfile {
         "UNKNOWN",
       lastMillisecond: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.lastSecondHint) ||
-          Chart.MAX_DURATION
+          Chart.MAX_SECONDS
       ),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
