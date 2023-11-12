@@ -114,7 +114,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   if (IS_MULTIPLAYER(gameMode)) {
     u16 keys = ~REG_KEYS & KEY_ANY;
     linkUniversal->setProtocol((keys & KEY_START)
-                                   ? LinkUniversal::Protocol::WIRELESS_CLIENT
+                                   ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);

@@ -15,7 +15,7 @@ const std::string messages[] = {
     "ERROR:\r\nToo many players!",
     "ERROR:\r\nROM IDs don't match!",
     "ERROR:\r\nMixed game modes!",
-    "Connecting...\r\n      [wireless / guest]\r\n(Press SELECT to cancel)"};
+    "Connecting...\r\n       [wireless / host]\r\n(Press SELECT to cancel)"};
 
 void MultiplayerLobbyScene::load() {
   TextScene::load();
@@ -55,7 +55,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
 
 void MultiplayerLobbyScene::refresh(int newMessageId) {
   if (newMessageId == 0 &&
-      linkUniversal->getProtocol() == LinkUniversal::Protocol::WIRELESS_CLIENT)
+      linkUniversal->getProtocol() == LinkUniversal::Protocol::WIRELESS_SERVER)
     newMessageId = 5;
 
   if (newMessageId != messageId) {
