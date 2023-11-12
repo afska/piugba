@@ -1,4 +1,5 @@
 #include "LinkWireless.h"
+
 #include "objects/ArrowInfo.h"
 
 // [!]
@@ -68,12 +69,11 @@ CODE_IWRAM void LinkWireless::_onSerial() {
   linkSPI->_onSerial(true);
 
   bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
-  u32 newData = linkSPI->getAsyncData();  // [!]
+  u32 newData = linkSPI->getAsyncData();
 
   if (!isSessionActive())
     return;
 
-  // [!]
   if (asyncCommand.isActive) {
     if (asyncCommand.ackStep != AsyncCommand::ACKStep::READY)
       return;

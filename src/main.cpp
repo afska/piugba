@@ -105,7 +105,7 @@ void setUpInterrupts() {
   interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
   interrupt_enable(INTR_TIMER3);
 
-  // LinkWireless async-ACK mod ([!])
+  // LinkWireless async-ACK
   interrupt_set_handler(INTR_TIMER2, LINK_UNIVERSAL_ISR_ACK_TIMER);
   interrupt_enable(INTR_TIMER2);
 

@@ -37,6 +37,7 @@
 // --------------------------------------------------------------------------
 
 #include <tonc_core.h>
+
 #include "LinkCable.h"
 #include "LinkWireless.h"
 
@@ -51,7 +52,7 @@
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES 60
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM 30
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.0.2";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.1.1";
 
 void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
@@ -61,7 +62,13 @@ class LinkUniversal {
  public:
   enum State { INITIALIZING, WAITING, CONNECTED };
   enum Mode { LINK_CABLE, LINK_WIRELESS };
-  enum Protocol { AUTODETECT, CABLE, WIRELESS_AUTO, WIRELESS_CLIENT };
+  enum Protocol {
+    AUTODETECT,
+    CABLE,
+    WIRELESS_AUTO,
+    WIRELESS_SERVER,
+    WIRELESS_CLIENT
+  };
 
   struct CableOptions {
     LinkCable::BaudRate baudRate;
@@ -356,7 +363,7 @@ class LinkUniversal {
       }
     }
 
-    if (maxRandomNumber > 0) {
+    if (maxRandomNumber > 0 && config.protocol != WIRELESS_SERVER) {
       if (!linkWireless->connect(servers[serverIndex].id))
         return false;
     } else {
@@ -385,6 +392,7 @@ class LinkUniversal {
         break;
       }
       case WIRELESS_AUTO:
+      case WIRELESS_SERVER:
       case WIRELESS_CLIENT: {
         setMode(LINK_WIRELESS);
         break;
@@ -410,6 +418,7 @@ class LinkUniversal {
         break;
       }
       case WIRELESS_AUTO:
+      case WIRELESS_SERVER:
       case WIRELESS_CLIENT: {
         setMode(LINK_WIRELESS);
         break;
@@ -459,7 +468,6 @@ inline void LINK_UNIVERSAL_ISR_TIMER() {
   linkUniversal->_onTimer();
 }
 
-// [!]
 inline void LINK_UNIVERSAL_ISR_ACK_TIMER() {
   linkUniversal->_onACKTimer();
 }
