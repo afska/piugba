@@ -50,12 +50,18 @@ module.exports = class Chart {
               this.header.isDouble ? 10 : 5
             ).map((id) => _.includes(arrows, id));
 
-            const complexity = this._calculateComplexity(
-              type,
-              activeArrows,
-              subdivision,
-              bpm
-            );
+            const arrowCount = _.sumBy(activeArrows);
+            const isJump = arrowCount > 1;
+            const isHold = type === Events.HOLD_START;
+            const complexity =
+              (type === Events.NOTE || isHold) &&
+              this.lastTimestamp < MAX_TIMESTAMP
+                ? ((1 - subdivision) *
+                    Math.log(bpm) *
+                    (isJump ? Math.log2(2 + arrowCount) : 1) *
+                    (isHold ? 1.3 : 1)) /
+                  (this.lastTimestamp / SECOND)
+                : null;
 
             return {
               timestamp,
@@ -421,25 +427,6 @@ module.exports = class Chart {
           ? this.metadata.lastMillisecond
           : _.last(this.events).timestamp;
     } catch (e) {}
-  }
-
-  _calculateComplexity(type, activeArrows, subdivision, bpm) {
-    const isHold = type === Events.HOLD_START;
-    const arrowCount = _.sumBy(activeArrows);
-
-    if (type !== Events.NOTE && !isHold) return null;
-    if (this.lastTimestamp == MAX_TIMESTAMP) return null;
-
-    const isJump = arrowCount > 1;
-    const subdivisionComplexity = Math.pow(1.075, 1 / subdivision) / 2;
-    const jumpComplexity = isJump ? Math.log2(2 + arrowCount) * 0.75 : 1;
-    const holdComplexity = isHold ? 1.3 : 1;
-
-    const duration = this.lastTimestamp / SECOND;
-    const complexity =
-      subdivisionComplexity * jumpComplexity * holdComplexity * Math.log(bpm);
-
-    return complexity / duration;
   }
 };
 
