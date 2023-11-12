@@ -134,7 +134,7 @@ module.exports = class Simfile {
           );
 
           const chart = new Chart(this.metadata, header, rawNotes);
-          chart.events; // (check if it can be parsed correctly)
+          chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
           console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
@@ -162,8 +162,9 @@ module.exports = class Simfile {
       : finalData;
   }
 
-  _getSingleMatchFromEnum(regexp, options, content = this.content) {
-    const match = this._getSingleMatch(regexp, content);
+  _getSingleMatchFromEnum(regexp, options, content) {
+    const isChartExclusive = content != null;
+    const match = this._getSingleMatch(regexp, content, isChartExclusive);
     return _(options).keys(options).includes(match) ? match : null;
   }
 
