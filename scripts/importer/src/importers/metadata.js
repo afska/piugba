@@ -14,7 +14,7 @@ module.exports = (name, filePath, outputPath, id) => {
   const content = fs.readFileSync(filePath).toString();
   const { metadata, charts } = new Simfile(content, name);
 
-  checkIntegrity(metadata, charts);
+  checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);
   const simfile = completeMissingData(metadata, charts, content, filePath);
   simfile.id = id;

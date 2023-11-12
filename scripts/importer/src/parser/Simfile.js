@@ -33,7 +33,7 @@ module.exports = class Simfile {
 
     return {
       title: this._unescape(subtitle || title || ""),
-      artist: this._unescape(artist),
+      artist: this._unescape(artist || ""),
       channel:
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
         "UNKNOWN",

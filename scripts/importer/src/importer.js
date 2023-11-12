@@ -166,13 +166,18 @@ const songs = _(
 if (_.uniqBy(songs, "outputName").length !== songs.length)
   throw new Error("repeated_song_names");
 if (_.isEmpty(songs)) throw new Error("no_songs_found");
-if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
+if (songs.length > MAX_SONGS)
+  throw new Error(
+    `song_limit_reached: found=${songs.length}, max=${MAX_SONGS}`
+  );
 (function () {
   if (reuseRomId != null) {
     const romIdBuffer = Buffer.alloc(4);
     romIdBuffer.writeUInt32LE(reuseRomId);
     if (songs.length !== romIdBuffer.readUInt8())
-      throw new Error("song_count_doesnt_match_rom_id");
+      throw new Error(
+        `song_count_doesnt_match_rom_id: delete \`${ROM_ID_FILE_REUSE}\` or fix`
+      );
   }
 })();
 
