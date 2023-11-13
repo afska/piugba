@@ -77,10 +77,10 @@ void ModsScene::printOptions() {
                 jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
   printOption(OPTION_REDUCE, "Reduce",
               reduce == 0 ? "OFF"
-                          : reduce == 1 ? "LINEAR"
-                                        : reduce == 2 ? "FIXED"
-                                                      : reduce == 3 ? "RANDOM"
-                                                                    : "MICRO",
+                          : reduce == 1 ? "FIXED"
+                                        : reduce == 2 ? "LINEAR"
+                                                      : reduce == 3 ? "MICRO"
+                                                                    : "RANDOM",
               8);
   printOption(OPTION_DECOLORIZE, "Decolorize",
               decolorize == 0

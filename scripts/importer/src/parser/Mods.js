@@ -14,10 +14,10 @@ module.exports = {
   },
   REDUCE: {
     OFF: 0,
-    LINEAR: 1,
-    FIXED: 2,
-    RANDOM: 3,
-    MICRO: 4,
+    FIXED: 1,
+    LINEAR: 2,
+    MICRO: 3,
+    RANDOM: 4,
   },
   DECOLORIZE: {
     OFF: 0,
