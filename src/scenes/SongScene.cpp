@@ -38,6 +38,8 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
+const u32 BOUNCE_FRAMES = 9;
+const u32 BOUNCE_Y[] = {0, 1, 2, 4, 6, 8, 10, 7, 3};
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -183,11 +185,11 @@ void SongScene::tick(u16 keys) {
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
   updateArrowHolders();
+  updateBlink();
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
 
-  updateBlink();
   updateFakeHeads();
   updateArrows();
   updateScoresAndLifebars();
@@ -197,9 +199,7 @@ void SongScene::tick(u16 keys) {
   if (chartReader[0]->debugOffset)
     scores[0]->log(chartReader[0]->debugOffset);
 
-  IFTIMINGTEST {
-    chartReader[0]->logDebugInfo<CHART_DEBUG>();
-  }
+  IFTIMINGTEST { chartReader[0]->logDebugInfo<CHART_DEBUG>(); }
 #endif
 }
 
@@ -378,6 +378,7 @@ CODE_IWRAM void SongScene::updateArrows() {
 
 void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
+  bounceFrame = max(bounceFrame - 1, 0);
 
   if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
@@ -562,6 +563,7 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
           ? ALPHA_BLINK_TIME_SLOW
           : ALPHA_BLINK_TIME_FAST;
   blinkFrame = min(blinkFrame + alphaBlinkTime, ALPHA_BLINK_LEVEL);
+  bounceFrame = min(bounceFrame + BOUNCE_FRAMES, BOUNCE_FRAMES);
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     lifeBars[playerId]->blink(foregroundPalette.get());
@@ -695,26 +697,30 @@ void SongScene::processModsTick() {
     return;
 
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
-    GameState.positionX[0] += jumpDirection;
+    GameState.positionX[0] += jumpDirection * (1 + bounceFrame);
 
-    if (GameState.positionX[0] >= (int)GAME_POSITION_X[GamePosition::RIGHT] ||
-        GameState.positionX[0] <= 0)
+    int endPosition = GAME_POSITION_X[GamePosition::RIGHT];
+    if (GameState.positionX[0] >= (int)endPosition ||
+        GameState.positionX[0] <= 0) {
+      GameState.positionX[0] = GameState.positionX[0] <= 0 ? 0 : endPosition;
       jumpDirection *= -1;
+    }
 
     updateGameX();
   }
 
-  if (GameState.mods.reduce == ReduceOpts::rLINEAR ||
-      GameState.mods.reduce == ReduceOpts::rMICRO) {
-    GameState.positionY += reduceDirection;
+  if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
+    GameState.positionY += reduceDirection * (1 + bounceFrame);
 
-    int positionY = GameState.mods.reduce == ReduceOpts::rLINEAR
-                        ? REDUCE_MOD_POSITION_Y
-                        : REDUCE_MOD_POSITION_Y_MICRO;
-
-    if (GameState.positionY >= positionY || GameState.positionY <= 0)
+    if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
+        GameState.positionY <= 0) {
+      GameState.positionY =
+          GameState.positionY <= 0 ? 0 : REDUCE_MOD_POSITION_Y;
       reduceDirection *= -1;
-
+    }
+    updateGameY();
+  } else if (GameState.mods.reduce == ReduceOpts::rMICRO) {
+    GameState.positionY = BOUNCE_Y[bounceFrame];
     updateGameY();
   }
 }
