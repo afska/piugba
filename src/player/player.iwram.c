@@ -118,7 +118,7 @@ void player_forever(int (*update)(),
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
 
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
-      // overrun (slave is behind master)
+      // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
 
       src_pos += AUDIO_CHUNK_SIZE * diff;
@@ -132,7 +132,7 @@ void player_forever(int (*update)(),
             availableAudioChunks--;
 
             if (availableAudioChunks < -AUDIO_SYNC_LIMIT) {
-              // underrun (master is behind slave)
+              // overrun (master is behind slave)
               src_pos -= AUDIO_CHUNK_SIZE;
               availableAudioChunks = -AUDIO_SYNC_LIMIT;
             } else
