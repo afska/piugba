@@ -4,5 +4,7 @@ build/
 *.elf
 *.gba
 *.sav
+*.sa1
+*.sa2
 
 src/data/content
