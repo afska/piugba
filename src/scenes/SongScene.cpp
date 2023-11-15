@@ -199,7 +199,9 @@ void SongScene::tick(u16 keys) {
   if (chartReader[0]->debugOffset)
     scores[0]->log(chartReader[0]->debugOffset);
 
-  IFTIMINGTEST { chartReader[0]->logDebugInfo<CHART_DEBUG>(); }
+  IFTIMINGTEST {
+    chartReader[0]->logDebugInfo<CHART_DEBUG>();
+  }
 #endif
 }
 
@@ -385,7 +387,7 @@ void SongScene::updateBlink() {
 
   if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
                               IOBlinkOpts::IO_BLINK_ON_BEAT) {
-    if (blinkFrame > 0)
+    if (bounceFrame > 0)
       IOPORT_sdHigh();
     else
       IOPORT_sdLow();

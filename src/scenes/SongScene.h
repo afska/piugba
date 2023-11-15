@@ -59,13 +59,13 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
   int rate = 0;
-  u32 blinkFrame = 0;
+  u32 blinkFrame = 0;  // (background blink)
   u8 targetMosaic = 0;
   u8 mosaic = 0;
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = 1;
-  u32 bounceFrame = 0;
+  u32 bounceFrame = 0;  // (bounce mods, I/O SD blink)
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
 
