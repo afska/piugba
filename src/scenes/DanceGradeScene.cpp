@@ -18,8 +18,8 @@ extern "C" {
 #define SCORE_TITLE "Score:"
 #define PLAYER_1_WINS "Player 1 *WINS*"
 #define PLAYER_2_WINS "Player 2 *WINS*"
-#define PLAYER_1_ARROW "<<<<<<<<<<<"
-#define PLAYER_2_ARROW ">>>>>>>>>>>"
+#define PLAYER_1_ARROW "<<<"
+#define PLAYER_2_ARROW ">>>"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
