@@ -1,4 +1,4 @@
-#include "LinkWireless.h"
+#include "LinkWireless.hpp"
 
 #include "objects/ArrowInfo.h"
 
@@ -7,6 +7,10 @@
 void LinkWireless::_onVBlank() {
   if (!isEnabled)
     return;
+
+#ifdef PROFILING_ENABLED
+  u32 start = REG_VCOUNT;
+#endif
 
   if (!isSessionActive()) {
     copyState();
@@ -21,16 +25,25 @@ void LinkWireless::_onVBlank() {
   sessionState.pingSent = false;
 
   copyState();
+
+#ifdef PROFILING_ENABLED
+  lastVBlankTime = std::max((int)REG_VCOUNT - (int)start, 0);
+  lastFrameSerialIRQs = serialIRQCount;
+  lastFrameTimerIRQs = timerIRQCount;
+  serialIRQCount = 0;
+  timerIRQCount = 0;
+#endif
 }
 
 CODE_IWRAM void LinkWireless::copyIncomingState() {
-  if (!isReadingMessages) {
-    while (!sessionState.tmpMessagesToReceive.isEmpty()) {
-      auto message = sessionState.tmpMessagesToReceive.pop();
+  if (isReadingMessages)
+    return;
 
-      if (state == SERVING || state == CONNECTED)
-        sessionState.incomingMessages.push(message);
-    }
+  while (!sessionState.tmpMessagesToReceive.isEmpty()) {
+    auto message = sessionState.tmpMessagesToReceive.pop();
+
+    if (state == SERVING || state == CONNECTED)
+      sessionState.incomingMessages.push(message);
   }
 }
 
@@ -66,6 +79,10 @@ CODE_IWRAM void LinkWireless::_onSerial() {
   if (!isEnabled)
     return;
 
+#ifdef PROFILING_ENABLED
+  u32 start = REG_VCOUNT;
+#endif
+
   linkSPI->_onSerial(true);
 
   bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
@@ -86,11 +103,20 @@ CODE_IWRAM void LinkWireless::_onSerial() {
     } else
       return;
   }
+
+#ifdef PROFILING_ENABLED
+  lastSerialTime = std::max((int)REG_VCOUNT - (int)start, 0);
+  serialIRQCount++;
+#endif
 }
 
 void LinkWireless::_onTimer() {
   if (!isEnabled)
     return;
+
+#ifdef PROFILING_ENABLED
+  u32 start = REG_VCOUNT;
+#endif
 
   if (!isSessionActive())
     return;
@@ -103,4 +129,11 @@ void LinkWireless::_onTimer() {
 
   if (!asyncCommand.isActive)
     acceptConnectionsOrSendData();
+
+  copyState();
+
+#ifdef PROFILING_ENABLED
+  lastTimerTime = std::max((int)REG_VCOUNT - (int)start, 0);
+  timerIRQCount++;
+#endif
 }

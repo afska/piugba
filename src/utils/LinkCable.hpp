@@ -36,6 +36,7 @@
 //   (they mean 'disconnected' and 'no data' respectively)
 // --------------------------------------------------------------------------
 
+#include <tonc_bios.h>
 #include <tonc_core.h>
 
 // Buffer size
@@ -69,6 +70,8 @@ static volatile char LINK_CABLE_VERSION[] = "LinkCable/v6.0.0";
 void LINK_CABLE_ISR_VBLANK();
 void LINK_CABLE_ISR_SERIAL();
 void LINK_CABLE_ISR_TIMER();
+const u16 LINK_CABLE_TIMER_IRQ_IDS[] = {IRQ_TIMER0, IRQ_TIMER1, IRQ_TIMER2,
+                                        IRQ_TIMER3};
 
 class LinkCable {
  public:
@@ -99,6 +102,13 @@ class LinkCable {
       count--;
 
       return x;
+    }
+
+    u16 peek() {
+      if (isEmpty())
+        return LINK_CABLE_NO_DATA;
+
+      return arr[front];
     }
 
     void clear() {
@@ -132,15 +142,26 @@ class LinkCable {
   bool isActive() { return isEnabled; }
 
   void activate() {
+    LINK_CABLE_BARRIER;
     isEnabled = false;
+    LINK_CABLE_BARRIER;
+
     reset();
+    clearIncomingMessages();
+
+    LINK_CABLE_BARRIER;
     isEnabled = true;
+    LINK_CABLE_BARRIER;
   }
 
   void deactivate() {
+    LINK_CABLE_BARRIER;
     isEnabled = false;
+    LINK_CABLE_BARRIER;
+
     resetState();
     stop();
+    clearIncomingMessages();
   }
 
   bool isConnected() {
@@ -166,8 +187,21 @@ class LinkCable {
     LINK_CABLE_BARRIER;
 
     if (!isConnected())
-      for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++)
-        state.incomingMessages[i].clear();
+      clearIncomingMessages();
+  }
+
+  bool waitFor(u8 playerId) {
+    return waitFor(playerId, []() { return false; });
+  }
+
+  template <typename F>
+  bool waitFor(u8 playerId, F cancel) {
+    sync();
+    while (isConnected() && !canRead(playerId) && !cancel()) {
+      IntrWait(1, IRQ_SERIAL | LINK_CABLE_TIMER_IRQ_IDS[config.sendTimerId]);
+      sync();
+    }
+    return isConnected() && canRead(playerId);
   }
 
   bool canRead(u8 playerId) {
@@ -175,6 +209,8 @@ class LinkCable {
   }
 
   u16 read(u8 playerId) { return state.incomingMessages[playerId].pop(); }
+
+  u16 peek(u8 playerId) { return state.incomingMessages[playerId].peek(); }
 
   void send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
@@ -267,7 +303,6 @@ class LinkCable {
     copyState();
   }
 
- private:
   struct Config {
     BaudRate baudRate;
     u32 timeout;
@@ -276,6 +311,9 @@ class LinkCable {
     u8 sendTimerId;
   };
 
+  Config config;
+
+ private:
   struct ExternalState {
     U16Queue incomingMessages[LINK_CABLE_MAX_PLAYERS];
     u8 playerCount;
@@ -293,7 +331,6 @@ class LinkCable {
 
   ExternalState state;
   InternalState _state;
-  Config config;
   volatile bool isEnabled = false;
   volatile bool isReadingMessages = false;
   volatile bool isAddingMessage = false;
@@ -331,7 +368,7 @@ class LinkCable {
     state.playerCount = 0;
     state.currentPlayerId = 0;
 
-    if (isAddingMessage)
+    if (isAddingMessage || isAddingWhileResetting)
       isAddingWhileResetting = true;
     else
       _state.outgoingMessages.clear();
@@ -375,6 +412,11 @@ class LinkCable {
     REG_TM[config.sendTimerId].start = -config.interval;
     REG_TM[config.sendTimerId].cnt =
         TM_ENABLE | TM_IRQ | LINK_CABLE_BASE_FREQUENCY;
+  }
+
+  void clearIncomingMessages() {
+    for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++)
+      state.incomingMessages[i].clear();
   }
 
   void copyState() {

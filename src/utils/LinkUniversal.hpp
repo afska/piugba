@@ -12,6 +12,8 @@
 //       irq_add(II_VBLANK, LINK_UNIVERSAL_ISR_VBLANK);
 //       irq_add(II_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
 //       irq_add(II_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
+//       irq_add(II_TIMER2, LINK_UNIVERSAL_ISR_ACK_TIMER); // (optional)
+//       // for `LinkWireless::asyncACKTimerId` --------------^
 // - 3) Initialize the library with:
 //       linkUniversal->activate();
 // - 4) Sync:
@@ -36,10 +38,10 @@
 //   (they mean 'disconnected' and 'no data' respectively)
 // --------------------------------------------------------------------------
 
+#include <tonc_bios.h>
 #include <tonc_core.h>
-
-#include "LinkCable.h"
-#include "LinkWireless.h"
+#include "LinkCable.hpp"
+#include "LinkWireless.hpp"
 
 #define LINK_UNIVERSAL_MAX_PLAYERS LINK_CABLE_MAX_PLAYERS
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
@@ -120,9 +122,9 @@ class LinkUniversal {
 
   void deactivate() {
     isEnabled = false;
-
     linkCable->deactivate();
     linkWireless->deactivate();
+    resetState();
   }
 
   void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
@@ -210,9 +212,27 @@ class LinkUniversal {
     }
   }
 
+  bool waitFor(u8 playerId) {
+    return waitFor(playerId, []() { return false; });
+  }
+
+  template <typename F>
+  bool waitFor(u8 playerId, F cancel) {
+    sync();
+    u8 timerId = mode == LINK_CABLE ? linkCable->config.sendTimerId
+                                    : linkWireless->config.sendTimerId;
+    while (isConnected() && !canRead(playerId) && !cancel()) {
+      IntrWait(1, IRQ_SERIAL | LINK_CABLE_TIMER_IRQ_IDS[timerId]);
+      sync();
+    }
+    return isConnected() && canRead(playerId);
+  }
+
   bool canRead(u8 playerId) { return !incomingMessages[playerId].isEmpty(); }
 
   u16 read(u8 playerId) { return incomingMessages[playerId].pop(); }
+
+  u16 peek(u8 playerId) { return incomingMessages[playerId].peek(); }
 
   void send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
@@ -262,6 +282,9 @@ class LinkUniversal {
       linkWireless->_onACKTimer();
   }
 
+  LinkCable* linkCable;
+  LinkWireless* linkWireless;
+
  private:
   struct Config {
     Protocol protocol;
@@ -269,8 +292,6 @@ class LinkUniversal {
   };
 
   LinkCable::U16Queue incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
-  LinkCable* linkCable;
-  LinkWireless* linkWireless;
   Config config;
   State state = INITIALIZING;
   Mode mode = LINK_CABLE;

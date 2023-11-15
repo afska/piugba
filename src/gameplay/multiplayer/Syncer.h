@@ -8,7 +8,7 @@
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/LinkUniversal.h"
+#include "utils/LinkUniversal.hpp"
 
 // Max invalid messages
 #define SYNC_CABLE_TIMEOUT 10
