@@ -817,6 +817,8 @@ void SongScene::processMultiplayerUpdates() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     remoteArrows[i] = arrowHolders[getRemoteBaseIndex() + i]->getIsPressed();
 
+  linkUniversal->sync();
+
   while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
     u16 message = linkUniversal->read(remoteId);
     u8 event = SYNC_MSG_EVENT(message);
