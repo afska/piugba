@@ -52,7 +52,7 @@
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES 60
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM 30
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.1.1";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v6.0.0";
 
 void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
@@ -149,6 +149,9 @@ class LinkUniversal {
     __qran_seed += REG_RCNT;
     __qran_seed += REG_SIOCNT;
 
+    if (mode == LINK_CABLE)
+      linkCable->sync();
+
     switch (state) {
       case INITIALIZING: {
         waitCount++;
@@ -205,9 +208,6 @@ class LinkUniversal {
         break;
       }
     }
-
-    if (mode == LINK_CABLE)
-      linkCable->consume();
   }
 
   bool canRead(u8 playerId) { return !incomingMessages[playerId].isEmpty(); }
@@ -278,7 +278,7 @@ class LinkUniversal {
   u32 switchWait = 0;
   u32 subWaitCount = 0;
   u32 serveWait = 0;
-  bool isEnabled = false;
+  volatile bool isEnabled = false;
 
   void receiveCableMessages() {
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
