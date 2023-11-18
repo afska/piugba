@@ -5,7 +5,7 @@
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
-#define TITLE "ADMIN MENU (v1.6.1)"
+#define TITLE "ADMIN MENU (v1.7.0)"
 #define OPTIONS_COUNT 6
 #define OPTION_ARCADE_CHARTS 0
 #define OPTION_RUMBLE 1
