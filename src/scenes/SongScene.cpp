@@ -642,8 +642,7 @@ void SongScene::finishAndGoToEvaluation() {
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           isVs() ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
-          remoteChart != NULL && remoteChart->level != chart->level,
-          isLastSong),
+          remoteChart->level != chart->level, isLastSong),
       new PixelTransitionEffect());
 }
 
