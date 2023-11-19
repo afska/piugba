@@ -56,7 +56,7 @@ void Arrow::press() {
   }
 }
 
-ArrowState Arrow::tick(int newY, bool isPressing) {
+CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing) {
   sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
                            flip == ArrowFlip::FLIP_BOTH);
   sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||

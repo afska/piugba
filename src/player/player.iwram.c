@@ -16,6 +16,10 @@
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"
 
+#ifndef CODE_EWRAM
+#define CODE_EWRAM __attribute__((section(".ewram")))
+#endif
+
 #define REG_VCOUNT *(vu16*)(REG_BASE + 0x0006)  //!< Scanline count
 
 Playback PlaybackState;
@@ -33,18 +37,18 @@ PLAYER_DEFINE(REG_DMA1CNT,
               CHANNEL_A_MUTE,
               CHANNEL_A_UNMUTE);
 
-void player_init() {
+CODE_EWRAM void player_init() {
   PLAYER_LOAD();
   PLAYER_TURN_ON_SOUND();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
 }
 
-void player_reinit() {
+CODE_EWRAM void player_reinit() {
   mute();
   PLAYER_INIT(REG_TM0CNT_L, REG_TM0CNT_H);
 }
 
-void player_play(const char* name) {
+CODE_EWRAM void player_play(const char* name) {
   PLAYER_PLAY(name);
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -54,12 +58,12 @@ void player_play(const char* name) {
   currentAudioChunk = 0;
 }
 
-void player_loop(const char* name) {
+CODE_EWRAM void player_loop(const char* name) {
   player_play(name);
   PlaybackState.isLooping = true;
 }
 
-void player_seek(unsigned int msecs) {
+CODE_EWRAM void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
   // msecs = cursor * msecsPerSample
@@ -75,13 +79,13 @@ void player_seek(unsigned int msecs) {
   currentAudioChunk = 0;
 }
 
-void player_setRate(int newRate) {
+CODE_EWRAM void player_setRate(int newRate) {
   rate = newRate;
   rateCounter = 0;
   currentAudioChunk = 0;
 }
 
-void player_stop() {
+CODE_EWRAM void player_stop() {
   PLAYER_STOP();
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
@@ -91,7 +95,7 @@ void player_stop() {
   currentAudioChunk = 0;
 }
 
-bool player_isPlaying() {
+CODE_EWRAM bool player_isPlaying() {
   return src_pos != NULL;
 }
 
