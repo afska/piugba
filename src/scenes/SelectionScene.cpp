@@ -460,8 +460,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
                                        bool isOnListEdge,
                                        bool isOnPageEdge,
                                        int direction) {
-  if ((isMultiplayer() && arrowSelectors[selector]->hasBeenPressedNow()) ||
-      (!isMultiplayer() && arrowSelectors[selector]->shouldFireEvent())) {
+  if (arrowSelectors[selector]->shouldFireEvent()) {
     unconfirm();
 
     if (isOnListEdge) {
