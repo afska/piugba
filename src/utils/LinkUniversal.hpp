@@ -195,6 +195,8 @@ class LinkUniversal {
             toggleMode();
             break;
           }
+
+          receiveCableMessages();
         } else {
           // Wireless, connected...
           if (!isConnectedWireless()) {
@@ -226,20 +228,11 @@ class LinkUniversal {
     return isConnected() && canRead(playerId);
   }
 
-  bool canRead(u8 playerId) {
-    return mode == LINK_CABLE ? linkCable->canRead(playerId)
-                              : !wirelessMessages[playerId].isEmpty();
-  }
+  bool canRead(u8 playerId) { return !incomingMessages[playerId].isEmpty(); }
 
-  u16 read(u8 playerId) {
-    return mode == LINK_CABLE ? linkCable->read(playerId)
-                              : wirelessMessages[playerId].pop();
-  }
+  u16 read(u8 playerId) { return incomingMessages[playerId].pop(); }
 
-  u16 peek(u8 playerId) {
-    return mode == LINK_CABLE ? linkCable->peek(playerId)
-                              : wirelessMessages[playerId].peek();
-  }
+  u16 peek(u8 playerId) { return incomingMessages[playerId].peek(); }
 
   void send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
@@ -298,8 +291,8 @@ class LinkUniversal {
     std::string gameName;
   };
 
+  LinkCable::U16Queue incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
   Config config;
-  LinkCable::U16Queue wirelessMessages[LINK_UNIVERSAL_MAX_PLAYERS];
   State state = INITIALIZING;
   Mode mode = LINK_CABLE;
   u32 waitCount = 0;
@@ -307,6 +300,13 @@ class LinkUniversal {
   u32 subWaitCount = 0;
   u32 serveWait = 0;
   volatile bool isEnabled = false;
+
+  void receiveCableMessages() {
+    for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
+      while (linkCable->canRead(i))
+        incomingMessages[i].push(linkCable->read(i));
+    }
+  }
 
   void receiveWirelessMessages() {
     LinkWireless::Message messages[LINK_WIRELESS_MAX_TRANSFER_LENGTH];
@@ -317,7 +317,7 @@ class LinkUniversal {
       if (message.packetId == LINK_WIRELESS_END)
         break;
 
-      wirelessMessages[message.playerId].push(message.data);
+      incomingMessages[message.playerId].push(message.data);
     }
   }
 
@@ -471,7 +471,7 @@ class LinkUniversal {
     subWaitCount = 0;
     serveWait = 0;
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++)
-      wirelessMessages[i].clear();
+      incomingMessages[i].clear();
   }
 };
 
