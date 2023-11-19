@@ -486,8 +486,10 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       pixelBlink->blink();
     }
 
-    if (isMultiplayer() && syncer->isMaster())
+    if (isMultiplayer() && syncer->isMaster()) {
       syncer->send(SYNC_EVENT_SONG_CHANGED, getSelectedSongIndex());
+      syncer->$remoteNumericLevel = -1;
+    }
 
     return true;
   }
@@ -702,7 +704,7 @@ void SelectionScene::processMultiplayerUpdates() {
         if (syncer->$remoteNumericLevel != -1)
           setNumericLevel(syncer->$remoteNumericLevel);
         scrollTo(payload);
-        syncer->$remoteNumericLevel = getSelectedNumericLevelIndex();
+        syncer->$remoteNumericLevel = -1;
         pixelBlink->blink();
 
         syncer->clearTimeout();
