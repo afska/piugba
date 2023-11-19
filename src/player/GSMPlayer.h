@@ -38,15 +38,22 @@
   static void dsound_switch_buffers(const void* src) {                         \
     DMA_CNT = 0;                                                               \
                                                                                \
+    /* no-op to let DMA registers catch up */                                  \
+    asm volatile("eor r0, r0; eor r0, r0" ::: "r0");                           \
+                                                                               \
     DMA_SAD = (intptr_t)src;                                                   \
     DMA_DAD = (intptr_t)FIFO_ADDRESS;                                          \
     DMA_CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL | \
               DMA_ENABLE | 1;                                                  \
   }                                                                            \
                                                                                \
-  static void mute() { DSOUNDCTRL = DSOUNDCTRL & MUTE; }                       \
+  static void mute() {                                                         \
+    DSOUNDCTRL = DSOUNDCTRL & MUTE;                                            \
+  }                                                                            \
                                                                                \
-  static void unmute() { DSOUNDCTRL = DSOUNDCTRL | UNMUTE; }
+  static void unmute() {                                                       \
+    DSOUNDCTRL = DSOUNDCTRL | UNMUTE;                                          \
+  }
 
 #define PLAYER_LOAD() fs = find_first_gbfs_file(0);
 
