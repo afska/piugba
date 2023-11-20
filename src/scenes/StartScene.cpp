@@ -25,7 +25,7 @@ const std::string TITLES[] = {"Campaign", "Arcade",     "Multi vs",
                               "Single",   "Multi coop", "Impossible"};
 
 const u32 BPM = 145;
-const u32 ARROW_POOL_SIZE = 30;
+const u32 ARROW_POOL_SIZE = 10;
 const u32 DEMO_ARROW_INITIAL_Y = 78;
 const u32 BUTTONS_TOTAL = 6;
 

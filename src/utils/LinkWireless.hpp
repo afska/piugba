@@ -844,10 +844,9 @@ class LinkWireless {
 
     // (add wireless header)
     u32 bytes = (nextCommandDataSize - 1) * 4;
-    nextCommandData[0] =
-        sessionState.currentPlayerId == 0
-            ? bytes
-            : (1 << (3 + sessionState.currentPlayerId * 5)) * bytes;
+    nextCommandData[0] = sessionState.currentPlayerId == 0
+                             ? bytes
+                             : bytes << (3 + sessionState.currentPlayerId * 5);
 
     return lastPacketId;
   }

@@ -39,7 +39,7 @@
   "Use SELECT to add mods!"
 
 #define MODE_IMPOSSIBLE         \
-  "In IMPOSSIBLE MODE...\r\n"   \
+  "In IMPOSSIBLE MODE:\r\n"     \
   "- Songs run FASTER\r\n"      \
   "- Patterns are MIRRORED\r\n" \
   "- Screen has visual MODS"
@@ -47,7 +47,7 @@
 #define KEYS_HINT                 \
   "To change the speed, use:\r\n" \
   "      START/SELECT\r\n"        \
-  "To cancel the song, use: \r\n" \
+  " To abort the song, use:\r\n"  \
   "    A+B+START+SELECT"
 
 #define KEYS_TRAINING_HINT        \
@@ -65,7 +65,7 @@
 #define WIN_IMPOSSIBLE         \
   "   WHAT?! You did it??\r\n" \
   "\r\n"                       \
-  "  What about the other\r\n" \
-  "   difficulty levels?    "
+  "   You are an absolute\r\n" \
+  "  legend. Amazing work!"
 
 #endif  // SEQUENCE_MESSAGES_H
