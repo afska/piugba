@@ -9,6 +9,7 @@
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/base/InputHandler.h"
+#include "objects/ui/ArrowSelector.h"
 #include "objects/ui/Button.h"
 #include "ui/Darkener.h"
 #include "utils/PixelBlink.h"
@@ -36,7 +37,7 @@ class StartScene : public Scene {
 
   std::unique_ptr<Darkener> darkener;
   std::vector<std::unique_ptr<Button>> buttons;
-  std::vector<std::unique_ptr<InputHandler>> inputHandlers;
+  std::vector<std::unique_ptr<ArrowSelector>> inputs;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   bool isExpanded = false;
@@ -64,6 +65,7 @@ class StartScene : public Scene {
 
   void setUpSpritesPalette();
   void setUpBackground();
+  void setUpInputs();
   void setUpButtons();
   void setUpGameAnimation();
 

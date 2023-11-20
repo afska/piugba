@@ -44,6 +44,7 @@ const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
 const u32 INPUT_SELECT = 2;
+const u32 INPUT_SELECT_ALT = 3;
 const u32 GAME_X = 72;
 const u32 GAME_Y = 13;
 
@@ -69,6 +70,11 @@ std::vector<Sprite*> StartScene::sprites() {
   sprites.push_back(buttons[3]->get());
   sprites.push_back(buttons[4]->get());
 
+  sprites.push_back(inputs[INPUT_LEFT]->get());
+  sprites.push_back(inputs[INPUT_RIGHT]->get());
+  sprites.push_back(inputs[INPUT_SELECT]->get());
+  sprites.push_back(inputs[INPUT_SELECT_ALT]->get());
+
   arrowPool->forEach([&sprites](Arrow* it) {
     it->index = sprites.size();
     sprites.push_back(it->get());
@@ -87,6 +93,7 @@ void StartScene::load() {
   setUpBackground();
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
+  setUpInputs();
   setUpButtons();
   setUpGameAnimation();
 
@@ -110,6 +117,8 @@ void StartScene::tick(u16 keys) {
   EFFECT_setBlendAlpha(darkenerOpacity);
 
   pixelBlink->tick();
+  for (auto& it : inputs)
+    it->tick();
   animateBpm();
   animateArrows();
 
@@ -133,6 +142,24 @@ void StartScene::setUpBackground() {
   bg->setMosaic(true);
 }
 
+void StartScene::setUpInputs() {
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::DOWNLEFT, false, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+
+  inputs[INPUT_LEFT]->get()->moveTo(24, 47);
+  inputs[INPUT_RIGHT]->get()->moveTo(201, 44);
+  inputs[INPUT_SELECT]->get()->moveTo(42, 47);
+  inputs[INPUT_SELECT_ALT]->get()->moveTo(185, 53);
+}
+
 void StartScene::setUpButtons() {
   buttons.push_back(std::unique_ptr<Button>{
       new Button(ButtonType::BLUE, BUTTONS_X[0], BUTTONS_Y[0], false)});
@@ -150,9 +177,6 @@ void StartScene::setUpButtons() {
   buttons[2]->hide();
   buttons[3]->hide();
   buttons[4]->hide();
-
-  for (u32 i = 0; i < INPUTS; i++)
-    inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
 
   if (ENV_ARCADE) {
     isExpanded = true;
@@ -239,15 +263,16 @@ void StartScene::printTitle() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  inputHandlers[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  inputHandlers[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-  inputHandlers[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+  inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+  inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+  inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+  inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
 }
 
 void StartScene::processSelectionChange() {
   bool canGoLeft =
       (!ENV_ARCADE && selectedMode > 0) || (ENV_ARCADE && selectedMode > 2);
-  if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
+  if (inputs[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
     if (selectedMode == 4 && !isExpanded)
       selectedMode -= 3;
@@ -259,7 +284,7 @@ void StartScene::processSelectionChange() {
 
   bool canGoRight =
       (!ENV_ARCADE && selectedMode < 5) || (ENV_ARCADE && selectedMode < 4);
-  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
+  if (inputs[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
     if (selectedMode == 2 && !isExpanded)
       selectedMode += 3;
@@ -269,7 +294,7 @@ void StartScene::processSelectionChange() {
     printTitle();
   }
 
-  if (inputHandlers[INPUT_SELECT]->hasBeenPressedNow())
+  if (inputs[INPUT_SELECT]->hasBeenPressedNow())
     goToGame();
 
   for (u32 i = 0; i < BUTTONS_TOTAL; i++)
@@ -334,6 +359,6 @@ void StartScene::goToGame() {
 
 StartScene::~StartScene() {
   buttons.clear();
-  inputHandlers.clear();
+  inputs.clear();
   arrowHolders.clear();
 }
