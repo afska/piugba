@@ -128,7 +128,7 @@ void LinkWireless::_onTimer() {
   }
 
   if (!asyncCommand.isActive)
-    acceptConnectionsOrSendData();
+    acceptConnectionsOrTransferData();
 
   copyState();
 

@@ -778,7 +778,7 @@ class LinkWireless {
     copyState();
   }
 
-  void acceptConnectionsOrSendData() {  // (irq only)
+  void acceptConnectionsOrTransferData() {  // (irq only)
     if (state == SERVING && !sessionState.acceptCalled &&
         sessionState.playerCount < config.maxPlayers) {
       // AcceptConnections (start)
