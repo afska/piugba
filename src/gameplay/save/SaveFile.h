@@ -82,7 +82,7 @@ inline void SAVEFILE_resetMods() {
 
 inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
-  SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::RUMBLE_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.rumble, false);
   SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
 }

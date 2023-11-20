@@ -3,12 +3,25 @@
 #include "Savefile.h"
 #include "gameplay/multiplayer/Syncer.h"
 
-RAMState GameState;
+DATA_EWRAM RAMState GameState;
 
 void STATE_setup(Song* song, Chart* chart) {
   auto gameMode = SAVEFILE_getGameMode();
   if (song == NULL)
     gameMode = GameMode::ARCADE;
+
+  GameState.settings.audioLag = SAVEFILE_read32(SRAM->settings.audioLag);
+  GameState.settings.gamePosition =
+      static_cast<GamePosition>(SAVEFILE_read8(SRAM->settings.gamePosition));
+  GameState.settings.backgroundType = static_cast<BackgroundType>(
+      SAVEFILE_read8(SRAM->settings.backgroundType));
+  GameState.settings.bgaDarkBlink =
+      static_cast<BGADarkBlink>(SAVEFILE_read8(SRAM->settings.bgaDarkBlink));
+  GameState.adminSettings.rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
+  GameState.adminSettings.ioBlink =
+      static_cast<IOBlinkOpts>(SAVEFILE_read8(SRAM->adminSettings.ioBlink));
+  GameState.adminSettings.sramBlink =
+      static_cast<SRAMBlinkOpts>(SAVEFILE_read8(SRAM->adminSettings.sramBlink));
 
   GameState.mods.multiplier =
       isMultiplayer() ? 3 : SAVEFILE_read8(SRAM->mods.multiplier);
@@ -89,14 +102,12 @@ void STATE_setup(Song* song, Chart* chart) {
   }
 
   GameState.positionX[0] =
-      isMultiplayer()
-          ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)
-          : isSinglePlayerDouble()
-                ? GAME_COOP_POSITION_X
-                : GAME_POSITION_X[GameState.mods.jump
-                                      ? 0
-                                      : SAVEFILE_read8(
-                                            SRAM->settings.gamePosition)];
+      isMultiplayer() ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)
+      : isSinglePlayerDouble()
+          ? GAME_COOP_POSITION_X
+          : GAME_POSITION_X[GameState.mods.jump
+                                ? 0
+                                : SAVEFILE_read8(SRAM->settings.gamePosition)];
   GameState.positionX[1] = isVs() ? GAME_POSITION_X[2] : 0;
   GameState.positionY = 0;
   GameState.scorePositionY = 0;

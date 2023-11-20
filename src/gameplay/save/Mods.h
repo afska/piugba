@@ -17,9 +17,9 @@ typedef struct __attribute__((__packed__)) {
   JumpOpts jump;
   ReduceOpts reduce;
   DecolorizeOpts decolorize;
-  u8 randomSpeed;
-  u8 mirrorSteps;
-  u8 randomSteps;
+  bool randomSpeed;
+  bool mirrorSteps;
+  bool randomSteps;
   TrainingModeOpts trainingMode;
 } Mods;
 

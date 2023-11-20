@@ -9,9 +9,9 @@ enum BGADarkBlink : u8 { BLINK_OFF, BLINK_SLOW, BLINK_FAST };
 
 typedef struct __attribute__((__packed__)) {
   u32 audioLag;
-  u8 gamePosition;
-  u8 backgroundType;
-  u8 bgaDarkBlink;
+  GamePosition gamePosition;
+  BackgroundType backgroundType;
+  BGADarkBlink bgaDarkBlink;
 } Settings;
 
 #endif  // SETTINGS_H

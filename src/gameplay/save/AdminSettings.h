@@ -4,7 +4,6 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 enum ArcadeChartsOpts : u8 { SINGLE, DOUBLE };
-enum RumbleOpts : u8 { RUMBLE_OFF, RUMBLE_ON };
 enum IOBlinkOpts : u8 { IO_BLINK_OFF, IO_BLINK_ON_BEAT, IO_BLINK_ON_KEY };
 enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_OFF,
@@ -13,10 +12,10 @@ enum SRAMBlinkOpts : u8 {
 };
 
 typedef struct __attribute__((__packed__)) {
-  u8 arcadeCharts;
-  u8 rumble;
-  u8 ioBlink;
-  u8 sramBlink;
+  ArcadeChartsOpts arcadeCharts;
+  bool rumble;
+  IOBlinkOpts ioBlink;
+  SRAMBlinkOpts sramBlink;
   u8 ___;  // (unused)
 } AdminSettings;
 

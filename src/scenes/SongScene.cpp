@@ -127,7 +127,7 @@ void SongScene::load() {
       new Judge(arrowPool.get(), &arrowHolders, &scores,
                 [this](u8 playerId) { onStageBreak(playerId); })};
 
-  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  int audioLag = GameState.settings.audioLag;
   u32 multiplier = GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     chartReader[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
@@ -252,13 +252,12 @@ void SongScene::initializeBackground() {
   return;
 #endif
 
-  auto gamePosition =
-      GameState.mods.jump ? 0 : SAVEFILE_read8(SRAM->settings.gamePosition);
-  auto type = static_cast<BackgroundType>(
-      SAVEFILE_read8(SRAM->settings.backgroundType));
+  auto gamePosition = GameState.mods.jump ? GamePosition::LEFT
+                                          : GameState.settings.gamePosition;
+  auto type = GameState.settings.backgroundType;
 
   if (isMultiplayer() || isSinglePlayerDouble()) {
-    gamePosition = 0;
+    gamePosition = GamePosition::LEFT;
     type = BackgroundType::FULL_BGA_DARK;
   }
 
@@ -371,8 +370,8 @@ CODE_IWRAM void SongScene::updateArrows() {
       auto isHit =
           judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
 
-      if (isHit && SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
-                       SRAMBlinkOpts::SRAM_BLINK_ON_HIT)
+      if (isHit &&
+          GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_HIT)
         SAVEFILE_write8(SRAM->beat, 0);
     }
   }
@@ -382,11 +381,11 @@ void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
   bounceFrame = max(bounceFrame - 1, 0);
 
-  if (isMultiplayer() || SAVEFILE_read8(SRAM->settings.bgaDarkBlink))
+  if (isMultiplayer() || GameState.settings.bgaDarkBlink)
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
-  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
-                              IOBlinkOpts::IO_BLINK_ON_BEAT) {
+  if (!isMultiplayer() &&
+      GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_BEAT) {
     if (bounceFrame > 0)
       IOPORT_sdHigh();
     else
@@ -435,8 +434,7 @@ void SongScene::updateGameX() {
                       it->get()->getY());
   scores[0]->relocate();
 
-  auto backgroundType = static_cast<BackgroundType>(
-      SAVEFILE_read8(SRAM->settings.backgroundType));
+  auto backgroundType = GameState.settings.backgroundType;
   if (backgroundType == BackgroundType::HALF_BGA_DARK)
     REG_BG_OFS[DARKENER_ID].x = -GameState.positionX[0];
 }
@@ -449,7 +447,7 @@ void SongScene::updateGameY() {
 }
 
 void SongScene::updateRumble() {
-  if (!SAVEFILE_read8(SRAM->adminSettings.rumble))
+  if (!GameState.adminSettings.rumble)
     return;
 
   auto localChartReader = chartReader[getLocalPlayerId()].get();
@@ -511,8 +509,8 @@ void SongScene::processKeys(u16 keys) {
         });
   }
 
-  if (!isMultiplayer() && SAVEFILE_read8(SRAM->adminSettings.ioBlink) ==
-                              IOBlinkOpts::IO_BLINK_ON_KEY) {
+  if (!isMultiplayer() &&
+      GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_KEY) {
     if (KEY_ANY_PRESSED(keys))
       IOPORT_sdHigh();
     else
@@ -561,7 +559,7 @@ void SongScene::processKeys(u16 keys) {
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
   u8 alphaBlinkTime =
-      SAVEFILE_read8(SRAM->settings.bgaDarkBlink) == BGADarkBlink::BLINK_SLOW
+      GameState.settings.bgaDarkBlink == BGADarkBlink::BLINK_SLOW
           ? ALPHA_BLINK_TIME_SLOW
           : ALPHA_BLINK_TIME_FAST;
   blinkFrame = min(blinkFrame + alphaBlinkTime, ALPHA_BLINK_LEVEL);
@@ -580,8 +578,7 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
   localChartReader->beatDurationFrames = localChartReader->beatFrame;
   localChartReader->beatFrame = 0;
 
-  if (SAVEFILE_read8(SRAM->adminSettings.sramBlink) ==
-      SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
+  if (GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
     SAVEFILE_write8(SRAM->beat, 0);
 }
 

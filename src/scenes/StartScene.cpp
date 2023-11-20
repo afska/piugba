@@ -190,7 +190,7 @@ void StartScene::setUpGameAnimation() {
 }
 
 void StartScene::animateBpm() {
-  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  int audioLag = (int)GameState.settings.audioLag;
   int msecs = PlaybackState.msecs - audioLag;
   int beat = Div(msecs * BPM, MINUTE);
 
