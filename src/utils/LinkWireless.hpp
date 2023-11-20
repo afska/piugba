@@ -710,7 +710,7 @@ class LinkWireless {
         sessionState.playerCount = 1 + asyncCommand.result.responsesSize;
 
         if (sessionState.playerCount > oldPlayerCount &&
-            sessionState.playerCount == config.maxPlayers) {
+            sessionState.playerCount == /* [!] config.maxPlayers */ 2) {
           // EndHost (start)
           sendCommandAsync(LINK_WIRELESS_COMMAND_END_HOST);
         }
@@ -784,7 +784,7 @@ class LinkWireless {
 
   void acceptConnectionsOrTransferData() {  // (irq only)
     if (state == SERVING && !sessionState.acceptCalled &&
-        sessionState.playerCount < config.maxPlayers) {
+        sessionState.playerCount < /* [!] config.maxPlayers */ 2) {
       // AcceptConnections (start)
       sendCommandAsync(LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS);
       sessionState.acceptCalled = true;
@@ -808,9 +808,10 @@ class LinkWireless {
   }
 
   void sendPendingData() {  // (irq only)
-    int lastPacketId = setDataFromOutgoingMessages();
+    // [!]
+    /*int lastPacketId = */ setDataFromOutgoingMessages();
     sendCommandAsync(LINK_WIRELESS_COMMAND_SEND_DATA, true);
-    clearOutgoingMessagesIfNeeded(lastPacketId);
+    // clearOutgoingMessagesIfNeeded(lastPacketId);
   }
 
   int setDataFromOutgoingMessages() {  // (irq only)
@@ -818,10 +819,10 @@ class LinkWireless {
 
     addData(0, true);
 
-    if (config.retransmission)
-      addConfirmations();
-    else
-      addPingMessageIfNeeded();
+    // if (/* [!] config.retransmission */ true)
+    addConfirmations();
+    // else
+    //   addPingMessageIfNeeded();
 
     int lastPacketId = -1;
 
@@ -882,7 +883,7 @@ class LinkWireless {
       if (!acceptMessage(message, isConfirmation, remotePlayerCount) || isPing)
         continue;
 
-      if (config.retransmission && isConfirmation) {
+      if (/* [!] config.retransmission */ /*true &&*/ isConfirmation) {
         if (!handleConfirmation(message))
           continue;
       } else {
@@ -899,7 +900,7 @@ class LinkWireless {
           (sessionState.lastPacketIdFromClients[message.playerId] + 1) %
           LINK_WIRELESS_MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
+      if (/* [!] config.retransmission */ /*true &&*/ !isConfirmation &&
           message.packetId != expectedPacketId)
         return false;
 
@@ -910,7 +911,7 @@ class LinkWireless {
       u32 expectedPacketId = (sessionState.lastPacketIdFromServer + 1) %
                              LINK_WIRELESS_MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
+      if (/* [!] config.retransmission */ /*true &&*/ !isConfirmation &&
           message.packetId != expectedPacketId)
         return false;
 
@@ -926,10 +927,10 @@ class LinkWireless {
     return !isMessageFromCurrentPlayer;
   }
 
-  void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
-    if (!config.retransmission && lastPacketId > -1)
-      removeConfirmedMessages(lastPacketId);
-  }
+  // void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
+  //   if (!/* [!] config.retransmission */ true && lastPacketId > -1)
+  //     removeConfirmedMessages(lastPacketId);
+  // }
 
   void addPingMessageIfNeeded() {  // (irq only)
     if (sessionState.outgoingMessages.isEmpty() && !sessionState.pingSent) {
@@ -944,23 +945,23 @@ class LinkWireless {
 
   void addConfirmations() {  // (irq only)
     if (state == SERVING) {
-      if (config.maxPlayers > 2 &&
-          (sessionState.lastPacketIdFromClients[1] == 0 ||
-           sessionState.lastPacketIdFromClients[2] == 0 ||
-           sessionState.lastPacketIdFromClients[3] == 0 ||
-           sessionState.lastPacketIdFromClients[4] == 0)) {
-        u32 lastPacketId = sessionState.lastPacketId;
-        u16 header = buildConfirmationHeader(0, lastPacketId);
-        u32 rawMessage = buildU32(header, lastPacketId & 0xffff);
-        addData(rawMessage);
-      }
+      // if (/* [!] config.maxPlayers */ 2 > 2 &&
+      //     (sessionState.lastPacketIdFromClients[1] == 0 ||
+      //      sessionState.lastPacketIdFromClients[2] == 0 ||
+      //      sessionState.lastPacketIdFromClients[3] == 0 ||
+      //      sessionState.lastPacketIdFromClients[4] == 0)) {
+      //   u32 lastPacketId = sessionState.lastPacketId;
+      //   u16 header = buildConfirmationHeader(0, lastPacketId);
+      //   u32 rawMessage = buildU32(header, lastPacketId & 0xffff);
+      //   addData(rawMessage);
+      // }
 
-      for (int i = 0; i < config.maxPlayers - 1; i++) {
-        u32 confirmationData = sessionState.lastPacketIdFromClients[1 + i];
-        u16 header = buildConfirmationHeader(1 + i, confirmationData);
-        u32 rawMessage = buildU32(header, confirmationData & 0xffff);
-        addData(rawMessage);
-      }
+      // for (int i = 0; i < /* [!] config.maxPlayers */ 2 - 1; i++) {
+      u32 confirmationData = sessionState.lastPacketIdFromClients[1];
+      u16 header = buildConfirmationHeader(1, confirmationData);
+      u32 rawMessage = buildU32(header, confirmationData & 0xffff);
+      addData(rawMessage);
+      // }
     } else {
       u32 confirmationData = sessionState.lastPacketIdFromServer;
       u16 header = buildConfirmationHeader(sessionState.currentPlayerId,
@@ -1000,11 +1001,11 @@ class LinkWireless {
     sessionState.lastConfirmationFromClients[playerId] = confirmationData;
 
     u32 min = 0xffffffff;
-    for (int i = 0; i < config.maxPlayers - 1; i++) {
-      u32 confirmationData = sessionState.lastConfirmationFromClients[1 + i];
-      if (confirmationData > 0 && confirmationData < min)
-        min = confirmationData;
-    }
+    // for (int i = 0; i < /* [!] config.maxPlayers */ 2 - 1; i++) {
+    u32 data = sessionState.lastConfirmationFromClients[1];
+    if (data > 0 && data < min)
+      min = data;
+    // }
     if (min < 0xffffffff)
       removeConfirmedMessages(min);
   }
@@ -1064,7 +1065,7 @@ class LinkWireless {
 
   u32 getDeviceTransferLength() {  // (irq only)
     return state == SERVING
-               ? /*LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH*/ 8  // [!]
+               ? /*LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH*/ 6  // [!]
                : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
   }
 

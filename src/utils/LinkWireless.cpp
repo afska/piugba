@@ -4,6 +4,18 @@
 
 // [!]
 
+CODE_IWRAM void LinkWireless::copyIncomingState() {
+  if (isReadingMessages)
+    return;
+
+  while (!sessionState.tmpMessagesToReceive.isEmpty()) {
+    auto message = sessionState.tmpMessagesToReceive.pop();
+
+    if (state == SERVING || state == CONNECTED)
+      sessionState.incomingMessages.push(message);
+  }
+}
+
 void LinkWireless::_onVBlank() {
   if (!isEnabled)
     return;
@@ -33,46 +45,6 @@ void LinkWireless::_onVBlank() {
   serialIRQCount = 0;
   timerIRQCount = 0;
 #endif
-}
-
-CODE_IWRAM void LinkWireless::copyIncomingState() {
-  if (isReadingMessages)
-    return;
-
-  while (!sessionState.tmpMessagesToReceive.isEmpty()) {
-    auto message = sessionState.tmpMessagesToReceive.pop();
-
-    if (state == SERVING || state == CONNECTED)
-      sessionState.incomingMessages.push(message);
-  }
-}
-
-CODE_IWRAM void LinkWireless::_onACKTimer() {
-  if (!isEnabled || !asyncCommand.isActive ||
-      asyncCommand.ackStep == AsyncCommand::ACKStep::READY)
-    return;
-
-  if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_HIGH) {
-    if (!linkSPI->_isSIHigh())
-      return;
-
-    linkSPI->_setSOHigh();
-    asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_LOW;
-  } else if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_LOW) {
-    if (linkSPI->_isSIHigh())
-      return;
-
-    linkSPI->_setSOLow();
-    asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
-    _stopACKTimer();
-
-    if (asyncCommand.state == AsyncCommand::State::PENDING) {
-      updateAsyncCommand(asyncCommand.pendingData);
-
-      if (asyncCommand.state == AsyncCommand::State::COMPLETED)
-        processAsyncCommand();
-    }
-  }
 }
 
 CODE_IWRAM void LinkWireless::_onSerial() {
@@ -136,4 +108,32 @@ void LinkWireless::_onTimer() {
   lastTimerTime = std::max((int)REG_VCOUNT - (int)start, 0);
   timerIRQCount++;
 #endif
+}
+
+CODE_IWRAM void LinkWireless::_onACKTimer() {
+  if (!isEnabled || !asyncCommand.isActive ||
+      asyncCommand.ackStep == AsyncCommand::ACKStep::READY)
+    return;
+
+  if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_HIGH) {
+    if (!linkSPI->_isSIHigh())
+      return;
+
+    linkSPI->_setSOHigh();
+    asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_LOW;
+  } else if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_LOW) {
+    if (linkSPI->_isSIHigh())
+      return;
+
+    linkSPI->_setSOLow();
+    asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
+    _stopACKTimer();
+
+    if (asyncCommand.state == AsyncCommand::State::PENDING) {
+      updateAsyncCommand(asyncCommand.pendingData);
+
+      if (asyncCommand.state == AsyncCommand::State::COMPLETED)
+        processAsyncCommand();
+    }
+  }
 }

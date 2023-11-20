@@ -67,7 +67,7 @@ void LifeBar::die() {
   isDead = true;
 }
 
-void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
+CODE_IWRAM void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 
   if (playerId > 0)
