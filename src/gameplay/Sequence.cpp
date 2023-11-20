@@ -184,9 +184,11 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   if (IS_STORY(gameMode) && isLastSong)
     goTo(new TalkScene(_engine, _fs,
                        gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
-                       [](u16 keys) {
-                         if (KEY_CENTER(keys))
-                           goTo(new SelectionScene(_engine, _fs));
+                       [isLastSong](u16 keys) {
+                         if (KEY_CENTER(keys)) {
+                           goTo(isLastSong ? SEQUENCE_getMainScene()
+                                           : new SelectionScene(_engine, _fs));
+                         }
                        }));
   else
     goTo(new SelectionScene(_engine, _fs));
