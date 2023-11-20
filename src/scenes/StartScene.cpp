@@ -25,8 +25,7 @@ const std::string TITLES[] = {"Campaign", "Arcade",     "Multi vs",
                               "Single",   "Multi coop", "Impossible"};
 
 const u32 BPM = 145;
-const u32 ARROW_POOL_SIZE = 10;
-const u32 ARROW_SPEED = 3;
+const u32 ARROW_POOL_SIZE = 30;
 const u32 DEMO_ARROW_INITIAL_Y = 78;
 const u32 BUTTONS_TOTAL = 6;
 
@@ -193,15 +192,20 @@ void StartScene::animateBpm() {
   int audioLag = (int)GameState.settings.audioLag;
   int msecs = PlaybackState.msecs - audioLag;
   int beat = Div(msecs * BPM, MINUTE);
+  int tick =
+      MATH_fracumul(msecs * BPM * getTickCount(), FRACUMUL_DIV_BY_MINUTE);
 
   if (beat != lastBeat && beat != 0) {
     lastBeat = beat;
     darkenerOpacity = 0;
 
     pixelBlink->blink();
-
     for (auto& it : arrowHolders)
       it->blink();
+  }
+
+  if (tick != lastTick && beat != 0) {
+    lastTick = tick;
 
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
@@ -217,8 +221,9 @@ void StartScene::animateArrows() {
   for (auto& it : arrowHolders)
     it->tick();
 
-  arrowPool->forEachActive([this](Arrow* arrow) {
-    int newY = arrow->get()->getY() - ARROW_SPEED;
+  u32 arrowSpeed = getArrowSpeed();
+  arrowPool->forEachActive([this, arrowSpeed](Arrow* arrow) {
+    int newY = arrow->get()->getY() - arrowSpeed;
 
     if (arrow->tick(newY, false) == ArrowState::OUT)
       arrowPool->discard(arrow->id - ARROW_TILEMAP_LOADING_ID);

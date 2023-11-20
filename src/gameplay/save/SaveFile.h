@@ -203,12 +203,24 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
   return true;
 }
 
-inline u32 SAVEFILE_getCompletedSongsOf(DifficultyLevel difficultyLevel) {
+inline u32 SAVEFILE_getCompletedSongsOf(GameMode gameMode,
+                                        DifficultyLevel difficultyLevel) {
   return SAVEFILE_read8(
-      SRAM->progress[(SAVEFILE_getGameMode() == GameMode::IMPOSSIBLE) *
-                         PROGRESS_IMPOSSIBLE +
+      SRAM->progress[(gameMode == GameMode::IMPOSSIBLE) * PROGRESS_IMPOSSIBLE +
                      difficultyLevel]
           .completedSongs);
+}
+
+inline u32 SAVEFILE_getCompletedSongsOf(DifficultyLevel difficultyLevel) {
+  return SAVEFILE_getCompletedSongsOf(SAVEFILE_getGameMode(), difficultyLevel);
+}
+
+inline bool SAVEFILE_didComplete(GameMode gameMode,
+                                 DifficultyLevel difficultyLevel) {
+  auto completedSongs = SAVEFILE_getCompletedSongsOf(gameMode, difficultyLevel);
+  auto librarySize = SAVEFILE_getLibrarySize();
+
+  return completedSongs >= librarySize;
 }
 
 inline DifficultyLevel SAVEFILE_getMaxLibraryType() {
