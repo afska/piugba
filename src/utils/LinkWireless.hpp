@@ -1,6 +1,10 @@
 #ifndef LINK_WIRELESS_H
 #define LINK_WIRELESS_H
 
+// [!]
+// This library has some tweaks (marked with "[!]") for piuGBA.
+// You should check out the gba-link-connection's original code instead of this.
+
 // --------------------------------------------------------------------------
 // A high level driver for the GBA Wireless Adapter.
 // --------------------------------------------------------------------------

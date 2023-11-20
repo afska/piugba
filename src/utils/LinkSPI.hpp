@@ -1,6 +1,10 @@
 #ifndef LINK_SPI_H
 #define LINK_SPI_H
 
+// [!]
+// This library has some tweaks (marked with "[!]") for piuGBA.
+// You should check out the gba-link-connection's original code instead of this.
+
 // --------------------------------------------------------------------------
 // An SPI handler for the Link Port (Normal Mode, 32bits).
 // --------------------------------------------------------------------------
@@ -85,6 +89,8 @@ class LinkSPI {
   void deactivate() {
     isEnabled = false;
     setGeneralPurposeMode();
+    REG_RCNT |= 1 << LINK_SPI_BIT_GENERAL_PURPOSE_SD;  // [!]
+    REG_RCNT &= 0b1111111111111101;                    // [!]
 
     mode = SLAVE;
     waitMode = false;

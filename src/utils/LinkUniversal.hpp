@@ -1,6 +1,10 @@
 #ifndef LINK_UNIVERSAL_H
 #define LINK_UNIVERSAL_H
 
+// [!]
+// This library has some tweaks (marked with "[!]") for piuGBA.
+// You should check out the gba-link-connection's original code instead of this.
+
 // --------------------------------------------------------------------------
 //  A multiplayer connection for the Link Cable and the Wireless Adapter.
 // --------------------------------------------------------------------------

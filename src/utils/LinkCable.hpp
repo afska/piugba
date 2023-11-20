@@ -385,6 +385,9 @@ class LinkCable {
   void stop() {
     stopTimer();
     setGeneralPurposeMode();
+
+    REG_RCNT |= 1 << LINK_CABLE_BIT_GENERAL_PURPOSE_SD;  // [!]
+    REG_RCNT &= 0b1111111111111101;                      // [!]
   }
 
   void start() {
