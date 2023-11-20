@@ -65,7 +65,6 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = 1;
-  u32 bounceFrame = 0;  // (bounce mods, I/O SD blink)
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
 

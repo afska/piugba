@@ -105,7 +105,7 @@ void MenuScene::printOption(u32 id,
 }
 
 u8 MenuScene::increment(u8 value, u8 optionsCount) {
-  return value == optionsCount - 1 ? 0 : value + 1;
+  return value >= optionsCount - 1 ? 0 : value + 1;
 }
 
 void MenuScene::setUpSpritesPalette() {

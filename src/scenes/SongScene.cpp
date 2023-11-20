@@ -28,8 +28,6 @@ const u32 MAIN_BACKGROUND_PRIORITY = 3;
 const u32 ARROW_POOL_SIZE = 50;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
-const u32 ALPHA_BLINK_TIME_FAST = 6;
-const u32 ALPHA_BLINK_TIME_SLOW = 10;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
 const u32 LIFEBAR_CHARBLOCK = 4;
@@ -38,8 +36,7 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
-const u32 BOUNCE_FRAMES = 9;
-const u32 BOUNCE_Y[] = {0, 1, 2, 4, 6, 8, 10, 7, 3};
+const u32 BOUNCE_Y[] = {0, 1, 2, 4, 6, 8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -379,14 +376,13 @@ CODE_IWRAM void SongScene::updateArrows() {
 
 void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
-  bounceFrame = max(bounceFrame - 1, 0);
 
   if (isMultiplayer() || GameState.settings.bgaDarkBlink)
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   if (!isMultiplayer() &&
       GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_BEAT) {
-    if (bounceFrame > 0)
+    if (blinkFrame > 0)
       IOPORT_sdHigh();
     else
       IOPORT_sdLow();
@@ -558,12 +554,7 @@ void SongScene::processKeys(u16 keys) {
 }
 
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
-  u8 alphaBlinkTime =
-      GameState.settings.bgaDarkBlink == BGADarkBlink::BLINK_SLOW
-          ? ALPHA_BLINK_TIME_SLOW
-          : ALPHA_BLINK_TIME_FAST;
-  blinkFrame = min(blinkFrame + alphaBlinkTime, ALPHA_BLINK_LEVEL);
-  bounceFrame = min(bounceFrame + BOUNCE_FRAMES, BOUNCE_FRAMES);
+  blinkFrame = min(blinkFrame + ALPHA_BLINK_LEVEL, ALPHA_BLINK_LEVEL);
 
   for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
     lifeBars[playerId]->blink(foregroundPalette.get());
@@ -695,7 +686,7 @@ void SongScene::processModsTick() {
     return;
 
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
-    GameState.positionX[0] += jumpDirection * (1 + bounceFrame);
+    GameState.positionX[0] += jumpDirection * (1 + blinkFrame);
 
     int endPosition = GAME_POSITION_X[GamePosition::RIGHT];
     if (GameState.positionX[0] >= (int)endPosition ||
@@ -708,7 +699,7 @@ void SongScene::processModsTick() {
   }
 
   if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
-    GameState.positionY += reduceDirection * (1 + bounceFrame);
+    GameState.positionY += reduceDirection * (1 + blinkFrame);
 
     if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
         GameState.positionY <= 0) {
@@ -718,7 +709,7 @@ void SongScene::processModsTick() {
     }
     updateGameY();
   } else if (GameState.mods.reduce == ReduceOpts::rMICRO) {
-    GameState.positionY = BOUNCE_Y[bounceFrame];
+    GameState.positionY = BOUNCE_Y[blinkFrame];
     updateGameY();
   }
 }
