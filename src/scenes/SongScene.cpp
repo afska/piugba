@@ -30,6 +30,7 @@ const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
+const u32 IO_BLINK_TIME = 6;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
@@ -390,7 +391,7 @@ void SongScene::updateBlink() {
 
   if (!$isMultiplayer &&
       GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_BEAT) {
-    if (blinkFrame > 0)
+    if (blinkFrame >= ALPHA_BLINK_LEVEL - IO_BLINK_TIME)
       IOPORT_sdHigh();
     else
       IOPORT_sdLow();
