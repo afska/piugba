@@ -130,9 +130,6 @@ inline void Sprite::moveTo(VECTOR location) {
 }
 
 inline void Sprite::moveTo(int x, int y) {
-  if (x == this->x && y == this->y)
-    return;
-
   this->x = x;
   this->y = y;
 }
