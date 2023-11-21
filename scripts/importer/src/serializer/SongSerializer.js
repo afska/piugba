@@ -51,7 +51,6 @@ module.exports = class SongSerializer {
         _.forEach(Mods, (v, k) => {
           this.UInt8(v[config[k]]);
         });
-        this.UInt8(0); // (unused)
 
         const hasMessage = config.MESSAGE !== "";
         this.UInt8(hasMessage);

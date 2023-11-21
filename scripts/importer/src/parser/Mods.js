@@ -42,4 +42,9 @@ module.exports = {
     OFF: 0,
     ON: 1,
   },
+  BOUNCE: {
+    OFF: 0,
+    LOW: 1,
+    HIGH: 2,
+  },
 };

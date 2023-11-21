@@ -57,6 +57,7 @@ void ModsScene::printOptions() {
   u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
   u8 jump = SAVEFILE_read8(SRAM->mods.jump);
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
+  u8 bounce = SAVEFILE_read8(SRAM->mods.bounce);
   u8 colorFilter = SAVEFILE_read8(SRAM->mods.colorFilter);
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
@@ -94,7 +95,11 @@ void ModsScene::printOptions() {
               : reduce == 3 ? "MICRO"
                             : "RANDOM",
               7);
-  printOption(OPTION_BOUNCE, "Bounce", "OFF", 8);
+  printOption(OPTION_BOUNCE, "Bounce",
+              bounce == 0   ? "OFF"
+              : bounce == 1 ? "LOW"
+                            : "HIGH",
+              8);
   printOption(
       OPTION_COLOR_FILTER, "Color filter",
       colorFilter < TOTAL_COLOR_FILTERS ? COLOR_FILTERS[colorFilter] : "OFF",
@@ -144,6 +149,11 @@ bool ModsScene::selectOption(u32 selected) {
 
       u8 jump = SAVEFILE_read8(SRAM->mods.jump);
       SAVEFILE_write8(SRAM->mods.jump, increment(jump, 3));
+      return true;
+    }
+    case OPTION_BOUNCE: {
+      u8 bounce = SAVEFILE_read8(SRAM->mods.bounce);
+      SAVEFILE_write8(SRAM->mods.bounce, increment(bounce, 3));
       return true;
     }
     case OPTION_REDUCE: {

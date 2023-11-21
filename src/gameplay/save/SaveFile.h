@@ -32,7 +32,7 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
-  Mods mods;
+  char padding[10];
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -43,6 +43,8 @@ typedef struct __attribute__((__packed__)) {
 
   AdminSettings adminSettings;
   u8 beat;
+
+  Mods mods;
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
@@ -73,6 +75,7 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.pixelate, PixelateOpts::pOFF);
   SAVEFILE_write8(SRAM->mods.jump, JumpOpts::jOFF);
   SAVEFILE_write8(SRAM->mods.reduce, ReduceOpts::rOFF);
+  SAVEFILE_write8(SRAM->mods.bounce, BounceOpts::bOFF);
   SAVEFILE_write8(SRAM->mods.colorFilter, ColorFilter::NO_FILTER);
   SAVEFILE_write8(SRAM->mods.randomSpeed, false);
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
@@ -136,6 +139,11 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
   if (SAVEFILE_read8(SRAM->adminSettings.arcadeCharts) >
       ArcadeChartsOpts::DOUBLE)
     SAVEFILE_resetAdminSettings();
+
+  // reset mods if needed (v1.7.0)
+  u32 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
+  if (multiplier < 1 || multiplier > 6)
+    SAVEFILE_resetMods();
 
   // limit completed songs if needed
   u8 maxNormal =

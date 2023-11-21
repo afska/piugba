@@ -34,6 +34,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.bounce = BounceOpts::bOFF;
       GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
@@ -44,6 +45,7 @@ void STATE_setup(Song* song, Chart* chart) {
         GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
         GameState.mods.jump = static_cast<JumpOpts>(song->jump);
         GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
+        GameState.mods.bounce = static_cast<BounceOpts>(song->bounce);
         GameState.mods.colorFilter =
             static_cast<ColorFilter>(song->colorFilter);
         GameState.mods.randomSpeed = song->randomSpeed;
@@ -62,6 +64,8 @@ void STATE_setup(Song* song, Chart* chart) {
               : static_cast<JumpOpts>(SAVEFILE_read8(SRAM->mods.jump));
       GameState.mods.reduce =
           static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
+      GameState.mods.bounce =
+          static_cast<BounceOpts>(SAVEFILE_read8(SRAM->mods.bounce));
       GameState.mods.colorFilter =
           static_cast<ColorFilter>(SAVEFILE_read8(SRAM->mods.colorFilter));
       GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
@@ -80,7 +84,8 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
       GameState.mods.reduce = ReduceOpts::rMICRO;
-      GameState.mods.colorFilter = ColorFilter::NO_FILTER;
+      GameState.mods.bounce = BounceOpts::bHIGH;
+      GameState.mods.colorFilter = ColorFilter::WARM;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
@@ -92,6 +97,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.bounce = BounceOpts::bOFF;
       GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
