@@ -19,7 +19,7 @@ module.exports = {
     MICRO: 3,
     RANDOM: 4,
   },
-  DECOLORIZE: {
+  COLOR_FILTER: {
     OFF: 0,
     INVERT: 1,
     GRAY: 2,

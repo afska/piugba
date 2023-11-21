@@ -39,7 +39,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->pixelate = parse_u8(data, &cursor);
   song->jump = parse_u8(data, &cursor);
   song->reduce = parse_u8(data, &cursor);
-  song->decolorize = parse_u8(data, &cursor);
+  song->colorFilter = parse_u8(data, &cursor);
   song->randomSpeed = parse_u8(data, &cursor);
   cursor += sizeof(u8);
   song->hasMessage = parse_u8(data, &cursor);

@@ -34,7 +34,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
-      GameState.mods.decolorize = DecolorizeOpts::dOFF;
+      GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
@@ -44,8 +44,8 @@ void STATE_setup(Song* song, Chart* chart) {
         GameState.mods.pixelate = static_cast<PixelateOpts>(song->pixelate);
         GameState.mods.jump = static_cast<JumpOpts>(song->jump);
         GameState.mods.reduce = static_cast<ReduceOpts>(song->reduce);
-        GameState.mods.decolorize =
-            static_cast<DecolorizeOpts>(song->decolorize);
+        GameState.mods.colorFilter =
+            static_cast<ColorFilter>(song->colorFilter);
         GameState.mods.randomSpeed = song->randomSpeed;
       }
 
@@ -62,8 +62,8 @@ void STATE_setup(Song* song, Chart* chart) {
               : static_cast<JumpOpts>(SAVEFILE_read8(SRAM->mods.jump));
       GameState.mods.reduce =
           static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
-      GameState.mods.decolorize =
-          static_cast<DecolorizeOpts>(SAVEFILE_read8(SRAM->mods.decolorize));
+      GameState.mods.colorFilter =
+          static_cast<ColorFilter>(SAVEFILE_read8(SRAM->mods.colorFilter));
       GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps =
@@ -80,7 +80,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
       GameState.mods.reduce = ReduceOpts::rMICRO;
-      GameState.mods.decolorize = DecolorizeOpts::dOFF;
+      GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
@@ -92,7 +92,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pOFF;
       GameState.mods.jump = JumpOpts::jOFF;
       GameState.mods.reduce = ReduceOpts::rOFF;
-      GameState.mods.decolorize = DecolorizeOpts::dOFF;
+      GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;

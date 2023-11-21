@@ -73,7 +73,7 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.pixelate, PixelateOpts::pOFF);
   SAVEFILE_write8(SRAM->mods.jump, JumpOpts::jOFF);
   SAVEFILE_write8(SRAM->mods.reduce, ReduceOpts::rOFF);
-  SAVEFILE_write8(SRAM->mods.decolorize, DecolorizeOpts::dOFF);
+  SAVEFILE_write8(SRAM->mods.colorFilter, ColorFilter::NO_FILTER);
   SAVEFILE_write8(SRAM->mods.randomSpeed, false);
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
   SAVEFILE_write8(SRAM->mods.randomSteps, false);

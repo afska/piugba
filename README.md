@@ -28,10 +28,12 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Stage break
   - Pixelate: Mosaic effect
   - Jump/Reduce: Moves game area
-  - Decolorize: Inverts/removes colors
+  - Bounce: Make the arrows bounce
+  - Color filter: Alters colors
   - Random speed
   - Mirror and random steps
   - Training mode: Rate and checkpoints
+  - Automod: Swap mods randomly
 - Hardware **integrations**:
   - Rumble
   - I/O LED Sync
