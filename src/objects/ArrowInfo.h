@@ -7,9 +7,7 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 
-#ifndef CODE_IWRAM
-#define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
-#endif
+#define CODE_IWRAM __attribute__((section(".iwram"), target("arm"), noinline))
 
 #define ARROWS_GAME_TOTAL (isDouble() ? 10 : 5)
 
