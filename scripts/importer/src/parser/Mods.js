@@ -44,7 +44,7 @@ module.exports = {
   },
   BOUNCE: {
     OFF: 0,
-    LOW: 1,
-    HIGH: 2,
+    ARROWS: 1,
+    ALL: 2,
   },
 };

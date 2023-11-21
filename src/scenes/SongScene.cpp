@@ -183,8 +183,8 @@ void SongScene::tick(u16 keys) {
   if ($isVs)
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
-  updateArrowHolders();
   updateBlink();
+  updateArrowHolders();
   processModsTick();
   u8 minMosaic = processPixelateMod();
   pixelBlink->tick(minMosaic);
@@ -299,8 +299,11 @@ bool SongScene::initializeGame(u16 keys) {
 }
 
 void SongScene::updateArrowHolders() {
+  int bounceOffset = -bounceDirection * BOUNCE_STEPS[blinkFrame] *
+                     (GameState.mods.bounce == BounceOpts::bALL);
+
   for (auto& it : arrowHolders)
-    it->tick();
+    it->tick(bounceOffset);
 }
 
 CODE_IWRAM void SongScene::updateArrows() {
@@ -309,7 +312,7 @@ CODE_IWRAM void SongScene::updateArrows() {
     nextArrows[i] = NULL;
 
   int bounceOffset =
-      bounceDirection * BOUNCE_STEPS[blinkFrame] * GameState.mods.bounce;
+      bounceDirection * BOUNCE_STEPS[blinkFrame] * !!GameState.mods.bounce;
 
   // update sprites
   arrowPool->forEachActive([&nextArrows, bounceOffset, this](Arrow* arrow) {
@@ -430,9 +433,6 @@ void SongScene::updateScoresAndLifebars() {
 void SongScene::updateGameX() {
   lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
                              lifeBars[0]->get()->getY());
-  for (auto& it : arrowHolders)
-    it->get()->moveTo(ARROW_CORNER_MARGIN_X(0) + ARROW_MARGIN * it->direction,
-                      it->get()->getY());
   scores[0]->relocate();
 
   auto backgroundType = GameState.settings.backgroundType;

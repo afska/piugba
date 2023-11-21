@@ -84,7 +84,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.pixelate = PixelateOpts::pRANDOM;
       GameState.mods.jump = JumpOpts::jLINEAR;
       GameState.mods.reduce = ReduceOpts::rMICRO;
-      GameState.mods.bounce = BounceOpts::bHIGH;
+      GameState.mods.bounce = BounceOpts::bALL;
       GameState.mods.colorFilter = ColorFilter::WARM;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;

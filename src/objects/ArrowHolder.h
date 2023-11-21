@@ -17,7 +17,7 @@ class ArrowHolder : public InputHandler {
 
   void blink();
 
-  void tick();
+  void tick(int offsetX = 0);
   inline Sprite* get() { return sprite.get(); }
 
  private:

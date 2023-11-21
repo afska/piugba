@@ -97,8 +97,8 @@ void ModsScene::printOptions() {
               7);
   printOption(OPTION_BOUNCE, "Bounce",
               bounce == 0   ? "OFF"
-              : bounce == 1 ? "LOW"
-                            : "HIGH",
+              : bounce == 1 ? "ARROWS"
+                            : "ALL",
               8);
   printOption(
       OPTION_COLOR_FILTER, "Color filter",
