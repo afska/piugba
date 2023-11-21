@@ -68,6 +68,7 @@ class SongScene : public Scene {
   bool waitMosaic = true;
   int jumpDirection = 1;
   int reduceDirection = 1;
+  int bounceDirection = -1;
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
 

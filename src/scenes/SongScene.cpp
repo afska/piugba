@@ -36,7 +36,8 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
-const u32 BOUNCE_Y[] = {0, 1, 2, 4, 6, 8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
+const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
+                            8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
@@ -307,8 +308,11 @@ CODE_IWRAM void SongScene::updateArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL * GAME_MAX_PLAYERS; i++)
     nextArrows[i] = NULL;
 
+  int bounceOffset =
+      bounceDirection * BOUNCE_STEPS[blinkFrame] * GameState.mods.bounce;
+
   // update sprites
-  arrowPool->forEachActive([&nextArrows, this](Arrow* arrow) {
+  arrowPool->forEachActive([&nextArrows, bounceOffset, this](Arrow* arrow) {
     ArrowDirection direction = arrow->direction;
     u8 playerId = arrow->playerId;
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
@@ -317,7 +321,7 @@ CODE_IWRAM void SongScene::updateArrows() {
     int newY = chartReader[playerId]->getYFor(arrow);
     bool isPressing =
         arrowHolders[baseIndex + direction]->getIsPressed() && !isStopped;
-    ArrowState arrowState = arrow->tick(newY, isPressing);
+    ArrowState arrowState = arrow->tick(newY, isPressing, bounceOffset);
 
     if (arrowState == ArrowState::OUT) {
       judge->onOut(arrow);
@@ -677,6 +681,9 @@ void SongScene::processModsBeat() {
     pixelBlink->blink();
   }
 
+  if (GameState.mods.bounce != BounceOpts::bOFF)
+    bounceDirection *= -1;
+
   if (GameState.mods.randomSpeed)
     chartReader[0]->setMultiplier(qran_range(3, 6));
 }
@@ -709,7 +716,7 @@ void SongScene::processModsTick() {
     }
     updateGameY();
   } else if (GameState.mods.reduce == ReduceOpts::rMICRO) {
-    GameState.positionY = BOUNCE_Y[blinkFrame];
+    GameState.positionY = BOUNCE_STEPS[blinkFrame];
     updateGameY();
   }
 }

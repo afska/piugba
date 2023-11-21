@@ -129,7 +129,7 @@ class Arrow : public IPoolable {
   inline bool getIsPressed() { return isPressed; }
   inline void markAsPressed() { isPressed = true; }
 
-  ArrowState tick(int newY, bool isPressing);
+  ArrowState tick(int newY, bool isPressing, int offsetX = 0);
   inline Sprite* get() { return sprite.get(); }
 
  private:

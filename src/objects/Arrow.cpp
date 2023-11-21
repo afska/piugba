@@ -56,7 +56,7 @@ void Arrow::press() {
   }
 }
 
-CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing) {
+CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
   sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
                            flip == ArrowFlip::FLIP_BOTH);
   sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
@@ -69,7 +69,8 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing) {
                      type == ArrowType::HOLD_FILL;
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
-  int newX = ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction;
+  int newX =
+      ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction + offsetX;
 
   if (isFakeHead || hasEnded) {
     endAnimationFrame++;
