@@ -73,8 +73,7 @@ inline void SCENE_wait(u32 verticalLines) {
 inline void SCENE_softReset() {
   RUMBLE_stop();
   IOPORT_sdLow();
-  RegisterRamReset(RESET_VRAM | RESET_PALETTE | RESET_OAM | RESET_REG_SIO |
-                   RESET_REG_SOUND | RESET_REG);
+  RegisterRamReset(RESET_REG | RESET_VRAM);
   SoftReset();
 }
 
