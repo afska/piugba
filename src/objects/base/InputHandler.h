@@ -28,7 +28,9 @@ class InputHandler {
 
     this->isNewPressEvent = isNewPressEvent;
     this->isNewReleaseEvent = isNewReleaseEvent;
-    IFSTRESSTEST { this->isNewPressEvent = isPressed; }
+    IFSTRESSTEST {
+      this->isNewPressEvent = isPressed;
+    }
   }
 
  protected:

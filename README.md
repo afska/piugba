@@ -44,7 +44,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
 
 ## How does it work?
 
-A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into binary files which the GBA can understand. For audio, it uses GSM audio files which are very small in size.
+A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into binary files which the GBA can then understand. For audio, it uses GSM audio files which are very small in size.
 
 Charts are converted into a format created for this project called **PIUS**. Then everything is bundled in a **GBFS** file (a filesystem created by the GBA scene) and appended to the final ROM.
 
@@ -73,7 +73,7 @@ make restart ENV=production
 
 ### Windows
 
-- Choose a folder (from now, `GBA_DIR`), and use this file structure:
+- Choose a folder (from now, `GBA_DIR`) and use this file structure:
   - `gba`
     - `tools`
       - `devkitPro`
@@ -81,7 +81,7 @@ make restart ENV=production
       - `piugba`
 - Install the toolchain:
   - Dev
-    - [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA roms. It comes with:
+    - [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA ROMs. It comes with:
       - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
       - _gbfs_: Used to create a package with all the game assets
     - [node.js 10](https://nodejs.org/en): The JS runtime
