@@ -60,8 +60,8 @@ void AdminScene::printOptions() {
               : sramBlink == 1 ? "ON BEAT"
                                : "ON HIT",
               11);
-  printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
-  printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);
+  printOption(OPTION_RESET_ARCADE_PROGRESS, " [RESET ARCADE PROGRESS]", "", 13);
+  printOption(OPTION_DELETE_ALL_DATA, " [DELETE ALL SAVED DATA]", "", 15);
 }
 
 bool AdminScene::selectOption(u32 selected) {

@@ -6,20 +6,23 @@
 #include "utils/SceneUtils.h"
 
 #define TITLE "MODS"
-#define OPTIONS_COUNT 11
+#define OPTIONS_COUNT 13
 #define OPTION_MULTIPLIER 0
 #define OPTION_STAGE_BREAK 1
 #define OPTION_PIXELATE 2
 #define OPTION_JUMP 3
 #define OPTION_REDUCE 4
-#define OPTION_DECOLORIZE 5
-#define OPTION_RANDOM_SPEED 6
-#define OPTION_MIRROR_STEPS 7
-#define OPTION_RANDOM_STEPS 8
-#define OPTION_TRAINING_MODE 9
-#define OPTION_RESET 10
+#define OPTION_BOUNCE 5
+#define OPTION_DECOLORIZE 6
+#define OPTION_RANDOM_SPEED 7
+#define OPTION_MIRROR_STEPS 8
+#define OPTION_RANDOM_STEPS 9
+#define OPTION_AUTOMOD 10
+#define OPTION_TRAINING_MODE 11
+#define OPTION_RESET 12
 
 const u32 TEXT_BLEND_ALPHA = 12;
+const int TEXT_OFFSET_Y = 1;
 
 ModsScene::ModsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
@@ -41,7 +44,7 @@ void ModsScene::loadBackground(u32 id) {
 }
 
 void ModsScene::printOptions() {
-  SCENE_write(TITLE, 2);
+  SCENE_write(TITLE, 1);
 
   u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
   u8 stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
@@ -55,43 +58,44 @@ void ModsScene::printOptions() {
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
-              4);
+              3);
   printOption(OPTION_STAGE_BREAK, "Stage break",
-              stageBreak == 0 ? "ON" : stageBreak == 1 ? "OFF" : "SUDDEN DEATH",
-              5);
+              stageBreak == 0   ? "ON"
+              : stageBreak == 1 ? "OFF"
+                                : "SUDDEN DEATH",
+              4);
   printOption(OPTION_PIXELATE, "Pixelate",
-              pixelate == 0
-                  ? "OFF"  // ° ͜ʖ ͡°)
-                  : pixelate == 1
-                        ? "LIFE"  // ° ͜ʖ ͡°)
-                        : pixelate == 2
-                              ? "FIXED"  // ° ͜ʖ ͡°)
-                              : pixelate == 3
-                                    ? "BLINK IN"  // ° ͜ʖ ͡°)
-                                    : pixelate == 4 ? "BLINK OUT" : "RANDOM",
-              6);
+              pixelate == 0   ? "OFF"       // ° ͜ʖ ͡°)
+              : pixelate == 1 ? "LIFE"      // ° ͜ʖ ͡°)
+              : pixelate == 2 ? "FIXED"     // ° ͜ʖ ͡°)
+              : pixelate == 3 ? "BLINK IN"  // ° ͜ʖ ͡°)
+              : pixelate == 4 ? "BLINK OUT"
+                              : "RANDOM",
+              5);
   if (isSinglePlayerDouble()) {
-    printOption(OPTION_JUMP, "Jump", "---", 7);
-  } else
+    printOption(OPTION_JUMP, "Jump", "---", 6);
+  } else {
     printOption(OPTION_JUMP, "Jump",
-                jump == 0 ? "OFF" : jump == 1 ? "LINEAR" : "RANDOM", 7);
+                jump == 0   ? "OFF"
+                : jump == 1 ? "LINEAR"
+                            : "RANDOM",
+                6);
+  }
   printOption(OPTION_REDUCE, "Reduce",
-              reduce == 0 ? "OFF"
-                          : reduce == 1 ? "FIXED"
-                                        : reduce == 2 ? "LINEAR"
-                                                      : reduce == 3 ? "MICRO"
-                                                                    : "RANDOM",
-              8);
+              reduce == 0   ? "OFF"
+              : reduce == 1 ? "FIXED"
+              : reduce == 2 ? "LINEAR"
+              : reduce == 3 ? "MICRO"
+                            : "RANDOM",
+              7);
+  printOption(OPTION_BOUNCE, "Bounce", "OFF", 8);
   printOption(OPTION_DECOLORIZE, "Decolorize",
-              decolorize == 0
-                  ? "OFF"  // ° ͜ʖ ͡°)
-                  : decolorize == 1
-                        ? "INVERT"  // ° ͜ʖ ͡°)
-                        : decolorize == 2
-                              ? "GRAY"  // ° ͜ʖ ͡°)
-                              : decolorize == 3
-                                    ? "RED"  // ° ͜ʖ ͡°)
-                                    : decolorize == 4 ? "GREEN" : "BLUE",
+              decolorize == 0   ? "OFF"     // ° ͜ʖ ͡°)
+              : decolorize == 1 ? "INVERT"  // ° ͜ʖ ͡°)
+              : decolorize == 2 ? "GRAY"    // ° ͜ʖ ͡°)
+              : decolorize == 3 ? "RED"     // ° ͜ʖ ͡°)
+              : decolorize == 4 ? "GREEN"
+                                : "BLUE",
               9);
   printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
               10);
@@ -102,10 +106,13 @@ void ModsScene::printOptions() {
   else
     printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
                 12);
+  printOption(OPTION_AUTOMOD, "Automod", "OFF", 13);
   printOption(OPTION_TRAINING_MODE, "Training mode",
-              trainingMode == 0 ? "OFF" : trainingMode == 1 ? "ON" : "SILENT",
-              13);
-  printOption(OPTION_RESET, "[RESET MODS]", "", 15);
+              trainingMode == 0   ? "OFF"
+              : trainingMode == 1 ? "ON"
+                                  : "SILENT",
+              14);
+  printOption(OPTION_RESET, "       [RESET ALL]", "", 15);
 }
 
 bool ModsScene::selectOption(u32 selected) {
