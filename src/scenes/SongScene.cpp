@@ -64,18 +64,18 @@ std::vector<Background*> SongScene::backgrounds() {
 std::vector<Sprite*> SongScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(lifeBars[playerId]->get());
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getFeedback()->get());
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getTitle()->get());
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(0)->get());
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(1)->get());
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(2)->get());
 
   for (u32 i = 0; i < fakeHeads.size(); i++) {
@@ -95,6 +95,7 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  setUpGameConfig();
   RUMBLE_init();
 
   if (isMultiplayer()) {
@@ -113,10 +114,10 @@ void SongScene::load() {
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId] = std::unique_ptr<LifeBar>{new LifeBar(playerId)};
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId] =
         std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
 
@@ -126,9 +127,9 @@ void SongScene::load() {
 
   int audioLag = GameState.settings.audioLag;
   u32 multiplier = GameState.mods.multiplier;
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     chartReader[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
-        playerId == getLocalPlayerId() ? chart : remoteChart, playerId,
+        playerId == localPlayerId ? chart : remoteChart, playerId,
         arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier)};
 
   startInput = std::unique_ptr<InputHandler>{new InputHandler()};
@@ -169,16 +170,16 @@ void SongScene::tick(u16 keys) {
   __qran_seed += keys;
   processKeys(keys);
 
-  if (isMultiplayer()) {
+  if ($isMultiplayer) {
     processMultiplayerUpdates();
     if (!syncer->isPlaying())
       return;
   }
 
-  bool isNewBeat = chartReader[getLocalPlayerId()]->update((int)songMsecs);
+  bool isNewBeat = chartReader[localPlayerId]->update((int)songMsecs);
   if (isNewBeat)
     onNewBeat(KEY_ANY_PRESSED(keys));
-  if (isVs())
+  if ($isVs)
     chartReader[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
   updateArrowHolders();
@@ -228,7 +229,7 @@ void SongScene::setUpArrows() {
   arrowPool = std::unique_ptr<ObjectPool<Arrow>>{new ObjectPool<Arrow>(
       ARROW_POOL_SIZE, [](u32 id) -> Arrow* { return new Arrow(id); })};
 
-  for (u32 i = 0; i < ARROWS_TOTAL * getPlatformCount(); i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * platformCount; i++) {
     auto direction = getDirectionFromIndex(i);
     auto arrowHolder = std::unique_ptr<ArrowHolder>{
         new ArrowHolder(direction, getPlayerIdFromIndex(i), true)};
@@ -253,7 +254,7 @@ void SongScene::initializeBackground() {
                                           : GameState.settings.gamePosition;
   auto type = GameState.settings.backgroundType;
 
-  if (isMultiplayer() || isSinglePlayerDouble()) {
+  if ($isMultiplayer || $isSinglePlayerDouble) {
     gamePosition = GamePosition::LEFT;
     type = BackgroundType::FULL_BGA_DARK;
   }
@@ -265,7 +266,7 @@ void SongScene::initializeBackground() {
     SCENE_decolorize(foregroundPalette.get(), GameState.mods.decolorize);
   }
 
-  if (!isVs())
+  if (!$isVs)
     for (u32 i = LIFEBAR_TILE_START; i <= LIFEBAR_TILE_END; i++)
       BACKGROUND_createSolidTile(LIFEBAR_CHARBLOCK, i, 0);
 }
@@ -283,7 +284,7 @@ bool SongScene::initializeGame(u16 keys) {
     SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
                         GradeType::DEFECTIVE);
 
-    if (isMultiplayer()) {
+    if ($isMultiplayer) {
       syncer->send(SYNC_EVENT_ABORT, 0);
       syncer->clearTimeout();
     }
@@ -332,7 +333,7 @@ CODE_IWRAM void SongScene::updateArrows() {
   });
 
   // judge key press events
-  for (u32 i = 0; i < ARROWS_TOTAL * getPlatformCount(); i++) {
+  for (u32 i = 0; i < ARROWS_TOTAL * platformCount; i++) {
     auto arrow = nextArrows[i];
     if (arrow == NULL)
       continue;
@@ -377,10 +378,10 @@ CODE_IWRAM void SongScene::updateArrows() {
 void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
 
-  if (isMultiplayer() || GameState.settings.bgaDarkBlink)
+  if ($isMultiplayer || GameState.settings.bgaDarkBlink)
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
-  if (!isMultiplayer() &&
+  if (!$isMultiplayer &&
       GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_BEAT) {
     if (blinkFrame > 0)
       IOPORT_sdHigh();
@@ -416,9 +417,9 @@ void SongScene::updateFakeHeads() {
 }
 
 void SongScene::updateScoresAndLifebars() {
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId]->tick();
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 }
 
@@ -446,7 +447,7 @@ void SongScene::updateRumble() {
   if (!GameState.adminSettings.rumble)
     return;
 
-  auto localChartReader = chartReader[getLocalPlayerId()].get();
+  auto localChartReader = chartReader[localPlayerId].get();
 
   if (localChartReader->beatDurationFrames != -1 &&
       localChartReader->beatFrame ==
@@ -476,18 +477,18 @@ void SongScene::updateRumble() {
 }
 
 void SongScene::processKeys(u16 keys) {
-  arrowHolders[getLocalBaseIndex() + 0]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowHolders[getLocalBaseIndex() + 1]->setIsPressed(KEY_UPLEFT(keys));
-  arrowHolders[getLocalBaseIndex() + 2]->setIsPressed(KEY_CENTER(keys));
-  arrowHolders[getLocalBaseIndex() + 3]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowHolders[getLocalBaseIndex() + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
+  arrowHolders[localBaseIndex + 0]->setIsPressed(KEY_DOWNLEFT(keys));
+  arrowHolders[localBaseIndex + 1]->setIsPressed(KEY_UPLEFT(keys));
+  arrowHolders[localBaseIndex + 2]->setIsPressed(KEY_CENTER(keys));
+  arrowHolders[localBaseIndex + 3]->setIsPressed(KEY_UPRIGHT(keys));
+  arrowHolders[localBaseIndex + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
 
-  if (isSinglePlayerDouble()) {
-    arrowHolders[getLocalBaseIndex() + 5]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowHolders[getLocalBaseIndex() + 6]->setIsPressed(KEY_UPLEFT(keys));
-    arrowHolders[getLocalBaseIndex() + 7]->setIsPressed(KEY_CENTER(keys));
-    arrowHolders[getLocalBaseIndex() + 8]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowHolders[getLocalBaseIndex() + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
+  if ($isSinglePlayerDouble) {
+    arrowHolders[localBaseIndex + 5]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[localBaseIndex + 6]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[localBaseIndex + 7]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[localBaseIndex + 8]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[localBaseIndex + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
   }
 
   startInput->setIsPressed(keys & KEY_START);
@@ -505,7 +506,7 @@ void SongScene::processKeys(u16 keys) {
         });
   }
 
-  if (!isMultiplayer() &&
+  if (!$isMultiplayer &&
       GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_KEY) {
     if (KEY_ANY_PRESSED(keys))
       IOPORT_sdHigh();
@@ -524,13 +525,13 @@ void SongScene::processKeys(u16 keys) {
       if (chartReader[0]->debugOffset == 0)
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader[getLocalPlayerId()]->setMultiplier(
-              chartReader[getLocalPlayerId()]->getMultiplier() + 1)) {
+      if (chartReader[localPlayerId]->setMultiplier(
+              chartReader[localPlayerId]->getMultiplier() + 1)) {
         pixelBlink->blink();
 
-        if (isMultiplayer())
+        if ($isMultiplayer)
           syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
-                       chartReader[getLocalPlayerId()]->getMultiplier());
+                       chartReader[localPlayerId]->getMultiplier());
       }
     }
   }
@@ -541,13 +542,13 @@ void SongScene::processKeys(u16 keys) {
       if (chartReader[0]->debugOffset == 0)
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
-      if (chartReader[getLocalPlayerId()]->setMultiplier(
-              chartReader[getLocalPlayerId()]->getMultiplier() - 1)) {
+      if (chartReader[localPlayerId]->setMultiplier(
+              chartReader[localPlayerId]->getMultiplier() - 1)) {
         pixelBlink->blink();
 
-        if (isMultiplayer())
+        if ($isMultiplayer)
           syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
-                       chartReader[getLocalPlayerId()]->getMultiplier());
+                       chartReader[localPlayerId]->getMultiplier());
       }
     }
   }
@@ -556,7 +557,7 @@ void SongScene::processKeys(u16 keys) {
 void SongScene::onNewBeat(bool isAnyKeyPressed) {
   blinkFrame = min(blinkFrame + ALPHA_BLINK_LEVEL, ALPHA_BLINK_LEVEL);
 
-  for (u32 playerId = 0; playerId < getPlayerCount(); playerId++)
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->blink(foregroundPalette.get());
 
   for (auto& arrowHolder : arrowHolders)
@@ -565,7 +566,7 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
 
   processModsBeat();
 
-  auto localChartReader = chartReader[getLocalPlayerId()].get();
+  auto localChartReader = chartReader[localPlayerId].get();
   localChartReader->beatDurationFrames = localChartReader->beatFrame;
   localChartReader->beatFrame = 0;
 
@@ -576,13 +577,12 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
 void SongScene::onStageBreak(u8 playerId) {
   scores[playerId]->die();
 
-  if (isMultiplayer()) {
-    if (isVs()) {
-      if (playerId == getLocalPlayerId())
+  if ($isMultiplayer) {
+    if ($isVs) {
+      if (playerId == localPlayerId)
         syncer->send(SYNC_EVENT_STAGE_END, false);
 
-      bool allDead = !ENV_DEVELOPMENT &&
-                     lifeBars[getLocalPlayerId()]->getIsDead() &&
+      bool allDead = !ENV_DEVELOPMENT && lifeBars[localPlayerId]->getIsDead() &&
                      lifeBars[syncer->getRemotePlayerId()]->getIsDead();
 
       if (allDead)
@@ -601,7 +601,7 @@ void SongScene::onStageBreak(u8 playerId) {
 }
 
 void SongScene::onStagePass() {
-  if (isMultiplayer())
+  if ($isMultiplayer)
     syncer->send(SYNC_EVENT_STAGE_END, true);
 
   finishAndGoToEvaluation();
@@ -620,7 +620,7 @@ void SongScene::breakStage() {
 }
 
 void SongScene::finishAndGoToEvaluation() {
-  auto evaluation = scores[getLocalPlayerId()]->evaluate();
+  auto evaluation = scores[localPlayerId]->evaluate();
   bool isLastSong =
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
                           chart->level, evaluation->getGrade());
@@ -629,13 +629,13 @@ void SongScene::finishAndGoToEvaluation() {
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
-          isVs() ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
+          $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           remoteChart->level != chart->level, isLastSong),
       new PixelTransitionEffect());
 }
 
 void SongScene::processModsLoad() {
-  if (isMultiplayer())
+  if ($isMultiplayer)
     return;
 
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
@@ -649,7 +649,7 @@ void SongScene::processModsLoad() {
 }
 
 void SongScene::processModsBeat() {
-  if (isMultiplayer())
+  if ($isMultiplayer)
     return;
 
   if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
@@ -682,7 +682,7 @@ void SongScene::processModsBeat() {
 }
 
 void SongScene::processModsTick() {
-  if (isMultiplayer())
+  if ($isMultiplayer)
     return;
 
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
@@ -792,19 +792,19 @@ void SongScene::processTrainingModeMod() {
 }
 
 void SongScene::processMultiplayerUpdates() {
-  syncer->send(SYNC_EVENT_KEYS,
-               SYNC_MSG_KEYS_BUILD(
-                   arrowHolders[getLocalBaseIndex() + 0]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 1]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 2]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 3]->getIsPressed(),
-                   arrowHolders[getLocalBaseIndex() + 4]->getIsPressed()));
+  syncer->send(
+      SYNC_EVENT_KEYS,
+      SYNC_MSG_KEYS_BUILD(arrowHolders[localBaseIndex + 0]->getIsPressed(),
+                          arrowHolders[localBaseIndex + 1]->getIsPressed(),
+                          arrowHolders[localBaseIndex + 2]->getIsPressed(),
+                          arrowHolders[localBaseIndex + 3]->getIsPressed(),
+                          arrowHolders[localBaseIndex + 4]->getIsPressed()));
 
   auto remoteId = syncer->getRemotePlayerId();
 
   bool remoteArrows[ARROWS_TOTAL];
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    remoteArrows[i] = arrowHolders[getRemoteBaseIndex() + i]->getIsPressed();
+    remoteArrows[i] = arrowHolders[remoteBaseIndex + i]->getIsPressed();
 
   linkUniversal->sync();
 
@@ -843,7 +843,7 @@ void SongScene::processMultiplayerUpdates() {
         break;
       }
       case SYNC_EVENT_MULTIPLIER_CHANGE: {
-        if (isVs())
+        if ($isVs)
           chartReader[remoteId]->setMultiplier(payload);
         else {
           chartReader[0]->setMultiplier(payload);
@@ -875,7 +875,7 @@ void SongScene::processMultiplayerUpdates() {
   }
 
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
-    arrowHolders[getRemoteBaseIndex() + i]->setIsPressed(remoteArrows[i]);
+    arrowHolders[remoteBaseIndex + i]->setIsPressed(remoteArrows[i]);
 
   if (syncer->$resetFlag && !engine->isTransitioning()) {
     syncer->send(SYNC_EVENT_ABORT, 0);
@@ -900,7 +900,7 @@ void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
 
-  if (isMultiplayer())
+  if ($isMultiplayer)
     syncer->resetSongState();
   else
     IOPORT_sdLow();

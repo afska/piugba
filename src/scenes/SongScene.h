@@ -58,6 +58,9 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> selectInput;
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
+  bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble;
+  u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
+      localPlayerId;
   int rate = 0;
   u32 blinkFrame = 0;  // (background blink)
   u8 targetMosaic = 0;
@@ -68,36 +71,31 @@ class SongScene : public Scene {
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
 
-  inline u8 getPlatformCount() {
-    return isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
+  inline void setUpGameConfig() {
+    $isMultiplayer = isMultiplayer();
+    $isDouble = isDouble();
+    $isVs = isVs();
+    $isSinglePlayerDouble = isSinglePlayerDouble();
+    platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
+    playerCount = 1 + isVs();
+    localBaseIndex = isMultiplayer()
+                         ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
+                         : 0;
+    remoteBaseIndex = getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
+    localPlayerId = isVs() ? syncer->getLocalPlayerId() : 0;
   }
-  inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
 
   inline ArrowDirection getDirectionFromIndex(u32 index) {
-    return static_cast<ArrowDirection>(
-        isDouble() ? index : DivMod(index, ARROWS_TOTAL));
+    return static_cast<ArrowDirection>($isDouble ? index
+                                                 : DivMod(index, ARROWS_TOTAL));
   }
 
   inline u8 getPlayerIdFromIndex(u32 index) {
-    return isDouble() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
+    return $isDouble ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
   }
 
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
     return playerId * ARROWS_TOTAL;
-  }
-
-  inline u8 getLocalBaseIndex() {
-    return isMultiplayer()
-               ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
-               : 0;
-  }
-
-  inline u8 getRemoteBaseIndex() {
-    return getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
-  }
-
-  inline u8 getLocalPlayerId() {
-    return isVs() ? syncer->getLocalPlayerId() : 0;
   }
 
   void setUpPalettes();
