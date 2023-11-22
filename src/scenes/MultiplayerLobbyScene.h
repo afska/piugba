@@ -3,6 +3,7 @@
 
 #include "base/TextScene.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "objects/ui/Explosion.h"
 
 class MultiplayerLobbyScene : public TextScene {
  public:
@@ -13,6 +14,8 @@ class MultiplayerLobbyScene : public TextScene {
     this->mode = mode;
   }
 
+  virtual std::vector<Sprite*> sprites() override;
+
  protected:
   void load() override;
   void tick(u16 keys) override;
@@ -20,6 +23,8 @@ class MultiplayerLobbyScene : public TextScene {
  private:
   SyncMode mode;
   int messageId = -1;
+
+  std::unique_ptr<Explosion> loadingIndicator;
 
   void refresh(int newMessageId);
   void start();

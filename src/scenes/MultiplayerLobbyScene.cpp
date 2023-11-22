@@ -17,8 +17,26 @@ const std::string messages[] = {
     "ERROR:\r\nMixed game modes!",
     "Connecting...\r\n       [wireless / host]\r\n(Press SELECT to cancel)"};
 
+const u32 LOADING_INDICATOR_X = GBA_SCREEN_WIDTH - 16 - 4;
+const u32 LOADING_INDICATOR_Y = GBA_SCREEN_HEIGHT - 16 - 4;
+
+std::vector<Sprite*> MultiplayerLobbyScene::sprites() {
+  std::vector<Sprite*> sprites;
+
+#ifndef SENV_DEBUG
+  sprites.push_back(instructor->get());
+#endif
+
+  sprites.push_back(loadingIndicator->get());
+
+  return sprites;
+}
+
 void MultiplayerLobbyScene::load() {
   TextScene::load();
+
+  loadingIndicator = std::unique_ptr<Explosion>{
+      new Explosion(LOADING_INDICATOR_X, LOADING_INDICATOR_Y, false)};
 
   syncer->initialize(mode);
   refresh(0);
@@ -27,6 +45,8 @@ void MultiplayerLobbyScene::load() {
 void MultiplayerLobbyScene::tick(u16 keys) {
   if (engine->isTransitioning())
     return;
+
+  loadingIndicator->tick();
 
   if (syncer->isPlaying()) {
     start();

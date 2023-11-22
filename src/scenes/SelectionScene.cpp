@@ -46,8 +46,13 @@ const u32 NUMERIC_LEVEL_BADGE_Y = 19;
 const u32 NUMERIC_LEVEL_ROW = 3;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_Y = 43;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_ROW = 5;
-const u32 LOADING_INDICATORS_X[] = {31, 193};
-const u32 LOADING_INDICATORS_Y = 18;
+const u32 LOADING_INDICATORS_X[] = {
+    GBA_SCREEN_WIDTH - 16 - 4,
+    GBA_SCREEN_WIDTH - 16 - 4,
+    31,
+    193,
+};
+const u32 LOADING_INDICATORS_Y[] = {GBA_SCREEN_HEIGHT - 16 - 4, 18};
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -249,9 +254,11 @@ void SelectionScene::setUpArrows() {
 
   if (isMultiplayer()) {
     loadingIndicator1 = std::unique_ptr<Explosion>{
-        new Explosion(LOADING_INDICATORS_X[0], LOADING_INDICATORS_Y, true)};
+        new Explosion(LOADING_INDICATORS_X[syncer->isMaster() * 2],
+                      LOADING_INDICATORS_Y[syncer->isMaster()], true)};
     loadingIndicator2 = std::unique_ptr<Explosion>{
-        new Explosion(LOADING_INDICATORS_X[1], LOADING_INDICATORS_Y, true)};
+        new Explosion(LOADING_INDICATORS_X[syncer->isMaster() * 2 + 1],
+                      LOADING_INDICATORS_Y[syncer->isMaster()], true)};
   }
 }
 
