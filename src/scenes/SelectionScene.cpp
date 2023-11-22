@@ -155,8 +155,10 @@ void SelectionScene::tick(u16 keys) {
     init++;
     return;
   } else if (init == INIT_FRAME) {
-    if (isDouble())
+    if (isDouble()) {
       SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
+      VBlankIntrWait();
+    }
 
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
