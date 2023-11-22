@@ -157,7 +157,7 @@ class Arrow : public IPoolable {
 
   ArrowState end();
   void animatePress();
-  bool isAligned();
+  bool isNearEndOrClose(int newY);
   bool isNearEnd(int newY);
 
   inline void refresh() {

@@ -84,7 +84,7 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
       else
         return end();
     }
-  } else if (isAligned() && isPressed && needsAnimation) {
+  } else if (isNearEndOrClose(newY) /*&& isPressed*/ && needsAnimation) {
     animatePress();
   } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
              isPressing) {
@@ -120,8 +120,8 @@ void Arrow::animatePress() {
   SPRITE_goToFrame(sprite.get(), endAnimationStartFrame);
 }
 
-bool Arrow::isAligned() {
-  return abs(sprite->getY() - (int)ARROW_FINAL_Y()) < ARROW_QUARTER_SIZE;
+bool Arrow::isNearEndOrClose(int newY) {
+  return newY <= (int)ARROW_FINAL_Y() + ARROW_QUARTER_SIZE;
 }
 
 bool Arrow::isNearEnd(int newY) {
