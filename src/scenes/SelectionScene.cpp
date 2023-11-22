@@ -299,6 +299,9 @@ void SelectionScene::scrollTo(u32 page, u32 selected) {
 }
 
 void SelectionScene::setNumericLevel(u8 numericLevelIndex) {
+  if (numericLevelIndex == getSelectedNumericLevelIndex())
+    return;
+
   SAVEFILE_write8(SRAM->memory.numericLevel, numericLevelIndex);
   updateSelection(true);
   pixelBlink->blink();
@@ -463,11 +466,6 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
     player_play(SOUND_STEP);
-
-    if (newValue == getSelectedNumericLevelIndex()) {
-      syncNumericLevelChanged(newValue);
-      return true;
-    }
 
     syncNumericLevelChanged(newValue);
     setNumericLevel(newValue);
@@ -726,7 +724,6 @@ void SelectionScene::processMultiplayerUpdates() {
           setNumericLevel(syncer->$remoteNumericLevel);
         scrollTo(payload);
         syncer->$remoteNumericLevel = -1;
-        pixelBlink->blink();
 
         syncer->clearTimeout();
         break;
