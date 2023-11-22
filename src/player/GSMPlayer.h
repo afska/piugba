@@ -13,6 +13,10 @@
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
 
+#ifndef CODE_EWRAM
+#define CODE_EWRAM __attribute__((section(".ewram")))
+#endif
+
 #define PLAYER_DEFINE(DMA_CNT, DMA_SAD, DMA_DAD, FIFO_ADDRESS, MUTE, UNMUTE)   \
   uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));     \
                                                                                \
@@ -30,7 +34,7 @@
   static int last_sample = 0;                                                  \
   static int i;                                                                \
                                                                                \
-  static void gsm_init(gsm r) {                                                \
+  CODE_EWRAM static void gsm_init(gsm r) {                                     \
     memset((char*)r, 0, sizeof(*r));                                           \
     r->nrp = 40;                                                               \
   }                                                                            \
@@ -47,7 +51,7 @@
               DMA_ENABLE | 1;                                                  \
   }                                                                            \
                                                                                \
-  static void mute() {                                                         \
+  CODE_EWRAM static void mute() {                                              \
     DSOUNDCTRL = DSOUNDCTRL & MUTE;                                            \
   }                                                                            \
                                                                                \

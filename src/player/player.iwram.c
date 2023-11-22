@@ -16,10 +16,6 @@
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"
 
-#ifndef CODE_EWRAM
-#define CODE_EWRAM __attribute__((section(".ewram")))
-#endif
-
 #define REG_VCOUNT *(vu16*)(REG_BASE + 0x0006)  //!< Scanline count
 
 Playback PlaybackState;
@@ -103,16 +99,20 @@ void player_onVBlank() {
   PLAYER_POST_UPDATE();
 }
 
+CODE_EWRAM void updateRate() {
+  if (rate != 0) {
+    rateCounter++;
+    if (rateCounter == rateDelays[rate + RATE_LEVELS]) {
+      src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
+      rateCounter = 0;
+    }
+  }
+}
+
 void player_forever(int (*update)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
-    if (rate != 0) {
-      rateCounter++;
-      if (rateCounter == rateDelays[rate + RATE_LEVELS]) {
-        src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
-        rateCounter = 0;
-      }
-    }
+    updateRate();
 
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);

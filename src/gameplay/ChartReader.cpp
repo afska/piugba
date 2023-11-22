@@ -251,7 +251,7 @@ CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
   connectArrows(arrows);
 }
 
-CODE_IWRAM void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
+void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
   if (GameState.mods.randomSteps) {
     // (when using random steps, hold notes are converted to unique notes)
     return processUniqueNote(timestamp, getRandomStep(timestamp, data), 0);
@@ -287,7 +287,7 @@ CODE_IWRAM void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
   });
 }
 
-CODE_IWRAM void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
+void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
   if (GameState.mods.randomSteps)
     return;
 

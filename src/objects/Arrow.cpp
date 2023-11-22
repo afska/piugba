@@ -7,6 +7,8 @@
 #include "utils/SpriteUtils.h"
 
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
+const u32 END_ANIMATION_TOTAL_FRAMES = 12;
+const u32 END_ANIMATION_FRAMES[] = {0, 0, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1};
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -72,23 +74,15 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
     endAnimationFrame++;
     sprite->moveTo(newX, sprite->getY());
 
-    if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES) {
-      if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 1)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 2)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 3)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 3);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 4)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 5)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
-      else if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES * 6) {
-        if (type == ArrowType::HOLD_FAKE_HEAD)
-          animatePress();
-        else
-          return end();
-      }
+    if (endAnimationFrame < END_ANIMATION_TOTAL_FRAMES) {
+      SPRITE_goToFrame(
+          sprite.get(),
+          endAnimationStartFrame + END_ANIMATION_FRAMES[endAnimationFrame]);
+    } else {
+      if (type == ArrowType::HOLD_FAKE_HEAD)
+        animatePress();
+      else
+        return end();
     }
   } else if (isAligned() && isPressed && needsAnimation) {
     animatePress();

@@ -814,7 +814,7 @@ class LinkWireless {
     // clearOutgoingMessagesIfNeeded(lastPacketId);
   }
 
-  int setDataFromOutgoingMessages() {  // (irq only)
+  void setDataFromOutgoingMessages() {  // (irq only) // [!]
     u32 maxTransferLength = getDeviceTransferLength();
 
     addData(0, true);
@@ -847,8 +847,6 @@ class LinkWireless {
     nextCommandData[0] = sessionState.currentPlayerId == 0
                              ? bytes
                              : bytes << (3 + sessionState.currentPlayerId * 5);
-
-    return lastPacketId;
   }
 
   void addIncomingMessagesFromData(CommandResult& result) {  // (irq only)
@@ -1073,27 +1071,7 @@ class LinkWireless {
     copyIncomingState();
   }
 
-  void copyOutgoingState() {  // (irq only)
-    if (isAddingMessage)
-      return;
-
-    while (!sessionState.tmpMessagesToSend.isEmpty()) {
-      if (isSessionActive() && !_canSend())
-        break;
-
-      auto message = sessionState.tmpMessagesToSend.pop();
-
-      if (isSessionActive()) {
-        message.packetId = newPacketId();
-        sessionState.outgoingMessages.push(message);
-      }
-    }
-
-    if (isPendingClearActive) {
-      sessionState.outgoingMessages.clear();
-      isPendingClearActive = false;
-    }
-  }
+  void copyOutgoingState();  // (irq only) [!]
 
   void copyIncomingState();  // (irq only) [!]
 

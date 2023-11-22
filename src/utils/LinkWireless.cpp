@@ -4,6 +4,28 @@
 
 // [!]
 
+CODE_IWRAM void LinkWireless::copyOutgoingState() {
+  if (isAddingMessage)
+    return;
+
+  while (!sessionState.tmpMessagesToSend.isEmpty()) {
+    if (isSessionActive() && !_canSend())
+      break;
+
+    auto message = sessionState.tmpMessagesToSend.pop();
+
+    if (isSessionActive()) {
+      message.packetId = newPacketId();
+      sessionState.outgoingMessages.push(message);
+    }
+  }
+
+  if (isPendingClearActive) {
+    sessionState.outgoingMessages.clear();
+    isPendingClearActive = false;
+  }
+}
+
 CODE_IWRAM void LinkWireless::copyIncomingState() {
   if (isReadingMessages)
     return;
@@ -82,7 +104,7 @@ CODE_IWRAM void LinkWireless::_onSerial() {
 #endif
 }
 
-void LinkWireless::_onTimer() {
+CODE_IWRAM void LinkWireless::_onTimer() {
   if (!isEnabled)
     return;
 
