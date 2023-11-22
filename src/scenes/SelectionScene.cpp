@@ -146,6 +146,8 @@ void SelectionScene::tick(u16 keys) {
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     highlighter->initialize(selected);
+    if (isDouble())
+      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
     init++;
   }
 
