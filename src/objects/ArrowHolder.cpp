@@ -28,6 +28,7 @@ ArrowHolder::ArrowHolder(ArrowDirection direction,
     SPRITE_reuseTiles(sprite.get());
 
   SPRITE_goToFrame(sprite.get(), endTile);
+  ARROW_setUpOrientation(sprite.get(), flip);
 }
 
 void ArrowHolder::blink() {
@@ -35,11 +36,6 @@ void ArrowHolder::blink() {
 }
 
 void ArrowHolder::tick(int offsetX) {
-  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
-                           flip == ArrowFlip::FLIP_BOTH);
-  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
-                         flip == ArrowFlip::FLIP_BOTH);
-
   u32 currentFrame = sprite->getCurrentFrame();
   u32 idleFrame = endTile;
   u32 pressedFrame = endTile + ARROW_HOLDER_PRESSED_OFFSET;

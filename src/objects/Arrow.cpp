@@ -57,10 +57,6 @@ void Arrow::press() {
 }
 
 CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
-  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
-                           flip == ArrowFlip::FLIP_BOTH);
-  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
-                         flip == ArrowFlip::FLIP_BOTH);
   if (SPRITE_isHidden(get()))
     return ArrowState::OUT;
 

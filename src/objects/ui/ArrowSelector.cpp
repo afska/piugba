@@ -32,6 +32,8 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
 
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
+
+  ARROW_setUpOrientation(sprite.get(), flip);
 }
 
 bool ArrowSelector::shouldFireEvent() {
@@ -60,11 +62,6 @@ bool ArrowSelector::shouldFireEvent() {
 }
 
 void ArrowSelector::tick() {
-  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
-                           flip == ArrowFlip::FLIP_BOTH);
-  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
-                         flip == ArrowFlip::FLIP_BOTH);
-
   globalLastPressFrame++;
   currentLastPressFrame++;
 

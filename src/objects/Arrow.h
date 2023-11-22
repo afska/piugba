@@ -23,6 +23,13 @@ inline void ARROW_initialize(ArrowDirection direction,
   flip = ARROW_FLIP_TILE[singleDirection];
 }
 
+inline void ARROW_setUpOrientation(Sprite* sprite, ArrowFlip flip) {
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
+}
+
 class Arrow : public IPoolable {
  public:
   u32 id = 0;
@@ -82,6 +89,7 @@ class Arrow : public IPoolable {
     needsAnimation = false;
 
     sprite->setPriority(isHoldTail ? ARROW_LAYER_BACK : ARROW_LAYER_FRONT);
+    ARROW_setUpOrientation(sprite.get(), flip);
   }
 
   inline void initializeHoldBorder(ArrowType type,

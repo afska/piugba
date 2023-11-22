@@ -29,8 +29,6 @@
 #define GFX_MODE 0
 #define MOSAIC_MODE 1
 #define AFFINE_FLAG_NONE_SET_YET 0
-#define HORIZONTAL_FLIP_FLAG 0
-#define VERTICAL_FLIP_FLAG 0
 
 #define FLIP_VERTICAL_CLEAR 0xdfff
 #define FLIP_HORIZONTAL_CLEAR 0xefff
@@ -318,7 +316,8 @@ inline void Sprite::buildOam(int tileIndex) {
               (MOSAIC_MODE << 12) | (COLOR_MODE_256 << 13) |
               (this->shape_bits << 14);
   oam.attr1 = (this->x & 0x01FF) | (AFFINE_FLAG_NONE_SET_YET << 9) |
-              (HORIZONTAL_FLIP_FLAG << 12) | (VERTICAL_FLIP_FLAG << 13) |
+              (((oam.attr1 & ATTR1_HFLIP) != 0) << 12) |
+              (((oam.attr1 & ATTR1_VFLIP) != 0) << 13) |
               (this->size_bits << 14);
 
   oam.attr2 = ATTR2_ID(tileIndex) | ATTR2_PRIO(priority) | ATTR2_PALBANK(0);
