@@ -18,6 +18,7 @@
 #include "objects/ui/Button.h"
 #include "objects/ui/ChannelBadge.h"
 #include "objects/ui/Difficulty.h"
+#include "objects/ui/Explosion.h"
 #include "objects/ui/GradeBadge.h"
 #include "objects/ui/Lock.h"
 #include "objects/ui/Multiplier.h"
@@ -56,6 +57,8 @@ class SelectionScene : public Scene {
   std::unique_ptr<NumericProgress> progress;
   std::unique_ptr<InputHandler> settingsMenuInput;
   std::unique_ptr<Button> numericLevelBadge;
+  std::unique_ptr<Explosion> loadingIndicator1;
+  std::unique_ptr<Explosion> loadingIndicator2;
   std::vector<u8> numericLevels;
   u32 page = 0;
   u32 selected = 0;

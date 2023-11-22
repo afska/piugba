@@ -46,6 +46,8 @@ const u32 NUMERIC_LEVEL_BADGE_Y = 19;
 const u32 NUMERIC_LEVEL_ROW = 3;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_Y = 43;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_ROW = 5;
+const u32 LOADING_INDICATORS_X[] = {31, 193};
+const u32 LOADING_INDICATORS_Y = 18;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -66,6 +68,11 @@ std::vector<Sprite*> SelectionScene::sprites() {
 
   for (auto& it : arrowSelectors)
     sprites.push_back(it->get());
+
+  if (isMultiplayer()) {
+    sprites.push_back(loadingIndicator1->get());
+    sprites.push_back(loadingIndicator2->get());
+  }
 
   for (auto& it : channelBadges)
     sprites.push_back(it->get());
@@ -143,11 +150,12 @@ void SelectionScene::tick(u16 keys) {
     init++;
     return;
   } else if (init == INIT_FRAME) {
+    if (isDouble())
+      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
+
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     highlighter->initialize(selected);
-    if (isDouble())
-      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
     init++;
   }
 
@@ -156,6 +164,11 @@ void SelectionScene::tick(u16 keys) {
   for (auto& it : arrowSelectors)
     it->tick();
   multiplier->tick();
+
+  if (isMultiplayer()) {
+    loadingIndicator1->tick();
+    loadingIndicator2->tick();
+  }
 
   processKeys(keys);
 
@@ -232,6 +245,13 @@ void SelectionScene::setUpArrows() {
       SPRITE_hide(arrowSelectors[ArrowDirection::UPLEFT]->get());
       SPRITE_hide(arrowSelectors[ArrowDirection::UPRIGHT]->get());
     }
+  }
+
+  if (isMultiplayer()) {
+    loadingIndicator1 = std::unique_ptr<Explosion>{
+        new Explosion(LOADING_INDICATORS_X[0], LOADING_INDICATORS_Y, true)};
+    loadingIndicator2 = std::unique_ptr<Explosion>{
+        new Explosion(LOADING_INDICATORS_X[1], LOADING_INDICATORS_Y, true)};
   }
 }
 

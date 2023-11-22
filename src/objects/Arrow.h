@@ -10,7 +10,7 @@
 #include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
 
-#define BOUNCE_ANIMATION_START 15
+#define EXPLOSION_ANIMATION_START 15
 
 inline void ARROW_initialize(ArrowDirection direction,
                              u32& startTile,
@@ -55,7 +55,7 @@ class Arrow : public IPoolable {
     this->startTile = startTile;
     this->endTile = endTile;
     this->endAnimationStartFrame =
-        isHoldFakeHead ? endTile : BOUNCE_ANIMATION_START;
+        isHoldFakeHead ? endTile : EXPLOSION_ANIMATION_START;
 
     sprite->enabled = true;
     sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
