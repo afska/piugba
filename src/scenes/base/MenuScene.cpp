@@ -58,6 +58,8 @@ void MenuScene::load() {
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)};
   closeInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  incrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  decrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   selectButton->get()->moveTo(SELECT_BUTTON_X,
                               GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
@@ -104,8 +106,17 @@ void MenuScene::printOption(u32 id,
   }
 }
 
+u8 MenuScene::change(u8 value, u8 optionsCount, int direction) {
+  return direction >= 0 ? increment(value, optionsCount)
+                        : decrement(value, optionsCount);
+}
+
 u8 MenuScene::increment(u8 value, u8 optionsCount) {
   return value >= optionsCount - 1 ? 0 : value + 1;
+}
+
+u8 MenuScene::decrement(u8 value, u8 optionsCount) {
+  return value == 0 ? optionsCount - 1 : value - 1;
 }
 
 void MenuScene::setUpSpritesPalette() {
@@ -126,6 +137,8 @@ void MenuScene::processKeys(u16 keys) {
   backButton->setIsPressed(KEY_DOWNLEFT(keys));
   nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
   closeInput->setIsPressed(keys & getCloseKey());
+  incrementInput->setIsPressed(KEY_UPRIGHT(keys));
+  decrementInput->setIsPressed(KEY_UPLEFT(keys));
 
   if (closeInput->hasBeenPressedNow())
     close();
@@ -133,7 +146,13 @@ void MenuScene::processKeys(u16 keys) {
 
 void MenuScene::processSelection() {
   if (selectButton->hasBeenPressedNow())
-    select();
+    select(0);
+
+  if (incrementInput->hasBeenPressedNow())
+    select(1);
+
+  if (decrementInput->hasBeenPressedNow())
+    select(-1);
 
   if (nextButton->hasBeenPressedNow())
     move(1);
@@ -163,11 +182,11 @@ void MenuScene::move(int direction) {
   printMenu();
 }
 
-void MenuScene::select() {
+void MenuScene::select(int direction) {
   player_play(SOUND_STEP);
   pixelBlink->blink();
 
-  if (selectOption(selected))
+  if (selectOption(selected, direction))
     printMenu();
   else
     player_stop();

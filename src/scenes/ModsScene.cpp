@@ -122,25 +122,23 @@ void ModsScene::printOptions() {
   printOption(OPTION_RESET, "       [RESET ALL]", "", 15);
 }
 
-bool ModsScene::selectOption(u32 selected) {
+bool ModsScene::selectOption(u32 selected, int direction) {
   switch (selected) {
     case OPTION_MULTIPLIER: {
       u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
-      if (multiplier == ARROW_MAX_MULTIPLIER)
-        multiplier = 0;
-      multiplier++;
+      multiplier = 1 + change(multiplier, ARROW_MAX_MULTIPLIER, direction);
 
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier);
       return true;
     }
     case OPTION_STAGE_BREAK: {
       u8 stageBreak = SAVEFILE_read8(SRAM->mods.stageBreak);
-      SAVEFILE_write8(SRAM->mods.stageBreak, increment(stageBreak, 3));
+      SAVEFILE_write8(SRAM->mods.stageBreak, change(stageBreak, 3, direction));
       return true;
     }
     case OPTION_PIXELATE: {
       u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
-      SAVEFILE_write8(SRAM->mods.pixelate, increment(pixelate, 6));
+      SAVEFILE_write8(SRAM->mods.pixelate, change(pixelate, 6, direction));
       return true;
     }
     case OPTION_JUMP: {
@@ -148,23 +146,23 @@ bool ModsScene::selectOption(u32 selected) {
         return true;
 
       u8 jump = SAVEFILE_read8(SRAM->mods.jump);
-      SAVEFILE_write8(SRAM->mods.jump, increment(jump, 3));
+      SAVEFILE_write8(SRAM->mods.jump, change(jump, 3, direction));
       return true;
     }
     case OPTION_BOUNCE: {
       u8 bounce = SAVEFILE_read8(SRAM->mods.bounce);
-      SAVEFILE_write8(SRAM->mods.bounce, increment(bounce, 3));
+      SAVEFILE_write8(SRAM->mods.bounce, change(bounce, 3, direction));
       return true;
     }
     case OPTION_REDUCE: {
       u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
-      SAVEFILE_write8(SRAM->mods.reduce, increment(reduce, 5));
+      SAVEFILE_write8(SRAM->mods.reduce, change(reduce, 5, direction));
       return true;
     }
     case OPTION_COLOR_FILTER: {
       u8 colorFilter = SAVEFILE_read8(SRAM->mods.colorFilter);
       SAVEFILE_write8(SRAM->mods.colorFilter,
-                      increment(colorFilter, TOTAL_COLOR_FILTERS));
+                      change(colorFilter, TOTAL_COLOR_FILTERS, direction));
       return true;
     }
     case OPTION_RANDOM_SPEED: {
@@ -187,10 +185,14 @@ bool ModsScene::selectOption(u32 selected) {
     }
     case OPTION_TRAINING_MODE: {
       u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
-      SAVEFILE_write8(SRAM->mods.trainingMode, increment(trainingMode, 3));
+      SAVEFILE_write8(SRAM->mods.trainingMode,
+                      change(trainingMode, 3, direction));
       return true;
     }
     case OPTION_RESET: {
+      if (direction != 0)
+        return true;
+
       SAVEFILE_resetMods();
       return true;
     }

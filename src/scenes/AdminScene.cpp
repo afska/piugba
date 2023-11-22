@@ -64,8 +64,11 @@ void AdminScene::printOptions() {
   printOption(OPTION_DELETE_ALL_DATA, " [DELETE ALL SAVED DATA]", "", 15);
 }
 
-bool AdminScene::selectOption(u32 selected) {
+bool AdminScene::selectOption(u32 selected, int direction) {
   if (areYouSure > -1) {
+    if (direction != 0)
+      return true;
+
     if (selected) {
       switch (areYouSure) {
         case OPTION_RESET_ARCADE_PROGRESS: {
@@ -89,30 +92,38 @@ bool AdminScene::selectOption(u32 selected) {
   switch (selected) {
     case OPTION_ARCADE_CHARTS: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
-      SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, increment(value, 2));
+      SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
+                      change(value, 2, direction));
       return true;
     }
     case OPTION_RUMBLE: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.rumble);
-      SAVEFILE_write8(SRAM->adminSettings.rumble, increment(value, 2));
+      SAVEFILE_write8(SRAM->adminSettings.rumble, change(value, 2, direction));
       return true;
     }
     case OPTION_IO_BLINK: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
-      SAVEFILE_write8(SRAM->adminSettings.ioBlink, increment(value, 3));
+      SAVEFILE_write8(SRAM->adminSettings.ioBlink, change(value, 3, direction));
       return true;
     }
     case OPTION_SRAM_BLINK: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
-      SAVEFILE_write8(SRAM->adminSettings.sramBlink, increment(value, 3));
+      SAVEFILE_write8(SRAM->adminSettings.sramBlink,
+                      change(value, 3, direction));
       return true;
     }
     case OPTION_RESET_ARCADE_PROGRESS: {
+      if (direction != 0)
+        return true;
+
       areYouSure = OPTION_RESET_ARCADE_PROGRESS;
       this->selected = 0;
       return true;
     }
     case OPTION_DELETE_ALL_DATA: {
+      if (direction != 0)
+        return true;
+
       areYouSure = OPTION_DELETE_ALL_DATA;
       this->selected = 0;
       return true;

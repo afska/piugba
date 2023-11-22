@@ -12,7 +12,7 @@ class ModsScene : public MenuScene {
   u32 getOptionsCount() override;
   void loadBackground(u32 id) override;
   void printOptions() override;
-  bool selectOption(u32 selected) override;
+  bool selectOption(u32 selected, int direction) override;
 };
 
 #endif  // MODS_SCENE_H

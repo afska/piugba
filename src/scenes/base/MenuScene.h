@@ -35,11 +35,11 @@ class MenuScene : public Scene {
   virtual u32 getOptionsCount() = 0;
   virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;
-  virtual bool selectOption(u32 selected) = 0;
+  virtual bool selectOption(u32 selected, int direction) = 0;
   virtual void close();
 
   void printOption(u32 id, std::string name, std::string value, u32 row);
-  u8 increment(u8 value, u8 max);
+  u8 change(u8 value, u8 optionsCount, int direction);
 
  private:
   bool hasStarted = false;
@@ -49,6 +49,8 @@ class MenuScene : public Scene {
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
   std::unique_ptr<InputHandler> closeInput;
+  std::unique_ptr<InputHandler> incrementInput;
+  std::unique_ptr<InputHandler> decrementInput;
 
   void setUpSpritesPalette();
   void setUpBackground();
@@ -57,7 +59,9 @@ class MenuScene : public Scene {
   void processSelection();
   void printMenu();
   void move(int direction);
-  void select();
+  void select(int direction);
+  u8 increment(u8 value, u8 optionsCount);
+  u8 decrement(u8 value, u8 optionsCount);
 };
 
 #endif  // MENU_SCENE_H

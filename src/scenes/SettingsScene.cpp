@@ -72,9 +72,12 @@ void SettingsScene::printOptions() {
   printOption(OPTION_QUIT, "   [QUIT TO MAIN MENU]", "", 15);
 }
 
-bool SettingsScene::selectOption(u32 selected) {
+bool SettingsScene::selectOption(u32 selected, int direction) {
   switch (selected) {
     case OPTION_AUDIO_LAG: {
+      if (direction != 0)
+        return true;
+
       engine->transitionIntoScene(new CalibrateScene(engine, fs),
                                   new PixelTransitionEffect());
       return false;
@@ -84,7 +87,8 @@ bool SettingsScene::selectOption(u32 selected) {
         return true;
 
       u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
-      SAVEFILE_write8(SRAM->settings.gamePosition, increment(gamePosition, 3));
+      SAVEFILE_write8(SRAM->settings.gamePosition,
+                      change(gamePosition, 3, direction));
       return true;
     }
     case OPTION_BACKGROUND_TYPE: {
@@ -93,7 +97,7 @@ bool SettingsScene::selectOption(u32 selected) {
 
       u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
       SAVEFILE_write8(SRAM->settings.backgroundType,
-                      increment(backgroundType, 3));
+                      change(backgroundType, 3, direction));
       if (backgroundType == 0)
         SAVEFILE_write8(SRAM->settings.bgaDarkBlink, 1);
       return true;
@@ -104,14 +108,21 @@ bool SettingsScene::selectOption(u32 selected) {
         return true;
 
       u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
-      SAVEFILE_write8(SRAM->settings.bgaDarkBlink, increment(bgaDarkBlink, 2));
+      SAVEFILE_write8(SRAM->settings.bgaDarkBlink,
+                      change(bgaDarkBlink, 2, direction));
       return true;
     }
     case OPTION_RESET: {
+      if (direction != 0)
+        return true;
+
       SAVEFILE_resetSettings();
       return true;
     }
     case OPTION_QUIT: {
+      if (direction != 0)
+        return true;
+
       engine->transitionIntoScene(new StartScene(engine, fs),
                                   new PixelTransitionEffect());
       return false;
