@@ -694,7 +694,7 @@ void SongScene::processModsTick() {
     return;
 
   if (GameState.mods.jump == JumpOpts::jLINEAR) {
-    GameState.positionX[0] += jumpDirection * (1 + blinkFrame);
+    GameState.positionX[0] += jumpDirection * (1 + (blinkFrame / 2));
 
     int endPosition = GAME_POSITION_X[GamePosition::RIGHT];
     if (GameState.positionX[0] >= (int)endPosition ||
@@ -707,7 +707,7 @@ void SongScene::processModsTick() {
   }
 
   if (GameState.mods.reduce == ReduceOpts::rLINEAR) {
-    GameState.positionY += reduceDirection * (1 + blinkFrame);
+    GameState.positionY += reduceDirection * (1 + (blinkFrame / 2));
 
     if (GameState.positionY >= REDUCE_MOD_POSITION_Y ||
         GameState.positionY <= 0) {
