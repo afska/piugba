@@ -536,7 +536,9 @@ class LinkWireless {
       sessionState.recvTimeout++;
 
     if (sessionState.recvTimeout >= config.timeout) {
+      isEnabled = false;  // [!]
       reset();
+      isEnabled = true;  // [!]
       lastError = TIMEOUT;
       return;
     }

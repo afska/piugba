@@ -239,7 +239,7 @@ class LinkCable {
 
     _state.IRQFlag = false;
 
-    copyState();
+    // copyState(); // [!]
   }
 
   void _onSerial() {
