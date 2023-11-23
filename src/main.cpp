@@ -49,6 +49,7 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
+        LINK_UNIVERSAL_ISR_VBLANK();
         syncer->update();
         engine->update();
 
@@ -89,7 +90,6 @@ void ISR_reset() {
 
 void ISR_vblank() {
   player_onVBlank();
-  LINK_UNIVERSAL_ISR_VBLANK();
 }
 
 void setUpInterrupts() {
