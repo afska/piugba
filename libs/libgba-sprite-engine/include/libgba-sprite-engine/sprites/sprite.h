@@ -22,7 +22,6 @@
 #else
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #endif
-#include <libgba-sprite-engine/gbavector.h>
 
 #define COLOR_MODE_16 0
 #define COLOR_MODE_256 1
@@ -100,16 +99,12 @@ class Sprite {
   inline void update();
 
   inline void moveTo(int x, int y);
-  inline void moveTo(VECTOR location);
   inline bool collidesWith(Sprite& s2);
 
   inline void flipVertically(bool flip);
   inline void flipHorizontally(bool flip);
 
   inline u32 getTileIndex() { return tileIndex; }
-  inline VECTOR getPos() { return {x, y}; }
-  inline GBAVector getPosAsVector() { return GBAVector(getPos()); }
-  inline VECTOR getCenter() { return {x + w / 2, y + h / 2}; }
   inline int getX() { return x; }
   inline int getY() { return y; }
   inline u32 getWidth() { return w; }
@@ -122,10 +117,6 @@ class Sprite {
 
   friend class SpriteManager;
 };
-
-inline void Sprite::moveTo(VECTOR location) {
-  moveTo(location.x, location.y);
-}
 
 inline void Sprite::moveTo(int x, int y) {
   this->x = x;

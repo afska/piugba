@@ -36,18 +36,7 @@ class SpriteManager {
   render() {  // copies over OAM buffer to OAM RAM, called in game loop
     // WARNING - This is called every time in the main update loop; keep amount
     // of instructions as minimal as possible in here!
-    int i = 0;
-
-    for (auto sprite : this->sprites) {
-      if (sprite->enabled) {
-        OBJ_ATTR oamAntes = sprite->oam;
-        sprite->update();
-        OBJ_ATTR oamAhora = sprite->oam;
-        oam_mem[i] = sprite->oam;
-      }
-
-      i++;
-    }
+    copyOverSpriteOAMToVRAM();
   }
 };
 

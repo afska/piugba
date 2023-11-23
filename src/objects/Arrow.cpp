@@ -121,7 +121,7 @@ void Arrow::animatePress() {
 }
 
 bool Arrow::isNearEndOrClose(int newY) {
-  return newY <= (int)ARROW_FINAL_Y() + ARROW_QUARTER_SIZE;
+  return newY <= (int)ARROW_FINAL_Y() + (int)ARROW_QUARTER_SIZE;
 }
 
 bool Arrow::isNearEnd(int newY) {
