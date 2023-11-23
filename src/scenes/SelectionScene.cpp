@@ -733,6 +733,7 @@ void SelectionScene::processMultiplayerUpdates() {
           setNumericLevel(syncer->$remoteNumericLevel);
         scrollTo(payload);
         syncer->$remoteNumericLevel = -1;
+        pixelBlink->blink();
 
         syncer->clearTimeout();
         break;
