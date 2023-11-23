@@ -19,11 +19,6 @@ CODE_IWRAM void LinkWireless::copyOutgoingState() {
       sessionState.outgoingMessages.push(message);
     }
   }
-
-  if (isPendingClearActive) {
-    sessionState.outgoingMessages.clear();
-    isPendingClearActive = false;
-  }
 }
 
 CODE_IWRAM void LinkWireless::copyIncomingState() {
@@ -46,10 +41,8 @@ void LinkWireless::_onVBlank() {
   u32 start = REG_VCOUNT;
 #endif
 
-  if (!isSessionActive()) {
-    copyState();
+  if (!isSessionActive())
     return;
-  }
 
   if (isConnected() && sessionState.frameRecvCount == 0)
     sessionState.recvTimeout++;
@@ -57,8 +50,6 @@ void LinkWireless::_onVBlank() {
   sessionState.frameRecvCount = 0;
   sessionState.acceptCalled = false;
   sessionState.pingSent = false;
-
-  copyState();
 
 #ifdef PROFILING_ENABLED
   lastVBlankTime = std::max((int)REG_VCOUNT - (int)start, 0);
@@ -123,8 +114,6 @@ CODE_IWRAM void LinkWireless::_onTimer() {
 
   if (!asyncCommand.isActive)
     acceptConnectionsOrTransferData();
-
-  copyState();
 
 #ifdef PROFILING_ENABLED
   lastTimerTime = std::max((int)REG_VCOUNT - (int)start, 0);
