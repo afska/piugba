@@ -47,6 +47,18 @@ void LinkWireless::_onVBlank() {
   if (isConnected() && sessionState.frameRecvCount == 0)
     sessionState.recvTimeout++;
 
+  if (sessionState.recvTimeout >= config.timeout) {
+    reset();
+    lastError = TIMEOUT;
+    return;
+  }
+
+  if (!checkRemoteTimeouts()) {
+    reset();
+    lastError = REMOTE_TIMEOUT;
+    return;
+  }
+
   sessionState.frameRecvCount = 0;
   sessionState.acceptCalled = false;
   sessionState.pingSent = false;
@@ -105,12 +117,6 @@ CODE_IWRAM void LinkWireless::_onTimer() {
 
   if (!isSessionActive())
     return;
-
-  if (sessionState.recvTimeout >= config.timeout) {
-    reset();
-    lastError = TIMEOUT;
-    return;
-  }
 
   if (!asyncCommand.isActive)
     acceptConnectionsOrTransferData();

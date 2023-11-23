@@ -759,12 +759,6 @@ class LinkWireless {
         trackRemoteTimeouts();
         addIncomingMessagesFromData(asyncCommand.result);
 
-        if (!checkRemoteTimeouts()) {
-          reset();
-          lastError = REMOTE_TIMEOUT;
-          return;
-        }
-
 #ifndef USE_SEND_RECEIVE_LATCH
         if (state == CONNECTED) {
           // SendData (start)
