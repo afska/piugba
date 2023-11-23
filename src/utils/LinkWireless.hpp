@@ -13,11 +13,11 @@
 //       LinkWireless* linkWireless = new LinkWireless();
 // - 2) Add the required interrupt service routines: (*)
 //       irq_init(NULL);
-//       irq_add(II_VBLANK, (void (*)())LINK_WIRELESS_ISR_VBLANK);
-//       irq_add(II_SERIAL, (void (*)())LINK_WIRELESS_ISR_SERIAL);
-//       irq_add(II_TIMER3, (void (*)())LINK_WIRELESS_ISR_TIMER);
-//       irq_add(II_TIMER2, (void (*)())LINK_WIRELESS_ISR_ACK_TIMER); // (*)
-//       // optional, for `LinkWireless::asyncACKTimerId` ----------------^
+//       irq_add(II_VBLANK, LINK_WIRELESS_ISR_VBLANK);
+//       irq_add(II_SERIAL, LINK_WIRELESS_ISR_SERIAL);
+//       irq_add(II_TIMER3, LINK_WIRELESS_ISR_TIMER);
+//       irq_add(II_TIMER2, LINK_WIRELESS_ISR_ACK_TIMER); // --v
+//       // optional, for `LinkWireless::asyncACKTimerId` -----^
 // - 3) Initialize the library with:
 //       linkWireless->activate();
 // - 4) Start a server:
@@ -81,7 +81,7 @@
 #define LINK_WIRELESS_PUT_ISR_IN_IWRAM
 
 // Use send/receive latch (uncomment to enable)
-#define USE_SEND_RECEIVE_LATCH
+#define LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
 
 #define LINK_WIRELESS_MAX_PLAYERS 5
 #define LINK_WIRELESS_MIN_PLAYERS 2
@@ -538,8 +538,8 @@ class LinkWireless {
     if (sessionState.recvTimeout >= config.timeout) {
       isEnabled = false;  // [!]
       reset();
-      isEnabled = true;  // [!]
       lastError = TIMEOUT;
+      isEnabled = true;  // [!]
       return;
     }
 
@@ -1041,7 +1041,7 @@ class LinkWireless {
       u32 expectedPacketId = (sessionState.lastPacketIdFromServer + 1) %
                              LINK_WIRELESS_MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
+      if (/* [!] config.retransmission */ /*true &&*/ !isConfirmation &&
           message.packetId != expectedPacketId)
         return false;
 
@@ -1640,21 +1640,16 @@ inline void LINK_WIRELESS_ISR_VBLANK() {
   linkWireless->_onVBlank();
 }
 
-#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 inline void LINK_WIRELESS_ISR_SERIAL() {
   linkWireless->_onSerial();
 }
+
 inline void LINK_WIRELESS_ISR_TIMER() {
   linkWireless->_onTimer();
 }
+
 inline void LINK_WIRELESS_ISR_ACK_TIMER() {
   linkWireless->_onACKTimer();
 }
-#endif
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
-void LINK_WIRELESS_ISR_SERIAL();
-void LINK_WIRELESS_ISR_TIMER();
-void LINK_WIRELESS_ISR_ACK_TIMER();
-#endif
 
 #endif  // LINK_WIRELESS_H
