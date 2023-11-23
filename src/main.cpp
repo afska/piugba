@@ -33,7 +33,8 @@ LinkUniversal* linkUniversal =
                           .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                           .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
-                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID});
+                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
+                          .asyncACKTimerId = 2});
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -88,15 +89,11 @@ void ISR_reset() {
   SCENE_softReset();
 }
 
-void ISR_vblank() {
-  player_onVBlank();
-}
-
 void setUpInterrupts() {
   interrupt_init();
 
   // VBlank
-  interrupt_set_handler(INTR_VBLANK, ISR_vblank);
+  interrupt_set_handler(INTR_VBLANK, player_onVBlank);
   interrupt_enable(INTR_VBLANK);
 
   // LinkUniversal

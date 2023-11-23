@@ -91,6 +91,7 @@ class LinkUniversal {
     u32 remoteTimeout;
     u16 interval;
     u8 sendTimerId;
+    s8 asyncACKTimerId;
   };
 
   explicit LinkUniversal(
@@ -104,14 +105,16 @@ class LinkUniversal {
       WirelessOptions wirelessOptions = WirelessOptions{
           true, LINK_WIRELESS_MAX_PLAYERS, LINK_WIRELESS_DEFAULT_TIMEOUT,
           LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT, LINK_WIRELESS_DEFAULT_INTERVAL,
-          LINK_WIRELESS_DEFAULT_SEND_TIMER_ID}) {
+          LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
+          LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID}) {
     this->linkCable = new LinkCable(
         cableOptions.baudRate, cableOptions.timeout, cableOptions.remoteTimeout,
         cableOptions.interval, cableOptions.sendTimerId);
     this->linkWireless = new LinkWireless(
         wirelessOptions.retransmission, true, wirelessOptions.maxPlayers,
         wirelessOptions.timeout, wirelessOptions.remoteTimeout,
-        wirelessOptions.interval, wirelessOptions.sendTimerId);
+        wirelessOptions.interval, wirelessOptions.sendTimerId,
+        wirelessOptions.asyncACKTimerId);
 
     this->config.protocol = protocol;
     this->config.gameName = gameName;
@@ -485,16 +488,9 @@ inline void LINK_UNIVERSAL_ISR_VBLANK() {
   linkUniversal->_onVBlank();
 }
 
-inline void LINK_UNIVERSAL_ISR_SERIAL() {
-  linkUniversal->_onSerial();
-}
-
-inline void LINK_UNIVERSAL_ISR_TIMER() {
-  linkUniversal->_onTimer();
-}
-
-inline void LINK_UNIVERSAL_ISR_ACK_TIMER() {
-  linkUniversal->_onACKTimer();
-}
+// [!]
+void LINK_UNIVERSAL_ISR_SERIAL();
+void LINK_UNIVERSAL_ISR_TIMER();
+void LINK_UNIVERSAL_ISR_ACK_TIMER();
 
 #endif  // LINK_UNIVERSAL_H
