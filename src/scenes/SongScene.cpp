@@ -657,6 +657,21 @@ void SongScene::processModsBeat() {
   if ($isMultiplayer)
     return;
 
+  if (GameState.mods.autoMod) {
+    GameState.mods.pixelate = static_cast<PixelateOpts>(qran_range(0, 5));
+    GameState.mods.jump =
+        static_cast<JumpOpts>(qran_range(0, 2));  // TODO: Disable in double
+    GameState.mods.reduce = static_cast<ReduceOpts>(qran_range(0, 4));
+    GameState.mods.bounce = static_cast<BounceOpts>(qran_range(0, 2));
+    GameState.mods.colorFilter = static_cast<ColorFilter>(qran_range(0, 16));
+    GameState.mods.randomSpeed = qran_range(1, 10) > 5;
+    GameState.mods.mirrorSteps =
+        qran_range(1, 10) > 5;  // TODO: This probably breaks hold arrows
+    GameState.mods.randomSteps = false;
+    GameState.mods.trainingMode = TrainingModeOpts::tOFF;
+    processModsLoad();
+  }
+
   if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     mosaic = 6;
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
