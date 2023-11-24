@@ -22,6 +22,7 @@ typedef struct __attribute__((__packed__)) {
   bool randomSpeed;
   bool mirrorSteps;
   bool randomSteps;
+  bool autoMod;
   TrainingModeOpts trainingMode;
 } Mods;
 

@@ -62,6 +62,7 @@ void ModsScene::printOptions() {
   bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
   bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
+  bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
   printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
@@ -113,7 +114,7 @@ void ModsScene::printOptions() {
   else
     printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
                 12);
-  printOption(OPTION_AUTOMOD, "Automod", "OFF", 13);
+  printOption(OPTION_AUTOMOD, "Automod", autoMod ? "ON" : "OFF", 13);
   printOption(OPTION_TRAINING_MODE, "Training mode",
               trainingMode == 0   ? "OFF"
               : trainingMode == 1 ? "ON"
@@ -181,6 +182,11 @@ bool ModsScene::selectOption(u32 selected, int direction) {
 
       bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
       SAVEFILE_write8(SRAM->mods.randomSteps, !randomSteps);
+      return true;
+    }
+    case OPTION_AUTOMOD: {
+      bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+      SAVEFILE_write8(SRAM->mods.autoMod, !autoMod);
       return true;
     }
     case OPTION_TRAINING_MODE: {

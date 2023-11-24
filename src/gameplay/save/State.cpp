@@ -39,6 +39,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
+      GameState.mods.autoMod = false;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
 
       if (song->applyTo[chart->difficulty]) {
@@ -72,6 +73,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps =
           !isSinglePlayerDouble() && SAVEFILE_read8(SRAM->mods.randomSteps);
+      GameState.mods.autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
       GameState.mods.trainingMode = static_cast<TrainingModeOpts>(
           SAVEFILE_read8(SRAM->mods.trainingMode));
       break;
@@ -89,6 +91,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
+      GameState.mods.autoMod = false;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
     }
@@ -102,6 +105,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
+      GameState.mods.autoMod = false;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
     }
   }

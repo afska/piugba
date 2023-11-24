@@ -80,6 +80,7 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.randomSpeed, false);
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
   SAVEFILE_write8(SRAM->mods.randomSteps, false);
+  SAVEFILE_write8(SRAM->mods.autoMod, false);
   SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
 }
 
