@@ -105,7 +105,7 @@ void StartScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    darkener->initialize(0, BackgroundType::FULL_BGA_DARK, 254);
+    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
     printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();

@@ -252,16 +252,8 @@ void SongScene::initializeBackground() {
   return;
 #endif
 
-  auto gamePosition = GameState.mods.jump ? GamePosition::LEFT
-                                          : GameState.settings.gamePosition;
-  auto type = GameState.settings.backgroundType;
-
-  if ($isMultiplayer || $isSinglePlayerDouble) {
-    gamePosition = GamePosition::LEFT;
-    type = BackgroundType::FULL_BGA_DARK;
-  }
-
-  darkener->initialize(gamePosition, type);
+  darkener->initialize(GameState.settings.backgroundType);
+  updateGameX();
 
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     SCENE_applyColorFilter(backgroundPalette.get(), GameState.mods.colorFilter);
@@ -437,9 +429,6 @@ void SongScene::updateScoresAndLifebars() {
 }
 
 void SongScene::updateGameX() {
-  if (GameState.mods.jump == JumpOpts::jOFF)
-    return;
-
   lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
                              lifeBars[0]->get()->getY());
   scores[0]->relocate();
