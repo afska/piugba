@@ -263,7 +263,9 @@ void SongScene::initializeBackground() {
 
   darkener->initialize(gamePosition, type);
 
-  backupPalettes();
+  if (GameState.mods.autoMod)
+    backupPalettes();
+
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     SCENE_applyColorFilter(backgroundPalette.get(), GameState.mods.colorFilter);
     SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);

@@ -3,6 +3,8 @@
 
 #include "base/MenuScene.h"
 
+const u32 TOTAL_COLOR_FILTERS = 17;
+
 class ModsScene : public MenuScene {
  public:
   ModsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);

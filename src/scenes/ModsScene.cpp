@@ -24,7 +24,6 @@
 const u32 TEXT_BLEND_ALPHA = 12;
 const int TEXT_OFFSET_Y = 1;
 
-const u32 TOTAL_COLOR_FILTERS = 17;
 const char* COLOR_FILTERS[] = {
     "OFF",   "VIBRANT", "CONTRAST",  "POSTERIZE", "WARM",  "COLD",
     "NIGHT", "WATER",   "GOLDEN",    "DREAMY",    "RETRO", "ALIEN",
