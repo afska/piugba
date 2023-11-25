@@ -71,15 +71,19 @@ void ModsScene::printOptions() {
               : stageBreak == 1 ? "OFF"
                                 : "SUDDEN DEATH",
               4);
-  printOption(OPTION_PIXELATE, "Pixelate",
-              pixelate == 0   ? "OFF"
-              : pixelate == 1 ? "LIFE"
-              : pixelate == 2 ? "FIXED"
-              : pixelate == 3 ? "BLINK IN"
-              : pixelate == 4 ? "BLINK OUT"
-                              : "RANDOM",
-              5);
-  if (isSinglePlayerDouble()) {
+  if (autoMod) {
+    printOption(OPTION_PIXELATE, "Pixelate", "---", 5);
+  } else {
+    printOption(OPTION_PIXELATE, "Pixelate",
+                pixelate == 0   ? "OFF"
+                : pixelate == 1 ? "LIFE"
+                : pixelate == 2 ? "FIXED"
+                : pixelate == 3 ? "BLINK IN"
+                : pixelate == 4 ? "BLINK OUT"
+                                : "RANDOM",
+                5);
+  }
+  if (autoMod || isSinglePlayerDouble()) {
     printOption(OPTION_JUMP, "Jump", "---", 6);
   } else {
     printOption(OPTION_JUMP, "Jump",
@@ -88,22 +92,35 @@ void ModsScene::printOptions() {
                             : "RANDOM",
                 6);
   }
-  printOption(OPTION_REDUCE, "Reduce",
-              reduce == 0   ? "OFF"
-              : reduce == 1 ? "FIXED"
-              : reduce == 2 ? "LINEAR"
-              : reduce == 3 ? "MICRO"
-                            : "RANDOM",
-              7);
-  printOption(OPTION_BOUNCE, "Bounce",
-              bounce == 0   ? "OFF"
-              : bounce == 1 ? "ARROWS"
-                            : "ALL",
-              8);
-  printOption(
-      OPTION_COLOR_FILTER, "Color filter",
-      colorFilter < TOTAL_COLOR_FILTERS ? COLOR_FILTERS[colorFilter] : "OFF",
-      9);
+  if (autoMod) {
+    printOption(OPTION_REDUCE, "Reduce", "---", 7);
+  } else {
+    printOption(OPTION_REDUCE, "Reduce",
+                reduce == 0   ? "OFF"
+                : reduce == 1 ? "FIXED"
+                : reduce == 2 ? "LINEAR"
+                : reduce == 3 ? "MICRO"
+                              : "RANDOM",
+                7);
+  }
+  if (autoMod) {
+    printOption(OPTION_BOUNCE, "Bounce", "---", 8);
+  } else {
+    printOption(OPTION_BOUNCE, "Bounce",
+                bounce == 0   ? "OFF"
+                : bounce == 1 ? "ARROWS"
+                              : "ALL",
+                8);
+  }
+  if (autoMod) {
+    printOption(OPTION_COLOR_FILTER, "Color filter", "---", 9);
+  } else {
+    printOption(
+        OPTION_COLOR_FILTER, "Color filter",
+        colorFilter < TOTAL_COLOR_FILTERS ? COLOR_FILTERS[colorFilter] : "OFF",
+        9);
+  }
+
   printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
               10);
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
@@ -123,6 +140,8 @@ void ModsScene::printOptions() {
 }
 
 bool ModsScene::selectOption(u32 selected, int direction) {
+  bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+
   switch (selected) {
     case OPTION_MULTIPLIER: {
       u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
@@ -137,12 +156,15 @@ bool ModsScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_PIXELATE: {
+      if (autoMod)
+        return true;
+
       u8 pixelate = SAVEFILE_read8(SRAM->mods.pixelate);
       SAVEFILE_write8(SRAM->mods.pixelate, change(pixelate, 6, direction));
       return true;
     }
     case OPTION_JUMP: {
-      if (isSinglePlayerDouble())
+      if (autoMod || isSinglePlayerDouble())
         return true;
 
       u8 jump = SAVEFILE_read8(SRAM->mods.jump);
@@ -150,16 +172,25 @@ bool ModsScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_BOUNCE: {
+      if (autoMod)
+        return true;
+
       u8 bounce = SAVEFILE_read8(SRAM->mods.bounce);
       SAVEFILE_write8(SRAM->mods.bounce, change(bounce, 3, direction));
       return true;
     }
     case OPTION_REDUCE: {
+      if (autoMod)
+        return true;
+
       u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
       SAVEFILE_write8(SRAM->mods.reduce, change(reduce, 5, direction));
       return true;
     }
     case OPTION_COLOR_FILTER: {
+      if (autoMod)
+        return true;
+
       u8 colorFilter = SAVEFILE_read8(SRAM->mods.colorFilter);
       SAVEFILE_write8(SRAM->mods.colorFilter,
                       change(colorFilter, TOTAL_COLOR_FILTERS, direction));

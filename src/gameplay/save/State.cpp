@@ -55,25 +55,33 @@ void STATE_setup(Song* song, Chart* chart) {
       break;
     }
     case GameMode::ARCADE: {
+      bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+
       GameState.mods.stageBreak =
           static_cast<StageBreakOpts>(SAVEFILE_read8(SRAM->mods.stageBreak));
       GameState.mods.pixelate =
-          static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
+          autoMod
+              ? PixelateOpts::pOFF
+              : static_cast<PixelateOpts>(SAVEFILE_read8(SRAM->mods.pixelate));
       GameState.mods.jump =
-          isSinglePlayerDouble()
+          autoMod || isSinglePlayerDouble()
               ? JumpOpts::jOFF
               : static_cast<JumpOpts>(SAVEFILE_read8(SRAM->mods.jump));
       GameState.mods.reduce =
-          static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
+          autoMod ? ReduceOpts::rOFF
+                  : static_cast<ReduceOpts>(SAVEFILE_read8(SRAM->mods.reduce));
       GameState.mods.bounce =
-          static_cast<BounceOpts>(SAVEFILE_read8(SRAM->mods.bounce));
+          autoMod ? BounceOpts::bOFF
+                  : static_cast<BounceOpts>(SAVEFILE_read8(SRAM->mods.bounce));
       GameState.mods.colorFilter =
-          static_cast<ColorFilter>(SAVEFILE_read8(SRAM->mods.colorFilter));
+          autoMod ? ColorFilter::NO_FILTER
+                  : static_cast<ColorFilter>(
+                        SAVEFILE_read8(SRAM->mods.colorFilter));
       GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps =
           !isSinglePlayerDouble() && SAVEFILE_read8(SRAM->mods.randomSteps);
-      GameState.mods.autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+      GameState.mods.autoMod = autoMod;
       GameState.mods.trainingMode = static_cast<TrainingModeOpts>(
           SAVEFILE_read8(SRAM->mods.trainingMode));
       break;
