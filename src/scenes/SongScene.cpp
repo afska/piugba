@@ -437,6 +437,9 @@ void SongScene::updateScoresAndLifebars() {
 }
 
 void SongScene::updateGameX() {
+  if (GameState.mods.jump == JumpOpts::jOFF)
+    return;
+
   lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
                              lifeBars[0]->get()->getY());
   scores[0]->relocate();
