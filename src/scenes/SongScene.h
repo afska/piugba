@@ -103,13 +103,14 @@ class SongScene : public Scene {
     return playerId * ARROWS_TOTAL;
   }
 
-  inline void backupPalettes() {
+  inline void backupPalettes(void (*onProgress)(u32 progress)) {
     for (u32 filter = 0; filter < TOTAL_COLOR_FILTERS; filter++) {
       auto colorFilter = static_cast<ColorFilter>(filter);
 
       COLOR* src = (COLOR*)MEM_PAL;
       for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
         paletteBackups[filter][i] = SCENE_transformColor(src[i], colorFilter);
+      onProgress(filter);
     }
   }
 

@@ -263,9 +263,6 @@ void SongScene::initializeBackground() {
 
   darkener->initialize(gamePosition, type);
 
-  if (GameState.mods.autoMod)
-    backupPalettes();
-
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     SCENE_applyColorFilter(backgroundPalette.get(), GameState.mods.colorFilter);
     SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);
@@ -277,8 +274,13 @@ void SongScene::initializeBackground() {
 }
 
 bool SongScene::initializeGame(u16 keys) {
+  if (GameState.mods.autoMod)
+    EFFECT_setMosaic(MAX_MOSAIC);
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
+  if (GameState.mods.autoMod)
+    backupPalettes(
+        [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
   player_play(song->audioPath.c_str());
   processModsLoad();
 
