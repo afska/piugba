@@ -429,8 +429,7 @@ void SongScene::updateScoresAndLifebars() {
 }
 
 void SongScene::updateGameX() {
-  lifeBars[0]->get()->moveTo(GameState.positionX[0] + LIFEBAR_POSITION_X,
-                             lifeBars[0]->get()->getY());
+  lifeBars[0]->relocate();
   scores[0]->relocate();
 
   auto backgroundType = GameState.settings.backgroundType;

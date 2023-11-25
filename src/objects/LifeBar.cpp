@@ -67,6 +67,13 @@ void LifeBar::die() {
   isDead = true;
 }
 
+void LifeBar::relocate() {
+  sprite->moveTo(
+      (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+          LIFEBAR_POSITION_X,
+      sprite->getY());
+}
+
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 

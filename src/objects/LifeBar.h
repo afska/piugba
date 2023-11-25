@@ -20,6 +20,7 @@ class LifeBar {
   void setLife(int life);
   void blink(ForegroundPaletteManager* foregroundPalette);
   void die();
+  void relocate();
 
   inline bool getIsDead() { return isDead; }
 
