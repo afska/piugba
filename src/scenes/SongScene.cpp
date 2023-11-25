@@ -503,7 +503,7 @@ void SongScene::processKeys(u16 keys) {
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
-      if (arrowHolder->hasBeenPressedNow())
+      if (arrowHolder->getIsPressed())
         arrowPool->create([&arrowHolder, this](Arrow* it) {
           it->initialize(
               ArrowType::UNIQUE, arrowHolder->direction, 0,

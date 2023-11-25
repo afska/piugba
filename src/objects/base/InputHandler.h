@@ -3,8 +3,6 @@
 
 #include <libgba-sprite-engine/gba_engine.h>
 
-#include "objects/ArrowInfo.h"
-
 class InputHandler {
  public:
   InputHandler() {
@@ -28,9 +26,6 @@ class InputHandler {
 
     this->isNewPressEvent = isNewPressEvent;
     this->isNewReleaseEvent = isNewReleaseEvent;
-    IFSTRESSTEST {
-      this->isNewPressEvent = isPressed;
-    }
   }
 
  protected:
