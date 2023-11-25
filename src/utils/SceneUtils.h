@@ -51,6 +51,8 @@ inline void SCENE_write(std::string text, u32 row) {
                                  TEXT_MIDDLE_COL - text.length() / 2);
 }
 
+COLOR SCENE_transformColor(COLOR color, ColorFilter filter);
+
 void SCENE_applyColorFilterIndex(PaletteManager* palette,
                                  int bank,
                                  int index,

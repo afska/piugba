@@ -1,11 +1,6 @@
 #include "SceneUtils.h"
 
-void SCENE_applyColorFilterIndex(PaletteManager* palette,
-                                 int bank,
-                                 int index,
-                                 ColorFilter filter) {
-  auto color = palette->get(bank, index);
-
+COLOR SCENE_transformColor(COLOR color, ColorFilter filter) {
   u8 r = color & 0b11111;
   u8 g = (color & 0b1111100000) >> 5;
   u8 b = (color & 0b111110000000000) >> 10;
@@ -91,7 +86,15 @@ void SCENE_applyColorFilterIndex(PaletteManager* palette,
     color = 0xffff - color;
   }
 
-  palette->change(bank, index, color);
+  return color;
+}
+
+void SCENE_applyColorFilterIndex(PaletteManager* palette,
+                                 int bank,
+                                 int index,
+                                 ColorFilter filter) {
+  palette->change(bank, index,
+                  SCENE_transformColor(palette->get(bank, index), filter));
 }
 
 void SCENE_applyColorFilter(PaletteManager* palette, ColorFilter colorFilter) {

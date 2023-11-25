@@ -263,6 +263,7 @@ void SongScene::initializeBackground() {
 
   darkener->initialize(gamePosition, type);
 
+  backupPalettes();
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     SCENE_applyColorFilter(backgroundPalette.get(), GameState.mods.colorFilter);
     SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);
@@ -658,18 +659,36 @@ void SongScene::processModsBeat() {
     return;
 
   if (GameState.mods.autoMod) {
-    GameState.mods.pixelate = static_cast<PixelateOpts>(qran_range(0, 5));
-    GameState.mods.jump =
-        static_cast<JumpOpts>(qran_range(0, 2));  // TODO: Disable in double
-    GameState.mods.reduce = static_cast<ReduceOpts>(qran_range(0, 4));
-    GameState.mods.bounce = static_cast<BounceOpts>(qran_range(0, 2));
-    GameState.mods.colorFilter = static_cast<ColorFilter>(qran_range(0, 16));
-    GameState.mods.randomSpeed = qran_range(1, 10) > 5;
-    GameState.mods.mirrorSteps =
-        qran_range(1, 10) > 5;  // TODO: This probably breaks hold arrows
-    GameState.mods.randomSteps = false;
-    GameState.mods.trainingMode = TrainingModeOpts::tOFF;
-    processModsLoad();
+    autoModCounter++;
+    if (autoModCounter == autoModDuration) {
+      autoModCounter = 0;
+      autoModDuration = qran_range(1, 4);
+
+      auto previousColorFilter = GameState.mods.colorFilter;
+      GameState.mods.pixelate =
+          qran_range(1, 100) > 75 ? PixelateOpts::pFIXED : PixelateOpts::pOFF;
+      GameState.mods.jump = qran_range(1, 100) > 50 && !$isDouble
+                                ? JumpOpts::jLINEAR
+                                : JumpOpts::jOFF;
+      GameState.mods.reduce =
+          qran_range(1, 100) > 50
+              ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
+                                         : ReduceOpts::rMICRO)
+              : ReduceOpts::rOFF;
+      GameState.mods.bounce =
+          qran_range(1, 100) > 50 ? BounceOpts::bALL : BounceOpts::bOFF;
+      GameState.mods.colorFilter =
+          qran_range(1, 100) > 50 ? static_cast<ColorFilter>(qran_range(1, 16))
+                                  : ColorFilter::NO_FILTER;
+
+      mosaic = targetMosaic = 0;
+      processModsLoad();
+      updateGameX();
+      updateGameY();
+
+      if (GameState.mods.colorFilter != previousColorFilter)
+        reapplyFilter(GameState.mods.colorFilter);
+    }
   }
 
   if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
@@ -742,7 +761,7 @@ u8 SongScene::processPixelateMod() {
 
   switch (GameState.mods.pixelate) {
     case PixelateOpts::pOFF:
-      return 0;
+      break;
     case PixelateOpts::pLIFE:
       minMosaic = lifeBars[0]->getMosaicValue();
       break;

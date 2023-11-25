@@ -61,6 +61,7 @@ class SongScene : public Scene {
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
+  COLOR paletteBackup[PALETTE_MAX_SIZE * 2];
   int rate = 0;
   u32 blinkFrame = 0;  // (background blink)
   u8 targetMosaic = 0;
@@ -71,6 +72,8 @@ class SongScene : public Scene {
   int bounceDirection = -1;
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
+  u32 autoModDuration = 1;
+  u32 autoModCounter = 0;
 
   inline void setUpGameConfig() {
     $isMultiplayer = isMultiplayer();
@@ -97,6 +100,18 @@ class SongScene : public Scene {
 
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
     return playerId * ARROWS_TOTAL;
+  }
+
+  inline void backupPalettes() {
+    COLOR* src = (COLOR*)MEM_PAL;
+    for (int i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+      paletteBackup[i] = src[i];
+  }
+
+  inline void reapplyFilter(ColorFilter colorFilter) {
+    COLOR* dest = (COLOR*)MEM_PAL;
+    for (int i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+      dest[i] = SCENE_transformColor(paletteBackup[i], colorFilter);
   }
 
   void setUpPalettes();
