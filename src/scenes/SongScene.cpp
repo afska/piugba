@@ -668,7 +668,10 @@ void SongScene::processModsBeat() {
 
       auto previousColorFilter = GameState.mods.colorFilter;
       GameState.mods.pixelate =
-          qran_range(1, 100) > 75 ? PixelateOpts::pFIXED : PixelateOpts::pOFF;
+          qran_range(1, 100) > 75
+              ? (qran_range(1, 100) > 50 ? PixelateOpts::pBLINK_IN
+                                         : PixelateOpts::pFIXED)
+              : PixelateOpts::pOFF;
       GameState.mods.jump = qran_range(1, 100) > 50 && !$isDouble
                                 ? JumpOpts::jLINEAR
                                 : JumpOpts::jOFF;
@@ -677,8 +680,7 @@ void SongScene::processModsBeat() {
               ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
                                          : ReduceOpts::rMICRO)
               : ReduceOpts::rOFF;
-      GameState.mods.bounce =
-          qran_range(1, 100) > 50 ? BounceOpts::bALL : BounceOpts::bOFF;
+      GameState.mods.bounce = BounceOpts::bALL;
       GameState.mods.colorFilter =
           qran_range(1, 100) > 50 ? static_cast<ColorFilter>(qran_range(1, 16))
                                   : ColorFilter::NO_FILTER;
