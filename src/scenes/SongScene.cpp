@@ -676,10 +676,12 @@ void SongScene::processModsBeat() {
                                 ? JumpOpts::jLINEAR
                                 : JumpOpts::jOFF;
       GameState.mods.reduce =
-          qran_range(1, 100) > 50
-              ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
-                                         : ReduceOpts::rMICRO)
-              : ReduceOpts::rOFF;
+          GameState.mods.autoMod == AutoModOpts::aINSANE
+              ? (qran_range(1, 100) > 50
+                     ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
+                                                : ReduceOpts::rMICRO)
+                     : ReduceOpts::rOFF)
+              : ReduceOpts::rMICRO;
       GameState.mods.bounce = BounceOpts::bALL;
       GameState.mods.colorFilter =
           qran_range(1, 100) > 50 ? static_cast<ColorFilter>(qran_range(1, 16))

@@ -39,7 +39,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
-      GameState.mods.autoMod = false;
+      GameState.mods.autoMod = AutoModOpts::aOFF;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
 
       if (song->applyTo[chart->difficulty]) {
@@ -55,7 +55,8 @@ void STATE_setup(Song* song, Chart* chart) {
       break;
     }
     case GameMode::ARCADE: {
-      bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+      auto autoMod =
+          static_cast<AutoModOpts>(SAVEFILE_read8(SRAM->mods.autoMod));
 
       GameState.mods.stageBreak =
           static_cast<StageBreakOpts>(SAVEFILE_read8(SRAM->mods.stageBreak));
@@ -91,15 +92,15 @@ void STATE_setup(Song* song, Chart* chart) {
           !ENV_DEVELOPMENT || ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
               ? StageBreakOpts::sON
               : StageBreakOpts::sOFF;
-      GameState.mods.pixelate = PixelateOpts::pRANDOM;
-      GameState.mods.jump = JumpOpts::jLINEAR;
-      GameState.mods.reduce = ReduceOpts::rMICRO;
-      GameState.mods.bounce = BounceOpts::bALL;
-      GameState.mods.colorFilter = ColorFilter::WARM;
+      GameState.mods.pixelate = PixelateOpts::pOFF;
+      GameState.mods.jump = JumpOpts::jOFF;
+      GameState.mods.reduce = ReduceOpts::rOFF;
+      GameState.mods.bounce = BounceOpts::bOFF;
+      GameState.mods.colorFilter = ColorFilter::NO_FILTER;
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
-      GameState.mods.autoMod = false;
+      GameState.mods.autoMod = AutoModOpts::aFUN;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
     }
@@ -113,7 +114,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
-      GameState.mods.autoMod = false;
+      GameState.mods.autoMod = AutoModOpts::aOFF;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
     }
   }
