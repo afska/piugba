@@ -98,8 +98,6 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
       u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
       SAVEFILE_write8(SRAM->settings.backgroundType,
                       change(backgroundType, 3, direction));
-      if (backgroundType == 0)
-        SAVEFILE_write8(SRAM->settings.bgaDarkBlink, 1);
       return true;
     }
     case OPTION_BGA_DARK_BLINK: {
