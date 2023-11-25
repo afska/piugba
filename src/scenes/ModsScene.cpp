@@ -145,7 +145,7 @@ bool ModsScene::selectOption(u32 selected, int direction) {
   switch (selected) {
     case OPTION_MULTIPLIER: {
       u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
-      multiplier = 1 + change(multiplier, ARROW_MAX_MULTIPLIER, direction);
+      multiplier = 1 + change(multiplier - 1, ARROW_MAX_MULTIPLIER, direction);
 
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier);
       return true;
