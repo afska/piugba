@@ -3,7 +3,8 @@ const $path = require("path");
 const _ = require("lodash");
 
 const OFFSETS_FILE = "offsets.pofs";
-const REGEXP = /(.+)\[s(\d\d)\]=([-+]?\d+)/;
+const REGEXP = /(.+)\[(?:s|d)(\d\d)\]=([-+]?\d+)/;
+const REGEXP_DOUBLE = /(.+)\[d(\d\d)\]=([-+]?\d+)/;
 
 const getOffsetCorrections = _.memoize(() => {
   let offsetsFile;
@@ -19,6 +20,8 @@ const getOffsetCorrections = _.memoize(() => {
     return offsetsFile
       .match(new RegExp(REGEXP.source, REGEXP.flags + "g"))
       .map((line) => {
+        const isDouble = REGEXP_DOUBLE.test(line);
+
         const parts = line.match(REGEXP);
         if (
           _.isEmpty(parts[1]) ||
@@ -33,6 +36,7 @@ const getOffsetCorrections = _.memoize(() => {
           name: parts[1],
           level: parseInt(parts[2]),
           offset: parseInt(parts[3]),
+          isDouble,
         };
       });
   } catch (e) {
@@ -49,7 +53,9 @@ const applyOffsets = (metadata, charts) => {
   corrections.forEach((correction) => {
     const matchingChart = _.find(
       charts,
-      (it) => it.header.level == correction.level && !it.header.isDouble
+      (it) =>
+        it.header.level == correction.level &&
+        it.header.isDouble === correction.isDouble
     );
 
     if (matchingChart !== null) apply(matchingChart, correction);
