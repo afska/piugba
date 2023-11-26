@@ -45,6 +45,7 @@ std::unique_ptr<Evaluation> Score::evaluate() {
   evaluation->maxCombo = maxCombo;
   evaluation->points = points;
   evaluation->longNotes = longNotes;
+  evaluation->percent = getPercent();
 
   return evaluation;
 }

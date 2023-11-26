@@ -244,7 +244,7 @@ std::string DanceGradeScene::pointsToString(u32 points) {
 }
 
 u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
-  return differentCharts ? evaluation->getPercent() : evaluation->points;
+  return differentCharts ? evaluation->percent : evaluation->points;
 }
 
 void DanceGradeScene::playSound() {

@@ -399,9 +399,6 @@ void SongScene::updateBlink() {
     else
       IOPORT_sdLow();
   }
-
-  if ($isMultiplayer && $isVs && !$isVsDifferentLevels)
-    animateWinnerLifeBar();
 }
 
 void SongScene::updateFakeHeads() {
@@ -435,6 +432,9 @@ void SongScene::updateScoresAndLifebars() {
     scores[playerId]->tick();
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
+
+  if ($isMultiplayer && $isVs)
+    animateWinnerLifeBar();
 }
 
 void SongScene::updateGameX() {
@@ -487,8 +487,13 @@ void SongScene::updateRumble() {
 }
 
 void SongScene::animateWinnerLifeBar() {
-  bool isWinning0 = scores[0]->getPoints() >= scores[1]->getPoints();
-  bool isWinning1 = scores[1]->getPoints() >= scores[0]->getPoints();
+  u32 score0 =
+      $isVsDifferentLevels ? scores[0]->getPercent() : scores[0]->getPoints();
+  u32 score1 =
+      $isVsDifferentLevels ? scores[1]->getPercent() : scores[1]->getPoints();
+  bool isWinning0 = score0 >= score1;
+  bool isWinning1 = score1 >= score0;
+
   lifeBars[0]->get()->moveTo(lifeBars[0]->get()->getX(),
                              GameState.positionY + LIFEBAR_POSITION_Y -
                                  BOUNCE_STEPS[blinkFrame * isWinning0] / 2);
