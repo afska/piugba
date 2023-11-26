@@ -36,14 +36,13 @@ enum ColorFilter {
 };
 
 inline void SCENE_init() {
-  TextStream::instance().clear();
-  TextStream::instance().scroll(0, 0);
-  TextStream::instance().setMosaic(false);
-
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
+  TextStream::instance().clear();
+  TextStream::instance().scroll(0, 0);
+  TextStream::instance().setMosaic(false);
 }
 
 inline void SCENE_write(std::string text, u32 row) {

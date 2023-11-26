@@ -24,7 +24,6 @@ extern "C" {
 
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
-const u32 INIT_FRAME = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 SELECTOR_MARGIN = 3;
@@ -151,10 +150,10 @@ void SelectionScene::tick(u16 keys) {
     return;
   }
 
-  if (init < INIT_FRAME) {
+  if (init == 0) {
     init++;
     return;
-  } else if (init == INIT_FRAME) {
+  } else if (init == 1) {
     if (isDouble()) {
       SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
       VBlankIntrWait();
