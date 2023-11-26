@@ -136,15 +136,24 @@ INLINE void stop() {
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
+  /* disable timer 0 */
+  REG_TM0CNT_H = 0;
+
+  /* disable DMA1 */
   REG_DMA1CNT = 0;
 
   /* no-op to let DMA registers catch up */
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 
+  /* setup DMA 1 */
   REG_DMA1SAD = (intptr_t)src;
   REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
   REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
                 DMA_ENABLE | 1;
+
+  /* re-enable timer 0 */
+  REG_TM0CNT_L = 0x10000 - (924 / 2);
+  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 }
 /* ---------------------------------------------------- */
 
