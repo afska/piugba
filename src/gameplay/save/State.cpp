@@ -103,7 +103,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.randomSpeed = false;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
-      GameState.mods.autoMod = AutoModOpts::aFUN;
+      GameState.mods.autoMod = AutoModOpts::aINSANE;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
       break;
     }
