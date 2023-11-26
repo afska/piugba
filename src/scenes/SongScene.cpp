@@ -491,8 +491,8 @@ void SongScene::animateWinnerLifeBar() {
       $isVsDifferentLevels ? scores[0]->getPercent() : scores[0]->getPoints();
   u32 score1 =
       $isVsDifferentLevels ? scores[1]->getPercent() : scores[1]->getPoints();
-  bool isWinning0 = score0 >= score1;
-  bool isWinning1 = score1 >= score0;
+  bool isWinning0 = score0 > score1;
+  bool isWinning1 = score1 > score0;
 
   lifeBars[0]->get()->moveTo(lifeBars[0]->get()->getX(),
                              GameState.positionY + LIFEBAR_POSITION_Y -
