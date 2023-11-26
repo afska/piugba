@@ -62,7 +62,7 @@ class SongScene : public Scene {
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
   int rate = 0;
-  u32 blinkFrame = 0;  // (background blink)
+  u32 blinkFrame = 0;
   u8 targetMosaic = 0;
   u8 mosaic = 0;
   bool waitMosaic = true;

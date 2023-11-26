@@ -130,7 +130,7 @@ void ModsScene::printOptions() {
   else
     printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
                 12);
-  printOption(OPTION_AUTOMOD, "Automod",
+  printOption(OPTION_AUTOMOD, "AutoMod",
               autoMod == 0   ? "OFF"
               : autoMod == 1 ? "FUN"
                              : "INSANE",
@@ -140,7 +140,7 @@ void ModsScene::printOptions() {
               : trainingMode == 1 ? "ON"
                                   : "SILENT",
               14);
-  printOption(OPTION_RESET, "       [RESET ALL]", "", 15);
+  printOption(OPTION_RESET, "        [RESET ALL]", "", 15);
 }
 
 bool ModsScene::selectOption(u32 selected, int direction) {
