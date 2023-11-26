@@ -58,7 +58,8 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> selectInput;
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
-  bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble;
+  bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
+      $isVsDifferentLevels;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
   int rate = 0;
@@ -79,6 +80,7 @@ class SongScene : public Scene {
     $isDouble = isDouble();
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
+    $isVsDifferentLevels = remoteChart->level != chart->level;
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
     localBaseIndex = isMultiplayer()
@@ -115,6 +117,7 @@ class SongScene : public Scene {
   void updateGameX();
   void updateGameY();
   void updateRumble();
+  void animateWinnerLifeBar();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);

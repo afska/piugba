@@ -399,6 +399,9 @@ void SongScene::updateBlink() {
     else
       IOPORT_sdLow();
   }
+
+  if ($isMultiplayer && $isVs && !$isVsDifferentLevels)
+    animateWinnerLifeBar();
 }
 
 void SongScene::updateFakeHeads() {
@@ -481,6 +484,17 @@ void SongScene::updateRumble() {
       rumbleIdleFrame = 0;
     }
   }
+}
+
+void SongScene::animateWinnerLifeBar() {
+  bool isWinning0 = scores[0]->getPoints() >= scores[1]->getPoints();
+  bool isWinning1 = scores[1]->getPoints() >= scores[0]->getPoints();
+  lifeBars[0]->get()->moveTo(lifeBars[0]->get()->getX(),
+                             GameState.positionY + LIFEBAR_POSITION_Y -
+                                 BOUNCE_STEPS[blinkFrame * isWinning0] / 2);
+  lifeBars[1]->get()->moveTo(lifeBars[1]->get()->getX(),
+                             GameState.positionY + LIFEBAR_POSITION_Y -
+                                 BOUNCE_STEPS[blinkFrame * isWinning1] / 2);
 }
 
 void SongScene::processKeys(u16 keys) {
@@ -637,7 +651,7 @@ void SongScene::finishAndGoToEvaluation() {
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
-          remoteChart->level != chart->level, isLastSong),
+          $isVsDifferentLevels, isLastSong),
       new PixelTransitionEffect());
 }
 

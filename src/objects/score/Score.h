@@ -15,6 +15,8 @@ class Score {
  public:
   Score(LifeBar* lifeBar, u8 playerId);
 
+  inline u32 getPoints() { return points; }
+
   bool update(FeedbackType feedbackType, bool isLong);
   std::unique_ptr<Evaluation> evaluate();
   void relocate();
