@@ -139,10 +139,13 @@ INLINE void dsoundSwitchBuffers(const void* src) {
   /* disable timer 0 */
   REG_TM0CNT_H = 0;
 
+  /* no-op for timer */
+  asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
+
   /* disable DMA1 */
   REG_DMA1CNT = 0;
 
-  /* no-op to let DMA registers catch up */
+  /* no-op for DMA */
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 
   /* setup DMA 1 */
