@@ -15,7 +15,6 @@
 #include "objects/LifeBar.h"
 #include "objects/base/InputHandler.h"
 #include "objects/score/Score.h"
-#include "scenes/ModsScene.h"
 #include "utils/PixelBlink.h"
 #include "utils/pool/ObjectPool.h"
 
@@ -62,7 +61,6 @@ class SongScene : public Scene {
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
-  COLOR paletteBackups[TOTAL_COLOR_FILTERS][PALETTE_MAX_SIZE * 2];
   int rate = 0;
   u32 blinkFrame = 0;  // (background blink)
   u8 targetMosaic = 0;
@@ -101,23 +99,6 @@ class SongScene : public Scene {
 
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
     return playerId * ARROWS_TOTAL;
-  }
-
-  inline void backupPalettes(void (*onProgress)(u32 progress)) {
-    for (u32 filter = 0; filter < TOTAL_COLOR_FILTERS; filter++) {
-      auto colorFilter = static_cast<ColorFilter>(filter);
-
-      COLOR* src = (COLOR*)MEM_PAL;
-      for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
-        paletteBackups[filter][i] = SCENE_transformColor(src[i], colorFilter);
-      onProgress(filter);
-    }
-  }
-
-  inline void reapplyFilter(ColorFilter colorFilter) {
-    COLOR* dest = (COLOR*)MEM_PAL;
-    for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
-      dest[i] = paletteBackups[colorFilter][i];
   }
 
   void setUpPalettes();

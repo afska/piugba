@@ -12,6 +12,7 @@
 #include "gameplay/Sequence.h"
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
+#include "scenes/ModsScene.h"
 #include "ui/Darkener.h"
 #include "utils/SceneUtils.h"
 
@@ -42,6 +43,11 @@ const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
+
+DATA_EWRAM static COLOR paletteBackups[TOTAL_COLOR_FILTERS]
+                                      [PALETTE_MAX_SIZE * 2];
+void backupPalettes(void (*onProgress)(u32 progress));
+void reapplyFilter(ColorFilter colorFilter);
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -951,4 +957,21 @@ SongScene::~SongScene() {
   arrowHolders.clear();
   fakeHeads.clear();
   SONG_free(song);
+}
+
+inline void backupPalettes(void (*onProgress)(u32 progress)) {
+  for (u32 filter = 0; filter < TOTAL_COLOR_FILTERS; filter++) {
+    auto colorFilter = static_cast<ColorFilter>(filter);
+
+    COLOR* src = (COLOR*)MEM_PAL;
+    for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+      paletteBackups[filter][i] = SCENE_transformColor(src[i], colorFilter);
+    onProgress(filter);
+  }
+}
+
+inline void reapplyFilter(ColorFilter colorFilter) {
+  COLOR* dest = (COLOR*)MEM_PAL;
+  for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+    dest[i] = paletteBackups[colorFilter][i];
 }
