@@ -20,8 +20,8 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._applyFakes(
-        this._applyAsyncStops(this._sort([...timingEvents, ...noteEvents]))
+      this._applyAsyncStops(
+        this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
       )
     );
   }
