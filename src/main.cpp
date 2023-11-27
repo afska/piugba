@@ -15,6 +15,7 @@ extern "C" {
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
+void validateBuild();
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
@@ -39,10 +40,9 @@ Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
-  if (fs == NULL)
-    BSOD("GBFS file not found.");
-
   linkUniversal->deactivate();
+
+  validateBuild();
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
@@ -87,6 +87,13 @@ void ISR_reset() {
   }
 
   SCENE_softReset();
+}
+
+void validateBuild() {
+  if (fs == NULL)
+    BSOD("GBFS file not found.");
+  if (!ENV_ARCADE && gbfs_get_obj(fs, "_snm_0_list.txt", NULL) == NULL)
+    BSOD("This is not an ARCADE build.");
 }
 
 void setUpInterrupts() {
