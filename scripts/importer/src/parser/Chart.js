@@ -12,6 +12,7 @@ module.exports = class Chart {
     this.content = content;
 
     this._calculateLastTimestamp();
+    this._validate();
   }
 
   get events() {
@@ -127,7 +128,10 @@ module.exports = class Chart {
         currentBpm = this._getBpmByBeat(beat);
         const timestamp = currentTimestamp;
 
-        if (data.value < 0) throw new Error("invalid_negative_timing_segment");
+        if (data.value < 0)
+          throw new Error(
+            "invalid_negative_timing_segment:\n    " + JSON.stringify(data)
+          );
         const createWarp = () => {
           const length = timestamp - warpStart;
           if (length === 0) return null;
@@ -239,7 +243,7 @@ module.exports = class Chart {
             };
           }
           default:
-            throw new Error("unknown_timing_segment");
+            throw new Error("unknown_timing_segment: " + type);
         }
       })
       .compact()
@@ -358,7 +362,7 @@ module.exports = class Chart {
           : NOTE_DATA_SINGLE
         ).test(it);
 
-        if (!isValid) throw new Error(`invalid_line: ${it}`);
+        if (!isValid) throw new Error("invalid_line: " + it);
         return true;
       });
   }
@@ -396,9 +400,9 @@ module.exports = class Chart {
   _getRangeDuration(startBeat, endBeat) {
     let length = 0;
 
-    for (let beat = startBeat; beat < endBeat; beat += FUSE) {
+    for (let beat = startBeat; beat < endBeat; beat += SEMIFUSE) {
       const bpm = this._getBpmByBeat(beat);
-      length += this._getBeatLengthByBpm(bpm) * FUSE;
+      length += this._getBeatLengthByBpm(bpm) * SEMIFUSE;
     }
 
     return length;
@@ -428,6 +432,16 @@ module.exports = class Chart {
           : _.last(this.events).timestamp;
     } catch (e) {}
   }
+
+  _validate() {
+    const bpms = this._getFiniteBpms();
+    let lastBeat = -1;
+    for (let bpm of bpms) {
+      if (Math.abs(bpm.key - lastBeat) < SEMIFUSE)
+        throw new Error("bpm_change_too_fast:\n    " + JSON.stringify(bpm));
+      lastBeat = bpm.key;
+    }
+  }
 };
 
 const SECOND = 1000;
@@ -437,5 +451,5 @@ const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
-const FUSE = 1 / 2 / 2 / 2 / 2;
+const SEMIFUSE = 1 / 2 / 2 / 2 / 2 / 2;
 const MAX_TIMESTAMP = 3600000;
