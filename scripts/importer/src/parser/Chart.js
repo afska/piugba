@@ -75,11 +75,6 @@ module.exports = class Chart {
             };
           })
           .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
-          .reject(
-            (it) =>
-              it.type === Events.NOTE &&
-              this._isInsideWarp(it.timestamp, timingEvents)
-          )
           .value();
       });
     });
@@ -236,11 +231,18 @@ module.exports = class Chart {
               currentBeat + data.value
             );
 
-            return {
-              timestamp,
-              type,
-              length,
-            };
+            return [
+              {
+                timestamp,
+                type,
+                length,
+              },
+              {
+                timestamp: timestamp,
+                type: Events.SET_FAKE,
+                endTime: timestamp + length,
+              },
+            ];
           }
           default:
             throw new Error("unknown_timing_segment: " + type);
@@ -413,16 +415,6 @@ module.exports = class Chart {
 
   _getFiniteBpms() {
     return this.header.bpms.filter((it) => it.value <= FAST_BPM_WARP);
-  }
-
-  _isInsideWarp(timestamp, timingEvents) {
-    return _.some(
-      timingEvents,
-      (event) =>
-        event.type === Events.WARP &&
-        timestamp >= event.timestamp &&
-        timestamp < event.timestamp + event.length
-    );
   }
 
   _calculateLastTimestamp() {
