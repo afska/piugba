@@ -68,13 +68,13 @@ class Arrow : public IPoolable {
     sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
                    ARROW_INITIAL_Y);
 
-    if (isHoldFill || isHoldTail) {
+    if (isFake)
+      SPRITE_goToFrame(sprite.get(), endTile + ARROW_FAKE_TILE);
+    else if (isHoldFill || isHoldTail) {
       u32 tileOffset = isHoldFill ? ARROW_HOLD_FILL_TILE : ARROW_HOLD_TAIL_TILE;
       SPRITE_goToFrame(sprite.get(), startTile + tileOffset);
     } else if (isHoldFakeHead)
       animatePress();
-    else if (isFake)
-      SPRITE_goToFrame(sprite.get(), endTile + ARROW_FAKE_TILE);
     else
       sprite->makeAnimated(startTile, ARROW_ANIMATION_FRAMES,
                            ARROW_ANIMATION_DELAY);
@@ -105,7 +105,8 @@ class Arrow : public IPoolable {
   inline void initializeHoldFill(ArrowDirection direction,
                                  u8 playerId,
                                  HoldArrow* holdArrow) {
-    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp);
+    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp,
+               holdArrow->isFake);
     this->holdArrow = holdArrow;
   }
 
