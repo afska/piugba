@@ -334,7 +334,10 @@ module.exports = class Chart {
   }
 
   _sort(events) {
-    return _.sortBy(events, [(it) => Math.round(it.timestamp), "type"]);
+    return _.sortBy(events, [
+      (it) => Math.round(it.timestamp),
+      (it) => (Events.isNote(it.type) ? 999 + it.type : it.type),
+    ]);
   }
 
   _getMeasures() {

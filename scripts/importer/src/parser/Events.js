@@ -14,6 +14,9 @@ const events = {
 
 module.exports = {
   ...events,
+  isNote(event) {
+    return event >= 1 && event <= 3;
+  },
   parse(note) {
     switch (note) {
       case "1":
