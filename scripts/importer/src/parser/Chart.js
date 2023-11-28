@@ -65,6 +65,7 @@ module.exports = class Chart {
                 : null;
 
             return {
+              beat,
               timestamp,
               type: type === Events.FAKE_TAP ? Events.NOTE : type,
               playerId: 0,
@@ -113,6 +114,7 @@ module.exports = class Chart {
     let scrollFactor = 1;
     let currentScrollEnabled = true;
     let currentScrollTimestamp = 0;
+    let currentScrollBeat = 0;
 
     return _(segments)
       .flatMap(({ type, data }) => {
@@ -132,6 +134,7 @@ module.exports = class Chart {
           if (length === 0) return null;
 
           return {
+            beat,
             timestamp: warpStart,
             type: Events.WARP,
             length: timestamp - warpStart,
@@ -146,6 +149,7 @@ module.exports = class Chart {
             }
 
             const bpmChange = {
+              beat,
               timestamp,
               type,
               bpm: currentBpm,
@@ -169,6 +173,7 @@ module.exports = class Chart {
                 : data.param1 * SECOND) / FRAME_MS;
 
             return {
+              beat,
               timestamp,
               type: Events.SET_TEMPO,
               bpm: currentBpm,
@@ -178,6 +183,7 @@ module.exports = class Chart {
           }
           case Events.SET_TICKCOUNT: {
             return {
+              beat,
               timestamp,
               type,
               tickcount: data.value,
@@ -185,6 +191,7 @@ module.exports = class Chart {
           }
           case Events.SET_FAKE: {
             return {
+              beat,
               timestamp,
               type,
               endTime: timestamp + data.value * beatLength,
@@ -192,7 +199,13 @@ module.exports = class Chart {
           }
           case Events.STOP: {
             const length = data.value * SECOND;
-            const stop = { timestamp, type, length, judgeable: false };
+            const stop = {
+              beat,
+              timestamp,
+              type,
+              length,
+              judgeable: false,
+            };
 
             if (warpStart > -1) {
               const warp = createWarp();
@@ -211,9 +224,11 @@ module.exports = class Chart {
               currentScrollEnabled = true;
 
               return {
+                beat: currentScrollBeat,
                 timestamp: currentScrollTimestamp,
                 type,
                 length,
+                lengthBeats: beat - currentScrollBeat,
                 judgeable: true,
               };
             }
@@ -221,23 +236,23 @@ module.exports = class Chart {
             if (currentScrollEnabled && !scrollEnabled) {
               currentScrollEnabled = false;
               currentScrollTimestamp = timestamp;
+              currentScrollBeat = beat;
             }
 
             return null;
           }
           case Events.WARP: {
-            const length = this._getRangeDuration(
-              currentBeat,
-              currentBeat + data.value
-            );
+            const length = this._getRangeDuration(beat, beat + data.value);
 
             return [
               {
+                beat,
                 timestamp,
                 type,
                 length,
               },
               {
+                beat,
                 timestamp: timestamp,
                 type: Events.SET_FAKE,
                 endTime: timestamp + length,
@@ -261,19 +276,22 @@ module.exports = class Chart {
 
   _applyAsyncStops(events) {
     let stoppedTime = 0;
+    let lastStop = null;
 
     return this._sort(
       _(events)
         .map((it) => {
           if (it.type === Events.STOP_ASYNC) {
-            const timestamp = it.timestamp - stoppedTime;
-            stoppedTime += it.length;
-
-            return {
+            return (lastStop = {
               ...it,
-              timestamp,
+              timestamp: it.timestamp - stoppedTime,
               type: Events.STOP,
-            };
+            });
+          } else if (lastStop != null) {
+            if (it.beat > lastStop.beat) {
+              stoppedTime += lastStop.length;
+              lastStop = null;
+            }
           }
 
           return {
