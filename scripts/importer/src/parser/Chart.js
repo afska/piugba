@@ -30,6 +30,9 @@ module.exports = class Chart {
     const measures = this._getMeasures();
     let cursor = 0;
 
+    let currentId = 0;
+    const holdArrows = [];
+
     return _.flatMap(measures, (measure, measureIndex) => {
       // 1 measure = 1 whole note = BEAT_UNIT beats
       const lines = this._getMeasureLines(measure);
@@ -64,15 +67,46 @@ module.exports = class Chart {
                   (this.lastTimestamp / SECOND)
                 : null;
 
+            const id = currentId++;
+            let metadata = null;
+            if (type === Events.HOLD_START) {
+              for (let i = 0; i < activeArrows.length; i++) {
+                if (activeArrows[i]) {
+                  if (holdArrows[i] == null) {
+                    holdArrows[i] = id;
+                  } else {
+                    throw new Error(
+                      `unbalanced_hold_arrow: ${beat}/${timestamp}`
+                    );
+                  }
+                }
+              }
+            } else if (type === Events.HOLD_END) {
+              for (let i = 0; i < activeArrows.length; i++) {
+                if (activeArrows[i]) {
+                  if (holdArrows[i] != null) {
+                    if (metadata == null) metadata = { startIds: [] };
+                    metadata.startIds[i] = holdArrows[i];
+                    holdArrows[i] = null;
+                  } else {
+                    throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
+                  }
+                }
+              }
+            }
+
             return {
+              id,
               beat,
               timestamp,
               type: type === Events.FAKE_TAP ? Events.NOTE : type,
               playerId: 0,
+              allArrows: activeArrows,
               arrows: activeArrows.slice(0, 5),
               arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
               complexity,
               isFake: type === Events.FAKE_TAP,
+              ...metadata,
             };
           })
           .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
@@ -278,9 +312,11 @@ module.exports = class Chart {
     let stoppedTime = 0;
     let lastStop = null;
 
+    const eventsById = {};
+
     return this._sort(
       _(events)
-        .map((it) => {
+        .map((it, __, col) => {
           if (it.type === Events.STOP_ASYNC) {
             return (lastStop = {
               ...it,
@@ -294,10 +330,25 @@ module.exports = class Chart {
             }
           }
 
-          return {
+          const timestamp = it.timestamp - stoppedTime;
+          const event = {
             ...it,
-            timestamp: it.timestamp - stoppedTime,
+            timestamp:
+              it.type === Events.HOLD_END && it.startIds != null
+                ? Math.max(
+                    _.max(
+                      it.startIds
+                        .filter((it) => it != null)
+                        .map((id) => eventsById[id])
+                        .filter((it) => it != null)
+                        .map((it) => it.timestamp)
+                    ),
+                    timestamp
+                  )
+                : timestamp,
           };
+          eventsById[event.id] = event;
+          return event;
         })
         .compact()
         .value()
