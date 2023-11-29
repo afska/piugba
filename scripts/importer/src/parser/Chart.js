@@ -356,12 +356,14 @@ module.exports = class Chart {
       if (it.isFake && fakeEndTime == -1) {
         return [
           {
+            beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
             enabled: 1,
           },
           event,
           {
+            beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
             enabled: 0,
@@ -373,17 +375,19 @@ module.exports = class Chart {
         fakeEndTime = it.endTime;
 
         event = {
+          beat: it.beat,
           timestamp: it.timestamp,
           type: it.type,
           enabled: 1,
         };
       }
 
-      if (fakeEndTime !== -1 && it.timestamp > fakeEndTime) {
+      if (fakeEndTime !== -1 && it.timestamp >= fakeEndTime) {
         fakeEndTime = -1;
 
         return [
           {
+            beat: it.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
             enabled: 0,
@@ -399,7 +403,7 @@ module.exports = class Chart {
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
-      (it) => (Events.isNote(it.type) ? 999 + it.type : it.type),
+      (it) => (Events.isNote(it.type) ? 1000 + it.type : it.type),
     ]);
   }
 
