@@ -212,9 +212,9 @@ void ChartReader::processNextEvents() {
             if (hasStopped)
               return false;
 
-            lastWarpTime = msecs;
             warpedMs += event->param;
             msecs += event->param;
+            lastWarpTime = msecs;
             pixelBlink->blink();
 
             *stop = true;

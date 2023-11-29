@@ -278,20 +278,12 @@ module.exports = class Chart {
           case Events.WARP: {
             const length = this._getRangeDuration(beat, beat + data.value);
 
-            return [
-              {
-                beat,
-                timestamp,
-                type,
-                length,
-              },
-              {
-                beat,
-                timestamp: timestamp,
-                type: Events.SET_FAKE,
-                endTime: timestamp + length,
-              },
-            ];
+            return {
+              beat,
+              timestamp,
+              type,
+              length,
+            };
           }
           default:
             throw new Error("unknown_timing_segment: " + type);
