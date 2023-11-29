@@ -394,7 +394,9 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
             arrows |= EVENT_HOLD_ARROW_MASKS[direction];
             isFake = holdArrow->isFake;
 
-            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
+            if (msecs <
+                    holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_START_MS ||
+                msecs > holdArrow->endTime - HOLD_ARROW_TICK_OFFSET_END_MS)
               canMiss = false;
           }
         });
