@@ -32,6 +32,7 @@ class TimingProvider {
   inline int getStopStart() { return stopStart; }
   inline u32 getStopLength() { return stopLength; }
   inline bool isStopJudgeable() { return stopJudgeable; }
+  inline int getLastWarpTime() { return lastWarpTime; }
 
  protected:
   int msecs = 0;
@@ -40,6 +41,7 @@ class TimingProvider {
   int stopStart = 0;
   u32 stopLength = 0;
   bool stopJudgeable = false;
+  int lastWarpTime = -999999999;
 };
 
 #endif  // TIMING_PROVIDER_H
