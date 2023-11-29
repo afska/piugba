@@ -187,7 +187,9 @@ void ChartReader::processNextEvents() {
             if (oldBpm > 0) {
               if (event->param3 > 0) {
                 u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-                maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
+                maxArrowTimeJump = arrowTimeDiff > 0
+                                       ? Div(arrowTimeDiff, event->param3)
+                                       : MAX_ARROW_TIME_JUMP;
               }
             } else
               syncArrowTime();
