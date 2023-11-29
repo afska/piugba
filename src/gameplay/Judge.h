@@ -13,9 +13,8 @@
 #include "utils/pool/ObjectPool.h"
 
 const u32 TIMING_WINDOWS[] = {0, 2, 4, 6, 8};
-const int HOLD_ARROW_TICK_OFFSET_START_MS = 67;
-//                                    ^ OFFSET_GOOD * FRAME_MS = 4 * 16.73322954
-const int HOLD_ARROW_TICK_OFFSET_END_MS = HOLD_ARROW_TICK_OFFSET_START_MS / 2;
+const int HOLD_ARROW_TICK_OFFSET_MS = 33;
+//                                  ^ OFFSET_GREAT * FRAME_MS = 2 * 16.73322954
 
 class Judge {
  public:
