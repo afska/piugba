@@ -69,7 +69,8 @@ class Arrow : public IPoolable {
                    ARROW_INITIAL_Y);
 
     if (isFake)
-      SPRITE_goToFrame(sprite.get(), endTile + ARROW_FAKE_TILE);
+      SPRITE_goToFrame(sprite.get(), isHoldFill ? ARROW_HOLD_FILL_FAKE_TILE
+                                                : endTile + ARROW_FAKE_TILE);
     else if (isHoldFill || isHoldTail) {
       u32 tileOffset = isHoldFill ? ARROW_HOLD_FILL_TILE : ARROW_HOLD_TAIL_TILE;
       SPRITE_goToFrame(sprite.get(), startTile + tileOffset);

@@ -64,6 +64,7 @@ const ArrowFlip ARROW_FLIP_TILE[] = {ArrowFlip::NO_FLIP, ArrowFlip::FLIP_Y,
                                      ArrowFlip::FLIP_X};
 const u32 ARROW_HOLD_FILL_TILE = 9;
 const u32 ARROW_HOLD_TAIL_TILE = 0;
+const u32 ARROW_HOLD_FILL_FAKE_TILE = 30;
 const u32 ARROW_FAKE_TILE = 2;
 
 #endif  // ARROW_ENUMS_H
