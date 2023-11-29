@@ -24,14 +24,28 @@ class Judge {
         std::function<void(u8 playerId)> onStageBreak);
 
   bool onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
-  void onOut(Arrow* arrow);
+  void onOut(Arrow* arrow, TimingProvider* timingProvider);
   void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
   inline void disable() { isDisabled = true; }
   inline void enable() { isDisabled = false; }
 
+  inline u32 getDiff(Arrow* arrow,
+                     TimingProvider* timingProvider,
+                     int offset = 0) {
+    int actualMsecs = timingProvider->getMsecs() + offset;
+    int expectedMsecs = arrow->timestamp;
+    return (u32)abs(actualMsecs - expectedMsecs);
+  }
+
   inline bool isInsideTimingWindow(u32 diff) {
     return diff < FRAME_MS * getTimingWindowOf(FeedbackType::MISS);
+  }
+
+  inline bool isNotInsideTimingWindow(Arrow* arrow,
+                                      TimingProvider* timingProvider,
+                                      int offset = 0) {
+    return !isInsideTimingWindow(getDiff(arrow, timingProvider, offset));
   }
 
   inline bool isPressed(ArrowDirection direction, u8 playerId) {
