@@ -319,11 +319,11 @@ CODE_IWRAM void SongScene::updateArrows() {
       bounceDirection * BOUNCE_STEPS[blinkFrame] * !!GameState.mods.bounce;
 
   // stop trackers
+  int judgementOffset[GAME_MAX_PLAYERS];
   bool isStopped[GAME_MAX_PLAYERS];
   bool isOnStopEdge[GAME_MAX_PLAYERS];
   bool isStopJudgeable[GAME_MAX_PLAYERS];
   int stopStart[GAME_MAX_PLAYERS];
-  int judgementOffset[GAME_MAX_PLAYERS];
   for (u32 playerId = 0; playerId < playerCount; playerId++) {
     judgementOffset[playerId] = chartReader[playerId]->getJudgementOffset();
 
