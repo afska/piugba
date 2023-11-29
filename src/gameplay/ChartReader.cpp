@@ -387,25 +387,21 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
       u16 arrows = 0;
       bool isFake = false;
       bool canMiss = true;
-      int judgementOffset = getJudgementOffset();
 
       for (u32 i = 0; i < ARROWS_GAME_TOTAL; i++) {
         auto direction = static_cast<ArrowDirection>(i);
 
-        withNextHoldArrow(
-            direction, [&arrows, &canMiss, &direction, &isFake, judgementOffset,
-                        this](HoldArrow* holdArrow) {
-              if (holdArrow->isOccurring(msecs)) {
-                arrows |= EVENT_HOLD_ARROW_MASKS[direction];
-                isFake = holdArrow->isFake;
+        withNextHoldArrow(direction, [&arrows, &canMiss, &direction, &isFake,
+                                      this](HoldArrow* holdArrow) {
+          if (holdArrow->isOccurring(msecs)) {
+            arrows |= EVENT_HOLD_ARROW_MASKS[direction];
+            isFake = holdArrow->isFake;
 
-                if (msecs + judgementOffset <
-                        holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS ||
-                    msecs + judgementOffset >
-                        holdArrow->endTime - HOLD_ARROW_TICK_OFFSET_MS)
-                  canMiss = false;
-              }
-            });
+            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS ||
+                msecs > holdArrow->endTime - HOLD_ARROW_TICK_OFFSET_MS)
+              canMiss = false;
+          }
+        });
       }
 
       if (arrows > 0 && !isFake)

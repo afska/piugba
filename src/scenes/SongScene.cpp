@@ -326,7 +326,6 @@ CODE_IWRAM void SongScene::updateArrows() {
   int stopStart[GAME_MAX_PLAYERS];
   for (u32 playerId = 0; playerId < playerCount; playerId++) {
     judgementOffset[playerId] = chartReader[playerId]->getJudgementOffset();
-
     isStopped[playerId] = chartReader[playerId]->isStopped();
     if (isStopped[playerId]) {
       isOnStopEdge[playerId] = chartReader[playerId]->hasJustStopped() ||
