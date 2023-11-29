@@ -318,20 +318,39 @@ CODE_IWRAM void SongScene::updateArrows() {
   int bounceOffset =
       bounceDirection * BOUNCE_STEPS[blinkFrame] * !!GameState.mods.bounce;
 
+  // stop trackers
+  bool isStopped[GAME_MAX_PLAYERS];
+  bool isOnStopEdge[GAME_MAX_PLAYERS];
+  bool isStopJudgeable[GAME_MAX_PLAYERS];
+  int stopStart[GAME_MAX_PLAYERS];
+  int judgementOffset[GAME_MAX_PLAYERS];
+  for (u32 playerId = 0; playerId < playerCount; playerId++) {
+    judgementOffset[playerId] = chartReader[playerId]->getJudgementOffset();
+
+    isStopped[playerId] = chartReader[playerId]->isStopped();
+    if (isStopped[playerId]) {
+      isOnStopEdge[playerId] = chartReader[playerId]->hasJustStopped() ||
+                               chartReader[playerId]->isAboutToResume();
+      isStopJudgeable[playerId] = chartReader[playerId]->isStopJudgeable();
+      stopStart[playerId] = chartReader[playerId]->getStopStart();
+    }
+  }
+
   // update sprites
-  arrowPool->forEachActive([&nextArrows, bounceOffset, this](Arrow* arrow) {
+  arrowPool->forEachActive([&nextArrows, bounceOffset, isStopped,
+                            judgementOffset, this](Arrow* arrow) {
     ArrowDirection direction = arrow->direction;
     u8 playerId = arrow->playerId;
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
-    bool isStopped = chartReader[playerId]->isStopped();
 
     int newY = chartReader[playerId]->getYFor(arrow);
-    bool isPressing =
-        arrowHolders[baseIndex + direction]->getIsPressed() && !isStopped;
+    bool isPressing = arrowHolders[baseIndex + direction]->getIsPressed() &&
+                      !isStopped[playerId];
     ArrowState arrowState = arrow->tick(newY, isPressing, bounceOffset);
 
     if (arrowState == ArrowState::OUT) {
-      judge->onOut(arrow, chartReader[playerId].get());
+      judge->onOut(arrow, chartReader[playerId].get(),
+                   judgementOffset[playerId]);
       return;
     }
 
@@ -351,33 +370,16 @@ CODE_IWRAM void SongScene::updateArrows() {
 
     u8 playerId = arrow->playerId;
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
-    bool isStopped = chartReader[playerId]->isStopped();
-
     ArrowDirection direction = arrow->direction;
-    bool canBeJudged = true;
-    int judgementOffset = 0;
-
-    if (isStopped) {
-      bool hasJustStopped = chartReader[playerId]->hasJustStopped();
-      bool isAboutToResume = chartReader[playerId]->isAboutToResume();
-
-      canBeJudged = arrow->timestamp >= chartReader[playerId]->getStopStart() &&
-                    (hasJustStopped || isAboutToResume);
-      judgementOffset =
-          isAboutToResume ? -chartReader[playerId]->getStopLength() : 0;
-
-      if (chartReader[playerId]->isStopJudgeable()) {
-        canBeJudged = true;
-        judgementOffset = -(chartReader[playerId]->getMsecs() -
-                            chartReader[playerId]->getStopStart());
-      }
-    }
-
+    bool canBeJudged =
+        !isStopped[playerId] || isStopJudgeable[playerId] ||
+        (arrow->timestamp >= stopStart[playerId] && isOnStopEdge[playerId]);
     bool hasBeenPressedNow =
         arrowHolders[baseIndex + direction]->hasBeenPressedNow();
+
     if (canBeJudged && hasBeenPressedNow) {
-      auto isHit =
-          judge->onPress(arrow, chartReader[playerId].get(), judgementOffset);
+      auto isHit = judge->onPress(arrow, chartReader[playerId].get(),
+                                  judgementOffset[playerId]);
 
       if (isHit &&
           GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_HIT)

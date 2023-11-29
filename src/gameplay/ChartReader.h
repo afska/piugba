@@ -58,6 +58,14 @@ class ChartReader : public TimingProvider {
           MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
   }
 
+  inline int getJudgementOffset() {
+    if (!hasStopped)
+      return 0;
+
+    return stopJudgeable ? -(msecs - stopStart)
+                         : (isAboutToResume() ? -stopLength : 0);
+  }
+
   bool isHoldActive(ArrowDirection direction);
   bool hasJustStopped();
   bool isAboutToResume();

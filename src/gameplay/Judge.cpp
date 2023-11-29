@@ -34,18 +34,18 @@ bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   return false;
 }
 
-void Judge::onOut(Arrow* arrow, TimingProvider* timingProvider) {
+void Judge::onOut(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
   bool isPressed = arrow->getIsPressed();
 
-  if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
+  if (isUnique && !isPressed && canMiss(arrow, timingProvider, offset)) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
   }
 
-  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
+  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider, offset))) {
     FeedbackType result =
         onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)

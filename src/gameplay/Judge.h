@@ -24,7 +24,7 @@ class Judge {
         std::function<void(u8 playerId)> onStageBreak);
 
   bool onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
-  void onOut(Arrow* arrow, TimingProvider* timingProvider);
+  void onOut(Arrow* arrow, TimingProvider* timingProvider, int offset);
   void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
   inline void disable() { isDisabled = true; }
@@ -46,9 +46,7 @@ class Judge {
   std::function<void(u8 playerId)> onStageBreak;
   bool isDisabled = false;
 
-  inline u32 getDiff(Arrow* arrow,
-                     TimingProvider* timingProvider,
-                     int offset = 0) {
+  inline u32 getDiff(Arrow* arrow, TimingProvider* timingProvider, int offset) {
     int actualMsecs = timingProvider->getMsecs() + offset;
     int expectedMsecs = arrow->timestamp;
     return (u32)abs(actualMsecs - expectedMsecs);
@@ -56,12 +54,14 @@ class Judge {
 
   inline bool isNotInsideTimingWindow(Arrow* arrow,
                                       TimingProvider* timingProvider,
-                                      int offset = 0) {
+                                      int offset) {
     return !isInsideTimingWindow(getDiff(arrow, timingProvider, offset));
   }
 
-  inline bool canMiss(Arrow* arrow, TimingProvider* timingProvider) {
-    return isNotInsideTimingWindow(arrow, timingProvider) &&
+  inline bool canMiss(Arrow* arrow,
+                      TimingProvider* timingProvider,
+                      int offset) {
+    return isNotInsideTimingWindow(arrow, timingProvider, offset) &&
            arrow->timestamp > timingProvider->getLastWarpTime();
   }
 
