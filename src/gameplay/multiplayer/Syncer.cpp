@@ -2,10 +2,6 @@
 
 #include "gameplay/Key.h"
 
-extern "C" {
-#include "player/player.h"
-}
-
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
     fail(FAILURE_REASON);                 \
@@ -183,7 +179,6 @@ void Syncer::checkTimeout() {
 }
 
 void Syncer::startPlaying() {
-  player_reinit();
   setState(SyncState::SYNC_STATE_PLAYING);
 }
 

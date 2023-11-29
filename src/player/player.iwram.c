@@ -26,6 +26,8 @@
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
+#define REG_DMA1CNT_L *(vu16*)(REG_BASE + 0x0c4)
+#define REG_DMA1CNT_H *(vu16*)(REG_BASE + 0x0c6)
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 #define INLINE static inline __attribute__((always_inline))
@@ -136,27 +138,36 @@ INLINE void stop() {
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
-  /* disable timer 0 */
-  REG_TM0CNT_H = 0;
-
-  /* no-op for timer */
+  // ----------------------------------------------------
+  // This convoluted process was taken from the official manual.
+  // It's supposed to disable DMA1 in a "safe" way, avoiding DMA lockups.
+  //
+  // 32-bit write
+  // enabled = 1; start timing = immediately; transfer type = 32 bits;
+  // repeat = off; destination = fixed; other bits = no change
+  REG_DMA1CNT = (REG_DMA1CNT & 0b00000000000000001100110111111111) |
+                (0x0004 << 16) | DMA_ENABLE | DMA32 | DMA_DST_FIXED;
+  //
+  // wait 4 cycles
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
-
-  /* disable DMA1 */
-  REG_DMA1CNT = 0;
-
-  /* no-op for DMA */
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
+  //
+  // 16-bit write
+  // enabled = 0; start timing = immediately; transfer type = 32 bits;
+  // repeat = off; destination = fixed; other bits = no change
+  REG_DMA1CNT_H = (REG_DMA1CNT_H & 0b0100110111111111) |
+                  0b0000010100000000;  // DMA32 | DMA_DST_FIXED
+  //
+  // wait 4 more cycles
+  asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
+  asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
+  // ----------------------------------------------------
 
-  /* setup DMA 1 */
+  // setup DMA1 for audio
   REG_DMA1SAD = (intptr_t)src;
   REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
   REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
                 DMA_ENABLE | 1;
-
-  /* re-enable timer 0 */
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
-  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
 }
 /* ---------------------------------------------------- */
 
@@ -164,11 +175,10 @@ CODE_EWRAM void player_init() {
   fs = find_first_gbfs_file(0);
   turnOnSound();
   init();
-}
 
-CODE_EWRAM void player_reinit() {
-  mute();
-  init();
+  REG_DMA1SAD = (intptr_t)double_buffers[0];
+  REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
+  REG_DMA1CNT_L = 0x0004;
 }
 
 CODE_EWRAM void player_play(const char* name) {
