@@ -85,8 +85,8 @@ module.exports = class Chart {
               for (let i = 0; i < activeArrows.length; i++) {
                 if (activeArrows[i]) {
                   if (holdArrows[i] != null) {
-                    if (metadata == null) metadata = { startIds: [] };
-                    metadata.startIds[i] = holdArrows[i];
+                    if (metadata == null) metadata = { holdStartIds: [] };
+                    metadata.holdStartIds[i] = holdArrows[i];
                     holdArrows[i] = null;
                   } else {
                     throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
@@ -101,7 +101,6 @@ module.exports = class Chart {
               timestamp,
               type: type === Events.FAKE_TAP ? Events.NOTE : type,
               playerId: 0,
-              allArrows: activeArrows,
               arrows: activeArrows.slice(0, 5),
               arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
               complexity,
@@ -308,7 +307,7 @@ module.exports = class Chart {
 
     return this._sort(
       _(events)
-        .map((it, __, col) => {
+        .map((it) => {
           if (it.type === Events.STOP_ASYNC) {
             return (lastStop = {
               ...it,
@@ -322,23 +321,21 @@ module.exports = class Chart {
             }
           }
 
-          const timestamp = it.timestamp - stoppedTime;
-          const event = {
-            ...it,
-            timestamp:
-              it.type === Events.HOLD_END && it.startIds != null
-                ? Math.max(
-                    _.max(
-                      it.startIds
-                        .filter((it) => it != null)
-                        .map((id) => eventsById[id])
-                        .filter((it) => it != null)
-                        .map((it) => it.timestamp)
-                    ),
-                    timestamp
-                  )
-                : timestamp,
-          };
+          let timestamp = it.timestamp - stoppedTime;
+          if (it.type === Events.HOLD_END && it.holdStartIds != null) {
+            timestamp = Math.max(
+              _.max(
+                it.holdStartIds
+                  .filter((it) => it != null)
+                  .map((id) => eventsById[id])
+                  .filter((it) => it != null)
+                  .map((it) => it.timestamp)
+              ),
+              timestamp
+            );
+          }
+
+          const event = { ...it, timestamp };
           eventsById[event.id] = event;
           return event;
         })
