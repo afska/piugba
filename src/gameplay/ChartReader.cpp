@@ -144,28 +144,33 @@ void ChartReader::processNextEvents() {
   processEvents(
       msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
         switch (type) {
-          case EventType::NOTE:
+          case EventType::NOTE: {
             if (arrowPool->isFull())
               return false;
 
             processUniqueNote(event->timestamp, event->data, event->data2);
             return true;
-          case EventType::HOLD_START:
+          }
+          case EventType::HOLD_START: {
             startHoldNote(event->timestamp, event->data);
             if (chart->isDouble)
               startHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
             return true;
-          case EventType::HOLD_END:
+          }
+          case EventType::HOLD_END: {
             endHoldNote(event->timestamp, event->data);
             if (chart->isDouble)
               endHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
             return true;
-          case EventType::SET_FAKE:
+          }
+          case EventType::SET_FAKE: {
             fake = event->param;
             return true;
-          default:
+          }
+          default: {
             if (msecs < event->timestamp)
               return false;
+          }
         }
 
         switch (type) {
@@ -195,32 +200,40 @@ void ChartReader::processNextEvents() {
               syncArrowTime();
             return true;
           }
-          case EventType::SET_TICKCOUNT:
+          case EventType::SET_TICKCOUNT: {
             tickCount = event->param;
             lastTick = -1;
             return true;
-          case EventType::STOP:
-            if (hasStopped)
-              return false;
-
-            hasStopped = true;
-            stopStart = event->timestamp;
-            stopLength = event->param;
-            stopJudgeable = event->param2;
-            return true;
-          case EventType::WARP:
-            if (hasStopped)
-              return false;
-
+          }
+          case EventType::WARP: {
             warpedMs += event->param;
             msecs += event->param;
             lastWarpTime = msecs;
             pixelBlink->blink();
 
+            bool isWarpStop = event->param2 > 0;
+            if (isWarpStop) {
+              hasStopped = true;
+              stopStart = event->timestamp;
+              stopLength = event->param2;
+              stopJudgeable = event->param3;
+            }
+
+            *stop = isWarpStop;
+            return true;
+          }
+          case EventType::STOP: {
+            hasStopped = true;
+            stopStart = event->timestamp;
+            stopLength = event->param;
+            stopJudgeable = event->param2;
+
             *stop = true;
             return true;
-          default:
+          }
+          default: {
             return false;
+          }
         }
       });
 }

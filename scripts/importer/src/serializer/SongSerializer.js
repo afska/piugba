@@ -144,9 +144,12 @@ const EVENT_SERIALIZERS = {
   },
   [Events.WARP]: {
     write: function (event) {
-      this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
+      this.UInt8(event.type)
+        .UInt32LE(normalizeUInt(event.length))
+        .UInt32LE(normalizeUInt(event.stopLength))
+        .UInt32LE(event.stopJudgeable ? 1 : 0);
     },
-    size: () => 1 + 4,
+    size: () => 1 + 4 + 4 + 4,
   },
 };
 

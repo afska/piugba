@@ -31,8 +31,8 @@ enum EventType {
   HOLD_END,
   SET_TEMPO,
   SET_TICKCOUNT,
-  STOP,
   WARP,
+  STOP,
 };
 
 const u8 EVENT_ARROW_MASKS[] = {EVENT_ARROW_DOWNLEFT, EVENT_ARROW_UPLEFT,
@@ -60,11 +60,12 @@ inline bool EVENT_HAS_PARAM(EventType event) {
 }
 
 inline bool EVENT_HAS_PARAM2(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::STOP;
+  return event == EventType::SET_TEMPO || event == EventType::STOP ||
+         event == EventType::WARP;
 }
 
 inline bool EVENT_HAS_PARAM3(EventType event) {
-  return event == EventType::SET_TEMPO;
+  return event == EventType::SET_TEMPO || event == EventType::WARP;
 }
 
 typedef struct {
