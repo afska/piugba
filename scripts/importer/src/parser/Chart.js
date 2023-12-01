@@ -355,9 +355,12 @@ module.exports = class Chart {
       _(events)
         .map((it) => {
           if (it.type === Events.STOP_ASYNC) {
+            const timestamp = it.timestamp - stoppedTime;
+            if (it.length > timestamp) return null;
+
             return (lastStop = {
               ...it,
-              timestamp: it.timestamp - stoppedTime,
+              timestamp,
               type: Events.STOP,
             });
           } else if (lastStop != null) {
