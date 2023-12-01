@@ -39,7 +39,6 @@ ChartReader::ChartReader(Chart* chart,
   this->multiplier = multiplier;
   targetArrowTime = ARROW_TIME[multiplier];
   syncArrowTime();
-  frameSkipCount = FRAME_SKIP;
 };
 
 CODE_IWRAM bool ChartReader::update(int songMsecs) {
@@ -134,13 +133,6 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
 }
 
 void ChartReader::processNextEvents() {
-  if (frameSkipCount == FRAME_SKIP) {
-    frameSkipCount = 0;
-  } else {
-    frameSkipCount++;
-    return;
-  }
-
   processEvents(
       msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
         switch (type) {
@@ -169,7 +161,7 @@ void ChartReader::processNextEvents() {
             return true;
           }
           default: {
-            if (msecs < event->timestamp)
+            if (msecs < event->timestamp || hasStopped)
               return false;
           }
         }
@@ -220,7 +212,6 @@ void ChartReader::processNextEvents() {
             stopLength = event->param;
             stopJudgeable = event->param2;
 
-            *stop = true;
             return true;
           }
           default: {
