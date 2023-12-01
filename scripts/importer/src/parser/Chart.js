@@ -20,7 +20,7 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._applyAsyncStops(
+      this._applyAsyncStopsAndAddHoldLengths(
         this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
       )
     );
@@ -345,7 +345,7 @@ module.exports = class Chart {
     });
   }
 
-  _applyAsyncStops(events) {
+  _applyAsyncStopsAndAddHoldLengths(events) {
     let stoppedTime = 0;
     let lastStop = null;
 
@@ -379,6 +379,13 @@ module.exports = class Chart {
               ),
               timestamp
             );
+
+            for (let holdStartId of it.holdStartIds) {
+              if (holdStartId != null) {
+                const holdStart = eventsById[holdStartId];
+                holdStart.length = timestamp - holdStart.timestamp;
+              }
+            }
           }
 
           const event = { ...it, timestamp };
