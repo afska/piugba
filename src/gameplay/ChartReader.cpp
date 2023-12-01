@@ -211,15 +211,6 @@ void ChartReader::processNextEvents() {
             lastWarpTime = msecs;
             pixelBlink->blink();
 
-            bool isWarpStop = event->param2 > 0;
-            if (isWarpStop) {
-              hasStopped = true;
-              stopStart = event->timestamp;
-              stopLength = event->param2;
-              stopJudgeable = event->param3;
-            }
-
-            *stop = isWarpStop;
             return true;
           }
           case EventType::STOP: {

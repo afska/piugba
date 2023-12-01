@@ -20,10 +20,8 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._combineWarpsAndStops(
-        this._applyAsyncStops(
-          this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
-        )
+      this._applyAsyncStops(
+        this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
       )
     );
   }
@@ -173,8 +171,6 @@ module.exports = class Chart {
             timestamp: warpStart,
             type: Events.WARP,
             length: timestamp - warpStart,
-            stopLength: 0,
-            stopJudgeable: false,
           };
         };
 
@@ -286,8 +282,6 @@ module.exports = class Chart {
               timestamp,
               type,
               length,
-              stopLength: 0,
-              stopJudgeable: false,
             };
           }
           default:
@@ -392,42 +386,6 @@ module.exports = class Chart {
           return event;
         })
         .compact()
-        .value()
-    );
-  }
-
-  _combineWarpsAndStops(events) {
-    return this._sort(
-      _(events)
-        .groupBy((it) => Math.round(it.timestamp))
-        .flatMap((subEvents, timestampStr) => {
-          const warps = subEvents.filter((it) => it.type === Events.WARP);
-          const stops = subEvents.filter((it) => it.type === Events.STOP);
-          if (warps.length > 1)
-            throw new Error("multiple_warps_in_timestamp: " + timestampStr);
-          if (stops.length > 1)
-            throw new Error("multiple_stops_in_timestamp: " + timestampStr);
-
-          if (warps.length === 1 && stops.length === 1) {
-            const warp = warps[0];
-            const stop = stops[0];
-            const others = subEvents.filter(
-              (it) => it.type !== Events.WARP && it.type !== Events.STOP
-            );
-            const warpStop = {
-              beat: warp.beat,
-              timestamp: warp.timestamp,
-              type: Events.WARP,
-              length: warp.length,
-              stopLength: stop.length,
-              stopJudgeable: stop.judgeable,
-            };
-
-            return [...others, warpStop];
-          }
-
-          return subEvents;
-        })
         .value()
     );
   }
