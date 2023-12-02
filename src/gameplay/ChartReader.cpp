@@ -371,7 +371,7 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
   // 60000 ms           -> BPM beats
   // rythmMsecs ms      -> beat = rythmMsecs * BPM / 60000
 
-  int beat = Div(rythmMsecs * bpm, MINUTE);
+  int beat = MATH_fracumul(rythmMsecs * bpm, FRACUMUL_DIV_BY_MINUTE);
   bool isNewBeat = beat != lastBeat;
   lastBeat = beat;
 
