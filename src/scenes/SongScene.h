@@ -47,7 +47,7 @@ class SongScene : public Scene {
   Song* song;
   Chart* chart;
   Chart* remoteChart;
-  std::unique_ptr<ChartReader> chartReader[GAME_MAX_PLAYERS];
+  std::unique_ptr<ChartReader> chartReaders[GAME_MAX_PLAYERS];
   std::unique_ptr<LifeBar> lifeBars[GAME_MAX_PLAYERS];
   std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS> scores;
   std::unique_ptr<Judge> judge;
