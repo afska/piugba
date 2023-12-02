@@ -353,10 +353,10 @@ module.exports = class Chart {
 
     return this._sort(
       _(events)
-        .map((it) => {
+        .map((it, i) => {
           if (it.type === Events.STOP_ASYNC) {
+            if (!this._canAsyncStopBeApplied(events, it, i)) return null;
             const timestamp = it.timestamp - stoppedTime;
-            if (it.length > timestamp) return null;
 
             return (lastStop = {
               ...it,
@@ -397,6 +397,21 @@ module.exports = class Chart {
         })
         .compact()
         .value()
+    );
+  }
+
+  _canAsyncStopBeApplied(events, asyncStop, i) {
+    let nextMovableEvents = events.slice(i + 1);
+    const nextAsyncStopIndex = _.findIndex(
+      nextMovableEvents,
+      (ev) => ev.type === Events.STOP_ASYNC
+    );
+    if (nextAsyncStopIndex > -1)
+      nextMovableEvents = nextMovableEvents
+        .slice(0, nextAsyncStopIndex)
+        .filter((ev) => ev.beat > asyncStop.beat);
+    return nextMovableEvents.every(
+      (ev) => ev.timestamp - asyncStop.length >= 0
     );
   }
 
