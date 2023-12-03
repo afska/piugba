@@ -9,6 +9,12 @@ const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
+void parseEvents(Event* events,
+                 u32 count,
+                 bool isDouble,
+                 u8* data,
+                 u32* cursor);
+
 Song* SONG_parse(const GBFS_FILE* fs,
                  SongFile* file,
                  bool full,
@@ -64,35 +70,21 @@ Song* SONG_parse(const GBFS_FILE* fs,
         ((levels.empty() && chart->difficulty != DifficultyLevel::NUMERIC) ||
          VECTOR_contains(levels, chart->level));
     if (!shouldParseEvents) {
-      chart->eventCount = 0;
       cursor += chart->eventChunkSize;
+      chart->rythmEventCount = 0;
+      chart->eventCount = 0;
       continue;
     }
 
+    chart->rythmEventCount = parse_u32le(data, &cursor);
+    chart->rythmEvents = (Event*)malloc(sizeof(Event) * chart->rythmEventCount);
+    parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
+                data, &cursor);
+
     chart->eventCount = parse_u32le(data, &cursor);
     chart->events = (Event*)malloc(sizeof(Event) * chart->eventCount);
-
-    for (u32 j = 0; j < chart->eventCount; j++) {
-      auto event = chart->events + j;
-
-      event->timestamp = parse_s32le(data, &cursor);
-
-      event->data = parse_u8(data, &cursor);
-      auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
-      event->data2 = EVENT_HAS_DATA2(eventType, chart->isDouble)
-                         ? parse_u8(data, &cursor)
-                         : 0;
-
-      if (EVENT_HAS_PARAM(eventType))
-        event->param = parse_u32le(data, &cursor);
-      if (EVENT_HAS_PARAM2(eventType))
-        event->param2 = parse_u32le(data, &cursor);
-      if (EVENT_HAS_PARAM3(eventType))
-        event->param3 = parse_u32le(data, &cursor);
-
-      event->handled[0] = false;
-      event->handled[1] = false;
-    }
+    parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
+                &cursor);
   }
 
   song->index = file->index;
@@ -181,4 +173,31 @@ void SONG_free(Song* song) {
   free(song->charts);
 
   delete song;
+}
+
+void parseEvents(Event* events,
+                 u32 count,
+                 bool isDouble,
+                 u8* data,
+                 u32* cursor) {
+  for (u32 j = 0; j < count; j++) {
+    auto event = events + j;
+
+    event->timestamp = parse_s32le(data, cursor);
+
+    event->data = parse_u8(data, cursor);
+    auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
+    event->data2 =
+        EVENT_HAS_DATA2(eventType, isDouble) ? parse_u8(data, cursor) : 0;
+
+    if (EVENT_HAS_PARAM(eventType))
+      event->param = parse_u32le(data, cursor);
+    if (EVENT_HAS_PARAM2(eventType))
+      event->param2 = parse_u32le(data, cursor);
+    if (EVENT_HAS_PARAM3(eventType))
+      event->param3 = parse_u32le(data, cursor);
+
+    event->handled[0] = false;
+    event->handled[1] = false;
+  }
 }

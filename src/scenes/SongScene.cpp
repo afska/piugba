@@ -322,7 +322,7 @@ CODE_IWRAM void SongScene::updateArrows() {
   int judgementOffset[GAME_MAX_PLAYERS];
   bool isStopped[GAME_MAX_PLAYERS];
   bool isOnStopEdge[GAME_MAX_PLAYERS];
-  bool isStopJudgeable[GAME_MAX_PLAYERS];
+  bool isStopAsync[GAME_MAX_PLAYERS];
   int stopStart[GAME_MAX_PLAYERS];
   for (u32 playerId = 0; playerId < playerCount; playerId++) {
     judgementOffset[playerId] = chartReaders[playerId]->getJudgementOffset();
@@ -330,7 +330,7 @@ CODE_IWRAM void SongScene::updateArrows() {
     if (isStopped[playerId]) {
       isOnStopEdge[playerId] = chartReaders[playerId]->hasJustStopped() ||
                                chartReaders[playerId]->isAboutToResume();
-      isStopJudgeable[playerId] = chartReaders[playerId]->isStopJudgeable();
+      isStopAsync[playerId] = chartReaders[playerId]->isStopAsync();
       stopStart[playerId] = chartReaders[playerId]->getStopStart();
     }
   }
@@ -371,7 +371,7 @@ CODE_IWRAM void SongScene::updateArrows() {
     u8 baseIndex = getBaseIndexFromPlayerId(playerId);
     ArrowDirection direction = arrow->direction;
     bool canBeJudged =
-        !isStopped[playerId] || isStopJudgeable[playerId] ||
+        !isStopped[playerId] || isStopAsync[playerId] ||
         (arrow->timestamp >= stopStart[playerId] && isOnStopEdge[playerId]);
     bool hasBeenPressedNow =
         arrowHolders[baseIndex + direction]->hasBeenPressedNow();

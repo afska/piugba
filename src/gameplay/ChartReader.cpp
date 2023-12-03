@@ -52,13 +52,16 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       hasStopped = false;
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
+      if (stopAsync)
+        asyncStoppedMs += stopLength;
     } else {
-      previewBpmChanges();
+      processRythmEvents();
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
   }
 
+  processRythmEvents();
   processNextEvents();
   orchestrateHoldArrows();
   return processTicks(rythmMsecs, true);
@@ -132,9 +135,51 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
+void ChartReader::processRythmEvents() {
+  processEvents(
+      chart->rythmEvents, chart->rythmEventCount, rythmEventIndex,
+      msecs + (int)asyncStoppedMs,
+      [this](EventType type, Event* event, bool* stop) {
+        if (type == EventType::SET_TEMPO) {
+          u32 oldBpm = bpm;
+          bpm = event->param;
+          scrollBpm = event->param2;
+
+          if (oldBpm != bpm) {
+            lastBpmChange = event->timestamp;
+            lastBeat = -1;
+            lastTick = 0;
+            beatDurationFrames = -1;
+            beatFrame = 0;
+          }
+
+          syncScrollSpeed();
+
+          if (oldBpm > 0) {
+            if (event->param3 > 0) {
+              u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+              maxArrowTimeJump = arrowTimeDiff > 0
+                                     ? Div(arrowTimeDiff, event->param3)
+                                     : MAX_ARROW_TIME_JUMP;
+            }
+          } else
+            syncArrowTime();
+
+          return true;
+        } else if (type == EventType::SET_TICKCOUNT) {
+          tickCount = event->param;
+          lastTick = -1;
+
+          return true;
+        }
+        return false;
+      });
+}
+
 void ChartReader::processNextEvents() {
   processEvents(
-      msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
+      chart->events, chart->eventCount, eventIndex, msecs + arrowTime,
+      [this](EventType type, Event* event, bool* stop) {
         switch (type) {
           case EventType::NOTE: {
             if (arrowPool->isFull())
@@ -167,15 +212,6 @@ void ChartReader::processNextEvents() {
         }
 
         switch (type) {
-          case EventType::SET_TEMPO: {
-            processBpmChange(type, event);
-            return true;
-          }
-          case EventType::SET_TICKCOUNT: {
-            tickCount = event->param;
-            lastTick = -1;
-            return true;
-          }
           case EventType::WARP: {
             warpedMs += event->param;
             msecs += event->param;
@@ -188,7 +224,7 @@ void ChartReader::processNextEvents() {
             hasStopped = true;
             stopStart = event->timestamp;
             stopLength = event->param;
-            stopJudgeable = event->param2;
+            stopAsync = event->param2;
 
             return true;
           }
@@ -284,39 +320,6 @@ void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
           });
         });
   });
-}
-
-void ChartReader::previewBpmChanges() {
-  processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
-    if (type == EventType::SET_TEMPO)
-      processBpmChange(type, event);
-    return false;
-  });
-}
-
-void ChartReader::processBpmChange(EventType type, Event* event) {
-  u32 oldBpm = bpm;
-  bpm = event->param;
-  scrollBpm = event->param2;
-
-  if (oldBpm != bpm) {
-    lastBpmChange = event->timestamp;
-    lastBeat = -1;
-    lastTick = 0;
-    beatDurationFrames = -1;
-    beatFrame = 0;
-  }
-
-  syncScrollSpeed();
-
-  if (oldBpm > 0) {
-    if (event->param3 > 0) {
-      u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-      maxArrowTimeJump = arrowTimeDiff > 0 ? Div(arrowTimeDiff, event->param3)
-                                           : MAX_ARROW_TIME_JUMP;
-    }
-  } else
-    syncArrowTime();
 }
 
 CODE_IWRAM void ChartReader::orchestrateHoldArrows() {

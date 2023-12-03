@@ -22,7 +22,10 @@ module.exports = class Chart {
    * Note events are specifically NOTE, HOLD_START, HOLD_END and FAKE_TAP
    */
   get events() {
-    const timingEvents = this._getTimingEvents();
+    const timingEvents = this._getTimingEvents().map((it, i) => ({
+      id: 1 + i,
+      ...it,
+    }));
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
@@ -220,7 +223,7 @@ module.exports = class Chart {
               timestamp,
               type,
               length,
-              judgeable: false,
+              async: false,
             };
 
             if (warpStart > -1) {
@@ -245,7 +248,7 @@ module.exports = class Chart {
                 type,
                 length,
                 lengthBeats: beat - currentScrollBeat,
-                judgeable: true,
+                async: true,
               };
             }
 
@@ -289,6 +292,7 @@ module.exports = class Chart {
       if (it.isFake && fakeEndTime == -1) {
         return [
           {
+            id: event.id,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -297,6 +301,7 @@ module.exports = class Chart {
           },
           event,
           {
+            id: event.id,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -310,6 +315,7 @@ module.exports = class Chart {
         fakeEndTime = it.endTime;
 
         event = {
+          id: it.id,
           beat: it.beat,
           timestamp: it.timestamp,
           type: Events.SET_FAKE,
@@ -322,6 +328,7 @@ module.exports = class Chart {
 
         return [
           {
+            id: it.id,
             beat: it.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -338,7 +345,7 @@ module.exports = class Chart {
   /**
    * Applies async stops (#SCROLLS=...=0), by converting them to actual STOP events.
    * As STOP events are blocking, all subsequent events must be moved to compensate the stop.
-   * The only exception is SET_TEMPO, which is processed even if the chart is stopped.
+   * The only exceptions are SET_TEMPO/SET_TICKCOUNT, which are processed even if the chart is stopped.
    * #SCROLLS are always optional and used in gimmick charts, so if this conversion can result
    * in a broken chart, the async stop will be ignored.
    * STOP events converted from async stops are always judgeable.
@@ -347,7 +354,6 @@ module.exports = class Chart {
   _applyAsyncStopsAndAddHoldLengths(events) {
     let stoppedTime = 0;
     let lastStop = null;
-    let lastConfirmedStop = null;
 
     const eventsById = {};
 
@@ -366,20 +372,20 @@ module.exports = class Chart {
           } else if (lastStop != null) {
             if (it.beat > lastStop.beat) {
               stoppedTime += lastStop.length;
-              lastConfirmedStop = lastStop;
               lastStop = null;
             }
           }
 
           let timestamp = it.timestamp - stoppedTime;
+
           if (
-            it.type === Events.SET_TEMPO &&
-            lastConfirmedStop != null &&
-            it.beat >= lastConfirmedStop.beat &&
-            it.beat < lastConfirmedStop.beat + lastConfirmedStop.lengthBeats
+            it.type === Events.SET_TEMPO ||
+            it.type === Events.SET_TICKCOUNT
           ) {
-            timestamp += lastConfirmedStop.length;
+            // don't move these events
+            timestamp = it.timestamp;
           } else if (it.type === Events.HOLD_END && it.holdStartIds != null) {
+            // ensure HOLD_ENDs won't be moved before their HOLD_STARTs
             timestamp = Math.max(
               _.max(
                 it.holdStartIds
@@ -445,7 +451,7 @@ module.exports = class Chart {
     }));
   }
 
-  /** Sorts events, first by timestamp, then by type. */
+  /** Sorts events by timestamp => type => id. */
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
@@ -456,6 +462,7 @@ module.exports = class Chart {
             ? 0.5
             : 1.5
           : it.type,
+      (it) => it.id,
     ]);
   }
 

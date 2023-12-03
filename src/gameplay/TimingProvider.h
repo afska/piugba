@@ -31,7 +31,7 @@ class TimingProvider {
   inline bool isStopped() { return hasStopped; }
   inline int getStopStart() { return stopStart; }
   inline u32 getStopLength() { return stopLength; }
-  inline bool isStopJudgeable() { return stopJudgeable; }
+  inline bool isStopAsync() { return stopAsync; }
   inline int getLastWarpTime() { return lastWarpTime; }
 
  protected:
@@ -40,7 +40,7 @@ class TimingProvider {
   u32 arrowTime;
   int stopStart = 0;
   u32 stopLength = 0;
-  bool stopJudgeable = false;
+  bool stopAsync = false;
   int lastWarpTime = -999999999;
 };
 

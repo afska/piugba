@@ -62,8 +62,8 @@ class ChartReader : public TimingProvider {
     if (!hasStopped)
       return 0;
 
-    return stopJudgeable ? -(msecs - stopStart)
-                         : (isAboutToResume() ? -stopLength : 0);
+    return stopAsync ? -(msecs - stopStart)
+                     : (isAboutToResume() ? -stopLength : 0);
   }
 
   bool isHoldActive(ArrowDirection direction);
@@ -85,6 +85,7 @@ class ChartReader : public TimingProvider {
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
+  u32 rythmEventIndex = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
   u32 scrollBpm = 0;
@@ -95,16 +96,21 @@ class ChartReader : public TimingProvider {
   int lastBeat = -1;
   int lastTick = -1;
   u32 stoppedMs = 0;
+  u32 asyncStoppedMs = 0;
   u32 warpedMs = 0;
 
   template <typename F>
-  inline void processEvents(int targetMsecs, F action) {
-    u32 currentIndex = eventIndex;
+  inline void processEvents(Event* events,
+                            u32 count,
+                            u32& index,
+                            int targetMsecs,
+                            F action) {
+    u32 currentIndex = index;
     bool skipped = false;
 
-    while (targetMsecs >= chart->events[currentIndex].timestamp &&
-           currentIndex < chart->eventCount) {
-      auto event = chart->events + currentIndex;
+    while (targetMsecs >= events[currentIndex].timestamp &&
+           currentIndex < count) {
+      auto event = events + currentIndex;
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
@@ -120,7 +126,7 @@ class ChartReader : public TimingProvider {
       if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
-        eventIndex = currentIndex;
+        index = currentIndex;
       if (stop)
         return;
     }
@@ -179,12 +185,11 @@ class ChartReader : public TimingProvider {
   }
 
   int getYFor(int timestamp);
+  void processRythmEvents();
   void processNextEvents();
   void processUniqueNote(int timestamp, u8 data, u8 param);
   void startHoldNote(int timestamp, u8 data, u32 length, u8 offset = 0);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
-  void processBpmChange(EventType type, Event* event);
-  void previewBpmChanges();
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
