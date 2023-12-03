@@ -53,46 +53,21 @@ module.exports = class Chart {
               this.header.isDouble ? 10 : 5
             ).map((id) => _.includes(arrows, id));
 
-            const arrowCount = _.sumBy(activeArrows);
-            const isJump = arrowCount > 1;
-            const isHold = type === Events.HOLD_START;
-            const complexity =
-              (type === Events.NOTE || isHold) &&
-              this.lastTimestamp < MAX_TIMESTAMP
-                ? ((1 - subdivision) *
-                    Math.log(bpm) *
-                    (isJump ? Math.log2(2 + arrowCount) : 1) *
-                    (isHold ? 1.3 : 1)) /
-                  (this.lastTimestamp / SECOND)
-                : null;
-
             const id = currentId++;
-            let metadata = null;
-            if (type === Events.HOLD_START) {
-              for (let i = 0; i < activeArrows.length; i++) {
-                if (activeArrows[i]) {
-                  if (holdArrows[i] == null) {
-                    holdArrows[i] = id;
-                  } else {
-                    throw new Error(
-                      `unbalanced_hold_arrow: ${beat}/${timestamp}`
-                    );
-                  }
-                }
-              }
-            } else if (type === Events.HOLD_END) {
-              for (let i = 0; i < activeArrows.length; i++) {
-                if (activeArrows[i]) {
-                  if (holdArrows[i] != null) {
-                    if (metadata == null) metadata = { holdStartIds: [] };
-                    metadata.holdStartIds[i] = holdArrows[i];
-                    holdArrows[i] = null;
-                  } else {
-                    throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
-                  }
-                }
-              }
-            }
+            const holdArrowsMetadata = this._getHoldArrowsMetadata(
+              id,
+              beat,
+              timestamp,
+              type,
+              activeArrows,
+              holdArrows
+            );
+            const complexity = this._getComplexityOf(
+              type,
+              bpm,
+              subdivision,
+              _.sumBy(activeArrows)
+            );
 
             return {
               id,
@@ -104,7 +79,7 @@ module.exports = class Chart {
               arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
               complexity,
               isFake: type === Events.FAKE_TAP,
-              ...metadata,
+              ...holdArrowsMetadata,
             };
           })
           .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
@@ -556,6 +531,49 @@ module.exports = class Chart {
 
   _getFiniteBpms() {
     return this.header.bpms.filter((it) => it.value <= FAST_BPM_WARP);
+  }
+
+  _getHoldArrowsMetadata(id, beat, timestamp, type, activeArrows, holdArrows) {
+    let metadata = null;
+    if (type === Events.HOLD_START) {
+      for (let i = 0; i < activeArrows.length; i++) {
+        if (activeArrows[i]) {
+          if (holdArrows[i] == null) {
+            holdArrows[i] = id;
+          } else {
+            throw new Error(`unbalanced_hold_arrow: ${beat}/${timestamp}`);
+          }
+        }
+      }
+    } else if (type === Events.HOLD_END) {
+      for (let i = 0; i < activeArrows.length; i++) {
+        if (activeArrows[i]) {
+          if (holdArrows[i] != null) {
+            if (metadata == null) metadata = { holdStartIds: [] };
+            metadata.holdStartIds[i] = holdArrows[i];
+            holdArrows[i] = null;
+          } else {
+            throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
+          }
+        }
+      }
+    }
+
+    return metadata;
+  }
+
+  _getComplexityOf(type, bpm, subdivision, arrowCount) {
+    const isHold = type === Events.HOLD_START;
+    const isJump = arrowCount > 1;
+
+    return (type === Events.NOTE || isHold) &&
+      this.lastTimestamp < MAX_TIMESTAMP
+      ? ((1 - subdivision) *
+          Math.log(bpm) *
+          (isJump ? Math.log2(2 + arrowCount) : 1) *
+          (isHold ? 1.3 : 1)) /
+          (this.lastTimestamp / SECOND)
+      : null;
   }
 
   _calculateLastTimestamp() {
