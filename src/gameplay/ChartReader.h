@@ -186,7 +186,7 @@ class ChartReader : public TimingProvider {
 
   int getYFor(int timestamp);
   void processRythmEvents();
-  void processNextEvents();
+  void processNextEvents(int now);
   void processUniqueNote(int timestamp, u8 data, u8 param);
   void startHoldNote(int timestamp, u8 data, u32 length, u8 offset = 0);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);

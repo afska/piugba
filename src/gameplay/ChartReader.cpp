@@ -57,13 +57,14 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
     } else {
       if (stopAsync)
         processRythmEvents();
+      processNextEvents(stopStart);
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
   }
 
   processRythmEvents();
-  processNextEvents();
+  processNextEvents(msecs);
   orchestrateHoldArrows();
   return processTicks(rythmMsecs, true);
 }
@@ -177,10 +178,10 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
       });
 }
 
-CODE_IWRAM void ChartReader::processNextEvents() {
+CODE_IWRAM void ChartReader::processNextEvents(int now) {
   processEvents(
-      chart->events, chart->eventCount, eventIndex, msecs + arrowTime,
-      [this](EventType type, Event* event, bool* stop) {
+      chart->events, chart->eventCount, eventIndex, now + arrowTime,
+      [&now, this](EventType type, Event* event, bool* stop) {
         switch (type) {
           case EventType::NOTE: {
             if (arrowPool->isFull())
@@ -207,7 +208,7 @@ CODE_IWRAM void ChartReader::processNextEvents() {
             return true;
           }
           default: {
-            if (msecs < event->timestamp || hasStopped)
+            if (now < event->timestamp || hasStopped)
               return false;
           }
         }
