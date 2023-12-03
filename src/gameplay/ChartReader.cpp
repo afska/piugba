@@ -135,7 +135,7 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
-void ChartReader::processRythmEvents() {
+CODE_IWRAM void ChartReader::processRythmEvents() {
   processEvents(
       chart->rythmEvents, chart->rythmEventCount, rythmEventIndex,
       msecs + (int)asyncStoppedMs,
