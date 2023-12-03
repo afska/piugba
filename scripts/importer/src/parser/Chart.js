@@ -304,6 +304,7 @@ module.exports = class Chart {
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
+            fakeTap: true,
             enabled: 1,
           },
           event,
@@ -311,6 +312,7 @@ module.exports = class Chart {
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
+            fakeTap: true,
             enabled: 0,
           },
         ];
@@ -425,7 +427,12 @@ module.exports = class Chart {
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
-      (it) => it.type,
+      (it) =>
+        it.type === Events.SET_FAKE && it.fakeTap
+          ? it.enabled
+            ? 0.5
+            : 1.5
+          : it.type,
     ]);
   }
 
