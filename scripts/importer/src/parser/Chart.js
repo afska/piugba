@@ -461,6 +461,11 @@ module.exports = class Chart {
           ? it.enabled
             ? 0.5
             : 1.5
+          : // (STOPs should be *before* WARPs, async STOPs should be *after* WARPs)
+          it.type === Events.STOP
+          ? it.async
+            ? 7
+            : 5.5
           : it.type,
       (it) => it.id,
     ]);
