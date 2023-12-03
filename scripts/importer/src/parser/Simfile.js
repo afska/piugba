@@ -135,7 +135,7 @@ module.exports = class Simfile {
           );
 
           const chart = new Chart(this.metadata, header, rawNotes);
-          chart.events; // (ensure it can be parsed correctly)
+          if (!GLOBAL_OPTIONS.json) chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
           console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
