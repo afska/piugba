@@ -420,9 +420,17 @@ module.exports = class Chart {
       nextMovableEvents = nextMovableEvents
         .slice(0, nextAsyncStopIndex)
         .filter((ev) => ev.beat > asyncStop.beat);
-    return nextMovableEvents.every(
-      (ev) => ev.timestamp - asyncStop.length >= 0
+
+    const eventsBeforeSongStart = nextMovableEvents.some(
+      (ev) => ev.timestamp - asyncStop.length < 0
     );
+    const warpsOrStopsDuringAsyncStop = nextMovableEvents.some(
+      (ev) =>
+        (ev.type === Events.WARP || ev.type === Events.STOP) &&
+        ev.beat < asyncStop.beat + asyncStop.durationBeats
+    );
+
+    return !eventsBeforeSongStart && !warpsOrStopsDuringAsyncStop;
   }
 
   _applyOffset(events) {
