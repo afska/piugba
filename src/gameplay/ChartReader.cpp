@@ -53,7 +53,7 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
     } else {
-      processBpmChangesOnly();
+      previewBpmChanges();
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
@@ -286,12 +286,10 @@ void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
   });
 }
 
-void ChartReader::processBpmChangesOnly() {
+void ChartReader::previewBpmChanges() {
   processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
-    if (type == EventType::SET_TEMPO) {
+    if (type == EventType::SET_TEMPO)
       processBpmChange(type, event);
-      return true;
-    }
     return false;
   });
 }

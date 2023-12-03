@@ -159,7 +159,7 @@ module.exports = class Chart {
         switch (type) {
           case Events.SET_TEMPO: {
             if (data.value > FAST_BPM_WARP) {
-              // (fast-bpm warps are legacy #WARPS=... that teleport the player to the next BPM change)
+              // (fast-bpm warps work like #WARPS=... that teleport the player to the next BPM change)
               if (warpStart === -1) warpStart = timestamp;
               return null;
             }
