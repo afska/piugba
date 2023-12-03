@@ -55,7 +55,8 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       if (stopAsync)
         asyncStoppedMs += stopLength;
     } else {
-      processRythmEvents();
+      if (stopAsync)
+        processRythmEvents();
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
