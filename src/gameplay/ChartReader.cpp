@@ -54,6 +54,13 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
     } else {
+      processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
+        if (type == EventType::SET_TEMPO) {
+          processBpmChange(type, event);
+          return true;
+        }
+        return false;
+      });
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
@@ -168,29 +175,7 @@ void ChartReader::processNextEvents() {
 
         switch (type) {
           case EventType::SET_TEMPO: {
-            u32 oldBpm = bpm;
-            bpm = event->param;
-            scrollBpm = event->param2;
-
-            if (oldBpm != bpm) {
-              lastBpmChange = event->timestamp;
-              lastBeat = -1;
-              lastTick = 0;
-              beatDurationFrames = -1;
-              beatFrame = 0;
-            }
-
-            syncScrollSpeed();
-
-            if (oldBpm > 0) {
-              if (event->param3 > 0) {
-                u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-                maxArrowTimeJump = arrowTimeDiff > 0
-                                       ? Div(arrowTimeDiff, event->param3)
-                                       : MAX_ARROW_TIME_JUMP;
-              }
-            } else
-              syncArrowTime();
+            processBpmChange(type, event);
             return true;
           }
           case EventType::SET_TICKCOUNT: {
@@ -306,6 +291,31 @@ void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
           });
         });
   });
+}
+
+void ChartReader::processBpmChange(EventType type, Event* event) {
+  u32 oldBpm = bpm;
+  bpm = event->param;
+  scrollBpm = event->param2;
+
+  if (oldBpm != bpm) {
+    lastBpmChange = event->timestamp;
+    lastBeat = -1;
+    lastTick = 0;
+    beatDurationFrames = -1;
+    beatFrame = 0;
+  }
+
+  syncScrollSpeed();
+
+  if (oldBpm > 0) {
+    if (event->param3 > 0) {
+      u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+      maxArrowTimeJump = arrowTimeDiff > 0 ? Div(arrowTimeDiff, event->param3)
+                                           : MAX_ARROW_TIME_JUMP;
+    }
+  } else
+    syncArrowTime();
 }
 
 CODE_IWRAM void ChartReader::orchestrateHoldArrows() {

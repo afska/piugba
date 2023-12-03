@@ -183,6 +183,7 @@ class ChartReader : public TimingProvider {
   void processUniqueNote(int timestamp, u8 data, u8 param);
   void startHoldNote(int timestamp, u8 data, u32 length, u8 offset = 0);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
+  void processBpmChange(EventType type, Event* event);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);

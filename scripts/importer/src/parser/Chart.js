@@ -349,6 +349,7 @@ module.exports = class Chart {
   _applyAsyncStopsAndAddHoldLengths(events) {
     let stoppedTime = 0;
     let lastStop = null;
+    let lastConfirmedStop = null;
 
     const eventsById = {};
 
@@ -367,12 +368,20 @@ module.exports = class Chart {
           } else if (lastStop != null) {
             if (it.beat > lastStop.beat) {
               stoppedTime += lastStop.length;
+              lastConfirmedStop = lastStop;
               lastStop = null;
             }
           }
 
           let timestamp = it.timestamp - stoppedTime;
-          if (it.type === Events.HOLD_END && it.holdStartIds != null) {
+          if (
+            it.type === Events.SET_TEMPO &&
+            lastConfirmedStop != null &&
+            it.beat >= lastConfirmedStop.beat &&
+            it.beat < lastConfirmedStop.beat + lastConfirmedStop.lengthBeats
+          ) {
+            timestamp += lastConfirmedStop.length;
+          } else if (it.type === Events.HOLD_END && it.holdStartIds != null) {
             timestamp = Math.max(
               _.max(
                 it.holdStartIds
