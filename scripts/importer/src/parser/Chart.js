@@ -1,6 +1,7 @@
 const Events = require("./Events");
 const _ = require("lodash");
 
+/** A StepMania SSC chart. */
 module.exports = class Chart {
   static get MAX_SECONDS() {
     return MAX_TIMESTAMP / 1000;
@@ -15,6 +16,11 @@ module.exports = class Chart {
     this._validate();
   }
 
+  /**
+   * Generates all the events from the chart.
+   * Timing events are metadata events (such as BPM changes, Stops, Warps, etc.)
+   * Note events are specifically NOTE, HOLD_START, HOLD_END and FAKE_TAP
+   */
   get events() {
     const timingEvents = this._getTimingEvents();
     const noteEvents = this._getNoteEvents(timingEvents);
@@ -26,6 +32,7 @@ module.exports = class Chart {
     );
   }
 
+  /** Generates events specifically from note data. */
   _getNoteEvents(timingEvents) {
     const measures = this._getMeasures();
     let cursor = 0;
@@ -39,7 +46,7 @@ module.exports = class Chart {
 
       return _.flatMap(lines, (line, noteIndex) => {
         const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
-        const bpm = this._getBpmByBeat(beat, timingEvents); // (if there's no mid-note BPM changes)
+        const bpm = this._getBpmByBeat(beat, timingEvents); // (if there are no mid-note BPM changes)
         const noteDuration = this._getNoteDuration(beat, subdivision);
 
         const timestamp = cursor;
@@ -88,6 +95,7 @@ module.exports = class Chart {
     });
   }
 
+  /** Generates all the events from timing segments. */
   _getTimingEvents() {
     const segments = _([
       this.header.bpms.map((it) => ({ type: Events.SET_TEMPO, data: it })),
@@ -151,6 +159,7 @@ module.exports = class Chart {
         switch (type) {
           case Events.SET_TEMPO: {
             if (data.value > FAST_BPM_WARP) {
+              // (fast-bpm warps are legacy #WARPS=... that teleport the player to the next BPM change)
               if (warpStart === -1) warpStart = timestamp;
               return null;
             }
@@ -266,6 +275,11 @@ module.exports = class Chart {
       .value();
   }
 
+  /**
+   * Applies fake taps (F notes) and fake segments (#FAKES:...=...).
+   * Fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0
+   * Fake segments initially have length, but they are compiled to: SET_FAKE=1, ...{notes}..., SET_FAKE=0
+   */
   _applyFakes(events) {
     let fakeEndTime = -1;
 
@@ -321,6 +335,15 @@ module.exports = class Chart {
     });
   }
 
+  /**
+   * Applies async stops (#SCROLLS=...=0), by converting them to actual STOP events.
+   * As STOP events are blocking, all subsequent events must be moved to compensate the stop.
+   * The only exception is SET_TEMPO, which is processed even if the chart is stopped.
+   * #SCROLLS are always optional and used in gimmick charts, so if this conversion can result
+   * in a broken chart, the async stop will be ignored.
+   * STOP events converted from async stops are always judgeable.
+   * This method also calculates/assigns the duration of HOLD_START events.
+   */
   _applyAsyncStopsAndAddHoldLengths(events) {
     let stoppedTime = 0;
     let lastStop = null;
@@ -385,6 +408,12 @@ module.exports = class Chart {
     );
   }
 
+  /**
+   * Determines whether an async stop can be applied or not.
+   * As "applying" means moving all subsequent events, this only returns true
+   * if no events would be placed before song's start, and if there are no WARP
+   * or actual STOP events inside.
+   */
   _canAsyncStopBeApplied(events, asyncStop, i) {
     let nextMovableEvents = events.slice(i + 1);
     const nextAsyncStopIndex = _.findIndex(
@@ -408,6 +437,7 @@ module.exports = class Chart {
     return !eventsBeforeSongStart && !warpsOrStopsDuringAsyncStop;
   }
 
+  /** Moves all the events to adjust the chart's offset. */
   _applyOffset(events) {
     return events.map((it) => ({
       ...it,
@@ -415,10 +445,12 @@ module.exports = class Chart {
     }));
   }
 
+  /** Sorts events, first by timestamp, then by type. */
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
       (it) =>
+        // (fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0)
         it.type === Events.SET_FAKE && it.fakeTap
           ? it.enabled
             ? 0.5
@@ -427,6 +459,7 @@ module.exports = class Chart {
     ]);
   }
 
+  /** Returns a list of measures (raw data). */
   _getMeasures() {
     return this.content
       .split(",")
@@ -434,6 +467,7 @@ module.exports = class Chart {
       .filter(_.identity);
   }
 
+  /** Returns the parsed lines within a measure. */
   _getMeasureLines(measure) {
     return measure
       .split(/\r?\n/)
@@ -444,8 +478,8 @@ module.exports = class Chart {
         it.replace(/{(\w)\|\w\|(\w)\|\w}/g, (__, note, fake) =>
           fake === "1" ? "F" : note
         )
-      ) // weird f2 event syntax
-      .map((it) => it.replace(/[MK]/g, "0")) // ignored SSC events
+      ) // (weird f2 event syntax)
+      .map((it) => it.replace(/[MK]/g, "0")) // (ignored SSC events)
       .filter((it) => {
         const isValid = (this.header.isDouble
           ? NOTE_DATA_DOUBLE
@@ -457,6 +491,7 @@ module.exports = class Chart {
       });
   }
 
+  /** Separates events by their type. */
   _getEventsByType(line) {
     return _(line)
       .split("")
@@ -471,11 +506,13 @@ module.exports = class Chart {
       .value();
   }
 
+  /** Returns the beat length of a BPM in milliseconds. */
   _getBeatLengthByBpm(bpm) {
     if (bpm === 0) return 0;
     return MINUTE / bpm;
   }
 
+  /** Returns the BPM of a certain beat. */
   _getBpmByBeat(beat) {
     const bpm = _.findLast(this._getFiniteBpms(), (bpm) => beat >= bpm.key);
     if (!bpm) return 0;
@@ -483,6 +520,7 @@ module.exports = class Chart {
     return bpm.value;
   }
 
+  /** Calculates the duration of a note, taking into account mid-note BPM changes. */
   _getNoteDuration(beat, subdivision) {
     const startBeat = beat;
     const durationBeats = BEAT_UNIT * subdivision;
@@ -518,6 +556,7 @@ module.exports = class Chart {
     return durationMs;
   }
 
+  /** Calculates the duration of a range, in beats. */
   _getRangeDuration(startBeat, endBeat, precision = SEMISEMIFUSE) {
     let length = 0;
 
@@ -529,10 +568,12 @@ module.exports = class Chart {
     return length;
   }
 
+  /** Return finite BPM changes, ignoring fast-bpm warps. */
   _getFiniteBpms() {
     return this.header.bpms.filter((it) => it.value <= FAST_BPM_WARP);
   }
 
+  /** Connects HOLD_STARTs and HOLD_ENDs. */
   _getHoldArrowsMetadata(id, beat, timestamp, type, activeArrows, holdArrows) {
     let metadata = null;
     if (type === Events.HOLD_START) {
@@ -562,6 +603,7 @@ module.exports = class Chart {
     return metadata;
   }
 
+  /** Returns the complexity index of a note. */
   _getComplexityOf(type, bpm, subdivision, arrowCount) {
     const isHold = type === Events.HOLD_START;
     const isJump = arrowCount > 1;
@@ -576,6 +618,10 @@ module.exports = class Chart {
       : null;
   }
 
+  /**
+   * This is used for the complexity index.
+   * If #LASTSECONDHINT is not provided, last event's timestamp will be used.
+   */
   _calculateLastTimestamp() {
     this.lastTimestamp = MAX_TIMESTAMP;
 
@@ -587,6 +633,7 @@ module.exports = class Chart {
     } catch (e) {}
   }
 
+  /** Validates the chart. */
   _validate() {
     const bpms = this._getFiniteBpms();
     let lastBeat = -1;

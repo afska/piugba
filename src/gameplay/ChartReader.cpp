@@ -8,7 +8,6 @@
 #include "multiplayer/Syncer.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
-const u32 FRAME_SKIP = 1;
 const u32 RANDOM_STEPS_MAX_RETRIES = 5;
 u8 RANDOM_STEPS_LAST_DATA = 0;
 
@@ -54,13 +53,7 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
     } else {
-      processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
-        if (type == EventType::SET_TEMPO) {
-          processBpmChange(type, event);
-          return true;
-        }
-        return false;
-      });
+      processBpmChangesOnly();
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
@@ -290,6 +283,16 @@ void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
                                        playerId, timestamp, holdArrow, fake);
           });
         });
+  });
+}
+
+void ChartReader::processBpmChangesOnly() {
+  processEvents(msecs, [this](EventType type, Event* event, bool* stop) {
+    if (type == EventType::SET_TEMPO) {
+      processBpmChange(type, event);
+      return true;
+    }
+    return false;
   });
 }
 
