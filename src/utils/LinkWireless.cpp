@@ -4,7 +4,7 @@
 LINK_WIRELESS_CODE_IWRAM void LinkWireless::_onSerial() {
   __onSerial();
 }
-void LinkWireless::_onTimer() {  // [!]
+LINK_WIRELESS_CODE_IWRAM void LinkWireless::_onTimer() {
   __onTimer();
 }
 LINK_WIRELESS_CODE_IWRAM void LinkWireless::_onACKTimer() {
