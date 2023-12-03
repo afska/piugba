@@ -176,7 +176,7 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
       });
 }
 
-void ChartReader::processNextEvents() {
+CODE_IWRAM void ChartReader::processNextEvents() {
   processEvents(
       chart->events, chart->eventCount, eventIndex, msecs + arrowTime,
       [this](EventType type, Event* event, bool* stop) {
