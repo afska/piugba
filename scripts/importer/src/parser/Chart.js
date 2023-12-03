@@ -29,7 +29,6 @@ module.exports = class Chart {
   _getNoteEvents(timingEvents) {
     const measures = this._getMeasures();
     let cursor = 0;
-
     let currentId = 0;
     const holdArrows = [];
 
@@ -40,9 +39,9 @@ module.exports = class Chart {
 
       return _.flatMap(lines, (line, noteIndex) => {
         const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
-        const bpm = this._getBpmByBeat(beat, timingEvents);
-        const wholeNoteLength = this._getWholeNoteLengthByBpm(bpm);
-        const noteDuration = subdivision * wholeNoteLength;
+        const bpm = this._getBpmByBeat(beat, timingEvents); // (if there's no mid-note BPM changes)
+        const noteDuration = this._getNoteDuration(beat, subdivision);
+
         const timestamp = cursor;
         cursor += noteDuration;
         const eventsByType = this._getEventsByType(line);
@@ -480,10 +479,6 @@ module.exports = class Chart {
       .value();
   }
 
-  _getWholeNoteLengthByBpm(bpm) {
-    return this._getBeatLengthByBpm(bpm) * BEAT_UNIT;
-  }
-
   _getBeatLengthByBpm(bpm) {
     if (bpm === 0) return 0;
     return MINUTE / bpm;
@@ -496,12 +491,47 @@ module.exports = class Chart {
     return bpm.value;
   }
 
-  _getRangeDuration(startBeat, endBeat) {
+  _getNoteDuration(beat, subdivision) {
+    const startBeat = beat;
+    const durationBeats = BEAT_UNIT * subdivision;
+    const endBeat = startBeat + durationBeats;
+
+    const bpms = this._getFiniteBpms();
+    let currentBpm = this._getBpmByBeat(startBeat);
+    let currentBeat = startBeat;
+    let durationMs = 0;
+    let completion = 0;
+
+    for (let bpm of bpms) {
+      if (bpm.key > startBeat && bpm.key < endBeat) {
+        // durationBeats      -> 1
+        // beatsInPreviousBpm -> fraction
+
+        const beatsInPreviousBpm = bpm.key - currentBeat;
+        const fraction = beatsInPreviousBpm / durationBeats;
+        durationMs += this._getBeatLengthByBpm(currentBpm) * beatsInPreviousBpm;
+        completion += fraction;
+
+        currentBpm = bpm.value;
+        currentBeat = bpm.key;
+      }
+    }
+
+    if (completion < 1) {
+      durationMs +=
+        this._getBeatLengthByBpm(currentBpm) * durationBeats * (1 - completion);
+      completion = 1;
+    }
+
+    return durationMs;
+  }
+
+  _getRangeDuration(startBeat, endBeat, precision = SEMISEMIFUSE) {
     let length = 0;
 
-    for (let beat = startBeat; beat < endBeat; beat += SEMIFUSE) {
+    for (let beat = startBeat; beat < endBeat; beat += precision) {
       const bpm = this._getBpmByBeat(beat);
-      length += this._getBeatLengthByBpm(bpm) * SEMIFUSE;
+      length += this._getBeatLengthByBpm(bpm) * precision;
     }
 
     return length;
@@ -526,7 +556,7 @@ module.exports = class Chart {
     const bpms = this._getFiniteBpms();
     let lastBeat = -1;
     for (let bpm of bpms) {
-      if (Math.abs(bpm.key - lastBeat) < SEMIFUSE)
+      if (Math.abs(bpm.key - lastBeat) < SEMISEMIFUSE)
         throw new Error("bpm_change_too_fast:\n    " + JSON.stringify(bpm));
       lastBeat = bpm.key;
     }
@@ -540,5 +570,5 @@ const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 9999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
-const SEMIFUSE = 1 / 2 / 2 / 2 / 2 / 2;
+const SEMISEMIFUSE = 1 / 128;
 const MAX_TIMESTAMP = 3600000;
