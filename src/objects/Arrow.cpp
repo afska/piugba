@@ -86,8 +86,8 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
     }
   } else if (isNearEndOrClose(newY) && needsAnimation) {
     animatePress();
-  } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
-             isPressing) {
+  } else if (isHoldArrow && (!isHoldFill || isLastFill) &&
+             isNearEnd(newY - 1) && isPressing) {
     if (!isHoldFill)
       markAsPressed();
 
