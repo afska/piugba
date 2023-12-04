@@ -49,8 +49,8 @@ module.exports = class Chart {
 
       return _.flatMap(lines, (line, noteIndex) => {
         const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
-        const bpm = this._getBpmByBeat(beat, timingEvents); // (if there are no mid-note BPM changes)
-        const noteDuration = this._getNoteDuration(beat, subdivision);
+        const bpm = this._getBpmByBeat(beat, timingEvents); // (this is an approximation for `complexity`, only valid if there are no mid-note BPM changes)
+        const noteDuration = this._getNoteDuration(beat, subdivision); // (this calculates the actual note duration)
 
         const timestamp = cursor;
         cursor += noteDuration;
@@ -461,7 +461,7 @@ module.exports = class Chart {
     }));
   }
 
-  /** Sorts events by timestamp => type => id. */
+  /** Sorts events by timestamp => priority => type => id. */
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),

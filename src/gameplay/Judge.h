@@ -52,12 +52,6 @@ class Judge {
     return (u32)abs(actualMsecs - expectedMsecs);
   }
 
-  inline bool isNotInsideTimingWindow(Arrow* arrow,
-                                      TimingProvider* timingProvider,
-                                      int offset) {
-    return !isInsideTimingWindow(getDiff(arrow, timingProvider, offset));
-  }
-
   inline bool canMiss(Arrow* arrow, TimingProvider* timingProvider) {
     return arrow->timestamp > timingProvider->getLastWarpTime();
   }
