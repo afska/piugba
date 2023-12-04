@@ -5,11 +5,11 @@ const events = {
   HOLD_END: 3,
   SET_TEMPO: 4,
   SET_TICKCOUNT: 5,
-  WARP: 6,
-  STOP: 7,
+  STOP: 6,
+  WARP: 7,
   FAKE_TAP: 101,
   SET_SPEED: 104,
-  STOP_ASYNC: 107,
+  STOP_ASYNC: 106,
 };
 
 module.exports = {

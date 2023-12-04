@@ -29,10 +29,8 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._sortStopWarps(
-        this._applyAsyncStopsAndAddHoldLengths(
-          this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
-        )
+      this._applyAsyncStopsAndAddHoldLengths(
+        this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
       )
     );
   }
@@ -427,36 +425,6 @@ module.exports = class Chart {
   }
 
   /**
-   * When there are STOPs and WARPs in the same beat, they should be processed in the order
-   * <STOP-WARP> instead of <WARP-STOP>, no matter what type of STOP the event is (async or regular).
-   * This function sorts these events.
-   */
-  _sortStopWarps(events) {
-    return this._sort(
-      _(events)
-        .groupBy((it) => Math.round(it.timestamp))
-        .flatMap((subEvents) => {
-          const warps = subEvents.filter((it) => it.type === Events.WARP);
-          const stops = subEvents.filter((it) => it.type === Events.STOP);
-          const others = subEvents.filter(
-            (it) => it.type !== Events.WARP && it.type !== Events.STOP
-          );
-
-          if (warps.length > 1 && stops.length > 1) {
-            return [
-              ...others,
-              { priority: 1, ...stops },
-              { priority: 2, ...warps },
-            ];
-          }
-
-          return subEvents;
-        })
-        .value()
-    );
-  }
-
-  /**
    * Determines whether an async stop can be applied or not.
    * As "applying" means moving all subsequent events, this only returns true
    * if no events would be placed before song's start, and if there are no WARP
@@ -504,11 +472,6 @@ module.exports = class Chart {
           ? it.enabled
             ? 0.5
             : 1.5
-          : // (STOPs should be *before* WARPs, async STOPs should be *after* WARPs)
-          it.type === Events.STOP
-          ? it.async
-            ? 7
-            : 5.5
           : it.type,
       (it) => it.id,
     ]);

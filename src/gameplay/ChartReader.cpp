@@ -199,20 +199,20 @@ CODE_IWRAM void ChartReader::processNextEvents(int now) {
         }
 
         switch (type) {
-          case EventType::WARP: {
-            warpedMs += event->param;
-            msecs += event->param;
-            lastWarpTime = msecs;
-            pixelBlink->blink();
-
-            return true;
-          }
           case EventType::STOP: {
             hasStopped = true;
             stopStart = event->timestamp;
             stopLength = event->param;
             stopAsync = event->param2;
             stopAsyncStoppedTime = event->param3;
+
+            return true;
+          }
+          case EventType::WARP: {
+            warpedMs += event->param;
+            msecs += event->param;
+            lastWarpTime = msecs;
+            pixelBlink->blink();
 
             return true;
           }

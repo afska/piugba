@@ -48,17 +48,17 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
     EventType type = static_cast<EventType>((nextEvent->data & EVENT_TYPE));
 
     switch (type) {
-      // case EventType::SET_TEMPO:
-      //   typeStr = "tempo";
-      //   break;
-      // case EventType::SET_TICKCOUNT:
-      //   typeStr = "tick";
-      //   break;
-      case EventType::WARP:
-        typeStr = "warp";
-        break;
+        // case EventType::SET_TEMPO:
+        //   typeStr = "tempo";
+        //   break;
+        // case EventType::SET_TICKCOUNT:
+        //   typeStr = "tick";
+        //   break;
       case EventType::STOP:
         typeStr = "stop";
+        break;
+      case EventType::WARP:
+        typeStr = "warp";
         break;
       default:
         typeStr = DSTR(type);
