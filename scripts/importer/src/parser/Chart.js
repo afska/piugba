@@ -435,25 +435,18 @@ module.exports = class Chart {
     return this._sort(
       _(events)
         .groupBy((it) => Math.round(it.timestamp))
-        .flatMap((subEvents, timestampStr) => {
+        .flatMap((subEvents) => {
           const warps = subEvents.filter((it) => it.type === Events.WARP);
           const stops = subEvents.filter((it) => it.type === Events.STOP);
-          if (warps.length > 1)
-            throw new Error("multiple_warps_in_timestamp: " + timestampStr);
-          if (stops.length > 1)
-            throw new Error("multiple_stops_in_timestamp: " + timestampStr);
+          const others = subEvents.filter(
+            (it) => it.type !== Events.WARP && it.type !== Events.STOP
+          );
 
-          if (warps.length === 1 && stops.length === 1) {
-            const warp = warps[0];
-            const stop = stops[0];
-            const others = subEvents.filter(
-              (it) => it.type !== Events.WARP && it.type !== Events.STOP
-            );
-
+          if (warps.length > 1 && stops.length > 1) {
             return [
               ...others,
-              { priority: 1, ...stop },
-              { priority: 2, ...warp },
+              { priority: 1, ...stops },
+              { priority: 2, ...warps },
             ];
           }
 
