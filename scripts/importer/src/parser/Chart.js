@@ -255,7 +255,6 @@ module.exports = class Chart {
                   type,
                   length,
                   lengthBeats: beat - currentScrollBeat,
-                  async: true,
                 },
               ];
             }
@@ -376,6 +375,8 @@ module.exports = class Chart {
               ...it,
               timestamp,
               type: Events.STOP,
+              async: true,
+              asyncStoppedTime: stoppedTime + it.length,
             });
           } else if (lastStop != null) {
             if (it.beat > lastStop.beat) {

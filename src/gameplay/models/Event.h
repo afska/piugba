@@ -64,7 +64,7 @@ inline bool EVENT_HAS_PARAM2(EventType event) {
 }
 
 inline bool EVENT_HAS_PARAM3(EventType event) {
-  return event == EventType::SET_TEMPO;
+  return event == EventType::SET_TEMPO || event == EventType::STOP;
 }
 
 typedef struct {

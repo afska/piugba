@@ -149,9 +149,10 @@ const EVENT_SERIALIZERS = {
     write: function (event) {
       this.UInt8(Events.STOP)
         .UInt32LE(normalizeUInt(event.length))
-        .UInt32LE(event.async ? 1 : 0);
+        .UInt32LE(event.async ? 1 : 0)
+        .UInt32LE(event.async ? normalizeUInt(event.asyncStoppedTime) : 0);
     },
-    size: () => 1 + 4 + 4,
+    size: () => 1 + 4 + 4 + 4,
   },
   [Events.WARP]: {
     write: function (event) {

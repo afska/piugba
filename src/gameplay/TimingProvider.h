@@ -41,6 +41,7 @@ class TimingProvider {
   int stopStart = 0;
   u32 stopLength = 0;
   bool stopAsync = false;
+  u32 stopAsyncStoppedTime = 0;
   int lastWarpTime = -999999999;
 };
 

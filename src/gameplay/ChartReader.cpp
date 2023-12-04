@@ -53,7 +53,7 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
       if (stopAsync)
-        asyncStoppedMs += stopLength;
+        asyncStoppedMs = stopAsyncStoppedTime;
     } else {
       if (stopAsync)
         processRythmEvents();
@@ -212,6 +212,7 @@ CODE_IWRAM void ChartReader::processNextEvents(int now) {
             stopStart = event->timestamp;
             stopLength = event->param;
             stopAsync = event->param2;
+            stopAsyncStoppedTime = event->param3;
 
             return true;
           }
