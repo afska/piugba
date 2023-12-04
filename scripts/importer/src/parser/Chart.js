@@ -29,8 +29,10 @@ module.exports = class Chart {
     const noteEvents = this._getNoteEvents(timingEvents);
 
     return this._applyOffset(
-      this._applyAsyncStopsAndAddHoldLengths(
-        this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
+      this._sortStopWarps(
+        this._applyAsyncStopsAndAddHoldLengths(
+          this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
+        )
       )
     );
   }
@@ -425,6 +427,43 @@ module.exports = class Chart {
   }
 
   /**
+   * When there are STOPs and WARPs in the same beat, they should be processed in the order
+   * <STOP-WARP> instead of <WARP-STOP>, no matter what type of STOP the event is (async or regular).
+   * This function sorts these events.
+   */
+  _sortStopWarps(events) {
+    return this._sort(
+      _(events)
+        .groupBy((it) => Math.round(it.timestamp))
+        .flatMap((subEvents, timestampStr) => {
+          const warps = subEvents.filter((it) => it.type === Events.WARP);
+          const stops = subEvents.filter((it) => it.type === Events.STOP);
+          if (warps.length > 1)
+            throw new Error("multiple_warps_in_timestamp: " + timestampStr);
+          if (stops.length > 1)
+            throw new Error("multiple_stops_in_timestamp: " + timestampStr);
+
+          if (warps.length === 1 && stops.length === 1) {
+            const warp = warps[0];
+            const stop = stops[0];
+            const others = subEvents.filter(
+              (it) => it.type !== Events.WARP && it.type !== Events.STOP
+            );
+
+            return [
+              ...others,
+              { priority: 1, ...stop },
+              { priority: 2, ...warp },
+            ];
+          }
+
+          return subEvents;
+        })
+        .value()
+    );
+  }
+
+  /**
    * Determines whether an async stop can be applied or not.
    * As "applying" means moving all subsequent events, this only returns true
    * if no events would be placed before song's start, and if there are no WARP
@@ -465,6 +504,7 @@ module.exports = class Chart {
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
+      (it) => it.priority || 0,
       (it) =>
         // (fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0)
         it.type === Events.SET_FAKE && it.fakeTap
