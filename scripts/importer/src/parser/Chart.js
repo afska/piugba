@@ -172,7 +172,7 @@ module.exports = class Chart {
 
         switch (type) {
           case Events.SET_TEMPO: {
-            if (data.value > FAST_BPM_WARP) {
+            if (data.value >= FAST_BPM_WARP) {
               // (fast-bpm warps work like #WARPS=... that teleport the player to the next BPM change)
               if (warpStart === -1) warpStart = timestamp;
               return null;
@@ -669,7 +669,7 @@ const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const FRAME_MS = 17;
 const BEAT_UNIT = 4;
-const FAST_BPM_WARP = 9999999;
+const FAST_BPM_WARP = 999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
 const SEMISEMIFUSE = 1 / 128;

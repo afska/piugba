@@ -148,6 +148,14 @@ module.exports = class Simfile {
   }
 
   _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {
+    const globalPropertiesOnly = content === this.content;
+    if (globalPropertiesOnly) {
+      const firstChart = (content.match(REGEXPS.chart.any) || [])[0];
+      const indexOfFirstChart =
+        firstChart != null ? content.indexOf(firstChart) : -1;
+      content = content.slice(0, indexOfFirstChart);
+    }
+
     const exp = regexp.exp || regexp;
     const parse = regexp.parse || _.identity;
 
@@ -158,7 +166,7 @@ module.exports = class Simfile {
       ? this._toAsciiOnly(parsedData)
       : parsedData;
 
-    return content !== this.content && rawData === null && !isChartExclusive
+    return !globalPropertiesOnly && rawData === null && !isChartExclusive
       ? this._getSingleMatch(regexp)
       : finalData;
   }
@@ -240,6 +248,7 @@ const REGEXPS = {
     custom: OBJECT("PIUGBA"),
   },
   chart: {
+    any: /\/\/-+pump-(?:single|double) - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     single: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     double: /\/\/-+pump-double - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
