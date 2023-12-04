@@ -66,9 +66,18 @@ class ChartReader : public TimingProvider {
                      : (isAboutToResume() ? -stopLength : 0);
   }
 
-  bool isHoldActive(ArrowDirection direction);
-  bool hasJustStopped();
-  bool isAboutToResume();
+  inline bool isHoldActive(ArrowDirection direction) {
+    return holdArrowStates[direction].isActive;
+  }
+  inline bool hasJustStopped() {
+    return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
+  }
+  inline bool isAboutToResume() {
+    if (!hasStopped)
+      return false;
+
+    return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
+  }
 
   template <typename DEBUG>
   void logDebugInfo();

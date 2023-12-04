@@ -112,21 +112,6 @@ CODE_IWRAM int ChartReader::getYFor(Arrow* arrow) {
   return min(y, ARROW_INITIAL_Y);
 }
 
-CODE_IWRAM bool ChartReader::isHoldActive(ArrowDirection direction) {
-  return holdArrowStates[direction].isActive;
-}
-
-CODE_IWRAM bool ChartReader::hasJustStopped() {
-  return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
-}
-
-CODE_IWRAM bool ChartReader::isAboutToResume() {
-  if (!hasStopped)
-    return false;
-
-  return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
-}
-
 CODE_IWRAM int ChartReader::getYFor(int timestamp) {
   // arrowTime ms           -> ARROW_DISTANCE() px
   // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE() / arrowTime
