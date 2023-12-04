@@ -368,7 +368,8 @@ module.exports = class Chart {
       _(events)
         .map((it, i) => {
           if (it.type === Events.STOP_ASYNC) {
-            if (!this._canAsyncStopBeApplied(events, it, i)) return null;
+            if (lastStop != null || !this._canAsyncStopBeApplied(events, it, i))
+              return null;
             const timestamp = it.timestamp - stoppedTime;
 
             return (lastStop = {
