@@ -382,7 +382,7 @@ CODE_IWRAM void SongScene::updateArrows() {
       auto isHit = judge->onPress(arrow, chartReaders[playerId].get(),
                                   judgementOffset[playerId]);
 
-      if (isHit &&
+      if (playerId == localPlayerId && isHit &&
           GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_HIT)
         SAVEFILE_write8(SRAM->beat, 0);
     }
