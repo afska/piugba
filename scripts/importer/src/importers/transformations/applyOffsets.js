@@ -91,5 +91,4 @@ const apply = (chart, correction) => {
   correction.used = true;
 };
 
-const level = (chart) =>
-  `${chart.header.isDouble ? "d" : "s"}${chart.header.level}`;
+const level = (chart) => chart.header.levelStr;

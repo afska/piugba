@@ -52,20 +52,11 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    return _([
-      (this.content.match(REGEXPS.chart.single) || []).map((rawChart) => ({
-        rawChart,
-        isDouble: false,
-      })),
-      (this.content.match(REGEXPS.chart.double) || []).map((rawChart) => ({
-        rawChart,
-        isDouble: true,
-      })),
-    ])
-      .flatten()
-      .map(({ rawChart, isDouble }) => {
+    return _(this.content.match(REGEXPS.chart.content) || [])
+      .map((rawChart) => {
         const startIndex = this.content.indexOf(rawChart);
         let level = "?";
+        let levelStr = "?";
 
         const name =
           this._getSingleMatch(REGEXPS.chart.name, rawChart, true) || "";
@@ -82,9 +73,11 @@ module.exports = class Simfile {
           level = utils.restrictTo(level, 0, 99);
 
           const type = this._getSingleMatch(REGEXPS.chart.type, rawChart, true);
-          const expectedType = isDouble ? "pump-double" : "pump-single";
-          if (_.isEmpty(type) || type != expectedType)
-            throw new Error("steps_type_doesnt_match_header");
+          let isDouble;
+          if (type === "pump-single") isDouble = false;
+          else if (type === "pump-double") isDouble = true;
+          else return null;
+          levelStr = `${isDouble ? "d" : "s"}${level}`;
 
           const order =
             this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
@@ -116,6 +109,7 @@ module.exports = class Simfile {
             difficulty,
             isDouble,
             level,
+            levelStr,
             order,
             offset,
             bpms,
@@ -138,7 +132,9 @@ module.exports = class Simfile {
           if (!GLOBAL_OPTIONS.json) chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
-          console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
+          console.error(
+            `  ⚠️  level-${levelStr.padEnd(3)} error: ${e.message}`.yellow
+          );
           return null;
         }
       })
@@ -150,7 +146,7 @@ module.exports = class Simfile {
   _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {
     const globalPropertiesOnly = content === this.content;
     if (globalPropertiesOnly) {
-      const firstChart = (content.match(REGEXPS.chart.any) || [])[0];
+      const firstChart = (content.match(REGEXPS.chart.content) || [])[0];
       const indexOfFirstChart =
         firstChart != null ? content.indexOf(firstChart) : -1;
       if (indexOfFirstChart != -1)
@@ -249,9 +245,7 @@ const REGEXPS = {
     custom: OBJECT("PIUGBA"),
   },
   chart: {
-    any: /\/\/-+pump-(?:single|double) - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
-    single: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
-    double: /\/\/-+pump-double - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
+    content: /#NOTEDATA:;(?:(?:.|(?:\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
     type: PROPERTY("STEPSTYPE"),
     difficulty: PROPERTY("DIFFICULTY"),
