@@ -351,8 +351,7 @@ CODE_IWRAM void SongScene::updateArrows() {
     ArrowState arrowState = arrow->tick(newY, isPressing, bounceOffset);
 
     if (arrowState == ArrowState::OUT) {
-      judge->onOut(arrow, chartReaders[playerId].get(),
-                   judgementOffset[playerId]);
+      judge->onOut(arrow, chartReaders[playerId].get());
       return;
     }
 
