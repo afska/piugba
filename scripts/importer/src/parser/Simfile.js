@@ -153,7 +153,8 @@ module.exports = class Simfile {
       const firstChart = (content.match(REGEXPS.chart.any) || [])[0];
       const indexOfFirstChart =
         firstChart != null ? content.indexOf(firstChart) : -1;
-      content = content.slice(0, indexOfFirstChart);
+      if (indexOfFirstChart != -1)
+        content = content.slice(0, indexOfFirstChart);
     }
 
     const exp = regexp.exp || regexp;
