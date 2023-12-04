@@ -13,8 +13,8 @@
 #include "utils/pool/ObjectPool.h"
 
 const u32 TIMING_WINDOWS[] = {0, 2, 4, 6, 8};
-const int HOLD_ARROW_TICK_OFFSET_MS = 67;
-//                                    ^ OFFSET_GOOD * FRAME_MS = 4 * 16.73322954
+const int HOLD_ARROW_TICK_OFFSET_MS = 33;
+//                                  ^ OFFSET_GREAT * FRAME_MS = 2 * 16.73322954
 
 class Judge {
  public:
@@ -24,7 +24,7 @@ class Judge {
         std::function<void(u8 playerId)> onStageBreak);
 
   bool onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
-  void onOut(Arrow* arrow);
+  void onOut(Arrow* arrow, TimingProvider* timingProvider);
   void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
 
   inline void disable() { isDisabled = true; }
@@ -45,6 +45,16 @@ class Judge {
   std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS>* scores;
   std::function<void(u8 playerId)> onStageBreak;
   bool isDisabled = false;
+
+  inline u32 getDiff(Arrow* arrow, TimingProvider* timingProvider, int offset) {
+    int actualMsecs = timingProvider->getMsecs() + offset;
+    int expectedMsecs = arrow->timestamp;
+    return (u32)abs(actualMsecs - expectedMsecs);
+  }
+
+  inline bool canMiss(Arrow* arrow, TimingProvider* timingProvider) {
+    return arrow->timestamp > timingProvider->getLastWarpTime();
+  }
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {
     return TIMING_WINDOWS[feedbackType];

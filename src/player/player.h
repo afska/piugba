@@ -7,7 +7,6 @@
 #define AUDIO_SYNC_LIMIT 2
 
 void player_init();
-void player_reinit();
 void player_play(const char* name);
 void player_loop(const char* name);
 void player_seek(unsigned int msecs);

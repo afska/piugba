@@ -14,9 +14,7 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
 }
 
 bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
-  int actualMsecs = timingProvider->getMsecs() + offset;
-  int expectedMsecs = arrow->timestamp;
-  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
+  u32 diff = getDiff(arrow, timingProvider, offset);
 
   if (isInsideTimingWindow(diff)) {
     if (diff >= FRAME_MS * getTimingWindowOf(FeedbackType::BAD)) {
@@ -36,20 +34,20 @@ bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   return false;
 }
 
-void Judge::onOut(Arrow* arrow) {
+void Judge::onOut(Arrow* arrow, TimingProvider* timingProvider) {
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
+  bool isPressed = arrow->getIsPressed();
 
-  if (isUnique && !arrow->getIsPressed()) {
+  if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
   }
 
-  if (isHoldHead) {
+  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
     FeedbackType result =
-        onResult(arrow, arrow->getIsPressed() ? FeedbackType::PERFECT
-                                              : FeedbackType::MISS);
+        onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return;
   }

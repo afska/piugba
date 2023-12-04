@@ -19,6 +19,11 @@ module.exports = {
     MICRO: 3,
     RANDOM: 4,
   },
+  BOUNCE: {
+    OFF: 0,
+    ARROWS: 1,
+    ALL: 2,
+  },
   COLOR_FILTER: {
     OFF: 0,
     VIBRANT: 1,
@@ -41,10 +46,5 @@ module.exports = {
   RANDOMSPEED: {
     OFF: 0,
     ON: 1,
-  },
-  BOUNCE: {
-    OFF: 0,
-    ARROWS: 1,
-    ALL: 2,
   },
 };

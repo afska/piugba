@@ -58,9 +58,26 @@ class ChartReader : public TimingProvider {
           MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
   }
 
-  bool isHoldActive(ArrowDirection direction);
-  bool hasJustStopped();
-  bool isAboutToResume();
+  inline int getJudgementOffset() {
+    if (!hasStopped)
+      return 0;
+
+    return stopAsync ? -(msecs - stopStart)
+                     : (isAboutToResume() ? -stopLength : 0);
+  }
+
+  inline bool isHoldActive(ArrowDirection direction) {
+    return holdArrowStates[direction].isActive;
+  }
+  inline bool hasJustStopped() {
+    return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
+  }
+  inline bool isAboutToResume() {
+    if (!hasStopped)
+      return false;
+
+    return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
+  }
 
   template <typename DEBUG>
   void logDebugInfo();
@@ -77,6 +94,7 @@ class ChartReader : public TimingProvider {
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
+  u32 rythmEventIndex = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
   u32 scrollBpm = 0;
@@ -87,17 +105,21 @@ class ChartReader : public TimingProvider {
   int lastBeat = -1;
   int lastTick = -1;
   u32 stoppedMs = 0;
+  u32 asyncStoppedMs = 0;
   u32 warpedMs = 0;
-  u32 frameSkipCount = 0;
 
   template <typename F>
-  inline void processEvents(int targetMsecs, F action) {
-    u32 currentIndex = eventIndex;
+  inline void processEvents(Event* events,
+                            u32 count,
+                            u32& index,
+                            int targetMsecs,
+                            F action) {
+    u32 currentIndex = index;
     bool skipped = false;
 
-    while (targetMsecs >= chart->events[currentIndex].timestamp &&
-           currentIndex < chart->eventCount) {
-      auto event = chart->events + currentIndex;
+    while (targetMsecs >= events[currentIndex].timestamp &&
+           currentIndex < count) {
+      auto event = events + currentIndex;
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
@@ -113,7 +135,7 @@ class ChartReader : public TimingProvider {
       if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
-        eventIndex = currentIndex;
+        index = currentIndex;
       if (stop)
         return;
     }
@@ -172,9 +194,10 @@ class ChartReader : public TimingProvider {
   }
 
   int getYFor(int timestamp);
-  void processNextEvents();
+  void processRythmEvents();
+  void processNextEvents(int now);
   void processUniqueNote(int timestamp, u8 data, u8 param);
-  void startHoldNote(int timestamp, u8 data, u8 offset = 0);
+  void startHoldNote(int timestamp, u8 data, u32 length, u8 offset = 0);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);

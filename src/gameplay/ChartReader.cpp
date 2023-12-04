@@ -8,7 +8,6 @@
 #include "multiplayer/Syncer.h"
 
 const u32 HOLD_ARROW_POOL_SIZE = 10;
-const u32 FRAME_SKIP = 1;
 const u32 RANDOM_STEPS_MAX_RETRIES = 5;
 u8 RANDOM_STEPS_LAST_DATA = 0;
 
@@ -39,7 +38,6 @@ ChartReader::ChartReader(Chart* chart,
   this->multiplier = multiplier;
   targetArrowTime = ARROW_TIME[multiplier];
   syncArrowTime();
-  frameSkipCount = FRAME_SKIP;
 };
 
 CODE_IWRAM bool ChartReader::update(int songMsecs) {
@@ -54,13 +52,19 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
       hasStopped = false;
       stoppedMs += stopLength;
       msecs -= (int)stopLength;
+      if (stopAsync)
+        asyncStoppedMs = stopAsyncStoppedTime;
     } else {
+      if (stopAsync)
+        processRythmEvents();
+      processNextEvents(stopStart);
       orchestrateHoldArrows();
       return processTicks(rythmMsecs, false);
     }
   }
 
-  processNextEvents();
+  processRythmEvents();
+  processNextEvents(msecs);
   orchestrateHoldArrows();
   return processTicks(rythmMsecs, true);
 }
@@ -108,21 +112,6 @@ CODE_IWRAM int ChartReader::getYFor(Arrow* arrow) {
   return min(y, ARROW_INITIAL_Y);
 }
 
-CODE_IWRAM bool ChartReader::isHoldActive(ArrowDirection direction) {
-  return holdArrowStates[direction].isActive;
-}
-
-CODE_IWRAM bool ChartReader::hasJustStopped() {
-  return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
-}
-
-CODE_IWRAM bool ChartReader::isAboutToResume() {
-  if (!hasStopped)
-    return false;
-
-  return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
-}
-
 CODE_IWRAM int ChartReader::getYFor(int timestamp) {
   // arrowTime ms           -> ARROW_DISTANCE() px
   // timeLeft ms            -> x = timeLeft * ARROW_DISTANCE() / arrowTime
@@ -133,91 +122,103 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
-void ChartReader::processNextEvents() {
-  if (frameSkipCount == FRAME_SKIP) {
-    frameSkipCount = 0;
-  } else {
-    frameSkipCount++;
-    return;
-  }
-
+CODE_IWRAM void ChartReader::processRythmEvents() {
   processEvents(
-      msecs + arrowTime, [this](EventType type, Event* event, bool* stop) {
+      chart->rythmEvents, chart->rythmEventCount, rythmEventIndex,
+      msecs + (int)asyncStoppedMs,
+      [this](EventType type, Event* event, bool* stop) {
+        if (type == EventType::SET_TEMPO) {
+          u32 oldBpm = bpm;
+          bpm = event->param;
+          scrollBpm = event->param2;
+
+          if (oldBpm != bpm) {
+            lastBpmChange = event->timestamp;
+            lastBeat = -1;
+            lastTick = 0;
+            beatDurationFrames = -1;
+            beatFrame = 0;
+          }
+
+          syncScrollSpeed();
+
+          if (oldBpm > 0) {
+            if (event->param3 > 0) {
+              u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
+              maxArrowTimeJump = arrowTimeDiff > 0
+                                     ? Div(arrowTimeDiff, event->param3)
+                                     : MAX_ARROW_TIME_JUMP;
+            }
+          } else
+            syncArrowTime();
+
+          return true;
+        } else if (type == EventType::SET_TICKCOUNT) {
+          tickCount = event->param;
+          lastTick = -1;
+
+          return true;
+        }
+        return false;
+      });
+}
+
+CODE_IWRAM void ChartReader::processNextEvents(int now) {
+  processEvents(
+      chart->events, chart->eventCount, eventIndex, now + arrowTime,
+      [&now, this](EventType type, Event* event, bool* stop) {
         switch (type) {
-          case EventType::NOTE:
+          case EventType::NOTE: {
             if (arrowPool->isFull())
               return false;
 
             processUniqueNote(event->timestamp, event->data, event->data2);
             return true;
-          case EventType::HOLD_START:
-            startHoldNote(event->timestamp, event->data);
+          }
+          case EventType::HOLD_START: {
+            startHoldNote(event->timestamp, event->data, event->param);
             if (chart->isDouble)
-              startHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
+              startHoldNote(event->timestamp, event->data2, event->param,
+                            ARROWS_TOTAL);
             return true;
-          case EventType::HOLD_END:
+          }
+          case EventType::HOLD_END: {
             endHoldNote(event->timestamp, event->data);
             if (chart->isDouble)
               endHoldNote(event->timestamp, event->data2, ARROWS_TOTAL);
             return true;
-          case EventType::SET_FAKE:
+          }
+          case EventType::SET_FAKE: {
             fake = event->param;
             return true;
-          default:
-            if (msecs < event->timestamp)
+          }
+          default: {
+            if (now < event->timestamp || hasStopped)
               return false;
+          }
         }
 
         switch (type) {
-          case EventType::SET_TEMPO: {
-            u32 oldBpm = bpm;
-            bpm = event->param;
-            scrollBpm = event->param2;
-
-            if (oldBpm != bpm) {
-              lastBpmChange = event->timestamp;
-              lastBeat = -1;
-              lastTick = 0;
-              beatDurationFrames = -1;
-              beatFrame = 0;
-            }
-
-            syncScrollSpeed();
-
-            if (oldBpm > 0) {
-              if (event->param3 > 0) {
-                u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
-                maxArrowTimeJump = Div(arrowTimeDiff, event->param3);
-              }
-            } else
-              syncArrowTime();
-            return true;
-          }
-          case EventType::SET_TICKCOUNT:
-            tickCount = event->param;
-            lastTick = -1;
-            return true;
-          case EventType::STOP:
-            if (hasStopped)
-              return false;
-
+          case EventType::STOP: {
             hasStopped = true;
             stopStart = event->timestamp;
             stopLength = event->param;
-            stopJudgeable = event->param2;
-            return true;
-          case EventType::WARP:
-            if (hasStopped)
-              return false;
+            stopAsync = event->param2;
+            stopAsyncStoppedTime = event->param3;
 
+            return true;
+          }
+          case EventType::WARP: {
             warpedMs += event->param;
             msecs += event->param;
+            lastWarpTime = msecs;
             pixelBlink->blink();
 
-            *stop = true;
             return true;
-          default:
+          }
+          default: {
             return false;
+          }
         }
       });
 }
@@ -251,40 +252,42 @@ CODE_IWRAM void ChartReader::processUniqueNote(int timestamp,
   connectArrows(arrows);
 }
 
-void ChartReader::startHoldNote(int timestamp, u8 data, u8 offset) {
+void ChartReader::startHoldNote(int timestamp, u8 data, u32 length, u8 offset) {
   if (GameState.mods.randomSteps) {
     // (when using random steps, hold notes are converted to unique notes)
     return processUniqueNote(timestamp, getRandomStep(timestamp, data), 0);
   }
 
-  forEachDirection(data, [&timestamp, &offset, this](ArrowDirection direction) {
-    direction = static_cast<ArrowDirection>(direction + offset);
+  forEachDirection(
+      data, [&timestamp, &length, &offset, this](ArrowDirection direction) {
+        direction = static_cast<ArrowDirection>(direction + offset);
 
-    holdArrowStates[direction].lastStartTime = timestamp;
+        holdArrowStates[direction].lastStartTime = timestamp;
 
-    holdArrows->create([&timestamp, &direction, this](HoldArrow* holdArrow) {
-      holdArrow->startTime = timestamp;
-      holdArrow->endTime = 0;
+        holdArrows->create([&timestamp, &direction, &length,
+                            this](HoldArrow* holdArrow) {
+          holdArrow->startTime = timestamp;
+          holdArrow->endTime = !!length * (timestamp + length);
 
-      Arrow* head = arrowPool->create(
-          [&timestamp, &direction, &holdArrow, this](Arrow* head) {
+          Arrow* head = arrowPool->create([&timestamp, &direction, &holdArrow,
+                                           this](Arrow* head) {
             head->initializeHoldBorder(ArrowType::HOLD_HEAD, direction,
                                        playerId, timestamp, holdArrow, fake);
           });
 
-      if (head == NULL) {
-        holdArrows->discard(holdArrow->id);
-        return;
-      }
+          if (head == NULL) {
+            holdArrows->discard(holdArrow->id);
+            return;
+          }
 
-      holdArrow->direction = direction;
-      holdArrow->fillOffsetSkip = 0;
-      holdArrow->fillOffsetBottom = 0;
-      holdArrow->activeFillCount = 0;
-      holdArrow->lastPressTopY = HOLD_NULL;
-      holdArrow->isFake = fake;
-    });
-  });
+          holdArrow->direction = direction;
+          holdArrow->fillOffsetSkip = 0;
+          holdArrow->fillOffsetBottom = 0;
+          holdArrow->activeFillCount = 0;
+          holdArrow->lastPressTopY = HOLD_NULL;
+          holdArrow->isFake = fake;
+        });
+      });
 }
 
 void ChartReader::endHoldNote(int timestamp, u8 data, u8 offset) {
@@ -370,7 +373,7 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
   // 60000 ms           -> BPM beats
   // rythmMsecs ms      -> beat = rythmMsecs * BPM / 60000
 
-  int beat = Div(rythmMsecs * bpm, MINUTE);
+  int beat = MATH_fracumul(rythmMsecs * bpm, FRACUMUL_DIV_BY_MINUTE);
   bool isNewBeat = beat != lastBeat;
   lastBeat = beat;
 
@@ -394,7 +397,8 @@ CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
             arrows |= EVENT_HOLD_ARROW_MASKS[direction];
             isFake = holdArrow->isFake;
 
-            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS)
+            if (msecs < holdArrow->startTime + HOLD_ARROW_TICK_OFFSET_MS ||
+                msecs > holdArrow->endTime - HOLD_ARROW_TICK_OFFSET_MS)
               canMiss = false;
           }
         });

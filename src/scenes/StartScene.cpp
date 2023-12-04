@@ -215,7 +215,7 @@ void StartScene::setUpGameAnimation() {
 void StartScene::animateBpm() {
   int audioLag = (int)GameState.settings.audioLag;
   int msecs = PlaybackState.msecs - audioLag;
-  int beat = Div(msecs * BPM, MINUTE);
+  int beat = MATH_fracumul(msecs * BPM, FRACUMUL_DIV_BY_MINUTE);
   int tick =
       MATH_fracumul(msecs * BPM * getTickCount(), FRACUMUL_DIV_BY_MINUTE);
 

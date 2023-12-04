@@ -54,17 +54,17 @@ inline bool EVENT_HAS_DATA2(EventType event, bool isDouble) {
 }
 
 inline bool EVENT_HAS_PARAM(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
-         event == EventType::SET_FAKE || event == EventType::STOP ||
-         event == EventType::WARP;
+  return event == EventType::SET_FAKE || event == EventType::HOLD_START ||
+         event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
+         event == EventType::STOP || event == EventType::WARP;
 }
 
 inline bool EVENT_HAS_PARAM2(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::STOP;
+  return event == EventType::STOP || event == EventType::SET_TEMPO;
 }
 
 inline bool EVENT_HAS_PARAM3(EventType event) {
-  return event == EventType::SET_TEMPO;
+  return event == EventType::STOP || event == EventType::SET_TEMPO;
 }
 
 typedef struct {
