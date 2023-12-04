@@ -129,6 +129,7 @@ module.exports = class Chart {
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
     let warpStart = -1;
+    let speedFactor = 1;
     let scrollFactor = 1;
     let currentScrollEnabled = true;
     let currentScrollTimestamp = 0;
@@ -158,6 +159,16 @@ module.exports = class Chart {
             length: timestamp - warpStart,
           };
         };
+        const createSetTempo = (scrollChangeFrames = 0) => {
+          return {
+            beat,
+            timestamp,
+            type: Events.SET_TEMPO,
+            bpm: currentBpm,
+            scrollBpm: currentBpm * speedFactor * scrollFactor,
+            scrollChangeFrames,
+          };
+        };
 
         switch (type) {
           case Events.SET_TEMPO: {
@@ -167,14 +178,7 @@ module.exports = class Chart {
               return null;
             }
 
-            const bpmChange = {
-              beat,
-              timestamp,
-              type,
-              bpm: currentBpm,
-              scrollBpm: currentBpm * scrollFactor,
-              scrollChangeFrames: 0,
-            };
+            const bpmChange = createSetTempo();
 
             if (warpStart > -1) {
               const warp = createWarp();
@@ -185,20 +189,13 @@ module.exports = class Chart {
             }
           }
           case Events.SET_SPEED: {
-            scrollFactor = data.value;
+            speedFactor = data.value;
             const scrollChangeFrames =
               (data.param2 === 0
                 ? data.param1 * beatLength
                 : data.param1 * SECOND) / FRAME_MS;
 
-            return {
-              beat,
-              timestamp,
-              type: Events.SET_TEMPO,
-              bpm: currentBpm,
-              scrollBpm: currentBpm * scrollFactor,
-              scrollChangeFrames,
-            };
+            return createSetTempo(scrollChangeFrames);
           }
           case Events.SET_TICKCOUNT: {
             return {
@@ -238,18 +235,29 @@ module.exports = class Chart {
           case Events.STOP_ASYNC: {
             const scrollEnabled = data.value > 0;
 
+            // (#SCROLLS with a value > 1 are combined with #SPEEDS)
+            const newScrollFactor = Math.max(data.value, 1);
+            const events = [];
+            if (newScrollFactor != scrollFactor) {
+              scrollFactor = newScrollFactor;
+              events.push(createSetTempo());
+            }
+
             if (!currentScrollEnabled && scrollEnabled) {
               const length = timestamp - currentScrollTimestamp;
               currentScrollEnabled = true;
 
-              return {
-                beat: currentScrollBeat,
-                timestamp: currentScrollTimestamp,
-                type,
-                length,
-                lengthBeats: beat - currentScrollBeat,
-                async: true,
-              };
+              return [
+                ...events,
+                {
+                  beat: currentScrollBeat,
+                  timestamp: currentScrollTimestamp,
+                  type,
+                  length,
+                  lengthBeats: beat - currentScrollBeat,
+                  async: true,
+                },
+              ];
             }
 
             if (currentScrollEnabled && !scrollEnabled) {
@@ -258,7 +266,7 @@ module.exports = class Chart {
               currentScrollBeat = beat;
             }
 
-            return null;
+            return events;
           }
           case Events.WARP: {
             const length = this._getRangeDuration(beat, beat + data.value);
