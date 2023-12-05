@@ -554,13 +554,12 @@ void SongScene::processKeys(u16 keys) {
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReaders[localPlayerId]->setMultiplier(
-              chartReaders[localPlayerId]->getMultiplier() + 1)) {
+              chartReaders[localPlayerId]->getMultiplier() + 1))
         pixelBlink->blink();
 
-        if ($isMultiplayer)
-          syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
-                       chartReaders[localPlayerId]->getMultiplier());
-      }
+      if ($isMultiplayer)
+        syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
+                     chartReaders[localPlayerId]->getMultiplier());
     }
   }
 
@@ -571,13 +570,12 @@ void SongScene::processKeys(u16 keys) {
         scores[0]->log(0);
     } else if (!GameState.mods.randomSpeed) {
       if (chartReaders[localPlayerId]->setMultiplier(
-              chartReaders[localPlayerId]->getMultiplier() - 1)) {
+              chartReaders[localPlayerId]->getMultiplier() - 1))
         pixelBlink->blink();
 
-        if ($isMultiplayer)
-          syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
-                       chartReaders[localPlayerId]->getMultiplier());
-      }
+      if ($isMultiplayer)
+        syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
+                     chartReaders[localPlayerId]->getMultiplier());
     }
   }
 }
@@ -925,8 +923,8 @@ void SongScene::processMultiplayerUpdates() {
         if ($isVs)
           chartReaders[remoteId]->setMultiplier(payload);
         else {
-          chartReaders[0]->setMultiplier(payload);
-          pixelBlink->blink();
+          if (chartReaders[0]->setMultiplier(payload))
+            pixelBlink->blink();
         }
 
         syncer->clearTimeout();
