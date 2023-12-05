@@ -614,7 +614,7 @@ module.exports = class Chart {
             metadata.holdStartIds[i] = holdArrows[i];
             holdArrows[i] = null;
           } else {
-            throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
+            // throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
           }
         }
       }
