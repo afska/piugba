@@ -24,12 +24,11 @@ extern "C" {
 
 #define ROM_ID_MASK 0xffffff00
 
-#define AUTOVELOCITY_BASE 500
-#define AUTOVELOCITY_ADJUSTMENTS 100
-
 const u32 PROGRESS_REGISTERS = 6;
 const u32 PROGRESS_IMPOSSIBLE = 3;
 const u32 LIBRARY_SIZE_MASK = 0x000000FF;
+
+const u32 AUTOVELOCITY_VALUES[] = {500, 600, 700, 750, 800, 850};
 
 typedef struct __attribute__((__packed__)) {
   u32 romId;

@@ -69,11 +69,9 @@ void ModsScene::printOptions() {
     printOption(OPTION_MULTIPLIER, "Multiplier",
                 std::to_string(multiplier) + "x", 3, true, "3x");
   else if (speedHack == 1)
-    printOption(
-        OPTION_MULTIPLIER, "AutoVelocity",
-        "AV" + std::to_string(AUTOVELOCITY_BASE +
-                              (multiplier - 1) * AUTOVELOCITY_ADJUSTMENTS),
-        3, true, "AV700");
+    printOption(OPTION_MULTIPLIER, "AutoVelocity",
+                "AV" + std::to_string(AUTOVELOCITY_VALUES[multiplier - 1]), 3,
+                true, "AV700");
   else
     printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
   printOption(OPTION_STAGE_BREAK, "Stage break",
