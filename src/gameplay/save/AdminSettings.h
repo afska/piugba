@@ -10,13 +10,14 @@ enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_ON_BEAT,
   SRAM_BLINK_ON_HIT
 };
+enum NavigationStyleOpts : u8 { PIU, GBA };
 
 typedef struct __attribute__((__packed__)) {
   ArcadeChartsOpts arcadeCharts;
   bool rumble;
   IOBlinkOpts ioBlink;
   SRAMBlinkOpts sramBlink;
-  u8 ___;  // (unused)
+  NavigationStyleOpts navigationStyle;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

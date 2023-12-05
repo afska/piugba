@@ -347,13 +347,24 @@ void SelectionScene::goToSong() {
 }
 
 void SelectionScene::processKeys(u16 keys) {
-  arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-  arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-  arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-  multiplier->setIsPressed(keys & KEY_SELECT);
-  settingsMenuInput->setIsPressed(keys & KEY_START);
+  if (SAVEFILE_isUsingGBAStyle()) {
+    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(keys & KEY_LEFT);
+    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(keys & KEY_L);
+    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(keys & KEY_A);
+    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(keys & KEY_R);
+    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(keys & KEY_RIGHT);
+    multiplier->setIsPressed(keys & KEY_SELECT);
+    settingsMenuInput->setIsPressed(keys & KEY_START);
+  } else {
+    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
+    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
+    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(
+        KEY_DOWNRIGHT(keys));
+    multiplier->setIsPressed(keys & KEY_SELECT);
+    settingsMenuInput->setIsPressed(keys & KEY_START);
+  }
 }
 
 void SelectionScene::processDifficultyChangeEvents() {

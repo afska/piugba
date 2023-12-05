@@ -89,6 +89,8 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.rumble, false);
   SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
+  SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
+                  NavigationStyleOpts::PIU);
 }
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
@@ -164,6 +166,11 @@ inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
 inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   return SAVEFILE_read32(SRAM->romId) == romId;
+}
+
+inline bool SAVEFILE_isUsingGBAStyle() {
+  return static_cast<NavigationStyleOpts>(SAVEFILE_read8(
+             SRAM->adminSettings.navigationStyle)) == NavigationStyleOpts::GBA;
 }
 
 inline u8 SAVEFILE_getLibrarySize() {

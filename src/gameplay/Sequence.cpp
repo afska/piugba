@@ -85,7 +85,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
         true));
@@ -96,7 +98,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, IMPOSSIBLE_MODE_LOCKED,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
         true));
@@ -125,7 +129,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SelectionScene(_engine, _fs));
         },
         true));
@@ -144,11 +150,13 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
-    goTo(new TalkScene(_engine, _fs, std::string(song->message),
-                       [song, chart](u16 keys) {
-                         if (KEY_CENTER(keys))
-                           goTo(new SongScene(_engine, _fs, song, chart));
-                       }));
+    goTo(new TalkScene(
+        _engine, _fs, std::string(song->message), [song, chart](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        }));
     return;
   }
 
@@ -156,7 +164,9 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_HINT,
         [song, chart](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
         true));
@@ -168,7 +178,9 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_TRAINING_HINT,
         [song, chart](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
         true));
@@ -182,14 +194,16 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
   if (IS_STORY(gameMode) && isLastSong)
-    goTo(new TalkScene(_engine, _fs,
-                       gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
-                       [isLastSong](u16 keys) {
-                         if (KEY_CENTER(keys)) {
-                           goTo(isLastSong ? SEQUENCE_getMainScene()
-                                           : new SelectionScene(_engine, _fs));
-                         }
-                       }));
+    goTo(new TalkScene(
+        _engine, _fs, gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
+        [isLastSong](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed) {
+            goTo(isLastSong ? SEQUENCE_getMainScene()
+                            : new SelectionScene(_engine, _fs));
+          }
+        }));
   else
     goTo(new SelectionScene(_engine, _fs));
 }

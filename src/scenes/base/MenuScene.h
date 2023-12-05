@@ -51,6 +51,8 @@ class MenuScene : public Scene {
   std::unique_ptr<InputHandler> closeInput;
   std::unique_ptr<InputHandler> incrementInput;
   std::unique_ptr<InputHandler> decrementInput;
+  bool isUsingGBAStyle = false;
+  bool blockButtons = false;
 
   void setUpSpritesPalette();
   void setUpBackground();

@@ -146,9 +146,15 @@ void CalibrateScene::setUpBackground() {
 }
 
 void CalibrateScene::processKeys(u16 keys) {
-  calibrateButton->setIsPressed(KEY_CENTER(keys));
-  resetButton->setIsPressed(KEY_UPLEFT(keys));
-  saveButton->setIsPressed(KEY_UPRIGHT(keys));
+  if (SAVEFILE_isUsingGBAStyle()) {
+    calibrateButton->setIsPressed(keys & KEY_A);
+    resetButton->setIsPressed(keys & KEY_L);
+    saveButton->setIsPressed(keys & KEY_R);
+  } else {
+    calibrateButton->setIsPressed(KEY_CENTER(keys));
+    resetButton->setIsPressed(KEY_UPLEFT(keys));
+    saveButton->setIsPressed(KEY_UPRIGHT(keys));
+  }
 }
 
 void CalibrateScene::printTitle() {

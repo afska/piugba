@@ -263,10 +263,17 @@ void StartScene::printTitle() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-  inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
-  inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
+  if (SAVEFILE_isUsingGBAStyle()) {
+    inputs[INPUT_LEFT]->setIsPressed(keys & KEY_LEFT);
+    inputs[INPUT_RIGHT]->setIsPressed(keys & KEY_RIGHT);
+    inputs[INPUT_SELECT]->setIsPressed(keys & KEY_A);
+    inputs[INPUT_SELECT_ALT]->setIsPressed(false);
+  } else {
+    inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+    inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+    inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+    inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
+  }
 }
 
 void StartScene::processSelectionChange() {
@@ -313,8 +320,8 @@ void StartScene::navigateToAdminMenuIfNeeded(u16 keys) {
 }
 
 bool StartScene::isPressingAdminCombo(u16 keys) {
-  return KEY_DOWNLEFT(keys) && KEY_UPLEFT(keys) && KEY_UPRIGHT(keys) &&
-         KEY_DOWNRIGHT(keys);
+  return (keys & KEY_L) && (keys & KEY_R) && (keys & KEY_START) &&
+         (keys & KEY_SELECT);
 }
 
 void StartScene::goToGame() {

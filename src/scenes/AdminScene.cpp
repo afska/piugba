@@ -7,7 +7,7 @@
 
 #define TITLE "ADMIN MENU (v1.7.0)"
 #define OPTIONS_COUNT 6
-#define OPTION_ARCADE_CHARTS 0
+#define OPTION_NAVIGATION_STYLE 0
 #define OPTION_RUMBLE 1
 #define OPTION_IO_BLINK 2
 #define OPTION_SRAM_BLINK 3
@@ -44,13 +44,13 @@ void AdminScene::printOptions() {
 
   SCENE_write(TITLE, 1);
 
-  u8 charts = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
+  u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
   u8 rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
   u8 ioBlink = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
 
-  printOption(OPTION_ARCADE_CHARTS, "Arcade charts",
-              charts == 0 ? "SINGLE" : "DOUBLE", 4);
+  printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
+              navigationStyle == 1 ? "GBA" : "PIU", 4);
   printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 6);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 0   ? "OFF"
@@ -93,9 +93,9 @@ bool AdminScene::selectOption(u32 selected, int direction) {
   }
 
   switch (selected) {
-    case OPTION_ARCADE_CHARTS: {
-      u8 value = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
-      SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
+    case OPTION_NAVIGATION_STYLE: {
+      u8 value = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
+      SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                       change(value, 2, direction));
       return true;
     }
