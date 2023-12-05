@@ -160,21 +160,15 @@ module.exports = class Chart {
           };
         };
         const createSetTempo = (scrollChangeFrames = 0) => {
-          const factor = speedFactor * scrollFactor;
-          const scrollBpm = currentBpm * factor;
-
-          const biggestBpm =
-            _.maxBy(this._getFiniteBpms(), (it) => it.value)?.value || 0;
-          const autoVelocityFactor = scrollBpm / biggestBpm;
+          const scrollBpm = currentBpm * speedFactor * scrollFactor;
 
           return {
             beat,
             timestamp,
             type: Events.SET_TEMPO,
             bpm: currentBpm,
-            scrollBpm: currentBpm * factor,
+            scrollBpm,
             scrollChangeFrames,
-            autoVelocityFactor,
           };
         };
 

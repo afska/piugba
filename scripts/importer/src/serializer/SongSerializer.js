@@ -5,6 +5,8 @@ const Channels = require("../parser/Channels");
 const Mods = require("../parser/Mods");
 const _ = require("lodash");
 
+let TMP = {};
+
 module.exports = class SongSerializer {
   constructor(simfile) {
     this.simfile = simfile;
@@ -14,6 +16,8 @@ module.exports = class SongSerializer {
   }
 
   serialize() {
+    TMP = {};
+
     const buffer = this.protocol.write();
     const { id, metadata, charts } = this.simfile;
 
@@ -60,6 +64,8 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Chart", {
       write: function (chart) {
+        TMP.chart = chart;
+
         const events = chart.events;
         const [rythmEvents, normalEvents] = _.partition(
           events,
@@ -132,7 +138,45 @@ const EVENT_SERIALIZERS = {
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
-      const autoVelocityFactor = Math.max(event.autoVelocityFactor, 0.25);
+      const chart = TMP?.chart;
+      if (chart == null) throw new Error("serializer_chart_not_found");
+
+      function findDominantScrollBpm(events) {
+        if (events.length === 0) return 0;
+
+        const finalTimestamp = _.last(chart.events).timestamp;
+        let bpmDurations = {};
+        events.forEach((item, index) => {
+          const nextTimestamp =
+            index < events.length - 1
+              ? events[index + 1].timestamp
+              : finalTimestamp;
+          const length = nextTimestamp - item.timestamp;
+
+          if (!bpmDurations[item.scrollBpm]) bpmDurations[item.scrollBpm] = 0;
+          bpmDurations[item.scrollBpm] += length;
+        });
+
+        let maxDuration = 0;
+        let dominantBpm = null;
+
+        _.forEach(bpmDurations, (duration, bpm) => {
+          if (duration > maxDuration) {
+            maxDuration = duration;
+            dominantBpm = parseInt(bpm);
+          }
+        });
+
+        return dominantBpm || 0;
+      }
+
+      const dominantScrollBpm = findDominantScrollBpm(
+        chart.events.filter((it) => it.type === Events.SET_TEMPO)
+      );
+      const autoVelocityFactor = Math.max(
+        event.scrollBpm / dominantScrollBpm,
+        0.25
+      );
 
       const scrollBpm = normalizeUInt(event.scrollBpm);
       let scrollChangeFrames = normalizeUInt(event.scrollChangeFrames);
