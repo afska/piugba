@@ -70,7 +70,7 @@ void ModsScene::printOptions() {
   printOption(OPTION_STAGE_BREAK, "Stage break",
               stageBreak == 0   ? "ON"
               : stageBreak == 1 ? "OFF"
-                                : "SUDDEN DEATH",
+                                : "DEATH",
               4);
   if (autoMod) {
     printOption(OPTION_PIXELATE, "Pixelate", "---", 5);
