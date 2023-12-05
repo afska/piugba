@@ -14,7 +14,7 @@
 #define OPTION_REDUCE 4
 #define OPTION_BOUNCE 5
 #define OPTION_COLOR_FILTER 6
-#define OPTION_RANDOM_SPEED 7
+#define OPTION_SPEED_HACK 7
 #define OPTION_MIRROR_STEPS 8
 #define OPTION_RANDOM_STEPS 9
 #define OPTION_AUTOMOD 10
@@ -59,14 +59,23 @@ void ModsScene::printOptions() {
   u8 reduce = SAVEFILE_read8(SRAM->mods.reduce);
   u8 bounce = SAVEFILE_read8(SRAM->mods.bounce);
   u8 colorFilter = SAVEFILE_read8(SRAM->mods.colorFilter);
-  bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
-  bool mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
+  u8 speedHack = SAVEFILE_read8(SRAM->mods.speedHack);
+  u8 mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
   bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
   u8 autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
-  printOption(OPTION_MULTIPLIER, "Multiplier", std::to_string(multiplier) + "x",
-              3);
+  if (speedHack == 0)
+    printOption(OPTION_MULTIPLIER, "Multiplier",
+                std::to_string(multiplier) + "x", 3);
+  else if (speedHack == 1)
+    printOption(
+        OPTION_MULTIPLIER, "AutoVelocity",
+        "AV" + std::to_string(AUTOVELOCITY_BASE +
+                              (multiplier - 1) * AUTOVELOCITY_ADJUSTMENTS),
+        3);
+  else
+    printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3);
   printOption(OPTION_STAGE_BREAK, "Stage break",
               stageBreak == 0   ? "ON"
               : stageBreak == 1 ? "OFF"
@@ -121,8 +130,10 @@ void ModsScene::printOptions() {
         colorFilter < TOTAL_COLOR_FILTERS ? COLOR_FILTERS[colorFilter] : "OFF",
         9);
   }
-
-  printOption(OPTION_RANDOM_SPEED, "Random speed", randomSpeed ? "ON" : "OFF",
+  printOption(OPTION_SPEED_HACK, "Speed hack",
+              speedHack == 0   ? "OFF"
+              : speedHack == 1 ? "AV"
+                               : "RANDOM",
               10);
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
               11);
@@ -205,9 +216,9 @@ bool ModsScene::selectOption(u32 selected, int direction) {
                       change(colorFilter, TOTAL_COLOR_FILTERS, direction));
       return true;
     }
-    case OPTION_RANDOM_SPEED: {
-      bool randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
-      SAVEFILE_write8(SRAM->mods.randomSpeed, !randomSpeed);
+    case OPTION_SPEED_HACK: {
+      u8 speedHack = SAVEFILE_read8(SRAM->mods.speedHack);
+      SAVEFILE_write8(SRAM->mods.speedHack, change(speedHack, 3, direction));
       return true;
     }
     case OPTION_MIRROR_STEPS: {

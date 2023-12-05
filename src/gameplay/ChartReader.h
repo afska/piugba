@@ -98,6 +98,7 @@ class ChartReader : public TimingProvider {
   u32 eventIndex = 0;
   u32 bpm = 0;
   u32 scrollBpm = 0;
+  u32 autoVelocityFactor = 1;
   u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
@@ -185,8 +186,17 @@ class ChartReader : public TimingProvider {
   }
 
   inline void syncScrollSpeed() {
-    targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
-                               MATH_mul(scrollBpm, multiplier));
+    if (GameState.mods.speedHack == SpeedHackOpts::hAUTO_VELOCITY) {
+      u32 userScrollBpm =
+          AUTOVELOCITY_BASE + (multiplier - 1) * AUTOVELOCITY_ADJUSTMENTS;
+      if (autoVelocityFactor != 1)
+        userScrollBpm = MATH_fracumul(userScrollBpm, autoVelocityFactor);
+      targetArrowTime =
+          MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, userScrollBpm);
+    } else {
+      targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
+                                 MATH_mul(scrollBpm, multiplier));
+    }
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
   inline void resetMaxArrowTimeJump() {

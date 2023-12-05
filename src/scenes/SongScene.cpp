@@ -552,7 +552,7 @@ void SongScene::processKeys(u16 keys) {
       chartReaders[0]->debugOffset -= DEBUG_OFFSET_CORRECTION;
       if (chartReaders[0]->debugOffset == 0)
         scores[0]->log(0);
-    } else if (!GameState.mods.randomSpeed) {
+    } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() + 1))
         pixelBlink->blink();
@@ -568,7 +568,7 @@ void SongScene::processKeys(u16 keys) {
       chartReaders[0]->debugOffset += DEBUG_OFFSET_CORRECTION;
       if (chartReaders[0]->debugOffset == 0)
         scores[0]->log(0);
-    } else if (!GameState.mods.randomSpeed) {
+    } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() - 1))
         pixelBlink->blink();
@@ -743,7 +743,7 @@ void SongScene::processModsBeat() {
   if (GameState.mods.bounce != BounceOpts::bOFF)
     bounceDirection *= -1;
 
-  if (GameState.mods.randomSpeed)
+  if (GameState.mods.speedHack == SpeedHackOpts::hRANDOM)
     chartReaders[0]->setMultiplier(qran_range(3, 6));
 }
 

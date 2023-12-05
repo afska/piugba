@@ -43,8 +43,9 @@ module.exports = {
     MONO: 15,
     INVERT: 16,
   },
-  RANDOMSPEED: {
+  SPEED_HACK: {
     OFF: 0,
-    ON: 1,
+    AUTO_VELOCITY: 1,
+    RANDOM: 2,
   },
 };

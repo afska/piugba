@@ -132,10 +132,25 @@ const EVENT_SERIALIZERS = {
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
+      const autoVelocityFactor = event.autoVelocityFactor;
+
+      const scrollBpm = normalizeUInt(event.scrollBpm);
+      let scrollChangeFrames = normalizeUInt(event.scrollChangeFrames);
+      if (scrollChangeFrames === INFINITY) scrollChangeFrames = 0;
+      const composedScrollBpm = new Uint32Array(1);
+      composedScrollBpm[0] =
+        scrollBpm === INFINITY
+          ? scrollBpm
+          : (((scrollBpm & 0xffff) << 16) | scrollChangeFrames) & 0xffffffff;
+
       this.UInt8(event.type)
         .UInt32LE(normalizeUInt(event.bpm))
-        .UInt32LE(normalizeUInt(event.scrollBpm))
-        .UInt32LE(normalizeUInt(event.scrollChangeFrames));
+        .UInt32LE(composedScrollBpm[0])
+        .UInt32LE(
+          autoVelocityFactor >= 1 || autoVelocityFactor === 0
+            ? 1
+            : INFINITY * autoVelocityFactor
+        );
     },
     size: () => 1 + 4 + 4 + 4,
   },

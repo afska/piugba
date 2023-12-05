@@ -24,6 +24,9 @@ extern "C" {
 
 #define ROM_ID_MASK 0xffffff00
 
+#define AUTOVELOCITY_BASE 500
+#define AUTOVELOCITY_ADJUSTMENTS 100
+
 const u32 PROGRESS_REGISTERS = 6;
 const u32 PROGRESS_IMPOSSIBLE = 3;
 const u32 LIBRARY_SIZE_MASK = 0x000000FF;
@@ -77,7 +80,7 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.reduce, ReduceOpts::rOFF);
   SAVEFILE_write8(SRAM->mods.bounce, BounceOpts::bOFF);
   SAVEFILE_write8(SRAM->mods.colorFilter, ColorFilter::NO_FILTER);
-  SAVEFILE_write8(SRAM->mods.randomSpeed, false);
+  SAVEFILE_write8(SRAM->mods.speedHack, SpeedHackOpts::hOFF);
   SAVEFILE_write8(SRAM->mods.mirrorSteps, false);
   SAVEFILE_write8(SRAM->mods.randomSteps, false);
   SAVEFILE_write8(SRAM->mods.autoMod, false);

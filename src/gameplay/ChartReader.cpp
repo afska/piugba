@@ -129,8 +129,14 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
       [this](EventType type, Event* event, bool* stop) {
         if (type == EventType::SET_TEMPO) {
           u32 oldBpm = bpm;
+          u32 scrollChangeFrames = event->param2 & 0xffff;
           bpm = event->param;
-          scrollBpm = event->param2;
+          scrollBpm = event->param2 >> 16;
+          if (event->param2 == INFINITY) {
+            scrollChangeFrames = 0;
+            scrollBpm = INFINITY;
+          }
+          autoVelocityFactor = event->param3;
 
           if (oldBpm != bpm) {
             lastBpmChange = event->timestamp;
@@ -143,10 +149,10 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
           syncScrollSpeed();
 
           if (oldBpm > 0) {
-            if (event->param3 > 0) {
+            if (scrollChangeFrames > 0) {
               u32 arrowTimeDiff = abs((int)targetArrowTime - (int)arrowTime);
               maxArrowTimeJump = arrowTimeDiff > 0
-                                     ? Div(arrowTimeDiff, event->param3)
+                                     ? Div(arrowTimeDiff, scrollChangeFrames)
                                      : MAX_ARROW_TIME_JUMP;
             } else {
               maxArrowTimeJump = MAX_ARROW_TIME_JUMP;

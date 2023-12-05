@@ -39,7 +39,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.bounce = BounceOpts::bOFF;
       GameState.mods.colorFilter = ColorFilter::NO_FILTER;
-      GameState.mods.randomSpeed = false;
+      GameState.mods.speedHack = SpeedHackOpts::hOFF;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
       GameState.mods.autoMod = AutoModOpts::aOFF;
@@ -52,7 +52,7 @@ void STATE_setup(Song* song, Chart* chart) {
         GameState.mods.bounce = static_cast<BounceOpts>(song->bounce);
         GameState.mods.colorFilter =
             static_cast<ColorFilter>(song->colorFilter);
-        GameState.mods.randomSpeed = song->randomSpeed;
+        GameState.mods.speedHack = static_cast<SpeedHackOpts>(song->speedHack);
       }
 
       break;
@@ -81,7 +81,8 @@ void STATE_setup(Song* song, Chart* chart) {
           autoMod ? ColorFilter::NO_FILTER
                   : static_cast<ColorFilter>(
                         SAVEFILE_read8(SRAM->mods.colorFilter));
-      GameState.mods.randomSpeed = SAVEFILE_read8(SRAM->mods.randomSpeed);
+      GameState.mods.speedHack =
+          static_cast<SpeedHackOpts>(SRAM->mods.speedHack);
       GameState.mods.mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
       GameState.mods.randomSteps =
           !isSinglePlayerDouble() && SAVEFILE_read8(SRAM->mods.randomSteps);
@@ -100,7 +101,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.bounce = BounceOpts::bOFF;
       GameState.mods.colorFilter = ColorFilter::NO_FILTER;
-      GameState.mods.randomSpeed = false;
+      GameState.mods.speedHack = SpeedHackOpts::hOFF;
       GameState.mods.mirrorSteps = true;
       GameState.mods.randomSteps = false;
       GameState.mods.autoMod = AutoModOpts::aINSANE;
@@ -114,7 +115,7 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.reduce = ReduceOpts::rOFF;
       GameState.mods.bounce = BounceOpts::bOFF;
       GameState.mods.colorFilter = ColorFilter::NO_FILTER;
-      GameState.mods.randomSpeed = false;
+      GameState.mods.speedHack = SpeedHackOpts::hOFF;
       GameState.mods.mirrorSteps = false;
       GameState.mods.randomSteps = false;
       GameState.mods.autoMod = AutoModOpts::aOFF;

@@ -46,7 +46,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->jump = parse_u8(data, &cursor);
   song->reduce = parse_u8(data, &cursor);
   song->colorFilter = parse_u8(data, &cursor);
-  song->randomSpeed = parse_u8(data, &cursor);
+  song->speedHack = parse_u8(data, &cursor);
   song->bounce = parse_u8(data, &cursor);
   song->hasMessage = parse_u8(data, &cursor);
 
