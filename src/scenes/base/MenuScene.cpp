@@ -20,7 +20,7 @@ const u32 TEXT_COLOR = 0x7FFF;
 const int TEXT_COL_UNSELECTED = -2;
 const int TEXT_COL_SELECTED = -3;
 const int TEXT_COL_VALUE_MIDDLE = 20;
-const u32 BUTTON_MARGIN = 8;
+const u32 BUTTON_MARGIN = 3;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 SELECT_BUTTON_X = 112;
 

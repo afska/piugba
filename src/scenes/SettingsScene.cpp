@@ -36,36 +36,37 @@ void SettingsScene::loadBackground(u32 id) {
 }
 
 void SettingsScene::printOptions() {
-  SCENE_write(TITLE, 2);
+  TextStream::instance().scroll(0, -2);
+  SCENE_write(TITLE, 1);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
 
-  printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 5);
+  printOption(OPTION_AUDIO_LAG, "Audio lag", std::to_string(audioLag), 4);
 
   if (isSinglePlayerDouble()) {
-    printOption(OPTION_GAME_POSITION, "Game position", "---", 7);
-    printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 9);
+    printOption(OPTION_GAME_POSITION, "Game position", "---", 6);
+    printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 8);
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                bgaDarkBlink == 0 ? "OFF" : "ON", 11);
+                bgaDarkBlink == 0 ? "OFF" : "ON", 10);
   } else {
     printOption(OPTION_GAME_POSITION, "Game position",
                 gamePosition == 0   ? "LEFT"
                 : gamePosition == 1 ? "CENTER"
                                     : "RIGHT",
-                7);
+                6);
     printOption(OPTION_BACKGROUND_TYPE, "Background type",
                 backgroundType == 0   ? "RAW"
                 : backgroundType == 1 ? "HALF DARK"
                                       : "FULL DARK",
-                9);
+                8);
     if (backgroundType > 0)
       printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                  bgaDarkBlink == 0 ? "OFF" : "ON", 11);
+                  bgaDarkBlink == 0 ? "OFF" : "ON", 10);
     else
-      printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 11);
+      printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 10);
   }
 
   printOption(OPTION_RESET, "     [RESET OPTIONS]", "", 13);

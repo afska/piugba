@@ -31,6 +31,8 @@ void AdminScene::loadBackground(u32 id) {
 }
 
 void AdminScene::printOptions() {
+  TextStream::instance().scroll(0, -2);
+
   if (areYouSure > -1) {
     SCENE_write("ARE YOU SURE?!", 2);
 
@@ -40,7 +42,7 @@ void AdminScene::printOptions() {
     return;
   }
 
-  SCENE_write(TITLE, 2);
+  SCENE_write(TITLE, 1);
 
   u8 charts = SAVEFILE_read8(SRAM->adminSettings.arcadeCharts);
   u8 rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
@@ -48,20 +50,21 @@ void AdminScene::printOptions() {
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
 
   printOption(OPTION_ARCADE_CHARTS, "Arcade charts",
-              charts == 0 ? "SINGLE" : "DOUBLE", 5);
-  printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 7);
-  printOption(OPTION_IO_BLINK, "I/O SD Blink",
+              charts == 0 ? "SINGLE" : "DOUBLE", 4);
+  printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 6);
+  printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 0   ? "OFF"
               : ioBlink == 1 ? "ON BEAT"
                              : "ON KEY",
-              9);
-  printOption(OPTION_SRAM_BLINK, "SRAM LED Blink",
+              8);
+  printOption(OPTION_SRAM_BLINK, "SRAM LED blink",
               sramBlink == 0   ? "OFF"
               : sramBlink == 1 ? "ON BEAT"
                                : "ON HIT",
-              11);
-  printOption(OPTION_RESET_ARCADE_PROGRESS, " [RESET ARCADE PROGRESS]", "", 13);
-  printOption(OPTION_DELETE_ALL_DATA, " [DELETE ALL SAVED DATA]", "", 15);
+              10);
+  printOption(OPTION_RESET_ARCADE_PROGRESS, "  [RESET ARCADE PROGRESS]", "",
+              13);
+  printOption(OPTION_DELETE_ALL_DATA, "  [DELETE ALL SAVED DATA]", "", 15);
 }
 
 bool AdminScene::selectOption(u32 selected, int direction) {

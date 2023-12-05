@@ -49,6 +49,7 @@ void ModsScene::loadBackground(u32 id) {
 }
 
 void ModsScene::printOptions() {
+  TextStream::instance().scroll(0, 2);
   SCENE_write(TITLE, 1);
 
   u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
@@ -140,7 +141,11 @@ void ModsScene::printOptions() {
               : trainingMode == 1 ? "ON"
                                   : "SILENT",
               14);
-  printOption(OPTION_RESET, "        [RESET ALL]", "", 15);
+
+  if (stageBreak == 1 || trainingMode > 0)
+    SCENE_write("! Grade saving OFF !", 15);
+
+  printOption(OPTION_RESET, "        [RESET ALL]", "", 16);
 }
 
 bool ModsScene::selectOption(u32 selected, int direction) {
