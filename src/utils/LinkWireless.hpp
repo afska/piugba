@@ -92,7 +92,7 @@
 #define LINK_WIRELESS_DEFAULT_SEND_TIMER_ID 3
 #define LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID -1
 #define LINK_WIRELESS_BASE_FREQUENCY TM_FREQ_1024
-#define LINK_WIRELESS_PACKET_ID_BITS 6
+#define LINK_WIRELESS_PACKET_ID_BITS 5  // [!]
 #define LINK_WIRELESS_MAX_PACKET_IDS (1 << LINK_WIRELESS_PACKET_ID_BITS)
 #define LINK_WIRELESS_PACKET_ID_MASK (LINK_WIRELESS_MAX_PACKET_IDS - 1)
 #define LINK_WIRELESS_MSG_PING 0xffff
@@ -154,6 +154,10 @@ const u16 LINK_WIRELESS_TIMER_IRQ_IDS[] = {IRQ_TIMER0, IRQ_TIMER1, IRQ_TIMER2,
 
 class LinkWireless {
  public:
+  // [!] mod to quickly send/receive keys
+  u32 SEND_ARROWS = 0;
+  u32 RECEIVE_ARROWS = 0;
+
 // std::function<void(std::string str)> debug;
 // #define PROFILING_ENABLED
 #ifdef PROFILING_ENABLED
@@ -474,7 +478,7 @@ class LinkWireless {
     while (!sessionState.incomingMessages.isEmpty()) {
       auto message = sessionState.incomingMessages.pop();
       messages[i] = message;
-      forwardMessageIfNeeded(message);
+      // forwardMessageIfNeeded(message); // [!]
       i++;
     }
 
@@ -765,8 +769,8 @@ class LinkWireless {
   struct MessageHeader {
     unsigned int partialPacketId : LINK_WIRELESS_PACKET_ID_BITS;
     unsigned int isConfirmation : 1;
-    unsigned int playerId : 3;
-    unsigned int clientCount : 2;
+    unsigned int playerId : 1;       // [!]
+    unsigned int pressedArrows : 5;  // [!]
     unsigned int dataChecksum : 4;
   };
 
@@ -823,10 +827,12 @@ class LinkWireless {
   Error lastError = NONE;
   volatile bool isEnabled = false;
 
-  void forwardMessageIfNeeded(Message& message) {
-    if (state == SERVING && config.forwarding && sessionState.playerCount > 2)
-      send(message.data, message.playerId);
-  }
+  // [!]
+  // void forwardMessageIfNeeded(Message& message) {
+  //   if (state == SERVING && config.forwarding && sessionState.playerCount >
+  //   2)
+  //     send(message.data, message.playerId);
+  // }
 
   void processAsyncCommand() {  // (irq only)
     if (!asyncCommand.result.success) {
@@ -994,7 +1000,7 @@ class LinkWireless {
       u32 partialPacketId = header.partialPacketId;
       bool isConfirmation = header.isConfirmation;
       u8 remotePlayerId = header.playerId;
-      u8 remotePlayerCount = LINK_WIRELESS_MIN_PLAYERS + header.clientCount;
+      RECEIVE_ARROWS = header.pressedArrows;  // [!]
       u32 checksum = header.dataChecksum;
       bool isPing = data == LINK_WIRELESS_MSG_PING;
 
@@ -1009,7 +1015,7 @@ class LinkWireless {
       message.data = data;
       message.playerId = remotePlayerId;
 
-      if (!acceptMessage(message, isConfirmation, remotePlayerCount) || isPing)
+      if (!acceptMessage(message, isConfirmation, 2) || isPing)  // [!]
         continue;
 
       if (/* [!] config.retransmission */ /*true &&*/ isConfirmation) {
@@ -1164,7 +1170,7 @@ class LinkWireless {
     header.partialPacketId = packetId % LINK_WIRELESS_MAX_PACKET_IDS;
     header.isConfirmation = isConfirmation;
     header.playerId = playerId;
-    header.clientCount = sessionState.playerCount - LINK_WIRELESS_MIN_PLAYERS;
+    header.pressedArrows = SEND_ARROWS;  // [!]
     header.dataChecksum = dataChecksum;
 
     MessageHeaderSerializer serializer;
@@ -1276,6 +1282,8 @@ class LinkWireless {
   }
 
   void resetState() {
+    SEND_ARROWS = 0;     // [!]
+    RECEIVE_ARROWS = 0;  // [!]
     this->state = NEEDS_RESET;
     this->sessionState.playerCount = 1;
     this->sessionState.currentPlayerId = 0;

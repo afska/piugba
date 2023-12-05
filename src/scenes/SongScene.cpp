@@ -860,21 +860,32 @@ void SongScene::processTrainingModeMod() {
 }
 
 void SongScene::processMultiplayerUpdates() {
-  syncer->send(
-      SYNC_EVENT_KEYS,
+  u32 keys =
       SYNC_MSG_KEYS_BUILD(arrowHolders[localBaseIndex + 0]->getIsPressed(),
                           arrowHolders[localBaseIndex + 1]->getIsPressed(),
                           arrowHolders[localBaseIndex + 2]->getIsPressed(),
                           arrowHolders[localBaseIndex + 3]->getIsPressed(),
-                          arrowHolders[localBaseIndex + 4]->getIsPressed()));
+                          arrowHolders[localBaseIndex + 4]->getIsPressed());
+
+  if (syncer->isPlaying() &&
+      linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS)
+    linkUniversal->linkWireless->SEND_ARROWS = keys;
+  else
+    syncer->send(SYNC_EVENT_KEYS, keys);
 
   auto remoteId = syncer->getRemotePlayerId();
-
   bool remoteArrows[ARROWS_TOTAL];
   for (u32 i = 0; i < ARROWS_TOTAL; i++)
     remoteArrows[i] = arrowHolders[remoteBaseIndex + i]->getIsPressed();
 
   linkUniversal->sync();
+
+  if (syncer->isPlaying() &&
+      linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS) {
+    u16 keys = linkUniversal->linkWireless->RECEIVE_ARROWS;
+    for (u32 i = 0; i < ARROWS_TOTAL; i++)
+      remoteArrows[i] = SYNC_MSG_KEYS_DIRECTION(keys, i);
+  }
 
   while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
     u16 message = linkUniversal->read(remoteId);
