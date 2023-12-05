@@ -51,16 +51,16 @@ void AdminScene::printOptions() {
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle == 1 ? "GBA" : "PIU", 4);
-  printOption(OPTION_RUMBLE, "Rumble", rumble == 0 ? "OFF" : "ON", 6);
+  printOption(OPTION_RUMBLE, "Rumble", rumble == 1 ? "ON" : "OFF", 6);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
-              ioBlink == 0   ? "OFF"
-              : ioBlink == 1 ? "ON BEAT"
-                             : "ON KEY",
+              ioBlink == 1   ? "ON BEAT"
+              : ioBlink == 2 ? "ON KEY"
+                             : "OFF",
               8);
   printOption(OPTION_SRAM_BLINK, "SRAM LED blink",
-              sramBlink == 0   ? "OFF"
-              : sramBlink == 1 ? "ON BEAT"
-                               : "ON HIT",
+              sramBlink == 1   ? "ON BEAT"
+              : sramBlink == 2 ? "ON HIT"
+                               : "OFF",
               10);
   printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
   printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);

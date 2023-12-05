@@ -50,12 +50,12 @@ void SettingsScene::printOptions() {
     printOption(OPTION_GAME_POSITION, "Game position", "---", 6);
     printOption(OPTION_BACKGROUND_TYPE, "Background type", "---", 8);
     printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                bgaDarkBlink == 0 ? "OFF" : "ON", 10);
+                bgaDarkBlink == 1 ? "ON" : "OFF", 10);
   } else {
     printOption(OPTION_GAME_POSITION, "Game position",
-                gamePosition == 0   ? "LEFT"
-                : gamePosition == 1 ? "CENTER"
-                                    : "RIGHT",
+                gamePosition == 1   ? "CENTER"
+                : gamePosition == 2 ? "RIGHT"
+                                    : "LEFT",
                 6);
     printOption(OPTION_BACKGROUND_TYPE, "Background type",
                 backgroundType == 0   ? "RAW"
@@ -64,7 +64,7 @@ void SettingsScene::printOptions() {
                 8);
     if (backgroundType > 0)
       printOption(OPTION_BGA_DARK_BLINK, "Background blink",
-                  bgaDarkBlink == 0 ? "OFF" : "ON", 10);
+                  bgaDarkBlink == 1 ? "ON" : "OFF", 10);
     else
       printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 10);
   }

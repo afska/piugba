@@ -75,40 +75,40 @@ void ModsScene::printOptions() {
   else
     printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
   printOption(OPTION_STAGE_BREAK, "Stage break",
-              stageBreak == 0   ? "ON"
-              : stageBreak == 1 ? "OFF"
-                                : "DEATH",
+              stageBreak == 1   ? "OFF"
+              : stageBreak == 2 ? "DEATH"
+                                : "ON",
               4, true, "ON");
   if (autoMod) {
     printOption(OPTION_PIXELATE, "Pixelate", "---", 5, true, "---");
   } else {
     printOption(OPTION_PIXELATE, "Pixelate",
-                pixelate == 0   ? "OFF"
-                : pixelate == 1 ? "LIFE"
+                pixelate == 1   ? "LIFE"
                 : pixelate == 2 ? "FIXED"
                 : pixelate == 3 ? "BLINK IN"
                 : pixelate == 4 ? "BLINK OUT"
-                                : "RANDOM",
+                : pixelate == 5 ? "RANDOM"
+                                : "OFF",
                 5, true, "OFF");
   }
   if (autoMod || isSinglePlayerDouble()) {
     printOption(OPTION_JUMP, "Jump", "---", 6, true, "---");
   } else {
     printOption(OPTION_JUMP, "Jump",
-                jump == 0   ? "OFF"
-                : jump == 1 ? "LINEAR"
-                            : "RANDOM",
+                jump == 1   ? "LINEAR"
+                : jump == 2 ? "RANDOM"
+                            : "OFF",
                 6, true, "OFF");
   }
   if (autoMod) {
     printOption(OPTION_REDUCE, "Reduce", "---", 7, true, "---");
   } else {
     printOption(OPTION_REDUCE, "Reduce",
-                reduce == 0   ? "OFF"
-                : reduce == 1 ? "FIXED"
+                reduce == 1   ? "FIXED"
                 : reduce == 2 ? "LINEAR"
                 : reduce == 3 ? "MICRO"
-                              : "RANDOM",
+                : reduce == 4 ? "RANDOM"
+                              : "OFF",
                 7, true, "OFF");
   }
   if (autoMod) {
@@ -116,8 +116,8 @@ void ModsScene::printOptions() {
   } else {
     printOption(OPTION_BOUNCE, "Bounce",
                 bounce == 0   ? "OFF"
-                : bounce == 1 ? "ARROWS"
-                              : "ALL",
+                : bounce == 2 ? "ALL"
+                              : "ARROWS",
                 8, true, "OFF");
   }
   if (autoMod) {
@@ -129,9 +129,9 @@ void ModsScene::printOptions() {
         9, true, "OFF");
   }
   printOption(OPTION_SPEED_HACK, "Speed hack",
-              speedHack == 0   ? "OFF"
-              : speedHack == 1 ? "AV"
-                               : "RANDOM",
+              speedHack == 1   ? "AV"
+              : speedHack == 2 ? "RANDOM"
+                               : "OFF",
               10, true, "OFF");
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
               11, true, "OFF");
@@ -142,8 +142,8 @@ void ModsScene::printOptions() {
                 12, true, "OFF");
   printOption(OPTION_AUTOMOD, "AutoMod",
               autoMod == 0   ? "OFF"
-              : autoMod == 1 ? "FUN"
-                             : "INSANE",
+              : autoMod == 2 ? "INSANE"
+                             : "FUN",
               13, true, "OFF");
   printOption(OPTION_TRAINING_MODE, "Training mode",
               trainingMode == 0   ? "OFF"

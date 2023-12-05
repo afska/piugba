@@ -127,7 +127,7 @@ void STATE_setup(Song* song, Chart* chart) {
       isMultiplayer() ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)
       : isSinglePlayerDouble()
           ? GAME_COOP_POSITION_X
-          : GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition)];
+          : GAME_POSITION_X[SAVEFILE_read8(SRAM->settings.gamePosition) % 3];
   GameState.positionX[1] = isVs() ? GAME_POSITION_X[2] : 0;
   GameState.positionY = 0;
   GameState.scorePositionY = 0;
