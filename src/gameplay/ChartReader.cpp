@@ -214,7 +214,8 @@ CODE_IWRAM void ChartReader::processNextEvents(int now) {
             warpedMs += event->param;
             msecs += event->param;
             lastWarpTime = msecs;
-            pixelBlink->blink();
+            if (playerId == syncer->getLocalPlayerId())
+              pixelBlink->blink();
 
             return true;
           }
