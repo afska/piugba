@@ -148,6 +148,8 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
               maxArrowTimeJump = arrowTimeDiff > 0
                                      ? Div(arrowTimeDiff, event->param3)
                                      : MAX_ARROW_TIME_JUMP;
+            } else {
+              maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
             }
           } else
             syncArrowTime();
