@@ -38,7 +38,12 @@ class MenuScene : public Scene {
   virtual bool selectOption(u32 selected, int direction) = 0;
   virtual void close();
 
-  void printOption(u32 id, std::string name, std::string value, u32 row);
+  void printOption(u32 id,
+                   std::string name,
+                   std::string value,
+                   u32 row,
+                   bool highlightChange = false,
+                   std::string defaultValue = "");
   u8 change(u8 value, u8 optionsCount, int direction);
 
  private:

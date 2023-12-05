@@ -164,9 +164,8 @@ module.exports = class Chart {
           const scrollBpm = currentBpm * factor;
 
           const biggestBpm =
-            _.maxBy(this.header.bpms, (it) => it.value)?.value || 0;
-          const biggestScrollBpm = biggestBpm * factor;
-          const autoVelocityFactor = scrollBpm / biggestScrollBpm;
+            _.maxBy(this._getFiniteBpms(), (it) => it.value)?.value || 0;
+          const autoVelocityFactor = scrollBpm / biggestBpm;
 
           return {
             beat,

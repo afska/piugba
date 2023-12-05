@@ -93,11 +93,14 @@ void MenuScene::tick(u16 keys) {
 void MenuScene::printOption(u32 id,
                             std::string name,
                             std::string value,
-                            u32 row) {
+                            u32 row,
+                            bool highlightChange,
+                            std::string defaultValue) {
   bool isActive = selected == id;
   TextStream::instance().setText(
-      (isActive ? ">" : "") + name, row,
-      isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
+      std::string(isActive ? ">" : "") +
+          (highlightChange && value != defaultValue ? "* " : "") + name,
+      row, isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
 
   if (value.length() > 0) {
     auto valueString = "<" + value + ">";

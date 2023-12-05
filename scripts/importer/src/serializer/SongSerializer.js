@@ -132,7 +132,7 @@ const EVENT_SERIALIZERS = {
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
-      const autoVelocityFactor = event.autoVelocityFactor;
+      const autoVelocityFactor = Math.max(event.autoVelocityFactor, 0.25);
 
       const scrollBpm = normalizeUInt(event.scrollBpm);
       let scrollChangeFrames = normalizeUInt(event.scrollChangeFrames);

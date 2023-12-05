@@ -67,22 +67,22 @@ void ModsScene::printOptions() {
 
   if (speedHack == 0)
     printOption(OPTION_MULTIPLIER, "Multiplier",
-                std::to_string(multiplier) + "x", 3);
+                std::to_string(multiplier) + "x", 3, true, "3x");
   else if (speedHack == 1)
     printOption(
         OPTION_MULTIPLIER, "AutoVelocity",
         "AV" + std::to_string(AUTOVELOCITY_BASE +
                               (multiplier - 1) * AUTOVELOCITY_ADJUSTMENTS),
-        3);
+        3, true, "AV700");
   else
-    printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3);
+    printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
   printOption(OPTION_STAGE_BREAK, "Stage break",
               stageBreak == 0   ? "ON"
               : stageBreak == 1 ? "OFF"
                                 : "DEATH",
-              4);
+              4, true, "ON");
   if (autoMod) {
-    printOption(OPTION_PIXELATE, "Pixelate", "---", 5);
+    printOption(OPTION_PIXELATE, "Pixelate", "---", 5, true, "---");
   } else {
     printOption(OPTION_PIXELATE, "Pixelate",
                 pixelate == 0   ? "OFF"
@@ -91,19 +91,19 @@ void ModsScene::printOptions() {
                 : pixelate == 3 ? "BLINK IN"
                 : pixelate == 4 ? "BLINK OUT"
                                 : "RANDOM",
-                5);
+                5, true, "OFF");
   }
   if (autoMod || isSinglePlayerDouble()) {
-    printOption(OPTION_JUMP, "Jump", "---", 6);
+    printOption(OPTION_JUMP, "Jump", "---", 6, true, "---");
   } else {
     printOption(OPTION_JUMP, "Jump",
                 jump == 0   ? "OFF"
                 : jump == 1 ? "LINEAR"
                             : "RANDOM",
-                6);
+                6, true, "OFF");
   }
   if (autoMod) {
-    printOption(OPTION_REDUCE, "Reduce", "---", 7);
+    printOption(OPTION_REDUCE, "Reduce", "---", 7, true, "---");
   } else {
     printOption(OPTION_REDUCE, "Reduce",
                 reduce == 0   ? "OFF"
@@ -111,47 +111,47 @@ void ModsScene::printOptions() {
                 : reduce == 2 ? "LINEAR"
                 : reduce == 3 ? "MICRO"
                               : "RANDOM",
-                7);
+                7, true, "OFF");
   }
   if (autoMod) {
-    printOption(OPTION_BOUNCE, "Bounce", "---", 8);
+    printOption(OPTION_BOUNCE, "Bounce", "---", 8, true, "---");
   } else {
     printOption(OPTION_BOUNCE, "Bounce",
                 bounce == 0   ? "OFF"
                 : bounce == 1 ? "ARROWS"
                               : "ALL",
-                8);
+                8, true, "OFF");
   }
   if (autoMod) {
-    printOption(OPTION_COLOR_FILTER, "Color filter", "---", 9);
+    printOption(OPTION_COLOR_FILTER, "Color filter", "---", 9, true, "---");
   } else {
     printOption(
         OPTION_COLOR_FILTER, "Color filter",
         colorFilter < TOTAL_COLOR_FILTERS ? COLOR_FILTERS[colorFilter] : "OFF",
-        9);
+        9, true, "OFF");
   }
   printOption(OPTION_SPEED_HACK, "Speed hack",
               speedHack == 0   ? "OFF"
               : speedHack == 1 ? "AV"
                                : "RANDOM",
-              10);
+              10, true, "OFF");
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
-              11);
+              11, true, "OFF");
   if (isSinglePlayerDouble())
-    printOption(OPTION_RANDOM_STEPS, "Random steps", "---", 12);
+    printOption(OPTION_RANDOM_STEPS, "Random steps", "---", 12, true, "---");
   else
     printOption(OPTION_RANDOM_STEPS, "Random steps", randomSteps ? "ON" : "OFF",
-                12);
+                12, true, "OFF");
   printOption(OPTION_AUTOMOD, "AutoMod",
               autoMod == 0   ? "OFF"
               : autoMod == 1 ? "FUN"
                              : "INSANE",
-              13);
+              13, true, "OFF");
   printOption(OPTION_TRAINING_MODE, "Training mode",
               trainingMode == 0   ? "OFF"
               : trainingMode == 1 ? "ON"
                                   : "SILENT",
-              14);
+              14, true, "OFF");
 
   if (stageBreak == 1 || trainingMode > 0)
     SCENE_write("! Grade saving OFF !", 15);
