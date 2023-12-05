@@ -34,7 +34,7 @@ void AdminScene::printOptions() {
   TextStream::instance().scroll(0, -2);
 
   if (areYouSure > -1) {
-    SCENE_write("ARE YOU SURE?!", 2);
+    SCENE_write("ARE YOU SURE?!", 1);
 
     printOption(0, "[NO]", "", 13);
     printOption(1, "[YES]", "", 15);
@@ -62,9 +62,8 @@ void AdminScene::printOptions() {
               : sramBlink == 1 ? "ON BEAT"
                                : "ON HIT",
               10);
-  printOption(OPTION_RESET_ARCADE_PROGRESS, "  [RESET ARCADE PROGRESS]", "",
-              13);
-  printOption(OPTION_DELETE_ALL_DATA, "  [DELETE ALL SAVED DATA]", "", 15);
+  printOption(OPTION_RESET_ARCADE_PROGRESS, "[RESET ARCADE PROGRESS]", "", 13);
+  printOption(OPTION_DELETE_ALL_DATA, "[DELETE ALL SAVED DATA]", "", 15);
 }
 
 bool AdminScene::selectOption(u32 selected, int direction) {

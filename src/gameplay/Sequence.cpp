@@ -110,8 +110,10 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   auto lastGameMode = SAVEFILE_getGameMode();
   if (lastGameMode != gameMode) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
+    SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);

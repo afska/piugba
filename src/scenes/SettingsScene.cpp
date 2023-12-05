@@ -69,8 +69,8 @@ void SettingsScene::printOptions() {
       printOption(OPTION_BGA_DARK_BLINK, "Background blink", "---", 10);
   }
 
-  printOption(OPTION_RESET, "     [RESET OPTIONS]", "", 13);
-  printOption(OPTION_QUIT, "   [QUIT TO MAIN MENU]", "", 15);
+  printOption(OPTION_RESET, "[RESET OPTIONS]", "", 13);
+  printOption(OPTION_QUIT, "[QUIT TO MAIN MENU]", "", 15);
 }
 
 bool SettingsScene::selectOption(u32 selected, int direction) {

@@ -182,8 +182,8 @@ inline GameMode SAVEFILE_getGameMode() {
 }
 
 inline bool SAVEFILE_isPlayingSinglePlayerDouble() {
-  u8 gameMode = SAVEFILE_getGameMode();
-  bool arcadeCharts = static_cast<ArcadeChartsOpts>(
+  auto gameMode = SAVEFILE_getGameMode();
+  auto arcadeCharts = static_cast<ArcadeChartsOpts>(
       SAVEFILE_read8(SRAM->adminSettings.arcadeCharts));
 
   return gameMode == GameMode::ARCADE &&

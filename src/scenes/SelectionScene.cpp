@@ -57,10 +57,12 @@ static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
 
 SelectionScene::SelectionScene(std::shared_ptr<GBAEngine> engine,
-                               const GBFS_FILE* fs)
+                               const GBFS_FILE* fs,
+                               InitialLevel initialLevel)
     : Scene(engine) {
   this->fs = fs;
   library = std::unique_ptr<Library>{new Library(fs)};
+  this->initialLevel = initialLevel;
 }
 
 std::vector<Background*> SelectionScene::backgrounds() {
@@ -483,6 +485,28 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     return true;
 
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
+    if (!isMultiplayer() && newValue == getSelectedNumericLevelIndex()) {
+      auto arcadeCharts = static_cast<ArcadeChartsOpts>(
+          SAVEFILE_read8(SRAM->adminSettings.arcadeCharts));
+      bool isDouble = arcadeCharts == ArcadeChartsOpts::DOUBLE;
+
+      if (selector == ArrowDirection::UPRIGHT && !isDouble) {
+        SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
+                        ArcadeChartsOpts::DOUBLE);
+        engine->transitionIntoScene(
+            new SelectionScene(engine, fs, InitialLevel::FIRST_LEVEL),
+            new PixelTransitionEffect());
+        return true;
+      } else if (selector == ArrowDirection::UPLEFT && isDouble) {
+        SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
+                        ArcadeChartsOpts::SINGLE);
+        engine->transitionIntoScene(
+            new SelectionScene(engine, fs, InitialLevel::LAST_LEVEL),
+            new PixelTransitionEffect());
+        return true;
+      }
+    }
+
     unconfirm();
     player_play(SOUND_STEP);
 
@@ -551,7 +575,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
                         song, getSelectedNumericLevelIndex(), isDouble())
                         ->difficulty);
   loadSelectedSongGrade(song->id);
-  if (!isChangingLevel) {
+  if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
   }
@@ -561,6 +585,11 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   SAVEFILE_write8(SRAM->memory.pageIndex, page);
   SAVEFILE_write8(SRAM->memory.songIndex, selected);
   highlighter->select(selected);
+
+  if (initialLevel != InitialLevel::KEEP_LEVEL) {
+    player_play(SOUND_MOD);
+    initialLevel = InitialLevel::KEEP_LEVEL;
+  }
 }
 
 void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
@@ -585,6 +614,11 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
   if (difficulty->getValue() != DifficultyLevel::NUMERIC)
     setClosestNumericLevel(
         SONG_findChartByDifficultyLevel(song, difficulty->getValue())->level);
+
+  if (initialLevel == InitialLevel::FIRST_LEVEL)
+    setClosestNumericLevel(0);
+  else if (initialLevel == InitialLevel::LAST_LEVEL)
+    setClosestNumericLevel(100);
 }
 
 void SelectionScene::confirm() {

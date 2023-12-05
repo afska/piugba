@@ -30,9 +30,13 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+enum InitialLevel { KEEP_LEVEL, FIRST_LEVEL, LAST_LEVEL };
+
 class SelectionScene : public Scene {
  public:
-  SelectionScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  SelectionScene(std::shared_ptr<GBAEngine> engine,
+                 const GBFS_FILE* fs,
+                 InitialLevel initialLevel = InitialLevel::KEEP_LEVEL);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -45,6 +49,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  InitialLevel initialLevel;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
