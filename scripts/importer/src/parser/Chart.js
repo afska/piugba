@@ -144,11 +144,13 @@ module.exports = class Chart {
         currentBpm = this._getBpmByBeat(beat);
         const timestamp = currentTimestamp;
 
-        if (data.value < 0)
+        if (data.value < 0 && type !== Events.SET_SPEED) {
           throw new Error(
             "invalid_negative_timing_segment:\n    " +
               JSON.stringify({ type, data })
           );
+        }
+
         const createWarp = () => {
           const length = timestamp - warpStart;
           if (length === 0) return null;
@@ -192,6 +194,8 @@ module.exports = class Chart {
             }
           }
           case Events.SET_SPEED: {
+            if (data.value < 0) return null; // (negative speed segments are ignored)
+
             speedFactor = data.value;
             const scrollChangeFrames =
               (data.param2 === 0
@@ -627,6 +631,7 @@ module.exports = class Chart {
             metadata.holdStartIds[i] = holdArrows[i];
             holdArrows[i] = null;
           } else {
+            // (this is allowed as it's usually not terrible)
             // throw new Error(`orphan_hold_arrow: ${beat}/${timestamp}`);
           }
         }
