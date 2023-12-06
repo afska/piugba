@@ -37,63 +37,68 @@ module.exports = class Chart {
 
   /** Generates events specifically from note data. */
   _getNoteEvents(timingEvents) {
-    const measures = this._getMeasures();
-    let cursor = 0;
     let currentId = 0;
-    const holdArrows = [];
+    const measureGroups = this._getMeasureGroups();
 
-    return _.flatMap(measures, (measure, measureIndex) => {
-      // 1 measure = 1 whole note = BEAT_UNIT beats
-      const lines = this._getMeasureLines(measure);
-      const subdivision = 1 / lines.length;
+    return _(measureGroups).flatMap((measures) => {
+      let cursor = 0;
+      const holdArrows = [];
 
-      return _.flatMap(lines, (line, noteIndex) => {
-        const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
-        const bpm = this._getBpmByBeat(beat, timingEvents); // (this is an approximation for `complexity`, only valid if there are no mid-note BPM changes)
-        const noteDuration = this._getNoteDuration(beat, subdivision); // (this calculates the actual note duration)
+      return _.flatMap(measures, (measure, measureIndex) => {
+        // 1 measure = 1 whole note = BEAT_UNIT beats
+        const lines = this._getMeasureLines(measure);
+        const subdivision = 1 / lines.length;
 
-        const timestamp = cursor;
-        cursor += noteDuration;
-        const eventsByType = this._getEventsByType(line);
+        return _.flatMap(lines, (line, noteIndex) => {
+          const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
+          const bpm = this._getBpmByBeat(beat, timingEvents); // (this is an approximation for `complexity`, only valid if there are no mid-note BPM changes)
+          const noteDuration = this._getNoteDuration(beat, subdivision); // (this calculates the actual note duration)
 
-        return _(eventsByType)
-          .map(({ type, arrows }) => {
-            const activeArrows = _.range(
-              0,
-              this.header.isDouble ? 10 : 5
-            ).map((id) => _.includes(arrows, id));
+          const timestamp = cursor;
+          cursor += noteDuration;
+          const eventsByType = this._getEventsByType(line);
 
-            const id = currentId++;
-            const holdArrowsMetadata = this._getHoldArrowsMetadata(
-              id,
-              beat,
-              timestamp,
-              type,
-              activeArrows,
-              holdArrows
-            );
-            const complexity = this._getComplexityOf(
-              type,
-              bpm,
-              subdivision,
-              _.sumBy(activeArrows)
-            );
+          return _(eventsByType)
+            .map(({ type, arrows }) => {
+              const activeArrows = _.range(
+                0,
+                this.header.isDouble ? 10 : 5
+              ).map((i) => _.includes(arrows, i));
 
-            return {
-              id,
-              beat,
-              timestamp,
-              type: type === Events.FAKE_TAP ? Events.NOTE : type,
-              playerId: 0,
-              arrows: activeArrows.slice(0, 5),
-              arrows2: this.header.isDouble ? activeArrows.slice(5, 10) : null,
-              complexity,
-              isFake: type === Events.FAKE_TAP,
-              ...holdArrowsMetadata,
-            };
-          })
-          .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
-          .value();
+              const id = currentId++;
+              const holdArrowsMetadata = this._getHoldArrowsMetadata(
+                id,
+                beat,
+                timestamp,
+                type,
+                activeArrows,
+                holdArrows
+              );
+              const complexity = this._getComplexityOf(
+                type,
+                bpm,
+                subdivision,
+                _.sumBy(activeArrows)
+              );
+
+              return {
+                id,
+                beat,
+                timestamp,
+                type: type === Events.FAKE_TAP ? Events.NOTE : type,
+                playerId: 0,
+                arrows: activeArrows.slice(0, 5),
+                arrows2: this.header.isDouble
+                  ? activeArrows.slice(5, 10)
+                  : null,
+                complexity,
+                isFake: type === Events.FAKE_TAP,
+                ...holdArrowsMetadata,
+              };
+            })
+            .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
+            .value();
+        });
       });
     });
   }
@@ -484,17 +489,30 @@ module.exports = class Chart {
     ]);
   }
 
-  /** Returns a list of measures (raw data). */
-  _getMeasures() {
-    return this.content
-      .split(",")
-      .map((it) => it.trim())
-      .filter(_.identity);
+  /**
+   * Returns a list of measure groups (raw data).
+   * This tipically returns a list with only one item (a list with all the measures).
+   * In co-op charts, there's a divider ("&") that creates a <sub-chart> for each player.
+   * We'll keep each group separated so the events are created without cross-connecting arrows from other players.
+   */
+  _getMeasureGroups() {
+    const hasDivider = _.includes(this.content, "&");
+    if (hasDivider && !this.header.isMultiplayer)
+      throw new Error("unexpected_divider_in_single_player_chart");
+
+    const subCharts = _(this.content.split("&"));
+
+    return subCharts.map((subChart) =>
+      subChart
+        .split(",")
+        .map((it) => it.trim())
+        .filter(_.identity)
+    );
   }
 
   /** Returns the parsed lines within a measure. */
   _getMeasureLines(measure) {
-    let ampersand = false;
+    let divider = false;
 
     return (
       measure
@@ -521,8 +539,8 @@ module.exports = class Chart {
             .replace(/z/g, "2");
         }) // co-op charts note types
         .filter((it) => {
-          if (ampersand || (this.header.isMultiplayer && it === "&")) {
-            ampersand = true;
+          if (divider || (this.header.isMultiplayer && it === "&")) {
+            divider = true;
             return false;
           }
           return true;
