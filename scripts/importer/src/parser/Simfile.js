@@ -74,10 +74,18 @@ module.exports = class Simfile {
 
           const type = this._getSingleMatch(REGEXPS.chart.type, rawChart, true);
           let isDouble;
+          let isMultiplayer = false;
           if (type === "pump-single") isDouble = false;
-          else if (type === "pump-double") isDouble = true;
+          else if (
+            type === "pump-double" ||
+            type === "pump-couple" ||
+            type === "pump-routine"
+          )
+            isDouble = true;
           else return null;
           levelStr = `${isDouble ? "d" : "s"}${level}`;
+          if (type === "pump-couple" || type === "pump-routine")
+            isMultiplayer = true;
 
           const order =
             this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
@@ -108,6 +116,7 @@ module.exports = class Simfile {
             name,
             difficulty,
             isDouble,
+            isMultiplayer,
             level,
             levelStr,
             order,

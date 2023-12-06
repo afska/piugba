@@ -571,9 +571,9 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
 
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
-  printNumericLevel(SONG_findChartByNumericLevelIndex(
-                        song, getSelectedNumericLevelIndex(), isDouble())
-                        ->difficulty);
+  Chart* chart = SONG_findChartByNumericLevelIndex(
+      song, getSelectedNumericLevelIndex(), isDouble());
+  printNumericLevel(chart->difficulty, chart->type);
   loadSelectedSongGrade(song->id);
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
     player_play(song->audioPath.c_str());
@@ -714,7 +714,9 @@ void SelectionScene::setNames(std::string title, std::string artist) {
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
 
-void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
+void SelectionScene::printNumericLevel(DifficultyLevel difficulty,
+                                       s8 offset,
+                                       ChartType type) {
   if (IS_STORY(SAVEFILE_getGameMode()))
     return;
 
@@ -731,6 +733,9 @@ void SelectionScene::printNumericLevel(DifficultyLevel difficulty, s8 offset) {
 
   if (difficulty == DifficultyLevel::CRAZY)
     return SCENE_write("CZ", NUMERIC_LEVEL_ROW + offset);
+
+  if (type == ChartType::DOUBLE_COOP_CHART)
+    return SCENE_write(";)", NUMERIC_LEVEL_ROW + offset);
 
   auto levelText = std::to_string(getSelectedNumericLevel());
   if (levelText.size() == 1)
