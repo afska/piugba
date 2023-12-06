@@ -146,7 +146,8 @@ module.exports = class Chart {
 
         if (data.value < 0)
           throw new Error(
-            "invalid_negative_timing_segment:\n    " + JSON.stringify(data)
+            "invalid_negative_timing_segment:\n    " +
+              JSON.stringify({ type, data })
           );
         const createWarp = () => {
           const length = timestamp - warpStart;
@@ -489,26 +490,38 @@ module.exports = class Chart {
 
   /** Returns the parsed lines within a measure. */
   _getMeasureLines(measure) {
-    return measure
-      .split(/\r?\n/)
-      .map((it) => it.replace(/\/\/.*/g, ""))
-      .map((it) => it.trim())
-      .filter((it) => !_.isEmpty(it))
-      .map((it) =>
-        it.replace(/{(\w)\|\w\|(\w)\|\w}/g, (__, note, fake) =>
-          fake === "1" ? "F" : note
-        )
-      ) // (weird f2 event syntax)
-      .map((it) => it.replace(/[MK]/g, "0")) // (ignored SSC events)
-      .filter((it) => {
-        const isValid = (this.header.isDouble
-          ? NOTE_DATA_DOUBLE
-          : NOTE_DATA_SINGLE
-        ).test(it);
+    return (
+      measure
+        .split(/\r?\n/)
+        .map((it) => it.replace(/\/\/.*/g, ""))
+        .map((it) => it.trim())
+        .filter((it) => !_.isEmpty(it))
+        .map((it) =>
+          it.replace(/{(\w)\|\w\|(\w)\|\w}/g, (__, note, fake) =>
+            fake === "1" ? "F" : note
+          )
+        ) // advanced note syntax: {note type|appearance|fake flag|noteskin override}
+        // ^^^ only <note type> and <fake flag> are supported
+        .map((it) => it.replace(/[MKSVH]/g, "0")) // ignored SSC events: Mine, AutoKeySound, Sudden, Vanish, Hidden
+        .map((it) =>
+          it
+            .replace(/X/g, "1")
+            .replace(/x/g, "2")
+            .replace(/Y/g, "1")
+            .replace(/y/g, "2")
+            .replace(/Z/g, "1")
+            .replace(/z/g, "2")
+        ) // co-op charts note types
+        .filter((it) => {
+          const isValid = (this.header.isDouble
+            ? NOTE_DATA_DOUBLE
+            : NOTE_DATA_SINGLE
+          ).test(it);
 
-        if (!isValid) throw new Error("invalid_line: " + it);
-        return true;
-      });
+          if (!isValid) throw new Error("invalid_line: " + it);
+          return true;
+        })
+    );
   }
 
   /** Separates events by their type. */
