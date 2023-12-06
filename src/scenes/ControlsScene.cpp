@@ -70,6 +70,7 @@ void ControlsScene::tick(u16 keys) {
     player_play(SOUND_ENTER);
   }
 
+  __qran_seed += keys;
   processKeys(keys);
   processCombo();
 
