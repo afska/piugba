@@ -23,8 +23,9 @@ typedef struct {
   u32 eventCount;
   Event* events;  // ("eventCount" times)
 
-  bool isDouble;  // type == ChartType::DOUBLE_CHART || type ==
-                  // ChartType::DOUBLE_COOP_CHART
+  // custom fields:
+  bool isDouble;  // type == ChartType::DOUBLE_CHART ||
+                  // type == ChartType::DOUBLE_COOP_CHART
 } Chart;
 
 #endif  // CHART_H

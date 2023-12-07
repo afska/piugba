@@ -22,18 +22,18 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
     - Single: 1 player, either Single (5-panel) or Double (10-panel) charts
     - Multi VS: VS battles via Link Cable or Wireless Adapter
     - Multi Coop: Double (10-panel) charts via Link Cable or Wireless Adapter
-  - Impossible: Hardcore charts with insane mods
+  - Impossible: Faster songs with insane mods
 - **Speed multipliers** can be changed in-game
 - **Mods** support:
-  - Stage break
+  - Stage break: On, Off or SuddenDeath
   - Pixelate: Mosaic effect
   - Jump/Reduce: Moves game area
   - Bounce: Makes the arrows bounce
   - Color filter: Alters colors
-  - Random speed
+  - Speed hack: AutoVelocity or RandomSpeed
   - Mirror and random steps
-  - Training mode: Rate and checkpoints
-  - Automod: Swap mods randomly
+  - Training mode: Rate and Fast-forward
+  - AutoMod: Swaps mods randomly
 - Hardware **integrations**:
   - Rumble
   - I/O LED Sync
@@ -67,7 +67,7 @@ make restart ENV=production
 
 **Full guide:**
 
-[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)
+**[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)**
 
 ## Install
 
@@ -139,13 +139,13 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 
 #### Parameters
 
-| Name     | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| -------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MODE`   | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See [Wiki: Autoimporting songs](https://github.com/afska/piugba/wiki/Autoimporting-songs).                                                                                                                                                                                                                                                                                                                          |
-| `SORT`   | **`level`** or `dir`                          | When using `level`, the import process sorts the songs by level, in ascending order. See [Wiki: Song order](https://github.com/afska/piugba/wiki/Song-order).                                                                                                                                                                                                                                                                                                                                                       |
-| `ENV`    | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a _debug menu_ to correct songs' offsets. See [Wiki: Correcting offsets](https://github.com/afska/piugba/wiki/Building-a-ROM#correcting-offsets).<br><br>If _SELECT_ is pressed when a song starts, stage-break will be ON regardless of the environment. |
-| `ARCADE` | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                              |
-| `SONGS`  | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Name     | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| -------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MODE`   | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See **[Wiki: Autoimporting songs](https://github.com/afska/piugba/wiki/Autoimporting-songs)**.                                                                                                                                                                                                                                                                                                                          |
+| `ENV`    | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have a _debug menu_ to correct songs' offsets. See **[Wiki: Correcting offsets](https://github.com/afska/piugba/wiki/Building-a-ROM#correcting-offsets)**.<br><br>If _SELECT_ is pressed when a song starts, stage-break will be ON regardless of the environment. |
+| `BOSS`   | false or **true**                             | Automatically adds _boss levels_ to the campaign modes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `ARCADE` | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                                  |
+| `SONGS`  | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ### Scripts
 
@@ -202,4 +202,4 @@ If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
   - Forked at: [afska/gba-sprite-engine](https://github.com/afska/gba-sprite-engine)
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
-- [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v5.0.2
+- [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v6.0.0

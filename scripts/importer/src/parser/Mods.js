@@ -45,7 +45,7 @@ module.exports = {
   },
   SPEED_HACK: {
     OFF: 0,
-    AUTO_VELOCITY: 1,
+    AV: 1,
     RANDOM: 2,
   },
 };

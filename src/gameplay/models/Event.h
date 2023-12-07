@@ -80,7 +80,7 @@ typedef struct {
   u32 param;
   u32 param2;
   u32 param3;
-  // (params are not present in note-related events)
+  // (params are not included in most note-related events)
 
   // custom fields:
   u32 index = 0;

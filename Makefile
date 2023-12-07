@@ -124,6 +124,7 @@ MODE ?= auto
 SORT ?= level
 SONGS ?= src/data/content/songs
 ENV ?= development
+BOSS ?= true
 ARCADE ?= false
 
 ifeq ($(ENV), debug)
@@ -219,7 +220,7 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --arcade=$(ARCADE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --boss=$(BOSS) --arcade=$(ARCADE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)
