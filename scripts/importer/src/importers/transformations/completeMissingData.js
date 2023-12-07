@@ -59,6 +59,7 @@ module.exports = (metadata, charts, content, filePath) => {
   const finalCharts = _(charts)
     .map((it, i) => ({ header: it.header, events: it.events, index: i }))
     .sortBy(
+      (it) => it.header.isDouble,
       (it) => it.header.isMultiplayer,
       (it) => it.level,
       (it) => (it.level === 99 ? _.sumBy(it.events, "complexity") : 1),
@@ -84,21 +85,33 @@ module.exports = (metadata, charts, content, filePath) => {
   }
 
   // add variants
-  _.each(finalCharts, (it, i) => {
-    if (
-      finalCharts[i + 1]?.header?.level === it.header.level &&
-      finalCharts[i + 1]?.header?.isDouble === it.header.isDouble &&
-      finalCharts[i + 1]?.header?.isMultiplayer === it.header.isMultiplayer
-    ) {
-      const currentVariant = VARIANTS.indexOf(it.header.variant);
-      if (currentVariant == -1)
-        throw new Error("invalid_variant: " + currentVariant);
-      const nextVariant = VARIANTS[currentVariant + 1];
-      if (nextVariant == null)
-        throw new Error("too_many_charts_with_level: " + it.header.level);
-      it.header.variant = nextVariant;
-    }
-  });
+  const setVariant = (chart, index) => {
+    const variant = VARIANTS[1 + index];
+    if (variant == null)
+      throw new Error(
+        chart.header.isMultiplayer
+          ? "too_many_multiplayer_charts"
+          : "too_many_charts_with_level: " + chart.header.level
+      );
+    chart.header.variant = variant;
+  };
+  _(finalCharts)
+    .filter((it) => !it.header.isMultiplayer && !it.header.isDouble)
+    .groupBy((it) => it.header.level)
+    .filter((v, k) => v.length > 1)
+    .each((sameLevelCharts, levelStr) => {
+      sameLevelCharts.forEach((it, i) => setVariant(it, i));
+    });
+  _(finalCharts)
+    .filter((it) => !it.header.isMultiplayer && it.header.isDouble)
+    .groupBy((it) => it.header.level)
+    .filter((v, k) => v.length > 1)
+    .each((sameLevelCharts, levelStr) => {
+      sameLevelCharts.forEach((it, i) => setVariant(it, i));
+    });
+  _(finalCharts)
+    .filter((it) => it.header.isMultiplayer && it.header.isDouble)
+    .each((it, i) => setVariant(it, i));
 
   return {
     metadata,
