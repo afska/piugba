@@ -119,6 +119,7 @@ module.exports = class Simfile {
             isMultiplayer,
             level,
             levelStr,
+            variant: "\0",
             order,
             offset,
             bpms,

@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["CRAZY", "HARD", "NORMAL"];
+const VARIANTS = ["\0", ..."abcdefghijklmnopqrstuvwxyz"];
 
 const HEURISTICS = {
   NORMAL: [6, 5, 4, 3, 2, 1, 7, 8],
@@ -13,6 +14,7 @@ const HEURISTICS = {
 const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
 module.exports = (metadata, charts, content, filePath) => {
+  // channel
   if (metadata.channel === "UNKNOWN") {
     if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
     else {
@@ -29,6 +31,7 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   }
 
+  // difficulty input method
   charts.forEach((it) => {
     if (
       GLOBAL_OPTIONS.mode === "manual" ||
@@ -38,6 +41,7 @@ module.exports = (metadata, charts, content, filePath) => {
       it.header.mode = "NUMERIC";
   });
 
+  // difficulty
   if (!GLOBAL_OPTIONS.arcade) {
     const singleCharts = charts.filter((it) => !it.header.isDouble);
     NON_NUMERIC_LEVELS.forEach((difficulty) => {
@@ -51,9 +55,53 @@ module.exports = (metadata, charts, content, filePath) => {
     checkLevelOrder(singleCharts);
   }
 
+  // chart generation
+  const finalCharts = _(charts)
+    .map((it, i) => ({ header: it.header, events: it.events, index: i }))
+    .sortBy(
+      (it) => it.header.isMultiplayer,
+      (it) => it.level,
+      (it) => it.index
+    )
+    .value();
+
+  // separate level 99 charts
+  const numberOf99Charts = _.sumBy(finalCharts, (it) => it.header.level === 99);
+  if (numberOf99Charts > 10) throw new Error("too_many_level_99_charts");
+  if (numberOf99Charts > 1) {
+    let variantIndex = 1;
+    let updatedLevel = 99 - numberOf99Charts + 1;
+    for (let chart of finalCharts) {
+      if (chart.header.level === 99) {
+        chart.header.level = updatedLevel;
+        chart.header.variant = VARIANTS[variantIndex];
+        chart.header.order = updatedLevel;
+        updatedLevel++;
+        variantIndex++;
+      }
+    }
+  }
+
+  // add variants
+  _.each(finalCharts, (it, i) => {
+    if (
+      finalCharts[i + 1]?.header?.level === it.header.level &&
+      finalCharts[i + 1]?.header?.isDouble === it.header.isDouble &&
+      finalCharts[i + 1]?.header?.isMultiplayer === it.header.isMultiplayer
+    ) {
+      const currentVariant = VARIANTS.indexOf(it.header.variant);
+      if (currentVariant == -1)
+        throw new Error("invalid_variant: " + currentVariant);
+      const nextVariant = VARIANTS[currentVariant + 1];
+      if (nextVariant == null)
+        throw new Error("too_many_charts_with_level: " + it.header.level);
+      it.header.variant = nextVariant;
+    }
+  });
+
   return {
     metadata,
-    charts: charts.map((it) => ({ header: it.header, events: it.events })),
+    charts: finalCharts,
     getChartByDifficulty(difficulty) {
       return getChartByDifficulty(this.charts, difficulty);
     },

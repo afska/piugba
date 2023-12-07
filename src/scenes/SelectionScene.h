@@ -182,13 +182,8 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
-  void printNumericLevel(DifficultyLevel difficulty,
-                         ChartType type = ChartType::SINGLE_CHART) {
-    printNumericLevel(difficulty, 0, type);
-  }
-  void printNumericLevel(DifficultyLevel difficulty,
-                         s8 offset,
-                         ChartType type = ChartType::SINGLE_CHART);
+  void printNumericLevel(Chart* chart) { printNumericLevel(chart, 0); }
+  void printNumericLevel(Chart* chart, s8 offsetY);
   void loadSelectedSongGrade(u8 songId);
   void processMultiplayerUpdates();
   void syncNumericLevelChanged(u8 newValue);

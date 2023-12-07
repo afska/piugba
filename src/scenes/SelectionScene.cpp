@@ -573,7 +573,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   setNames(song->title, song->artist);
   Chart* chart = SONG_findChartByNumericLevelIndex(
       song, getSelectedNumericLevelIndex(), isDouble());
-  printNumericLevel(chart->difficulty, chart->type);
+  printNumericLevel(chart);
   loadSelectedSongGrade(song->id);
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
     player_play(song->audioPath.c_str());
@@ -639,7 +639,7 @@ void SelectionScene::confirm() {
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
-  printNumericLevel(DifficultyLevel::NUMERIC, NUMERIC_LEVEL_BADGE_OFFSET_ROW);
+  printNumericLevel(NULL, NUMERIC_LEVEL_BADGE_OFFSET_ROW);
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
 }
 
@@ -714,33 +714,36 @@ void SelectionScene::setNames(std::string title, std::string artist) {
                                  TEXT_MIDDLE_COL - (artist.length() + 4) / 2);
 }
 
-void SelectionScene::printNumericLevel(DifficultyLevel difficulty,
-                                       s8 offset,
-                                       ChartType type) {
+void SelectionScene::printNumericLevel(Chart* chart, s8 offsetY) {
   if (IS_STORY(SAVEFILE_getGameMode()))
     return;
 
   if (numericLevels.empty()) {
-    SCENE_write("--", NUMERIC_LEVEL_ROW + offset);
+    SCENE_write("--", NUMERIC_LEVEL_ROW + offsetY);
     return;
   }
 
-  if (difficulty == DifficultyLevel::NORMAL)
-    return SCENE_write("NM", NUMERIC_LEVEL_ROW + offset);
+  if (chart != NULL) {
+    if (chart->variant != '\0')
+      SCENE_write(std::string("  ") + chart->variant, NUMERIC_LEVEL_ROW + 2);
 
-  if (difficulty == DifficultyLevel::HARD)
-    return SCENE_write("HD", NUMERIC_LEVEL_ROW + offset);
+    if (chart->difficulty == DifficultyLevel::NORMAL)
+      return SCENE_write("NM", NUMERIC_LEVEL_ROW + offsetY);
 
-  if (difficulty == DifficultyLevel::CRAZY)
-    return SCENE_write("CZ", NUMERIC_LEVEL_ROW + offset);
+    if (chart->difficulty == DifficultyLevel::HARD)
+      return SCENE_write("HD", NUMERIC_LEVEL_ROW + offsetY);
 
-  if (type == ChartType::DOUBLE_COOP_CHART)
-    return SCENE_write(";)", NUMERIC_LEVEL_ROW + offset);
+    if (chart->difficulty == DifficultyLevel::CRAZY)
+      return SCENE_write("CZ", NUMERIC_LEVEL_ROW + offsetY);
+
+    if (chart->type == ChartType::DOUBLE_COOP_CHART)
+      return SCENE_write(";)", NUMERIC_LEVEL_ROW + offsetY);
+  }
 
   auto levelText = std::to_string(getSelectedNumericLevel());
   if (levelText.size() == 1)
     levelText = "0" + levelText;
-  SCENE_write(levelText, NUMERIC_LEVEL_ROW + offset);
+  SCENE_write(levelText, NUMERIC_LEVEL_ROW + offsetY);
 }
 
 void SelectionScene::loadSelectedSongGrade(u8 songId) {
