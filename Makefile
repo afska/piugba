@@ -219,7 +219,7 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --arcade=$(ARCADE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --arcade=$(ARCADE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)

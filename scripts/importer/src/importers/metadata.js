@@ -10,9 +10,10 @@ const _ = require("lodash");
 const EXTENSION = "pius";
 const JSON_EXTENSION = "json";
 
-module.exports = (name, filePath, outputPath, id) => {
-  const content = fs.readFileSync(filePath).toString();
-  const { metadata, charts } = new Simfile(content, name);
+module.exports = (name, filePath, outputPath, id, prefix = null) => {
+  let content = fs.readFileSync(filePath).toString();
+  if (prefix != null) content = prefix + "\r\n" + content;
+  const { metadata, charts } = new Simfile(content);
 
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);
