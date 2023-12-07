@@ -4,13 +4,13 @@ const $path = require("path");
 const _ = require("lodash");
 require("colors");
 
-const DIRECTORY = "./src/data/content/songs-pack/(0) Pump It Up!/";
-const BASE_DIRECTORY = "./src/data/content/songs-pack-base/(0) Pump It Up!/";
+const BASE_DIRECTORY = "./src/data/content/INSERT_BASE_DIRECTORY";
+const UPDATE_DIRECTORY = "./src/data/content/INSERT_UPDATE_DIRECTORY";
 
 global.GLOBAL_OPTIONS = {
   mode: "auto",
   arcade: false,
-  directory: DIRECTORY,
+  directory: UPDATE_DIRECTORY,
   boss: true,
 };
 const FILE_METADATA = /\.ssc$/i;
@@ -52,7 +52,7 @@ function importSong(song) {
   return importers.metadata(outputName, metadataFile, ".", id);
 }
 
-const s1 = read(DIRECTORY);
+const s1 = read(UPDATE_DIRECTORY);
 const s2 = read(BASE_DIRECTORY);
 
 const songs1 = s1.map((song) => {
