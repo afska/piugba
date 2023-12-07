@@ -284,12 +284,16 @@ if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
 APPLY_TO=${applyTo},,,
 IS_BOSS=TRUE,,,
 PIXELATE=BLINK_IN,,,
-JUMP=LINEAR;`
+JUMP=LINEAR,,,
+REDUCE=MICRO,,,
+BOUNCE=ALL;`
           : isBoss
           ? `#PIUGBA:
 APPLY_TO=${applyTo},,,
 IS_BOSS=TRUE,,,
-PIXELATE=LIFE;`
+PIXELATE=LIFE,,,
+REDUCE=MICRO,,,
+BOUNCE=ALL;`
           : null;
 
         importers.metadata(outputName, metadataFile, OUTPUT_PATH, id, prefix);
