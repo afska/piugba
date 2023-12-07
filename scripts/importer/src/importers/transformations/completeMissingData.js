@@ -55,12 +55,13 @@ module.exports = (metadata, charts, content, filePath) => {
     checkLevelOrder(singleCharts);
   }
 
-  // chart generation
+  // chart sorting
   const finalCharts = _(charts)
     .map((it, i) => ({ header: it.header, events: it.events, index: i }))
     .sortBy(
       (it) => it.header.isMultiplayer,
       (it) => it.level,
+      (it) => (it.level === 99 ? _.sumBy(it.events, "complexity") : 1),
       (it) => it.index
     )
     .value();
