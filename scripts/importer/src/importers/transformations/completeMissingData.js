@@ -85,6 +85,9 @@ module.exports = (metadata, charts, content, filePath) => {
   }
 
   // add variants
+  const normal = getChartByDifficulty(finalCharts, "NORMAL");
+  const hard = getChartByDifficulty(finalCharts, "HARD");
+  const crazy = getChartByDifficulty(finalCharts, "CRAZY");
   const setVariant = (chart, index) => {
     const variant = VARIANTS[1 + index];
     if (variant == null)
@@ -97,6 +100,7 @@ module.exports = (metadata, charts, content, filePath) => {
   };
   _(finalCharts)
     .filter((it) => !it.header.isMultiplayer && !it.header.isDouble)
+    .filter((it) => it !== normal && it !== hard && it !== crazy)
     .groupBy((it) => it.header.level)
     .filter((v, k) => v.length > 1)
     .each((sameLevelCharts, levelStr) => {
