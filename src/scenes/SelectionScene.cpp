@@ -204,6 +204,8 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
+  VBlankIntrWait();
+  // ---
   auto backgroundFile = library->getPrefix() + std::to_string(getPageStart());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
@@ -224,6 +226,8 @@ void SelectionScene::setUpBackground() {
 
   loadChannels();
   loadProgress();
+  // ---
+  VBlankIntrWait();
 }
 
 void SelectionScene::setUpArrows() {
