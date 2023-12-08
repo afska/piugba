@@ -186,9 +186,12 @@ void parseEvents(Event* events,
   for (u32 j = 0; j < count; j++) {
     auto event = events + j;
 
-    event->timestamp = parse_s32le(data, cursor);
+    u32 timestampAndData = parse_u32le(data, cursor);
+    event->timestamp = timestampAndData & 0xffffff;
+    if (event->timestamp & 0x800000)  // (sign extension)
+      event->timestamp |= 0xFF000000;
+    event->data = timestampAndData >> 24;
 
-    event->data = parse_u8(data, cursor);
     auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
     event->data2 =
         EVENT_HAS_DATA2(eventType, isDouble) ? parse_u8(data, cursor) : 0;

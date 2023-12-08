@@ -68,6 +68,26 @@ inline bool EVENT_HAS_PARAM3(EventType event) {
 }
 
 typedef struct {
+  // (PIUS file)
+  // u32 timestampAndData;
+  /*  {
+        [bits 0-23]  timestamp (signed int)
+        [bits 24-26] type (see EventType)
+        [bits 27-31] data (5-bit array with the arrows)
+      }
+  */
+
+  u8 data2;  // another 5-bit arrow array (only present in double charts)
+
+  u32 param;
+  u32 param2;
+  u32 param3;
+  // (params are not included in note-related events)
+
+  // custom fields:
+  u32 index = 0;
+  bool handled[GAME_MAX_PLAYERS];
+  // (RAM)
   int timestamp;  // in ms
   u8 data;
   /*  {
@@ -75,16 +95,6 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
-  u8 data2;  // another 5-bit arrow array (only present in double charts)
-
-  u32 param;
-  u32 param2;
-  u32 param3;
-  // (params are not included in most note-related events)
-
-  // custom fields:
-  u32 index = 0;
-  bool handled[GAME_MAX_PLAYERS];
 } Event;
 
 #endif  // EVENT_H

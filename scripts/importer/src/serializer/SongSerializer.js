@@ -73,9 +73,8 @@ module.exports = class SongSerializer {
             it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
         );
 
-        const eventChunkSize = _.sumBy(
-          events,
-          (it) => 4 /* (timestamp) */ + EVENT_SERIALIZERS.get(it).size(it)
+        const eventChunkSize = _.sumBy(events, (it) =>
+          EVENT_SERIALIZERS.get(it).size(it)
         );
 
         this.UInt8(DifficultyLevels[chart.header.difficulty])
@@ -90,8 +89,6 @@ module.exports = class SongSerializer {
 
     this.protocol.define("Event", {
       write: function (event) {
-        this.Int32LE(normalizeUInt(event.timestamp));
-
         const { write } = EVENT_SERIALIZERS.get(event);
         write.bind(this)(event);
       },
@@ -123,19 +120,24 @@ const EVENT_SERIALIZERS = {
   },
   NOTES: {
     write: function (event) {
-      this.UInt8(SERIALIZE_ARROWS(event.arrows) | event.type);
+      const timestamp = event.timestamp;
+      const data = SERIALIZE_ARROWS(event.arrows) | event.type;
+      const timestampAndData = combine(timestamp, data);
+      this.UInt32LE(timestampAndData);
       if (event.arrows2) this.UInt8(SERIALIZE_ARROWS(event.arrows2));
       if (event.type === Events.HOLD_START)
-        this.UInt32LE(event.length != null ? normalizeUInt(event.length) : 0);
+        this.UInt32LE(event.length != null ? normalizeInt(event.length) : 0);
     },
     size: (event) =>
-      (event.arrows2 ? 1 + 1 : 1) + (event.type === Events.HOLD_START ? 4 : 0),
+      4 + (event.arrows2 ? 1 : 0) + (event.type === Events.HOLD_START ? 4 : 0),
   },
   [Events.SET_FAKE]: {
     write: function (event) {
-      this.UInt8(event.type).UInt32LE(event.enabled ? 1 : 0);
+      this.UInt32LE(combine(event.timestamp, event.type)).UInt32LE(
+        event.enabled ? 1 : 0
+      );
     },
-    size: () => 1 + 4,
+    size: () => 4 + 4,
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
@@ -179,8 +181,8 @@ const EVENT_SERIALIZERS = {
         0.25
       );
 
-      const scrollBpm = normalizeUInt(event.scrollBpm);
-      let scrollChangeFrames = normalizeUInt(event.scrollChangeFrames);
+      const scrollBpm = normalizeInt(event.scrollBpm);
+      let scrollChangeFrames = normalizeInt(event.scrollChangeFrames);
       if (scrollChangeFrames === INFINITY) scrollChangeFrames = 0;
       const composedScrollBpm = new Uint32Array(1);
       composedScrollBpm[0] =
@@ -188,8 +190,8 @@ const EVENT_SERIALIZERS = {
           ? scrollBpm
           : (((scrollBpm & 0xffff) << 16) | scrollChangeFrames) & 0xffffffff;
 
-      this.UInt8(event.type)
-        .UInt32LE(normalizeUInt(event.bpm))
+      this.UInt32LE(combine(event.timestamp, event.type))
+        .UInt32LE(normalizeInt(event.bpm))
         .UInt32LE(composedScrollBpm[0])
         .UInt32LE(
           autoVelocityFactor >= 1 || autoVelocityFactor === 0
@@ -197,32 +199,43 @@ const EVENT_SERIALIZERS = {
             : INFINITY * autoVelocityFactor
         );
     },
-    size: () => 1 + 4 + 4 + 4,
+    size: () => 4 + 4 + 4 + 4,
   },
   [Events.SET_TICKCOUNT]: {
     write: function (event) {
-      this.UInt8(event.type).UInt32LE(normalizeUInt(event.tickcount));
+      this.UInt32LE(combine(event.timestamp, event.type)).UInt32LE(
+        normalizeInt(event.tickcount)
+      );
     },
-    size: () => 1 + 4,
+    size: () => 4 + 4,
   },
   [Events.STOP]: {
     write: function (event) {
-      this.UInt8(Events.STOP)
-        .UInt32LE(normalizeUInt(event.length))
+      this.UInt32LE(combine(event.timestamp, event.type))
+        .UInt32LE(normalizeInt(event.length))
         .UInt32LE(event.async ? 1 : 0)
-        .UInt32LE(event.async ? normalizeUInt(event.asyncStoppedTime) : 0);
+        .UInt32LE(event.async ? normalizeInt(event.asyncStoppedTime) : 0);
     },
-    size: () => 1 + 4 + 4 + 4,
+    size: () => 4 + 4 + 4 + 4,
   },
   [Events.WARP]: {
     write: function (event) {
-      this.UInt8(event.type).UInt32LE(normalizeUInt(event.length));
+      this.UInt32LE(combine(event.timestamp, event.type)).UInt32LE(
+        normalizeInt(event.length)
+      );
     },
-    size: () => 1 + 4,
+    size: () => 4 + 4,
   },
 };
 
-const normalizeUInt = (number) => {
+const combine = (timestamp, data) => {
+  const value = new Uint32Array(1);
+  value[0] = normalizeInt(timestamp);
+  value[0] = (value[0] & 0xffffff) | ((data & 0xff) << 24);
+  return value[0];
+};
+
+const normalizeInt = (number) => {
   if (number === Infinity || number > INFINITY) return INFINITY;
   return Math.round(number);
 };

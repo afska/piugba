@@ -31,11 +31,4 @@ inline u32 parse_u32le(u8* source, u32* cursor) {
   return as_le(data);
 }
 
-inline s32 parse_s32le(u8* source, u32* cursor) {
-  u8* data = source + *cursor;
-  *cursor += sizeof(s32);
-
-  return (s32)as_le(data);
-}
-
 #endif  // PARSE_H
