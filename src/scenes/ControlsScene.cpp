@@ -101,11 +101,11 @@ void ControlsScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
     buttons.push_back(std::unique_ptr<ArrowSelector>{
-        new ArrowSelector(direction, direction > 0, true)});
+        new ArrowSelector(direction, direction > 0, true, false)});
   }
 
   buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-      static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
+      static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true, false)});
 
   buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
   buttons[ArrowDirection::UPLEFT]->get()->moveTo(29, 25);

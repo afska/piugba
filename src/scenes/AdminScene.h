@@ -5,7 +5,9 @@
 
 class AdminScene : public MenuScene {
  public:
-  AdminScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  AdminScene(std::shared_ptr<GBAEngine> engine,
+             const GBFS_FILE* fs,
+             bool withSound = false);
 
  protected:
   u16 getCloseKey() override;
@@ -17,6 +19,7 @@ class AdminScene : public MenuScene {
 
  private:
   int areYouSure = -1;
+  bool withSound;
 };
 
 #endif  // ADMIN_SCENE_H

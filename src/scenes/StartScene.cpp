@@ -144,20 +144,27 @@ void StartScene::setUpBackground() {
 
 void StartScene::setUpInputs() {
   inputs.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNLEFT, false, true)});
+      new ArrowSelector(ArrowDirection::DOWNLEFT, false, true, false)});
   inputs.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)});
+      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true, false)});
   inputs.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+      new ArrowSelector(ArrowDirection::CENTER, true, true, false)});
   inputs.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+      new ArrowSelector(ArrowDirection::CENTER, true, true, false)});
   inputs.push_back(std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+      new ArrowSelector(ArrowDirection::CENTER, true, true, false)});
 
   inputs[INPUT_LEFT]->get()->moveTo(24, 47);
   inputs[INPUT_RIGHT]->get()->moveTo(201, 44);
   inputs[INPUT_SELECT]->get()->moveTo(42, 47);
   inputs[INPUT_SELECT_ALT]->get()->moveTo(185, 53);
+
+  if (SAVEFILE_isUsingGBAStyle()) {
+    SPRITE_hide(inputs[INPUT_LEFT]->get());
+    SPRITE_hide(inputs[INPUT_RIGHT]->get());
+    SPRITE_hide(inputs[INPUT_SELECT]->get());
+    SPRITE_hide(inputs[INPUT_SELECT_ALT]->get());
+  }
 }
 
 void StartScene::setUpButtons() {

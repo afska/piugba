@@ -14,8 +14,12 @@
 #define OPTION_RESET_ARCADE_PROGRESS 4
 #define OPTION_DELETE_ALL_DATA 5
 
-AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
-    : MenuScene(engine, fs) {}
+AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
+                       const GBFS_FILE* fs,
+                       bool withSound)
+    : MenuScene(engine, fs) {
+  this->withSound = withSound;
+}
 
 u16 AdminScene::getCloseKey() {
   return KEY_START | KEY_SELECT;
@@ -31,6 +35,11 @@ void AdminScene::loadBackground(u32 id) {
 }
 
 void AdminScene::printOptions() {
+  if (withSound) {
+    player_play(SOUND_STEP);
+    withSound = false;
+  }
+
   TextStream::instance().scroll(0, -2);
 
   if (areYouSure > -1) {
@@ -96,7 +105,9 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
       SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                       change(value, 2, direction));
-      return true;
+      engine->transitionIntoScene(new AdminScene(engine, fs, true),
+                                  new PixelTransitionEffect());
+      return false;
     }
     case OPTION_RUMBLE: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.rumble);

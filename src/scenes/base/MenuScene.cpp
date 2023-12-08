@@ -52,11 +52,11 @@ void MenuScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   selectButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::CENTER, false, true)};
+      new ArrowSelector(ArrowDirection::CENTER, false, true, true, true)};
   backButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNLEFT, true, true)};
+      new ArrowSelector(ArrowDirection::DOWNLEFT, true, true, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)};
+      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true, true, true)};
   closeInput = std::unique_ptr<InputHandler>{new InputHandler()};
   incrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
   decrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
