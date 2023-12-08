@@ -109,9 +109,11 @@ module.exports = (metadata, charts, content, filePath) => {
     .each((sameLevelCharts, levelStr) => {
       sameLevelCharts.forEach((it, i) => setVariant(it, i));
     });
-  _(finalCharts)
-    .filter((it) => it.header.isMultiplayer && it.header.isDouble)
-    .each((it, i) => setVariant(it, i));
+  const multiplayerCharts = finalCharts.filter(
+    (it) => it.header.isMultiplayer && it.header.isDouble
+  );
+  if (multiplayerCharts.length > 1)
+    multiplayerCharts.forEach((it, i) => setVariant(it, i));
 
   return {
     metadata,
