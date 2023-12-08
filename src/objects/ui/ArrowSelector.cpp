@@ -34,15 +34,16 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
   setUpAltKeysIfNeeded();
 
   SpriteBuilder<Sprite> builder;
-  sprite = builder
-               .withData(isUsingGBAStyle() ? spr_arrows_alt_keysTiles
-                                           : spr_arrowsTiles,
-                         isUsingGBAStyle() ? sizeof(spr_arrows_alt_keysTiles)
-                                           : sizeof(spr_arrowsTiles))
-               .withSize(SIZE_16_16)
-               .withAnimated(startTile, this->animationFrames, ANIMATION_DELAY)
-               .withLocation(0, 0)
-               .buildPtr();
+  sprite =
+      builder
+          .withData(
+              isUsingGBAStyle() ? spr_arrows_alt_keysTiles : spr_arrowsTiles,
+              isUsingGBAStyle() ? sizeof(spr_arrows_alt_keysTiles)
+                                : sizeof(spr_arrowsTiles))
+          .withSize(SIZE_16_16)
+          .withAnimated(this->startTile, this->animationFrames, ANIMATION_DELAY)
+          .withLocation(0, 0)
+          .buildPtr();
 
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
