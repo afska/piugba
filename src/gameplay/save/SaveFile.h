@@ -93,6 +93,10 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
+#ifdef SENV_DEVELOPMENT
+  SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
+                  NavigationStyleOpts::PIU);
+#endif
 }
 
 inline void SAVEFILE_initialize(const GBFS_FILE* fs) {
