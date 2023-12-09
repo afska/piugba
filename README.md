@@ -2,7 +2,7 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo1](https://i.imgur.com/wUaksOH.gif)![demo2](https://i.imgur.com/DoPl7f8.gif)![demo3](https://i.imgur.com/GwQBOF8.gif)![demo4](https://i.imgur.com/Hm3NTLu.gif)![demo5](https://i.imgur.com/1zMgPgT.gif)![demo6](https://i.imgur.com/Pn6S5qC.gif)![demo7](https://i.imgur.com/w9kHpLr.gif)![demo8](https://i.imgur.com/WpUiynZ.gif)![demo9](https://i.imgur.com/LdTN37Z.gif)![demo10](https://i.imgur.com/BITyzuF.gif)![demo11](https://i.imgur.com/gXFk671.gif)![demo12](https://i.imgur.com/vDletif.gif)
+![demo1](https://i.imgur.com/8YB5wcF.gif)![demo2](https://i.imgur.com/z5rg1ck.gif)![demo3](https://i.imgur.com/KFRisl1.gif)![demo4](https://i.imgur.com/yFCJ6uO.gif)![demo5](https://i.imgur.com/EXxgXyX.gif)![demo6](https://i.imgur.com/Yr2hom2.gif)![demo7](https://i.imgur.com/0mmCddv.gif)![demo8](https://i.imgur.com/EmIJdG3.gif)![demo9](https://i.imgur.com/xHmFWqn.gif)![demo10](https://i.imgur.com/9a9kB6E.gif)![demo11](https://i.imgur.com/m4D0HYn.gif)![demo12](https://i.imgur.com/M99yXPh.gif)
 
 > <img alt="rlabs" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116227197-400d2380-a72a-11eb-9e7b-389aae76f13e.png" /> Created by [[r]labs](https://r-labs.io).
 
@@ -194,7 +194,7 @@ rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmak
 
 #### Undefined reference to _function name_
 
-If you've added new folders, check if they're in `Makefile`'s `SRCDIRS` list!
+If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 
 ## Open-source projects involved
 
