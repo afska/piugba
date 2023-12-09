@@ -59,7 +59,7 @@ void AdminScene::printOptions() {
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
-              navigationStyle == 0 ? "PIU" : "GBA", 4);
+              navigationStyle != 1 ? "PIU" : "GBA", 4);
   printOption(OPTION_RUMBLE, "Rumble", rumble == 1 ? "ON" : "OFF", 6);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 1   ? "ON BEAT"
