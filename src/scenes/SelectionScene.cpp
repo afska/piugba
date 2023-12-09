@@ -619,10 +619,15 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
     setClosestNumericLevel(
         SONG_findChartByDifficultyLevel(song, difficulty->getValue())->level);
 
-  if (initialLevel == InitialLevel::FIRST_LEVEL)
-    setClosestNumericLevel(0);
-  else if (initialLevel == InitialLevel::LAST_LEVEL)
-    setClosestNumericLevel(100);
+  if (initialLevel == InitialLevel::FIRST_LEVEL) {
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+  } else if (initialLevel == InitialLevel::LAST_LEVEL) {
+    if (numericLevels.empty()) {
+      SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+    } else {
+      SAVEFILE_write8(SRAM->memory.numericLevel, numericLevels.size() - 1);
+    }
+  }
 }
 
 void SelectionScene::confirm() {
