@@ -44,23 +44,48 @@ class StartScene : public Scene {
   bool wasNotPressingAdminCombo = false;
   int lastBeat = 0;
   int lastTick = 0;
+  int bounceDirection = -1;
   u8 selectedMode = 0;
   u8 darkenerOpacity;
 
+  inline bool didWinImpossibleMode() {
+    return SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY) ||
+           SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD) ||
+           SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+  }
+
   inline u32 getTickCount() {
-    return SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY)  ? 4
-           : SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ? 2
-           : SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL)
-               ? 1
-               : 1;
+    bool didCompleteCrazy =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY);
+    bool didCompleteHard =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD);
+    bool didCompleteNormal =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+
+    return didCompleteCrazy    ? 4
+           : didCompleteHard   ? 2
+           : didCompleteNormal ? 1
+                               : 1;
   }
 
   inline u32 getArrowSpeed() {
-    return SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY)  ? 6
-           : SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ? 5
-           : SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL)
-               ? 3
-               : 3;
+    bool didCompleteCrazy =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY);
+    bool didCompleteHard =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD);
+    bool didCompleteNormal =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+
+    return didCompleteCrazy    ? 6
+           : didCompleteHard   ? 5
+           : didCompleteNormal ? 3
+                               : 3;
   }
 
   void setUpSpritesPalette();
@@ -70,7 +95,8 @@ class StartScene : public Scene {
   void setUpGameAnimation();
 
   void animateBpm();
-  void animateArrows();
+  void animateArrows(int bounceOffset);
+  void animateInputs(int bounceOffset);
 
   void printTitle();
   void processKeys(u16 keys);

@@ -40,6 +40,7 @@ const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
 const u32 BUTTONS_X[] = {141, 175, 170, 183, 196, 209};
 const u32 BUTTONS_Y[] = {128, 128, 136, 136, 136, 128};
+const u32 BOUNCE_STEPS[] = {0, 6, 10, 13, 11, 9, 6, 3, 1, 0};
 const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
@@ -113,19 +114,24 @@ void StartScene::tick(u16 keys) {
     player_loop(SOUND_LOOP);
   }
 
+  __qran_seed += keys;
+  processKeys(keys);
+
+  animateBpm();
+  int bounceOffset = bounceDirection * BOUNCE_STEPS[darkenerOpacity] *
+                     !!didWinImpossibleMode();
   darkenerOpacity = min(darkenerOpacity + 1, ALPHA_BLINK_LEVEL);
   EFFECT_setBlendAlpha(darkenerOpacity);
 
-  pixelBlink->tick();
+  animateInputs(bounceOffset);
   for (auto& it : inputs)
     it->tick();
-  animateBpm();
-  animateArrows();
+  animateArrows(bounceOffset);
 
-  __qran_seed += keys;
-  processKeys(keys);
   processSelectionChange();
   navigateToAdminMenuIfNeeded(keys);
+
+  pixelBlink->tick();
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -154,17 +160,7 @@ void StartScene::setUpInputs() {
   inputs.push_back(std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, true, true)});
 
-  if (SAVEFILE_isUsingGBAStyle()) {
-    inputs[INPUT_LEFT]->get()->moveTo(23, 48);
-    inputs[INPUT_RIGHT]->get()->moveTo(42, 48);
-    inputs[INPUT_SELECT]->get()->moveTo(202, 46);
-    SPRITE_hide(inputs[INPUT_SELECT_ALT]->get());
-  } else {
-    inputs[INPUT_LEFT]->get()->moveTo(24, 47);
-    inputs[INPUT_RIGHT]->get()->moveTo(201, 44);
-    inputs[INPUT_SELECT]->get()->moveTo(42, 47);
-    inputs[INPUT_SELECT_ALT]->get()->moveTo(185, 53);
-  }
+  animateInputs(0);
 }
 
 void StartScene::setUpButtons() {
@@ -229,6 +225,7 @@ void StartScene::animateBpm() {
   if (beat != lastBeat && beat != 0) {
     lastBeat = beat;
     darkenerOpacity = 0;
+    bounceDirection *= -1;
 
     pixelBlink->blink();
     for (auto& it : arrowHolders)
@@ -241,24 +238,38 @@ void StartScene::animateBpm() {
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
                      static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
-                     0, 0);
+                     0, 0, didWinImpossibleMode() && qran_range(1, 100) > 50);
       it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
       it->press();
     });
   }
 }
 
-void StartScene::animateArrows() {
+void StartScene::animateArrows(int bounceOffset) {
   for (auto& it : arrowHolders)
     it->tick();
 
   u32 arrowSpeed = getArrowSpeed();
-  arrowPool->forEachActive([this, arrowSpeed](Arrow* arrow) {
+  arrowPool->forEachActive([this, arrowSpeed, bounceOffset](Arrow* arrow) {
     int newY = arrow->get()->getY() - arrowSpeed;
 
-    if (arrow->tick(newY, false) == ArrowState::OUT)
+    if (arrow->tick(newY, false, bounceOffset) == ArrowState::OUT)
       arrowPool->discard(arrow->id - ARROW_TILEMAP_LOADING_ID);
   });
+}
+
+void StartScene::animateInputs(int bounceOffset) {
+  if (SAVEFILE_isUsingGBAStyle()) {
+    inputs[INPUT_LEFT]->get()->moveTo(23 + bounceOffset, 48);
+    inputs[INPUT_RIGHT]->get()->moveTo(42 + bounceOffset, 48);
+    inputs[INPUT_SELECT]->get()->moveTo(202 + bounceOffset, 46);
+    SPRITE_hide(inputs[INPUT_SELECT_ALT]->get());
+  } else {
+    inputs[INPUT_LEFT]->get()->moveTo(24 + bounceOffset, 47);
+    inputs[INPUT_RIGHT]->get()->moveTo(201 + bounceOffset, 44);
+    inputs[INPUT_SELECT]->get()->moveTo(42 + bounceOffset, 47);
+    inputs[INPUT_SELECT_ALT]->get()->moveTo(185 + bounceOffset, 53);
+  }
 }
 
 void StartScene::printTitle() {
