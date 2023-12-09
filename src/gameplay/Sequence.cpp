@@ -162,7 +162,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     return;
   }
 
-  if (gameMode == GameMode::CAMPAIGN && song->index == 1) {
+  if (gameMode == GameMode::CAMPAIGN && song->index == 0) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_HINT,
         [song, chart](u16 keys) {
