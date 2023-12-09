@@ -42,7 +42,10 @@ class ChartReader : public TimingProvider {
     u32 oldMultiplier = this->multiplier;
     this->multiplier =
         max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
-    syncScrollSpeed();
+    if (didSetInitialBpm)
+      syncScrollSpeed();
+    else
+      syncInitialScrollSpeed(multiplier);
     resetMaxArrowTimeJump();
 
     return this->multiplier != oldMultiplier;
@@ -102,6 +105,7 @@ class ChartReader : public TimingProvider {
   u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
+  bool didSetInitialBpm = false;
   bool fake = false;
   int lastBeat = -1;
   int lastTick = -1;
@@ -185,6 +189,10 @@ class ChartReader : public TimingProvider {
     }
   }
 
+  void syncInitialScrollSpeed(u32 multiplier) {
+    targetArrowTime = ARROW_TIME[multiplier];
+    syncArrowTime();
+  }
   inline void syncScrollSpeed() {
     if (GameState.mods.speedHack == SpeedHackOpts::hAUTO_VELOCITY) {
       u32 userScrollBpm = AUTOVELOCITY_VALUES[multiplier - 1];

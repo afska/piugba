@@ -36,8 +36,7 @@ ChartReader::ChartReader(Chart* chart,
   }
 
   this->multiplier = multiplier;
-  targetArrowTime = ARROW_TIME[multiplier];
-  syncArrowTime();
+  syncInitialScrollSpeed(multiplier);
 };
 
 CODE_IWRAM bool ChartReader::update(int songMsecs) {
@@ -144,6 +143,7 @@ CODE_IWRAM void ChartReader::processRythmEvents() {
             lastTick = 0;
             beatDurationFrames = -1;
             beatFrame = 0;
+            didSetInitialBpm = true;
           }
 
           syncScrollSpeed();
