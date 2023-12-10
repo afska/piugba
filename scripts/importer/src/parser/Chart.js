@@ -245,12 +245,12 @@ module.exports = class Chart {
             }
           }
           case Events.STOP_ASYNC: {
-            const scrollEnabled = data.value > 0;
+            const newScrollFactor = data.value;
+            const scrollEnabled = newScrollFactor > 0;
 
-            // (#SCROLLS with a value > 1 are combined with #SPEEDS)
-            const newScrollFactor = Math.max(data.value, 1);
+            // (#SCROLLS with a value > 0 are combined with #SPEEDS)
             const events = [];
-            if (newScrollFactor != scrollFactor) {
+            if (scrollEnabled && newScrollFactor != scrollFactor) {
               scrollFactor = newScrollFactor;
               events.push(createSetTempo());
             }
