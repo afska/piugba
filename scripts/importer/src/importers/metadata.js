@@ -13,10 +13,11 @@ const JSON_EXTENSION = "json";
 module.exports = (name, filePath, outputPath, id, prefix = null) => {
   let content = fs.readFileSync(filePath).toString();
   if (prefix != null) content = prefix + "\r\n" + content;
-  const { metadata, charts } = new Simfile(content);
+  let { metadata, charts } = new Simfile(content);
 
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);
+  charts = charts.filter((it) => !it.isDeleted);
   const simfile = completeMissingData(metadata, charts, content, filePath);
   simfile.id = id;
 

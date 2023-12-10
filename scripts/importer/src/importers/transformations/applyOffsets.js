@@ -3,8 +3,8 @@ const $path = require("path");
 const _ = require("lodash");
 
 const OFFSETS_FILE = "offsets.pofs";
-const REGEXP = /(.+)\[(?:s|d)(\d\d)\]=([-+]?\d+)/;
-const REGEXP_DOUBLE = /(.+)\[d(\d\d)\]=([-+]?\d+)/;
+const REGEXP = /(.+)\[(?:s|d)(\d\d)\]=([-+]?\d+|delete)/;
+const REGEXP_DOUBLE = /(.+)\[d(\d\d)\]=([-+]?\d+|delete)/;
 
 const getOffsetCorrections = _.memoize(() => {
   let offsetsFile;
@@ -28,15 +28,23 @@ const getOffsetCorrections = _.memoize(() => {
           _.isEmpty(parts[2]) ||
           _.isEmpty(parts[3]) ||
           !_.isFinite(parseInt(parts[2])) ||
-          !_.isFinite(parseInt(parts[3]))
+          (!_.isFinite(parseInt(parts[3])) && parts[3] !== "delete")
         )
           throw new Error("invalid_offset_corrections");
+
+        if (parts[3] === "delete")
+          return {
+            name: parts[1],
+            level: parseInt(parts[2]),
+            isDouble,
+            isDeleted: true,
+          };
 
         return {
           name: parts[1],
           level: parseInt(parts[2]),
-          offset: parseInt(parts[3]),
           isDouble,
+          offset: parseInt(parts[3]),
         };
       });
   } catch (e) {
@@ -58,7 +66,7 @@ const applyOffsets = (metadata, charts) => {
         it.header.isDouble === correction.isDouble
     );
 
-    if (matchingChart !== null) apply(matchingChart, correction);
+    if (matchingChart != null) apply(matchingChart, correction);
   });
 
   charts.forEach((chart) => {
@@ -85,6 +93,13 @@ const applyOffsets = (metadata, charts) => {
 module.exports = { getOffsetCorrections, applyOffsets };
 
 const apply = (chart, correction) => {
+  if (correction.isDeleted) {
+    chart.isDeleted = true;
+    console.log(`  ⚠️  deleting ${level(chart)} chart`);
+    correction.used = true;
+    return;
+  }
+
   console.log(`  ⚠️  applying offset ${correction.offset} to ${level(chart)}`);
   chart.header.$originalOffset = chart.header.offset;
   chart.header.offset = chart.header.offset - correction.offset;
