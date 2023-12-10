@@ -87,6 +87,9 @@ module.exports = class Simfile {
             isMultiplayer = true;
           levelStr = `${isMultiplayer ? "m" : isDouble ? "d" : "s"}${level}`;
 
+          if (isDouble && name.toLowerCase().includes("half"))
+            throw new Error("ignored: half double (based on description)");
+
           const order =
             this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
             level;
@@ -142,6 +145,8 @@ module.exports = class Simfile {
           if (!GLOBAL_OPTIONS.json) chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
+          if ((e?.message || "").startsWith("ignored:")) return null;
+
           console.error(
             `  ⚠️  level-${levelStr.padEnd(3)} error: ${e.message}`.yellow
           );
