@@ -311,7 +311,7 @@ module.exports = class Chart {
       if (it.isFake && fakeEndTime == -1) {
         return [
           {
-            id: event.id,
+            id: event.id - 0.5,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -320,7 +320,7 @@ module.exports = class Chart {
           },
           event,
           {
-            id: event.id,
+            id: event.id + 0.5,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -480,11 +480,7 @@ module.exports = class Chart {
       (it) => it.priority || 0,
       (it) =>
         // (fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0)
-        it.type === Events.SET_FAKE && it.fakeTap
-          ? it.enabled
-            ? 0.5
-            : 1.5
-          : it.type,
+        it.type === Events.SET_FAKE && it.fakeTap ? 1 : it.type,
       (it) => it.id,
     ]);
   }
