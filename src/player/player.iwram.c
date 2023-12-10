@@ -137,7 +137,7 @@ INLINE void stop() {
   mute();
 }
 
-INLINE void dsoundSwitchBuffers(const void* src) {
+INLINE void disableAudioDMA() {
   // ----------------------------------------------------
   // This convoluted process was taken from the official manual.
   // It's supposed to disable DMA1 in a "safe" way, avoiding DMA lockups.
@@ -162,6 +162,11 @@ INLINE void dsoundSwitchBuffers(const void* src) {
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
   // ----------------------------------------------------
+}
+
+INLINE void dsoundSwitchBuffers(const void* src) {
+  // disable DMA1
+  disableAudioDMA();
 
   // setup DMA1 for audio
   REG_DMA1SAD = (intptr_t)src;
@@ -179,6 +184,10 @@ CODE_EWRAM void player_init() {
   REG_DMA1SAD = (intptr_t)double_buffers[0];
   REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
   REG_DMA1CNT_L = 0x0004;
+}
+
+CODE_EWRAM void player_unload() {
+  disableAudioDMA();
 }
 
 CODE_EWRAM void player_play(const char* name) {
