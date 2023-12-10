@@ -189,6 +189,20 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     return;
   }
 
+  if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() &&
+      chart->type == ChartType::DOUBLE_COOP_CHART) {
+    goTo(new TalkScene(
+        _engine, _fs, COOP_HINT,
+        [song, chart](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
+    return;
+  }
+
   goTo(new SongScene(_engine, _fs, song, chart, remoteChart));
 }
 

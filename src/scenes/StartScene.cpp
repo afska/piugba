@@ -21,8 +21,8 @@ extern "C" {
 #include "player/player.h"
 }
 
-const std::string TITLES[] = {"Campaign", "Arcade",     "Multi vs",
-                              "Single",   "Multi coop", "Impossible"};
+const std::string TITLES[] = {"Campaign", "Arcade",     "Multi VS",
+                              "Single",   "Multi COOP", "Impossible"};
 
 const u32 BPM = 145;
 const u32 ARROW_POOL_SIZE = 10;

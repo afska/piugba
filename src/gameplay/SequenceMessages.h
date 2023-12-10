@@ -56,6 +56,12 @@
   "- Rate: B + START/SELECT\r\n"  \
   "- Fast-forward: A + START"
 
+#define COOP_HINT             \
+  "       CO-OP LEVEL\r\n"    \
+  "1) Get a friend.\r\n"      \
+  "2) Grab a Link Cable.\r\n" \
+  "3) Use Multi COOP."
+
 #define WIN                      \
   "  *YOU'VE WON THE GAME*\r\n"  \
   "\r\n"                         \

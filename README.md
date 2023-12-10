@@ -21,7 +21,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Arcade: Play songs in any numerical difficulty level
     - Single: 1 player, either Single (5-panel) or Double (10-panel) charts
     - Multi VS: VS battles via Link Cable or Wireless Adapter
-    - Multi Coop: Double (10-panel) charts via Link Cable or Wireless Adapter
+    - Multi COOP: Double (10-panel) charts via Link Cable or Wireless Adapter
   - Impossible: Faster songs with insane mods
 - **Speed multipliers** can be changed in-game
 - **Mods** support:
