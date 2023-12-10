@@ -3,8 +3,9 @@ const $path = require("path");
 const _ = require("lodash");
 
 const OFFSETS_FILE = "offsets.pofs";
-const REGEXP = /(.+)\[(?:s|d)(\d\d)\]=([-+]?\d+|delete)/;
-const REGEXP_DOUBLE = /(.+)\[d(\d\d)\]=([-+]?\d+|delete)/;
+const REGEXP = /(.+)\[(?:s|d|m)(\d\d)\]=([-+]?\d+|delete)/;
+const REGEXP_DOUBLE = /(.+)\[(?:d|m)(\d\d)\]=([-+]?\d+|delete)/;
+const REGEXP_MULTIPLAYER = /(.+)\[m(\d\d)\]=([-+]?\d+|delete)/;
 
 const getOffsetCorrections = _.memoize(() => {
   let offsetsFile;
@@ -21,6 +22,7 @@ const getOffsetCorrections = _.memoize(() => {
       .match(new RegExp(REGEXP.source, REGEXP.flags + "g"))
       .map((line) => {
         const isDouble = REGEXP_DOUBLE.test(line);
+        const isMultiplayer = REGEXP_MULTIPLAYER.test(line);
 
         const parts = line.match(REGEXP);
         if (
@@ -37,6 +39,7 @@ const getOffsetCorrections = _.memoize(() => {
             name: parts[1],
             level: parseInt(parts[2]),
             isDouble,
+            isMultiplayer,
             isDeleted: true,
           };
 
@@ -44,6 +47,7 @@ const getOffsetCorrections = _.memoize(() => {
           name: parts[1],
           level: parseInt(parts[2]),
           isDouble,
+          isMultiplayer,
           offset: parseInt(parts[3]),
         };
       });
@@ -63,7 +67,8 @@ const applyOffsets = (metadata, charts) => {
       charts,
       (it) =>
         it.header.level == correction.level &&
-        it.header.isDouble === correction.isDouble
+        it.header.isDouble === correction.isDouble &&
+        it.header.isMultiplayer === correction.isMultiplayer
     );
 
     if (matchingChart != null) apply(matchingChart, correction);
