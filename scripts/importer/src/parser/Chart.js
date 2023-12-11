@@ -311,7 +311,7 @@ module.exports = class Chart {
       if (it.isFake && fakeEndTime == -1) {
         return [
           {
-            id: event.id - 0.5,
+            id: event.id - 0.1,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
@@ -320,7 +320,7 @@ module.exports = class Chart {
           },
           event,
           {
-            id: event.id + 0.5,
+            id: event.id + 0.1,
             beat: event.beat,
             timestamp: it.timestamp,
             type: Events.SET_FAKE,
