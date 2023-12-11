@@ -390,7 +390,7 @@ void SelectionScene::processDifficultyChangeEvents() {
   } else {
     auto currentIndex = getSelectedNumericLevelIndex();
     auto previousIndex = max(currentIndex - 1, 0);
-    auto nextIndex = min(currentIndex + 1, numericLevels.size() - 1);
+    auto nextIndex = min(currentIndex + 1, max(numericLevels.size() - 1, 0));
 
     if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
       return;
