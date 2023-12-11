@@ -111,8 +111,7 @@ void SongScene::load() {
     syncer->$isPlayingSong = true;
     syncer->$currentSongChecksum = song->id + chart->level + remoteChart->level;
     syncer->clearTimeout();
-  } else
-    SAVEFILE_write8(SRAM->state.isPlaying, 1);
+  }
 
   SCENE_init();
 

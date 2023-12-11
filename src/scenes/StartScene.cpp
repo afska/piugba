@@ -88,6 +88,7 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
   SCENE_init();
 
   setUpSpritesPalette();

@@ -41,7 +41,7 @@ Scene* SEQUENCE_getInitialScene() {
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   auto gameMode = SAVEFILE_getGameMode();
-  SAVEFILE_write8(SRAM->state.isPlaying, 0);
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
 
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
@@ -149,6 +149,9 @@ void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
   auto gameMode = SAVEFILE_getGameMode();
+
+  if (!isMultiplayer())
+    SAVEFILE_write8(SRAM->state.isPlaying, true);
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
