@@ -45,7 +45,7 @@ class ChartReader : public TimingProvider {
     if (didSetInitialBpm)
       syncScrollSpeed();
     else
-      syncInitialScrollSpeed(multiplier);
+      syncInitialScrollSpeed(this->multiplier);
     resetMaxArrowTimeJump();
 
     return this->multiplier != oldMultiplier;
