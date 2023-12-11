@@ -24,7 +24,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
 
   LOGSTR("BPM:", 0);
   LOGN(bpm, 1);
-  LOGSTR("-> " + DSTR(getArrowTime()), 2);
+  LOGSTR("-> " + DSTR(scrollBpm) + " -> " + DSTR(getArrowTime()), 2);
   LOGSTR("MSECS:", 3);
   LOGN(msecs, 4);
 

@@ -100,7 +100,6 @@ class ChartReader : public TimingProvider {
   u32 rythmEventIndex = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
-  u32 scrollBpm = 0;
   u32 autoVelocityFactor = 1;
   u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;

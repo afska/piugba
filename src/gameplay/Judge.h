@@ -15,6 +15,7 @@
 const u32 TIMING_WINDOWS[] = {0, 2, 4, 6, 8};
 const int HOLD_ARROW_TICK_OFFSET_MS = 33;
 //                                  ^ OFFSET_GREAT * FRAME_MS = 2 * 16.73322954
+const u32 MAX_JUDGABLE_SCROLL_BPM = 300 * ARROW_MAX_MULTIPLIER;
 
 class Judge {
  public:
@@ -53,7 +54,8 @@ class Judge {
   }
 
   inline bool canMiss(Arrow* arrow, TimingProvider* timingProvider) {
-    return arrow->timestamp > timingProvider->getLastWarpTime();
+    return arrow->timestamp > timingProvider->getLastWarpTime() &&
+           timingProvider->getScrollBpm() < MAX_JUDGABLE_SCROLL_BPM;
   }
 
   inline u32 getTimingWindowOf(FeedbackType feedbackType) {

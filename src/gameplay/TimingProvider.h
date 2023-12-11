@@ -33,11 +33,13 @@ class TimingProvider {
   inline u32 getStopLength() { return stopLength; }
   inline bool isStopAsync() { return stopAsync; }
   inline int getLastWarpTime() { return lastWarpTime; }
+  inline u32 getScrollBpm() { return scrollBpm; }
 
  protected:
   int msecs = 0;
   bool hasStopped = false;
   u32 arrowTime;
+  u32 scrollBpm = 0;
   int stopStart = 0;
   u32 stopLength = 0;
   bool stopAsync = false;
