@@ -749,7 +749,8 @@ void SelectionScene::printNumericLevel(Chart* chart, s8 offsetY) {
       return SCENE_write(";)", NUMERIC_LEVEL_ROW + offsetY);
   }
 
-  auto levelText = std::to_string(getSelectedNumericLevel());
+  auto numericLevel = getSelectedNumericLevel();
+  auto levelText = numericLevel >= 90 ? "??" : std::to_string(numericLevel);
   if (levelText.size() == 1)
     levelText = "0" + levelText;
   SCENE_write(levelText, NUMERIC_LEVEL_ROW + offsetY);
