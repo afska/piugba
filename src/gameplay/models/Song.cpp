@@ -187,10 +187,11 @@ void parseEvents(Event* events,
     auto event = events + j;
 
     u32 timestampAndData = parse_u32le(data, cursor);
-    event->timestamp = timestampAndData & 0xffffff;
-    if (event->timestamp & 0x800000)  // (sign extension)
-      event->timestamp |= 0xFF000000;
-    event->data = timestampAndData >> 24;
+    event->isFake = timestampAndData & 1;
+    event->timestamp = (timestampAndData >> 1) & 0x7fffff;
+    if (event->timestamp & 0x400000)  // (sign extension)
+      event->timestamp |= 0xff800000;
+    event->data = (timestampAndData >> 24) & 0xff;
 
     auto eventType = static_cast<EventType>(event->data & EVENT_TYPE);
     event->data2 =

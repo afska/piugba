@@ -122,7 +122,7 @@ const EVENT_SERIALIZERS = {
     write: function (event) {
       const timestamp = event.timestamp;
       const data = SERIALIZE_ARROWS(event.arrows) | event.type;
-      const timestampAndData = combine(timestamp, data);
+      const timestampAndData = combine(timestamp, data, event.isFake);
       this.UInt32LE(timestampAndData);
       if (event.arrows2) this.UInt8(SERIALIZE_ARROWS(event.arrows2));
       if (event.type === Events.HOLD_START)
@@ -130,14 +130,6 @@ const EVENT_SERIALIZERS = {
     },
     size: (event) =>
       4 + (event.arrows2 ? 1 : 0) + (event.type === Events.HOLD_START ? 4 : 0),
-  },
-  [Events.SET_FAKE]: {
-    write: function (event) {
-      this.UInt32LE(combine(event.timestamp, event.type)).UInt32LE(
-        event.enabled ? 1 : 0
-      );
-    },
-    size: () => 4 + 4,
   },
   [Events.SET_TEMPO]: {
     write: function (event) {
@@ -228,10 +220,10 @@ const EVENT_SERIALIZERS = {
   },
 };
 
-const combine = (timestamp, data) => {
+const combine = (timestamp, data, isFake = 0) => {
   const value = new Uint32Array(1);
   value[0] = normalizeInt(timestamp);
-  value[0] = (value[0] & 0xffffff) | ((data & 0xff) << 24);
+  value[0] = +!!isFake | ((value[0] & 0x7fffff) << 1) | ((data & 0xff) << 24);
   return value[0];
 };
 

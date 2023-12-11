@@ -105,7 +105,6 @@ class ChartReader : public TimingProvider {
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
   bool didSetInitialBpm = false;
-  bool fake = false;
   int lastBeat = -1;
   int lastTick = -1;
   u32 stoppedMs = 0;
@@ -212,8 +211,12 @@ class ChartReader : public TimingProvider {
   int getYFor(int timestamp);
   void processRythmEvents();
   void processNextEvents(int now);
-  void processUniqueNote(int timestamp, u8 data, u8 param);
-  void startHoldNote(int timestamp, u8 data, u32 length, u8 offset = 0);
+  void processUniqueNote(int timestamp, u8 data, u8 param, bool isFake);
+  void startHoldNote(int timestamp,
+                     u8 data,
+                     u32 length,
+                     u8 offset,
+                     bool isFake);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);

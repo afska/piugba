@@ -19,7 +19,7 @@ module.exports = class Chart {
   /**
    * Generates all the events from the chart.
    * Timing events are metadata events (such as BPM changes, Stops, Warps, etc.)
-   * Note events are specifically NOTE, HOLD_START, HOLD_END and SET_FAKE
+   * Note events are specifically NOTE, HOLD_START and HOLD_END
    */
   get events() {
     const timingEvents = this._getTimingEvents().map((it, i) => ({
@@ -298,66 +298,23 @@ module.exports = class Chart {
   }
 
   /**
-   * Applies fake taps (F notes) and fake segments (#FAKES:...=...).
-   * Fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0
-   * Fake segments initially have length, but they are compiled to: SET_FAKE=1, ...{notes}..., SET_FAKE=0
+   * Applies fake segments (#FAKES:...=... or SET_FAKE events here). This adds `isFake: true`
+   * to each event inside a fake segment. Fake taps (F notes) already have this property.
+   * Then, SET_FAKE events are removed, the serializer will use the fake flag of the events instead.
    */
   _applyFakes(events) {
     let fakeEndTime = -1;
 
     return _.flatMap(events, (it) => {
-      let event = it;
-
-      if (it.isFake && fakeEndTime == -1) {
-        return [
-          {
-            id: event.id - 0.1,
-            beat: event.beat,
-            timestamp: it.timestamp,
-            type: Events.SET_FAKE,
-            fakeTap: true,
-            enabled: 1,
-          },
-          event,
-          {
-            id: event.id + 0.1,
-            beat: event.beat,
-            timestamp: it.timestamp,
-            type: Events.SET_FAKE,
-            fakeTap: true,
-            enabled: 0,
-          },
-        ];
-      }
-
       if (it.type === Events.SET_FAKE) {
         fakeEndTime = it.endTime;
-
-        event = {
-          id: it.id,
-          beat: it.beat,
-          timestamp: it.timestamp,
-          type: Events.SET_FAKE,
-          enabled: 1,
-        };
+        return [];
       }
 
-      if (fakeEndTime !== -1 && it.timestamp >= fakeEndTime) {
-        fakeEndTime = -1;
+      if (fakeEndTime !== -1 && it.timestamp >= fakeEndTime) fakeEndTime = -1;
+      if (fakeEndTime !== -1) it.isFake = true;
 
-        return [
-          {
-            id: it.id,
-            beat: it.beat,
-            timestamp: it.timestamp,
-            type: Events.SET_FAKE,
-            enabled: 0,
-          },
-          event,
-        ];
-      }
-
-      return event;
+      return it;
     });
   }
 
@@ -473,14 +430,11 @@ module.exports = class Chart {
     }));
   }
 
-  /** Sorts events by timestamp => priority => type => id. */
+  /** Sorts events by timestamp => type => id. */
   _sort(events) {
     return _.sortBy(events, [
       (it) => Math.round(it.timestamp),
-      (it) => it.priority || 0,
-      (it) =>
-        // (fake taps are compiled to: SET_FAKE=1, {note}, SET_FAKE=0)
-        it.type === Events.SET_FAKE && it.fakeTap ? 1 : it.type,
+      (it) => it.type,
       (it) => it.id,
     ]);
   }
