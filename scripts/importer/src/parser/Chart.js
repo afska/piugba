@@ -19,7 +19,7 @@ module.exports = class Chart {
   /**
    * Generates all the events from the chart.
    * Timing events are metadata events (such as BPM changes, Stops, Warps, etc.)
-   * Note events are specifically NOTE, HOLD_START, HOLD_END and FAKE_TAP
+   * Note events are specifically NOTE, HOLD_START, HOLD_END and SET_FAKE
    */
   get events() {
     const timingEvents = this._getTimingEvents().map((it, i) => ({
@@ -524,7 +524,10 @@ module.exports = class Chart {
         // ^^^ only <note type> and <fake flag> are supported
         .map((it) => it.replace(/[MKSVH]/g, "0")) // ignored SSC events: Mine, AutoKeySound, Sudden, Vanish, Hidden
         .map((it) => {
-          if (/[XxYyZz]/.test(it)) this.header.isMultiplayer = true;
+          if (/[XxYyZz]/.test(it)) {
+            this.header.isMultiplayer = true;
+            this.header.levelStr = `m${this.header.level}`;
+          }
 
           return it
             .replace(/X/g, "1")
