@@ -31,10 +31,20 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 }
 
 Scene* SEQUENCE_getInitialScene() {
-  SAVEFILE_initialize(_fs);
+  u32 fixes = SAVEFILE_initialize(_fs);
 
   if (!SAVEFILE_isWorking(_fs)) {
     auto scene = new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
+    scene->withButton = false;
+    return scene;
+  }
+
+  if (fixes > 0) {
+    auto scene =
+        new TalkScene(_engine, _fs,
+                      "Save file fixed!\r\n -> code: " + std::to_string(fixes) +
+                          "\r\n\r\n=> Press A+B+START+SELECT",
+                      [](u16 keys) {});
     scene->withButton = false;
     return scene;
   }
