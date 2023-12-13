@@ -854,6 +854,11 @@ void SongScene::processTrainingModeMod() {
     }
     startInput->setHandledFlag(false);
   }
+
+  // Reset handled flag
+  if (startInput->hasBeenPressedNow() && !aInput->getIsPressed() &&
+      !bInput->getIsPressed())
+    startInput->setHandledFlag(false);
 }
 
 void SongScene::processMultiplayerUpdates() {
