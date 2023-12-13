@@ -145,6 +145,23 @@ class SelectionScene : public Scene {
     return SAVEFILE_getMaxLibraryType();
   }
 
+  inline bool isCustomOffsetAdjustmentEnabled() {
+    bool isOffsetEditingEnabled =
+        SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
+    return SAVEFILE_getGameMode() == GameMode::ARCADE && isOffsetEditingEnabled;
+  }
+  inline int getCustomOffset() {
+    return OFFSET_get(getSelectedSongIndex(), getSelectedNumericLevelIndex());
+  }
+  inline void updateCustomOffset(int change) {
+    auto selectedSongIndex = getSelectedSongIndex();
+    auto selectedNumericLevelIndex = getSelectedNumericLevelIndex();
+
+    OFFSET_set(
+        selectedSongIndex, selectedNumericLevelIndex,
+        OFFSET_get(selectedSongIndex, selectedNumericLevelIndex) + change);
+  }
+
   void setUpSpritesPalette();
   void setUpBackground();
   void setUpArrows();
@@ -171,6 +188,7 @@ class SelectionScene : public Scene {
                          bool isOnPageEdge,
                          int direction);
   void onConfirmOrStart(bool isConfirmed);
+  bool onCustomOffsetChange(ArrowDirection selector, int offset);
 
   void updateSelection(bool isChangingLevel = false);
   void updateLevel(Song* song, bool isChangingLevel);

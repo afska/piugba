@@ -18,6 +18,7 @@ typedef struct __attribute__((__packed__)) {
   IOBlinkOpts ioBlink;
   SRAMBlinkOpts sramBlink;
   NavigationStyleOpts navigationStyle;
+  bool offsetEditingEnabled;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

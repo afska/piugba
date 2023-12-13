@@ -7,6 +7,7 @@
 
 #include "AdminSettings.h"
 #include "ArcadeProgress.h"
+#include "CustomOffsetTable.h"
 #include "Memory.h"
 #include "Mods.h"
 #include "Progress.h"
@@ -44,9 +45,13 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
+  char padding2[10];
   u8 beat;
 
   Mods mods;
+  char padding3[10];
+
+  s8 customOffsets[CUSTOM_OFFSET_TABLE_SIZE];
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
@@ -93,6 +98,8 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
+  SAVEFILE_write8(SRAM->adminSettings.offsetEditingEnabled, false);
+
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::PIU);
@@ -168,8 +175,10 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 ioBlink = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
   u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
+  u8 offsetEditingEnabled =
+      SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
   if (arcadeCharts >= 2 || rumble >= 2 || ioBlink >= 3 || sramBlink >= 3 ||
-      navigationStyle >= 2) {
+      navigationStyle >= 2 || offsetEditingEnabled >= 2) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
@@ -193,6 +202,12 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
       trainingMode >= 3) {
     SAVEFILE_resetMods();
     fixes |= 0b1000000;
+  }
+
+  // validate offsets
+  if (!OFFSET_isInitialized()) {
+    OFFSET_initialize();
+    fixes |= 0b10000000;
   }
 
   return fixes;
@@ -236,6 +251,7 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
     SAVEFILE_write8(SRAM->state.gameMode, GameMode::CAMPAIGN);
 
     ARCADE_initialize();
+    OFFSET_initialize();
     SAVEFILE_resetAdminSettings();
   }
 
@@ -434,6 +450,10 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
   }
 
   return false;
+}
+
+inline void SAVEFILE_resetOffsets() {
+  OFFSET_initialize();
 }
 
 inline void SAVEFILE_resetArcade() {

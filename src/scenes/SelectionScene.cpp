@@ -348,6 +348,11 @@ void SelectionScene::goToSong() {
                                  song, (u8)syncer->$remoteNumericLevel, false)
                            : NULL;
 
+  int customOffset = getCustomOffset();
+  chart->customOffset = customOffset;
+  if (remoteChart != NULL)
+    remoteChart->customOffset = customOffset;
+
   STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
@@ -392,6 +397,11 @@ void SelectionScene::processDifficultyChangeEvents() {
     auto previousIndex = max(currentIndex - 1, 0);
     auto nextIndex = min(currentIndex + 1, max(numericLevels.size() - 1, 0));
 
+    bool didChangeOffset1 = onCustomOffsetChange(ArrowDirection::UPRIGHT, 8);
+    bool didChangeOffset2 = onCustomOffsetChange(ArrowDirection::UPLEFT, -8);
+    if (didChangeOffset1 || didChangeOffset2)
+      return;
+
     if (onNumericLevelChange(ArrowDirection::UPRIGHT, nextIndex))
       return;
 
@@ -409,6 +419,9 @@ void SelectionScene::processSelectionChangeEvents() {
   isOnListEdge = getSelectedSongIndex() == count - 1;
 #endif
 
+  if (isCustomOffsetAdjustmentEnabled() && multiplier->getIsPressed())
+    return;
+
   if (onSelectionChange(ArrowDirection::DOWNRIGHT, isOnListEdge,
                         selected == PAGE_SIZE - 1, 1))
     return;
@@ -424,6 +437,9 @@ void SelectionScene::processConfirmEvents() {
   if (arrowSelectors[ArrowDirection::CENTER]->hasBeenPressedNow()) {
     if (isMultiplayer() && syncer->isMaster())
       syncer->send(SYNC_EVENT_START_SONG, confirmed);
+
+    if (isCustomOffsetAdjustmentEnabled() && multiplier->getIsPressed())
+      return;
 
     onConfirmOrStart(confirmed);
   }
@@ -443,18 +459,48 @@ void SelectionScene::processMenuEvents(u16 keys) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
       player_play(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
-    } else {
+    } else if (!isCustomOffsetAdjustmentEnabled()) {
       player_stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new PixelTransitionEffect());
     }
   }
 
+  if (isCustomOffsetAdjustmentEnabled() && multiplier->hasBeenReleasedNow()) {
+    if (!multiplier->getHandledFlag()) {
+      player_stop();
+      engine->transitionIntoScene(new ModsScene(engine, fs),
+                                  new PixelTransitionEffect());
+    }
+    multiplier->setHandledFlag(false);
+  }
+
+  if (isCustomOffsetAdjustmentEnabled() && multiplier->getIsPressed())
+    return;
+
   if (settingsMenuInput->hasBeenPressedNow()) {
     player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new PixelTransitionEffect());
   }
+}
+
+bool SelectionScene::onCustomOffsetChange(ArrowDirection selector, int offset) {
+  if (isCustomOffsetAdjustmentEnabled() && multiplier->getIsPressed()) {
+    if (arrowSelectors[selector]->hasBeenPressedNow()) {
+      arrowSelectors[selector]->setIsPressed(true);
+      multiplier->setHandledFlag(true);
+
+      updateCustomOffset(offset);
+      unconfirm();
+      updateSelection();
+      player_play(SOUND_MOD);
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
@@ -733,8 +779,14 @@ void SelectionScene::printNumericLevel(Chart* chart, s8 offsetY) {
   }
 
   if (chart != NULL) {
-    if (chart->variant != '\0')
+    if (isCustomOffsetAdjustmentEnabled()) {
+      int customOffset = getCustomOffset();
+      TextStream::instance().setText(
+          (customOffset >= 0 ? "[+" : "[") + std::to_string(customOffset) + "]",
+          TEXT_ROW - 1, -3);
+    } else if (chart->variant != '\0') {
       SCENE_write(std::string("  ") + chart->variant, NUMERIC_LEVEL_ROW + 2);
+    }
 
     if (chart->difficulty == DifficultyLevel::NORMAL)
       return SCENE_write("NM", NUMERIC_LEVEL_ROW + offsetY);

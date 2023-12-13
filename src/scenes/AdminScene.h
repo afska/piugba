@@ -18,7 +18,8 @@ class AdminScene : public MenuScene {
   void close() override;
 
  private:
-  int areYouSure = -1;
+  int submenu = -1;
+  u32 totalOffsets = 0;
   bool withSound;
 };
 

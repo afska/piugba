@@ -201,8 +201,8 @@ void SongScene::tick(u16 keys) {
   updateRumble();
 
 #ifdef SENV_DEVELOPMENT
-  if (chartReaders[0]->debugOffset)
-    scores[0]->log(chartReaders[0]->debugOffset);
+  if (chartReaders[0]->customOffset)
+    scores[0]->log(chartReaders[0]->customOffset);
 
   IFTIMINGTEST {
     chartReaders[0]->logDebugInfo<CHART_DEBUG>();
@@ -548,8 +548,8 @@ void SongScene::processKeys(u16 keys) {
 
   if (startInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReaders[0]->debugOffset -= DEBUG_OFFSET_CORRECTION;
-      if (chartReaders[0]->debugOffset == 0)
+      chartReaders[0]->customOffset -= DEBUG_OFFSET_CORRECTION;
+      if (chartReaders[0]->customOffset == 0)
         scores[0]->log(0);
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
@@ -564,8 +564,8 @@ void SongScene::processKeys(u16 keys) {
 
   if (selectInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReaders[0]->debugOffset += DEBUG_OFFSET_CORRECTION;
-      if (chartReaders[0]->debugOffset == 0)
+      chartReaders[0]->customOffset += DEBUG_OFFSET_CORRECTION;
+      if (chartReaders[0]->customOffset == 0)
         scores[0]->log(0);
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(

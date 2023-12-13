@@ -22,7 +22,7 @@ const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
 
 class ChartReader : public TimingProvider {
  public:
-  int debugOffset = 0;
+  int customOffset = 0;
   int beatDurationFrames = -1;
   u32 beatFrame = 0;
 

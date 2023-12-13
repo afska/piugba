@@ -61,7 +61,7 @@ void ModsScene::printOptions() {
   u8 colorFilter = SAVEFILE_read8(SRAM->mods.colorFilter);
   u8 speedHack = SAVEFILE_read8(SRAM->mods.speedHack);
   u8 mirrorSteps = SAVEFILE_read8(SRAM->mods.mirrorSteps);
-  bool randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
+  u8 randomSteps = SAVEFILE_read8(SRAM->mods.randomSteps);
   u8 autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
