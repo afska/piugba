@@ -151,15 +151,17 @@ class SelectionScene : public Scene {
     return SAVEFILE_getGameMode() == GameMode::ARCADE && isOffsetEditingEnabled;
   }
   inline int getCustomOffset() {
-    return OFFSET_get(getSelectedSongIndex(), getSelectedNumericLevelIndex());
+    return OFFSET_get(getSelectedSongIndex(), getSelectedNumericLevelIndex(),
+                      isDouble());
   }
   inline void updateCustomOffset(int change) {
     auto selectedSongIndex = getSelectedSongIndex();
     auto selectedNumericLevelIndex = getSelectedNumericLevelIndex();
 
     OFFSET_set(
-        selectedSongIndex, selectedNumericLevelIndex,
-        OFFSET_get(selectedSongIndex, selectedNumericLevelIndex) + change);
+        selectedSongIndex, selectedNumericLevelIndex, isDouble(),
+        OFFSET_get(selectedSongIndex, selectedNumericLevelIndex, isDouble()) +
+            change);
   }
 
   void setUpSpritesPalette();

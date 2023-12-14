@@ -10,6 +10,7 @@
 #define ARCADE_PROGRESS_SIZE (ARCADE_MAX_LEVELS * ARCADE_MAX_SONGS / 2)
 // 10000 registers: One per numeric difficulty (max=100) per song (max=100)
 // => 2 registers per byte (3 bit each) => 5000 bytes total
+// The grades are stored by level.
 
 void ARCADE_initialize();
 bool ARCADE_isInitialized();
