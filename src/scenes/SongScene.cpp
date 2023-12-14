@@ -350,8 +350,13 @@ CODE_IWRAM void SongScene::updateArrows() {
     bool isEnding = arrow->tick(newY, isPressing, bounceOffset);
 
     if (isEnding && judge->endIfNeeded(arrow, chartReaders[playerId].get(),
-                                       judgementOffset[playerId]))
+                                       judgementOffset[playerId])) {
+      if (arrow->needsDiscard()) {
+        arrow->forAll(arrowPool.get(),
+                      [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
+      }
       return;
+    }
 
     bool canBeJudged =
         arrow->type == ArrowType::UNIQUE && !arrow->getIsPressed();

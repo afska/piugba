@@ -57,6 +57,8 @@ bool Judge::endIfNeeded(Arrow* arrow,
   u32 diff = getDiff(arrow, timingProvider, offset);
   if (isInsideTimingWindow(diff))
     return false;
+  if (arrow->getWasMissed())
+    return true;
 
   bool isUnique = arrow->type == ArrowType::UNIQUE;
   bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
@@ -75,8 +77,7 @@ bool Judge::endIfNeeded(Arrow* arrow,
       return true;
   }
 
-  arrow->forAll(arrowPool,
-                [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
+  arrow->setWasMissed();
   return true;
 }
 

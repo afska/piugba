@@ -88,6 +88,7 @@ class Arrow : public IPoolable {
     endAnimationFrame = 0;
     isPressed = false;
     needsAnimation = false;
+    wasMissed = false;
 
     sprite->setPriority(isHoldTail ? ARROW_LAYER_BACK : ARROW_LAYER_FRONT);
     ARROW_setUpOrientation(sprite.get(), flip);
@@ -139,6 +140,10 @@ class Arrow : public IPoolable {
   inline bool getIsPressed() { return isPressed; }
   inline void markAsPressed() { isPressed = true; }
 
+  inline bool getWasMissed() { return wasMissed; }
+  inline void setWasMissed() { wasMissed = true; }
+  inline bool needsDiscard() { return SPRITE_isHidden(sprite.get()); }
+
   bool tick(int newY, bool isPressing, int offsetX = 0);
   inline Sprite* get() { return sprite.get(); }
 
@@ -156,6 +161,7 @@ class Arrow : public IPoolable {
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
+  bool wasMissed = false;
 
   bool end();
   void animatePress();
