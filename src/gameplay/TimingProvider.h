@@ -17,6 +17,7 @@
 */
 const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607, 485, 404};
 
+const u32 MAX_ARROW_TIME = 2426;
 const u32 MAX_ARROW_TIME_JUMP = 150;
 const u32 MINUTE = 60000;
 const u32 FRAME_MS = 17;

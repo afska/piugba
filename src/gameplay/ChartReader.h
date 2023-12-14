@@ -197,10 +197,12 @@ class ChartReader : public TimingProvider {
       if (autoVelocityFactor != 1)
         userScrollBpm = MATH_fracumul(userScrollBpm, autoVelocityFactor);
       targetArrowTime =
-          MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, userScrollBpm);
+          min(MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, userScrollBpm),
+              MAX_ARROW_TIME);
     } else {
-      targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
-                                 MATH_mul(scrollBpm, multiplier));
+      targetArrowTime = min(MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
+                                     MATH_mul(scrollBpm, multiplier)),
+                            MAX_ARROW_TIME);
     }
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
