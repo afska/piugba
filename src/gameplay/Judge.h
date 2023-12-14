@@ -25,8 +25,8 @@ class Judge {
         std::function<void(u8 playerId)> onStageBreak);
 
   bool onPress(Arrow* arrow, TimingProvider* timingProvider, int offset);
-  void onOut(Arrow* arrow, TimingProvider* timingProvider);
   void onHoldTick(u16 arrows, u8 playerId, bool canMiss);
+  bool endIfNeeded(Arrow* arrow, TimingProvider* timingProvider, int offset);
 
   inline void disable() { isDisabled = true; }
   inline void enable() { isDisabled = false; }

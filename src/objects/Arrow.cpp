@@ -58,9 +58,9 @@ void Arrow::press() {
   }
 }
 
-CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
+CODE_IWRAM bool Arrow::tick(int newY, bool isPressing, int offsetX) {
   if (SPRITE_isHidden(get()))
-    return ArrowState::OUT;
+    return true;
 
   bool isHoldArrow = type == ArrowType::HOLD_HEAD ||
                      type == ArrowType::HOLD_TAIL ||
@@ -69,6 +69,7 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
   bool isFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
   int newX =
       ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction + offsetX;
+  bool $isNearEndOrClose = isNearEndOrClose(newY);
 
   if (isFakeHead || hasEnded) {
     endAnimationFrame++;
@@ -84,7 +85,7 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
       else
         return end();
     }
-  } else if (isNearEndOrClose(newY) && needsAnimation) {
+  } else if ($isNearEndOrClose && needsAnimation) {
     animatePress();
   } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
              isPressing) {
@@ -97,17 +98,17 @@ CODE_IWRAM ArrowState Arrow::tick(int newY, bool isPressing, int offsetX) {
   } else
     sprite->moveTo(newX, newY);
 
-  return ArrowState::ACTIVE;
+  return $isNearEndOrClose;
 }
 
-ArrowState Arrow::end() {
+bool Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
 
   if (type == ArrowType::HOLD_FILL)
     holdArrow->activeFillCount--;
 
-  return ArrowState::OUT;
+  return true;
 }
 
 void Arrow::animatePress() {

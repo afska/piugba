@@ -34,28 +34,6 @@ bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   return false;
 }
 
-void Judge::onOut(Arrow* arrow, TimingProvider* timingProvider) {
-  bool isUnique = arrow->type == ArrowType::UNIQUE;
-  bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
-  bool isPressed = arrow->getIsPressed();
-
-  if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
-    FeedbackType result = onResult(arrow, FeedbackType::MISS);
-    if (result == FeedbackType::UNKNOWN)
-      return;
-  }
-
-  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
-    FeedbackType result =
-        onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
-    if (result == FeedbackType::UNKNOWN)
-      return;
-  }
-
-  arrow->forAll(arrowPool,
-                [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
-}
-
 void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
   bool isPressed = true;
 
@@ -71,6 +49,35 @@ void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
     updateScore(FeedbackType::PERFECT, playerId, true);
   else if (canMiss)
     updateScore(FeedbackType::MISS, playerId, true);
+}
+
+bool Judge::endIfNeeded(Arrow* arrow,
+                        TimingProvider* timingProvider,
+                        int offset) {
+  u32 diff = getDiff(arrow, timingProvider, offset);
+  if (isInsideTimingWindow(diff))
+    return false;
+
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
+  bool isPressed = arrow->getIsPressed();
+
+  if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
+    FeedbackType result = onResult(arrow, FeedbackType::MISS);
+    if (result == FeedbackType::UNKNOWN)
+      return true;
+  }
+
+  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
+    FeedbackType result =
+        onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
+    if (result == FeedbackType::UNKNOWN)
+      return true;
+  }
+
+  arrow->forAll(arrowPool,
+                [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
+  return true;
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {

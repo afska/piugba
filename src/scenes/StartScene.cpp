@@ -254,7 +254,8 @@ void StartScene::animateArrows(int bounceOffset) {
   arrowPool->forEachActive([this, arrowSpeed, bounceOffset](Arrow* arrow) {
     int newY = arrow->get()->getY() - arrowSpeed;
 
-    if (arrow->tick(newY, false, bounceOffset) == ArrowState::OUT)
+    arrow->tick(newY, false, bounceOffset);
+    if (newY <= (int)ARROW_FINAL_Y())
       arrowPool->discard(arrow->id - ARROW_TILEMAP_LOADING_ID);
   });
 }

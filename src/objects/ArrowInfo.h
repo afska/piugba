@@ -52,7 +52,6 @@ enum ArrowDirection {
   UPRIGHT_DOUBLE,
   DOWNRIGHT_DOUBLE
 };
-enum ArrowState { ACTIVE, OUT };
 enum ArrowFlip { NO_FLIP, FLIP_X, FLIP_Y, FLIP_BOTH };
 
 const u32 ARROW_ANIMATION_FRAMES = 5;
