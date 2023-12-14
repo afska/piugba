@@ -133,6 +133,7 @@ module.exports = class Chart {
     let currentBeat = 0;
     let currentBpm = this._getBpmByBeat(0);
     let warpStart = -1;
+    let warpStartBeat = -1;
     let speedFactor = 1;
     let scrollFactor = 1;
     let currentScrollEnabled = true;
@@ -160,7 +161,7 @@ module.exports = class Chart {
           if (length === 0) return null;
 
           return {
-            beat,
+            beat: warpStartBeat,
             timestamp: warpStart,
             type: Events.WARP,
             length: timestamp - warpStart,
@@ -183,7 +184,10 @@ module.exports = class Chart {
           case Events.SET_TEMPO: {
             if (data.value >= FAST_BPM_WARP) {
               // (fast-bpm warps work like #WARPS=... that teleport the player to the next BPM change)
-              if (warpStart === -1) warpStart = timestamp;
+              if (warpStart === -1) {
+                warpStart = timestamp;
+                warpStartBeat = beat;
+              }
               return null;
             }
 
@@ -192,6 +196,7 @@ module.exports = class Chart {
             if (warpStart > -1) {
               const warp = createWarp();
               warpStart = -1;
+              warpStartBeat = -1;
               return [warp, bpmChange];
             } else {
               return bpmChange;
@@ -237,6 +242,7 @@ module.exports = class Chart {
             if (warpStart > -1) {
               const warp = createWarp();
               warpStart = timestamp;
+              warpStartBeat = beat;
 
               return [warp, stop];
             } else {
