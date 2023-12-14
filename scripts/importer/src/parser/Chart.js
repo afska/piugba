@@ -13,7 +13,6 @@ module.exports = class Chart {
     this.content = content;
 
     this._calculateLastTimestamp();
-    this._validate();
   }
 
   /**
@@ -280,7 +279,7 @@ module.exports = class Chart {
             return events;
           }
           case Events.WARP: {
-            const length = this._getRangeDuration(beat, beat + data.value);
+            const length = this._getRangeDuration(beat, data.value);
 
             return {
               beat,
@@ -542,9 +541,14 @@ module.exports = class Chart {
   /** Calculates the duration of a note, taking into account mid-note BPM changes. */
   _getNoteDuration(beat, subdivision) {
     const startBeat = beat;
-    const durationBeats = BEAT_UNIT * subdivision;
-    const endBeat = startBeat + durationBeats;
+    const length = BEAT_UNIT * subdivision;
 
+    return this._getRangeDuration(startBeat, length);
+  }
+
+  /** Calculates the duration of a range, in beats. */
+  _getRangeDuration(startBeat, length) {
+    const endBeat = startBeat + length;
     const bpms = this._getFiniteBpms();
     let currentBpm = this._getBpmByBeat(startBeat);
     let currentBeat = startBeat;
@@ -553,11 +557,11 @@ module.exports = class Chart {
 
     for (let bpm of bpms) {
       if (bpm.key > startBeat && bpm.key < endBeat) {
-        // durationBeats      -> 1
+        // length      -> 1
         // beatsInPreviousBpm -> fraction
 
         const beatsInPreviousBpm = bpm.key - currentBeat;
-        const fraction = beatsInPreviousBpm / durationBeats;
+        const fraction = beatsInPreviousBpm / length;
         durationMs += this._getBeatLengthByBpm(currentBpm) * beatsInPreviousBpm;
         completion += fraction;
 
@@ -568,23 +572,11 @@ module.exports = class Chart {
 
     if (completion < 1) {
       durationMs +=
-        this._getBeatLengthByBpm(currentBpm) * durationBeats * (1 - completion);
+        this._getBeatLengthByBpm(currentBpm) * length * (1 - completion);
       completion = 1;
     }
 
     return durationMs;
-  }
-
-  /** Calculates the duration of a range, in beats. */
-  _getRangeDuration(startBeat, endBeat, precision = SEMISEMIFUSE) {
-    let length = 0;
-
-    for (let beat = startBeat; beat < endBeat; beat += precision) {
-      const bpm = this._getBpmByBeat(beat);
-      length += this._getBeatLengthByBpm(bpm) * precision;
-    }
-
-    return length;
   }
 
   /** Return finite BPM changes, ignoring fast-bpm warps. */
@@ -652,17 +644,6 @@ module.exports = class Chart {
           : _.last(this.events).timestamp;
     } catch (e) {}
   }
-
-  /** Validates the chart. */
-  _validate() {
-    const bpms = this._getFiniteBpms();
-    let lastBeat = -1;
-    for (let bpm of bpms) {
-      if (Math.abs(bpm.key - lastBeat) < SEMISEMIFUSE)
-        throw new Error("bpm_change_too_fast:\n    " + JSON.stringify(bpm));
-      lastBeat = bpm.key;
-    }
-  }
 };
 
 const SECOND = 1000;
@@ -672,5 +653,4 @@ const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
-const SEMISEMIFUSE = 1 / 128;
 const MAX_TIMESTAMP = 3600000;
