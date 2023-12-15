@@ -119,9 +119,17 @@ class SelectionScene : public Scene {
       return;
     }
 
+    auto currentLevel = getSelectedNumericLevel();
+    auto currentLevelIndex = getSelectedNumericLevelIndex();
+    bool wantsCurrentLevel = level == currentLevel;
+
     u32 min = 0;
     u32 minDiff = abs((int)numericLevels[0] - (int)level);
     for (u32 i = 0; i < numericLevels.size(); i++) {
+      if (wantsCurrentLevel && numericLevels[i] == currentLevel &&
+          i == currentLevelIndex)
+        return;
+
       u32 diff = (u32)abs((int)numericLevels[i] - (int)level);
       if (diff < minDiff) {
         min = i;
