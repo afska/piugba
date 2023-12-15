@@ -508,6 +508,16 @@ void SongScene::animateWinnerLifeBar() {
 }
 
 void SongScene::processKeys(u16 keys) {
+  u32 downLeftKeys = (keys & KEY_DOWN) | (keys & KEY_LEFT);
+  u32 upLeftKeys = (keys & KEY_L) | (keys & KEY_UP);
+  u32 centerKeys = (keys & KEY_B) | (keys & KEY_RIGHT);
+
+  if (KEY_DOWNLEFT(keys) && downLeftKeys != lastDownLeftKeys)
+    arrowHolders[localBaseIndex + 0]->setIsPressed(false);
+  if (KEY_UPLEFT(keys) && upLeftKeys != lastUpLeftKeys)
+    arrowHolders[localBaseIndex + 1]->setIsPressed(false);
+  if (KEY_CENTER(keys) && centerKeys != lastCenterKeys)
+    arrowHolders[localBaseIndex + 2]->setIsPressed(false);
   arrowHolders[localBaseIndex + 0]->setIsPressed(KEY_DOWNLEFT(keys));
   arrowHolders[localBaseIndex + 1]->setIsPressed(KEY_UPLEFT(keys));
   arrowHolders[localBaseIndex + 2]->setIsPressed(KEY_CENTER(keys));
@@ -515,12 +525,22 @@ void SongScene::processKeys(u16 keys) {
   arrowHolders[localBaseIndex + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
 
   if ($isSinglePlayerDouble) {
+    if (KEY_DOWNLEFT(keys) && downLeftKeys != lastDownLeftKeys)
+      arrowHolders[localBaseIndex + 5]->setIsPressed(false);
+    if (KEY_UPLEFT(keys) && upLeftKeys != lastUpLeftKeys)
+      arrowHolders[localBaseIndex + 6]->setIsPressed(false);
+    if (KEY_CENTER(keys) && centerKeys != lastCenterKeys)
+      arrowHolders[localBaseIndex + 7]->setIsPressed(false);
     arrowHolders[localBaseIndex + 5]->setIsPressed(KEY_DOWNLEFT(keys));
     arrowHolders[localBaseIndex + 6]->setIsPressed(KEY_UPLEFT(keys));
     arrowHolders[localBaseIndex + 7]->setIsPressed(KEY_CENTER(keys));
     arrowHolders[localBaseIndex + 8]->setIsPressed(KEY_UPRIGHT(keys));
     arrowHolders[localBaseIndex + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
   }
+
+  lastDownLeftKeys = downLeftKeys;
+  lastUpLeftKeys = upLeftKeys;
+  lastCenterKeys = centerKeys;
 
   startInput->setIsPressed(keys & KEY_START);
   selectInput->setIsPressed(keys & KEY_SELECT);

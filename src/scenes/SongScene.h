@@ -74,6 +74,9 @@ class SongScene : public Scene {
   int rumbleIdleFrame = 0;
   u32 autoModDuration = 1;
   u32 autoModCounter = 0;
+  u32 lastDownLeftKeys = 0;
+  u32 lastUpLeftKeys = 0;
+  u32 lastCenterKeys = 0;
 
   inline void setUpGameConfig() {
     $isMultiplayer = isMultiplayer();
