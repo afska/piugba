@@ -54,7 +54,9 @@ void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
 bool Judge::endIfNeeded(Arrow* arrow,
                         TimingProvider* timingProvider,
                         int offset) {
-  u32 diff = getDiff(arrow, timingProvider, offset);
+  int actualMsecs = timingProvider->getMsecs() + offset;
+  int expectedMsecs = arrow->timestamp;
+  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
   if (isInsideTimingWindow(diff))
     return false;
   if (arrow->getWasMissed())
@@ -65,6 +67,10 @@ bool Judge::endIfNeeded(Arrow* arrow,
   bool isPressed = arrow->getIsPressed();
 
   if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
+    if (actualMsecs < expectedMsecs) {
+      // (this can happen if the song messes with the scroll speed)
+      return true;
+    }
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return true;
