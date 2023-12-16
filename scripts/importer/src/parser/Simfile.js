@@ -99,7 +99,7 @@ module.exports = class Simfile {
             rawChart
           );
           if (!_.isFinite(chartOffset)) chartOffset = 0;
-          const offset = -chartOffset * SECOND;
+          const offset = -chartOffset * SECOND; // [!] offsets in PIUS are negative
 
           const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
           if (_.isEmpty(bpms)) throw new Error("no_bpm_info");

@@ -84,10 +84,14 @@ const applyOffsets = (metadata, charts) => {
   });
 
   charts.forEach((chart) => {
-    if (chart.header.$originalOffset !== undefined) {
+    if (
+      chart.header.$originalOffset !== undefined &&
+      chart.header.$originalOffset !== chart.header.offset
+    ) {
       charts
         .filter(
           (it) =>
+            !it.isDeleted &&
             it.header.$originalOffset === undefined &&
             it.header.offset == chart.header.$originalOffset
         )
@@ -120,7 +124,7 @@ const apply = (chart, correction) => {
     }]`
   );
   chart.header.$originalOffset = chart.header.offset;
-  chart.header.offset = chart.header.offset - correction.offset;
+  chart.header.offset = chart.header.offset - correction.offset; // [!] offsets in PIUS are negative
   correction.used = true;
 };
 
