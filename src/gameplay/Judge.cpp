@@ -55,7 +55,7 @@ bool Judge::endIfNeeded(Arrow* arrow, TimingProvider* timingProvider) {
   int actualMsecs = timingProvider->getMsecs();
   int expectedMsecs = arrow->timestamp;
   u32 diff = (u32)abs(actualMsecs - expectedMsecs);
-  if (isInsideTimingWindow(diff))
+  if (isInsideTimingWindow(diff) || actualMsecs < expectedMsecs)
     return false;
   if (arrow->getWasMissed())
     return true;
@@ -65,21 +65,16 @@ bool Judge::endIfNeeded(Arrow* arrow, TimingProvider* timingProvider) {
   bool isPressed = arrow->getIsPressed();
 
   if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
-    if (actualMsecs < expectedMsecs) {
-      // (this can happen if the song messes with the scroll speed)
-      return true;
-    }
-
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
-      return true;
+      return false;
   }
 
   if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
     FeedbackType result =
         onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
-      return true;
+      return false;
   }
 
   arrow->setWasMissed();
