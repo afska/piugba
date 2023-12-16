@@ -264,15 +264,17 @@ if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
         difficultyLevel
       );
 
-      const isFinalBoss = nextSong == null;
+      let isFinalBoss = nextSong == null;
       const isBoss =
         isFinalBoss ||
         (i >= 4 &&
           nextChart != null &&
           nextChart.header.order > chart.header.order);
+      if (isBoss && simfile._isFinalBoss) isFinalBoss = true;
 
       if (simfile.boss == null) simfile.boss = {};
       simfile.boss[difficultyLevel] = isBoss;
+      simfile._isFinalBoss = isFinalBoss;
       const applyTo = `${+(simfile.boss.NORMAL || false)}${+(
         simfile.boss.HARD || false
       )}${+(simfile.boss.CRAZY || false)}`;
