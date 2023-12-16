@@ -618,13 +618,14 @@ void SelectionScene::onConfirmOrStart(bool isConfirmed) {
 
 void SelectionScene::updateSelection(bool isChangingLevel) {
   Song* song = SONG_parse(fs, getSelectedSong(), false);
+  selectedSongId = song->id;
 
   updateLevel(song, isChangingLevel);
   setNames(song->title, song->artist);
   Chart* chart = SONG_findChartByNumericLevelIndex(
       song, getSelectedNumericLevelIndex(), isDouble());
   printNumericLevel(chart);
-  loadSelectedSongGrade(song->id);
+  loadSelectedSongGrade();
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
     player_play(song->audioPath.c_str());
     player_seek(song->sampleStart);
@@ -809,17 +810,15 @@ void SelectionScene::printNumericLevel(Chart* chart, s8 offsetY) {
   SCENE_write(levelText, NUMERIC_LEVEL_ROW + offsetY);
 }
 
-void SelectionScene::loadSelectedSongGrade(u8 songId) {
+void SelectionScene::loadSelectedSongGrade() {
   if (IS_STORY(SAVEFILE_getGameMode()))
     return;
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    auto songIndex = page * PAGE_SIZE + i;
-
-    gradeBadges[i]->setType(
-        songIndex == getSelectedSongIndex()
-            ? SAVEFILE_getArcadeGradeOf(songId, getSelectedNumericLevel())
-            : GradeType::UNPLAYED);
+    gradeBadges[i]->setType(i == selected
+                                ? SAVEFILE_getArcadeGradeOf(
+                                      selectedSongId, getSelectedNumericLevel())
+                                : GradeType::UNPLAYED);
   }
 }
 

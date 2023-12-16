@@ -68,6 +68,7 @@ class SelectionScene : public Scene {
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
+  u32 selectedSongId = 0;
   bool confirmed = false;
   bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
@@ -159,16 +160,15 @@ class SelectionScene : public Scene {
     return SAVEFILE_getGameMode() == GameMode::ARCADE && isOffsetEditingEnabled;
   }
   inline int getCustomOffset() {
-    return OFFSET_get(getSelectedSongIndex(), getSelectedNumericLevelIndex(),
+    return OFFSET_get(selectedSongId, getSelectedNumericLevelIndex(),
                       isDouble());
   }
   inline void updateCustomOffset(int change) {
-    auto selectedSongIndex = getSelectedSongIndex();
     auto selectedNumericLevelIndex = getSelectedNumericLevelIndex();
 
     OFFSET_set(
-        selectedSongIndex, selectedNumericLevelIndex, isDouble(),
-        OFFSET_get(selectedSongIndex, selectedNumericLevelIndex, isDouble()) +
+        selectedSongId, selectedNumericLevelIndex, isDouble(),
+        OFFSET_get(selectedSongId, selectedNumericLevelIndex, isDouble()) +
             change);
   }
 
@@ -212,7 +212,7 @@ class SelectionScene : public Scene {
   void setNames(std::string title, std::string artist);
   void printNumericLevel(Chart* chart) { printNumericLevel(chart, 0); }
   void printNumericLevel(Chart* chart, s8 offsetY);
-  void loadSelectedSongGrade(u8 songId);
+  void loadSelectedSongGrade();
   void processMultiplayerUpdates();
   void syncNumericLevelChanged(u8 newValue);
   void quit();
