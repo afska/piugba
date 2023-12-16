@@ -349,8 +349,8 @@ CODE_IWRAM void SongScene::updateArrows() {
         !isStopped[playerId];
     bool isEnding = arrow->tick(newY, isPressing, bounceOffset);
 
-    if (isEnding && judge->endIfNeeded(arrow, chartReaders[playerId].get(),
-                                       judgementOffset[playerId])) {
+    if (isEnding && !isStopped[playerId] &&
+        judge->endIfNeeded(arrow, chartReaders[playerId].get())) {
       if (arrow->needsDiscard()) {
         arrow->forAll(arrowPool.get(),
                       [this](Arrow* arrow) { arrowPool->discard(arrow->id); });

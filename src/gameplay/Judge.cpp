@@ -51,10 +51,8 @@ void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
     updateScore(FeedbackType::MISS, playerId, true);
 }
 
-bool Judge::endIfNeeded(Arrow* arrow,
-                        TimingProvider* timingProvider,
-                        int offset) {
-  int actualMsecs = timingProvider->getMsecs() + offset;
+bool Judge::endIfNeeded(Arrow* arrow, TimingProvider* timingProvider) {
+  int actualMsecs = timingProvider->getMsecs();
   int expectedMsecs = arrow->timestamp;
   u32 diff = (u32)abs(actualMsecs - expectedMsecs);
   if (isInsideTimingWindow(diff))
@@ -71,6 +69,7 @@ bool Judge::endIfNeeded(Arrow* arrow,
       // (this can happen if the song messes with the scroll speed)
       return true;
     }
+
     FeedbackType result = onResult(arrow, FeedbackType::MISS);
     if (result == FeedbackType::UNKNOWN)
       return true;
