@@ -254,6 +254,8 @@ const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
 // -----------
 
 if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
+  console.log(`${"Adding".bold} bosses...`);
+
   sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
     songs.forEach(({ song, simfile }, i) => {
       const chart = simfile.getChartByDifficulty(difficultyLevel);
