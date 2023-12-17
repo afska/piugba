@@ -12,8 +12,9 @@ const u32 MAX_DIFFICULTY = 2;
 typedef struct {
   DifficultyLevel difficulty;  // u8
   u8 level;                    // (0~99)
-  char variant;    // '\0' or 'a', 'b', 'c', etc. for repeated levels
-  ChartType type;  // u8
+  char variant;                // '\0' or 'a', 'b', ... (for repeated levels)
+  char offsetLabel;  // '\0' or 'a', 'b', ... (to identify different offsets)
+  ChartType type;    // u8
 
   u32 eventChunkSize;
 

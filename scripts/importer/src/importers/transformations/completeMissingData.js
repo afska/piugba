@@ -119,6 +119,14 @@ module.exports = (metadata, charts, content, filePath) => {
   if (multiplayerCharts.length > 1)
     multiplayerCharts.forEach((it, i) => setVariant(it, i));
 
+  // add offset labels
+  const offsets = [];
+  _(finalCharts).each((it) => {
+    if (!offsets.includes(it.header.offset)) offsets.push(it.header.offset);
+    const variant = VARIANTS[1 + offsets.indexOf(it.header.offset)] || "?";
+    it.header.offsetLabel = variant;
+  });
+
   return {
     metadata,
     charts: finalCharts,

@@ -63,6 +63,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     chart->difficulty = static_cast<DifficultyLevel>(parse_u8(data, &cursor));
     chart->level = parse_u8(data, &cursor);
     chart->variant = parse_u8(data, &cursor);
+    chart->offsetLabel = parse_u8(data, &cursor);
     chart->type = static_cast<ChartType>(parse_u8(data, &cursor));
     chart->isDouble = chart->type == ChartType::DOUBLE_CHART ||
                       chart->type == ChartType::DOUBLE_COOP_CHART;

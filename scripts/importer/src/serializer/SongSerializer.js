@@ -80,6 +80,7 @@ module.exports = class SongSerializer {
         this.UInt8(DifficultyLevels[chart.header.difficulty])
           .UInt8(chart.header.level)
           .UInt8(chart.header.variant.charCodeAt(0))
+          .UInt8(chart.header.offsetLabel.charCodeAt(0))
           .UInt8(chart.header.isMultiplayer ? 2 : chart.header.isDouble ? 1 : 0)
           .UInt32LE(4 * 2 /* (eventCounts) */ + eventChunkSize)
           .EventArray(rythmEvents)

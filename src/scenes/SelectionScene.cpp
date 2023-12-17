@@ -785,10 +785,12 @@ void SelectionScene::printNumericLevel(Chart* chart, s8 offsetY) {
       TextStream::instance().setText(
           (customOffset >= 0 ? "[+" : "[") + std::to_string(customOffset) + "]",
           TEXT_ROW - 1, -3);
+      SCENE_write(std::string("  ") + chart->offsetLabel,
+                  NUMERIC_LEVEL_ROW + 2);
+    } else {
+      if (chart->variant != '\0')
+        SCENE_write(std::string("  ") + chart->variant, NUMERIC_LEVEL_ROW + 2);
     }
-
-    if (chart->variant != '\0')
-      SCENE_write(std::string("  ") + chart->variant, NUMERIC_LEVEL_ROW + 2);
 
     if (chart->difficulty == DifficultyLevel::NORMAL)
       return SCENE_write("NM", NUMERIC_LEVEL_ROW + offsetY);
