@@ -58,7 +58,7 @@ if (!SEARCH) {
 
 const sources = fs
   .readdirSync(SONG_PACKS_DIR)
-  .filter((it) => it !== ".git")
+  .filter((it) => !it.startsWith("."))
   .filter((it) => !it.startsWith("#"))
   .filter((it) => (SEARCH != null ? it.startsWith(`(${SEARCH})`) : true))
   .map((it) => ({
