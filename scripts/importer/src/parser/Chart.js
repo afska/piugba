@@ -217,7 +217,7 @@ module.exports = class Chart {
             return {
               beat,
               timestamp,
-              type,
+              type: Events.SET_TICKCOUNT,
               tickcount: data.value,
             };
           }
@@ -225,7 +225,7 @@ module.exports = class Chart {
             return {
               beat,
               timestamp,
-              type,
+              type: Events.SET_FAKE,
               endTime: timestamp + data.value * beatLength,
             };
           }
@@ -234,7 +234,7 @@ module.exports = class Chart {
             const stop = {
               beat,
               timestamp,
-              type,
+              type: Events.STOP,
               length,
               async: false,
             };
@@ -269,7 +269,7 @@ module.exports = class Chart {
                 {
                   beat: currentScrollBeat,
                   timestamp: currentScrollTimestamp,
-                  type,
+                  type: Events.STOP_ASYNC,
                   length,
                   lengthBeats: beat - currentScrollBeat,
                 },
@@ -290,7 +290,7 @@ module.exports = class Chart {
             return {
               beat,
               timestamp,
-              type,
+              type: Events.WARP,
               length,
             };
           }
@@ -346,6 +346,7 @@ module.exports = class Chart {
               return null;
             const timestamp = it.timestamp - stoppedTime;
 
+            // stop start
             return (lastStop = {
               ...it,
               timestamp,
@@ -355,6 +356,7 @@ module.exports = class Chart {
             });
           } else if (lastStop != null) {
             if (it.beat > lastStop.beat) {
+              // stop end
               stoppedTime += lastStop.length;
               lastStop = null;
             }
@@ -400,9 +402,10 @@ module.exports = class Chart {
 
   /**
    * Determines whether an async stop can be applied or not.
-   * As "applying" means moving all subsequent events, this only returns true
-   * if no events would be placed before song's start, and if there are no WARP
-   * or actual STOP events inside.
+   * As "applying" means moving all subsequent events (dangerous), this returns `false` if:
+   * - some events would be placed before song's start
+   * - there are WARP or actual STOP events inside
+   * - there are NOTE or HOLD_START events inside
    */
   _canAsyncStopBeApplied(events, asyncStop, i) {
     let nextMovableEvents = events.slice(i + 1);
@@ -421,10 +424,20 @@ module.exports = class Chart {
     const warpsOrStopsDuringAsyncStop = nextMovableEvents.some(
       (ev) =>
         (ev.type === Events.WARP || ev.type === Events.STOP) &&
-        ev.beat < asyncStop.beat + asyncStop.durationBeats
+        ev.beat < asyncStop.beat + asyncStop.lengthBeats
+    );
+    const notesDuringAsyncStop = nextMovableEvents.some(
+      (ev) =>
+        Events.isNote(ev.type) &&
+        ev.beat > asyncStop.beat &&
+        ev.beat < asyncStop.beat + asyncStop.lengthBeats
     );
 
-    return !eventsBeforeSongStart && !warpsOrStopsDuringAsyncStop;
+    return (
+      !eventsBeforeSongStart &&
+      !warpsOrStopsDuringAsyncStop &&
+      !notesDuringAsyncStop
+    );
   }
 
   /** Moves all the events to adjust the chart's offset. */

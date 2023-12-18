@@ -16,6 +16,9 @@ const events = {
 
 module.exports = {
   ...events,
+  isNote(type) {
+    return type === events.NOTE || type === events.HOLD_START;
+  },
   parse(note) {
     switch (note) {
       case "1":
