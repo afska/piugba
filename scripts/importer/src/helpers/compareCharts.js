@@ -1,4 +1,4 @@
-const importers = require("./importers");
+const importers = require("../importers");
 const fs = require("fs");
 const $path = require("path");
 const _ = require("lodash");
