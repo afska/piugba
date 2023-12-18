@@ -120,11 +120,15 @@ module.exports = (metadata, charts, content, filePath) => {
     multiplayerCharts.forEach((it, i) => setVariant(it, i));
 
   // add offset labels
+  const allChartsHaveSameOffset = _.every(
+    finalCharts,
+    (it) => it.header.offset === finalCharts[0]?.header.offset
+  );
   const offsets = [];
   _(finalCharts).each((it) => {
     if (!offsets.includes(it.header.offset)) offsets.push(it.header.offset);
     const variant = VARIANTS[1 + offsets.indexOf(it.header.offset)] || "?";
-    it.header.offsetLabel = variant;
+    it.header.offsetLabel = allChartsHaveSameOffset ? "!" : variant;
   });
 
   return {
