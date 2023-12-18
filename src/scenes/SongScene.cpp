@@ -858,6 +858,7 @@ void SongScene::processTrainingModeMod() {
 
     judge->disable();
     player_seek(PlaybackState.msecs + 100);
+    RUMBLE_stop();
   } else
     judge->enable();
 
