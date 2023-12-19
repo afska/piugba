@@ -495,8 +495,6 @@ module.exports = class Chart {
 
   /** Returns the parsed lines within a measure. */
   _getMeasureLines(measure) {
-    let divider = false;
-
     return (
       measure
         .split(/\r?\n/)
@@ -526,13 +524,6 @@ module.exports = class Chart {
             .replace(/Z/g, "1")
             .replace(/z/g, "2");
         }) // co-op charts note types
-        .filter((it) => {
-          if (divider || (this.header.isMultiplayer && it === "&")) {
-            divider = true;
-            return false;
-          }
-          return true;
-        }) // ignore "&" sections
         .filter((it) => {
           const isValid = (this.header.isDouble
             ? NOTE_DATA_DOUBLE
