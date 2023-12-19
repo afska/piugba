@@ -121,7 +121,7 @@ module.exports = (metadata, charts, content, filePath) => {
 
   return {
     metadata,
-    charts,
+    charts: charts.map((it) => ({ header: it.header, events: it.events })),
     getChartByDifficulty(difficulty) {
       return getChartByDifficulty(this.charts, difficulty);
     },
