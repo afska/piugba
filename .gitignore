@@ -6,5 +6,6 @@ build/
 *.sav
 *.sa1
 *.sa2
+undefined.pius
 
 src/data/content

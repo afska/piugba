@@ -6,6 +6,7 @@ const OFFSETS_FILE = "offsets.pofs";
 const REGEXP = /(.+)\[(?:s|d|m)(\d?\d)\](?:\[(\d?\d)\])?=([-+]?\d+|delete)/;
 const REGEXP_DOUBLE = /(.+)\[(?:d|m)(\d?\d)\](?:\[(\d?\d)\])?=([-+]?\d+|delete)/;
 const REGEXP_MULTIPLAYER = /(.+)\[m(\d?\d)\](?:\[(\d?\d)\])?=([-+]?\d+|delete)/;
+const TITLE_LEN = 30;
 
 const getOffsetCorrections = _.memoize(() => {
   let offsetsFile;
@@ -68,7 +69,9 @@ const getOffsetCorrections = _.memoize(() => {
 
 const applyOffsets = (metadata, charts) => {
   const corrections = getOffsetCorrections().filter(
-    (it) => it.name.toLowerCase() == metadata.title.toLowerCase()
+    (it) =>
+      it.name.toLowerCase().substring(0, TITLE_LEN) ==
+      metadata.title.toLowerCase().substring(0, TITLE_LEN)
   );
 
   corrections.forEach((correction) => {
