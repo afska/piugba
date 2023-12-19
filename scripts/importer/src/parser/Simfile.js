@@ -52,8 +52,11 @@ module.exports = class Simfile {
   }
 
   get charts() {
+    let lastLevelStr = null;
+    let lastSubindex = 0;
+
     return _(this.content.match(REGEXPS.chart.content) || [])
-      .map((rawChart) => {
+      .map((rawChart, i) => {
         const startIndex = this.content.indexOf(rawChart);
         let level = "?";
         let levelStr = "?";
@@ -142,6 +145,7 @@ module.exports = class Simfile {
           );
 
           const chart = new Chart(this.metadata, header, rawNotes);
+          chart.index = i;
           if (!GLOBAL_OPTIONS.json) chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
@@ -154,8 +158,22 @@ module.exports = class Simfile {
         }
       })
       .compact()
-      .sortBy("header.level")
-      .value();
+      .sortBy(
+        (it) => it.header.isDouble,
+        (it) => it.header.isMultiplayer,
+        (it) => it.header.level,
+        (it) => it.index
+      )
+      .each((it) => {
+        if (it.header.levelStr === lastLevelStr) {
+          lastSubindex++;
+          it.header.levelStr += `[${lastSubindex}]`;
+        } else lastSubindex = 0;
+
+        lastLevelStr = it.header.levelStr;
+
+        return it;
+      });
   }
 
   _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {

@@ -1,6 +1,8 @@
 const BASE = `INSERT_BASE_TABLE`;
 const UPDATE = `INSERT_UPDATE_TABLE`;
 
+// This script compares two songlist tables (importer's output) and prints which songs have different assigned levels in the campaign mode.
+
 function parse(data) {
   const lines = data.trim().split("\n");
   const parsedData = [];

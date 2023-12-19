@@ -4,6 +4,8 @@ const $path = require("path");
 const _ = require("lodash");
 require("colors");
 
+// This script compares two copies of the same song library and prints which songs have different chart count.
+
 const BASE_DIRECTORY = "./src/data/content/INSERT_BASE_DIRECTORY";
 const UPDATE_DIRECTORY = "./src/data/content/INSERT_UPDATE_DIRECTORY";
 

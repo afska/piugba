@@ -21,17 +21,19 @@ module.exports = class Chart {
    * Note events are specifically NOTE, HOLD_START and HOLD_END
    */
   get events() {
+    if (this._events != null) return this._events;
+
     const timingEvents = this._getTimingEvents().map((it, i) => ({
       id: 1 + i,
       ...it,
     }));
     const noteEvents = this._getNoteEvents(timingEvents);
 
-    return this._applyOffset(
+    return (this._events = this._applyOffset(
       this._applyAsyncStopsAndAddHoldLengths(
         this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
       )
-    );
+    ));
   }
 
   /** Generates events specifically from note data. */

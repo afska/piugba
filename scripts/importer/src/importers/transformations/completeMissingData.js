@@ -55,25 +55,13 @@ module.exports = (metadata, charts, content, filePath) => {
     checkLevelOrder(singleCharts);
   }
 
-  // chart sorting
-  const finalCharts = _(charts)
-    .map((it, i) => ({ header: it.header, events: it.events, index: i }))
-    .sortBy(
-      (it) => it.header.isDouble,
-      (it) => it.header.isMultiplayer,
-      (it) => it.level,
-      (it) => (it.level === 99 ? _.sumBy(it.events, "complexity") : 1),
-      (it) => it.index
-    )
-    .value();
-
   // separate level 99 charts
-  const numberOf99Charts = _.sumBy(finalCharts, (it) => it.header.level === 99);
+  const numberOf99Charts = _.sumBy(charts, (it) => it.header.level === 99);
   if (numberOf99Charts > 10) throw new Error("too_many_level_99_charts");
   if (numberOf99Charts > 1) {
     let variantIndex = 1;
     let updatedLevel = 99 - numberOf99Charts + 1;
-    for (let chart of finalCharts) {
+    for (let chart of charts) {
       if (chart.header.level === 99) {
         chart.header.level = updatedLevel;
         chart.header.variant = VARIANTS[variantIndex];
@@ -85,9 +73,9 @@ module.exports = (metadata, charts, content, filePath) => {
   }
 
   // add variants
-  const normal = getChartByDifficulty(finalCharts, "NORMAL");
-  const hard = getChartByDifficulty(finalCharts, "HARD");
-  const crazy = getChartByDifficulty(finalCharts, "CRAZY");
+  const normal = getChartByDifficulty(charts, "NORMAL");
+  const hard = getChartByDifficulty(charts, "HARD");
+  const crazy = getChartByDifficulty(charts, "CRAZY");
   const setVariant = (chart, index) => {
     const variant = VARIANTS[1 + index];
     if (variant == null)
@@ -98,7 +86,7 @@ module.exports = (metadata, charts, content, filePath) => {
       );
     chart.header.variant = variant;
   };
-  _(finalCharts)
+  _(charts)
     .filter((it) => !it.header.isMultiplayer && !it.header.isDouble)
     .filter((it) => it !== normal && it !== hard && it !== crazy)
     .groupBy((it) => it.header.level)
@@ -106,14 +94,14 @@ module.exports = (metadata, charts, content, filePath) => {
     .each((sameLevelCharts, levelStr) => {
       sameLevelCharts.forEach((it, i) => setVariant(it, i));
     });
-  _(finalCharts)
+  _(charts)
     .filter((it) => !it.header.isMultiplayer && it.header.isDouble)
     .groupBy((it) => it.header.level)
     .filter((v, k) => v.length > 1)
     .each((sameLevelCharts, levelStr) => {
       sameLevelCharts.forEach((it, i) => setVariant(it, i));
     });
-  const multiplayerCharts = finalCharts.filter(
+  const multiplayerCharts = charts.filter(
     (it) => it.header.isMultiplayer && it.header.isDouble
   );
   if (multiplayerCharts.length > 1)
@@ -121,11 +109,11 @@ module.exports = (metadata, charts, content, filePath) => {
 
   // add offset labels
   const allChartsHaveSameOffset = _.every(
-    finalCharts,
-    (it) => it.header.offset === finalCharts[0]?.header.offset
+    charts,
+    (it) => it.header.offset === charts[0]?.header.offset
   );
   const offsets = [];
-  _(finalCharts).each((it) => {
+  _(charts).each((it) => {
     if (!offsets.includes(it.header.offset)) offsets.push(it.header.offset);
     const variant = VARIANTS[1 + offsets.indexOf(it.header.offset)] || "?";
     it.header.offsetLabel = allChartsHaveSameOffset ? "!" : variant;
@@ -133,7 +121,7 @@ module.exports = (metadata, charts, content, filePath) => {
 
   return {
     metadata,
-    charts: finalCharts,
+    charts,
     getChartByDifficulty(difficulty) {
       return getChartByDifficulty(this.charts, difficulty);
     },
