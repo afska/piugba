@@ -146,7 +146,7 @@ module.exports = class Simfile {
 
           const chart = new Chart(this.metadata, header, rawNotes);
           chart.index = i;
-          if (!GLOBAL_OPTIONS.json) chart.events; // (ensure it can be parsed correctly)
+          chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
           if ((e?.message || "").startsWith("ignored:")) return null;
