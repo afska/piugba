@@ -498,9 +498,13 @@ module.exports = class Chart {
         // ^^^ only <note type> and <fake flag> are supported
         .map((it) => it.replace(/[MKSVH]/g, "0")) // ignored SSC events: Mine, AutoKeySound, Sudden, Vanish, Hidden
         .map((it) => {
-          if (/[XxYyZz]/.test(it)) {
+          if (
+            /[XxYyZz]/.test(it) &&
+            this.header.isDouble &&
+            !this.header.isMultiplayer
+          ) {
             this.header.isMultiplayer = true;
-            this.header.levelStr = `m${this.header.level}`;
+            this.header.levelStr = this.header.levelStr.replace("d", "m");
           }
 
           return it
