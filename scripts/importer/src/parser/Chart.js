@@ -39,69 +39,84 @@ module.exports = class Chart {
   /** Generates events specifically from note data. */
   _getNoteEvents(timingEvents) {
     let currentId = 0;
+    let suspiciousMultiplayerArrows = 0;
     const measureGroups = this._getMeasureGroups();
 
-    return _(measureGroups).flatMap((measures) => {
-      let cursor = 0;
-      const holdArrows = [];
+    const noteEvents = _(measureGroups)
+      .flatMap((measures) => {
+        let cursor = 0;
+        const holdArrows = [];
 
-      return _.flatMap(measures, (measure, measureIndex) => {
-        // 1 measure = 1 whole note = BEAT_UNIT beats
-        const lines = this._getMeasureLines(measure);
-        const subdivision = 1 / lines.length;
+        return _.flatMap(measures, (measure, measureIndex) => {
+          // 1 measure = 1 whole note = BEAT_UNIT beats
+          const lines = this._getMeasureLines(measure);
+          const subdivision = 1 / lines.length;
 
-        return _.flatMap(lines, (line, noteIndex) => {
-          const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
-          const bpm = this._getBpmByBeat(beat, timingEvents); // (this is an approximation for `complexity`, only valid if there are no mid-note BPM changes)
-          const noteDuration = this._getNoteDuration(beat, subdivision); // (this calculates the actual note duration)
+          return _.flatMap(lines, (line, noteIndex) => {
+            const beat = (measureIndex + noteIndex * subdivision) * BEAT_UNIT;
+            const bpm = this._getBpmByBeat(beat, timingEvents); // (this is an approximation for `complexity`, only valid if there are no mid-note BPM changes)
+            const noteDuration = this._getNoteDuration(beat, subdivision); // (this calculates the actual note duration)
 
-          const timestamp = cursor;
-          cursor += noteDuration;
-          const eventsByType = this._getEventsByType(line);
+            const timestamp = cursor;
+            cursor += noteDuration;
+            const eventsByType = this._getEventsByType(line);
 
-          return _(eventsByType)
-            .map(({ type, arrows }) => {
-              const activeArrows = _.range(
-                0,
-                this.header.isDouble ? 10 : 5
-              ).map((i) => _.includes(arrows, i));
+            return _(eventsByType)
+              .map(({ type, arrows }) => {
+                const activeArrows = _.range(
+                  0,
+                  this.header.isDouble ? 10 : 5
+                ).map((i) => _.includes(arrows, i));
 
-              const id = currentId++;
-              const holdArrowsMetadata = this._getHoldArrowsMetadata(
-                id,
-                beat,
-                timestamp,
-                type,
-                activeArrows,
-                holdArrows
-              );
-              const complexity = this._getComplexityOf(
-                type,
-                bpm,
-                subdivision,
-                _.sumBy(activeArrows)
-              );
+                const id = currentId++;
+                const holdArrowsMetadata = this._getHoldArrowsMetadata(
+                  id,
+                  beat,
+                  timestamp,
+                  type,
+                  activeArrows,
+                  holdArrows
+                );
+                const complexity = this._getComplexityOf(
+                  type,
+                  bpm,
+                  subdivision,
+                  _.sumBy(activeArrows)
+                );
 
-              return {
-                id,
-                beat,
-                timestamp,
-                type: type === Events.FAKE_TAP ? Events.NOTE : type,
-                playerId: 0,
-                arrows: activeArrows.slice(0, 5),
-                arrows2: this.header.isDouble
-                  ? activeArrows.slice(5, 10)
-                  : null,
-                complexity,
-                isFake: type === Events.FAKE_TAP,
-                ...holdArrowsMetadata,
-              };
-            })
-            .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
-            .value();
+                if (this._hasMultiplayerCombos(type, activeArrows))
+                  suspiciousMultiplayerArrows++;
+
+                return {
+                  id,
+                  beat,
+                  timestamp,
+                  type: type === Events.FAKE_TAP ? Events.NOTE : type,
+                  playerId: 0,
+                  arrows: activeArrows.slice(0, 5),
+                  arrows2: this.header.isDouble
+                    ? activeArrows.slice(5, 10)
+                    : null,
+                  complexity,
+                  isFake: type === Events.FAKE_TAP,
+                  ...holdArrowsMetadata,
+                };
+              })
+              .filter((it) => _.some(it.arrows) || _.some(it.arrows2))
+              .value();
+          });
         });
-      });
-    });
+      })
+      .value();
+
+    if (suspiciousMultiplayerArrows > MAX_SUSPICIOUS_MULTIPLAYER_ARROWS) {
+      console.log(
+        `  ⚠️  converting suspicious double chart to multiplayer (${this.header.levelStr}) -> ${suspiciousMultiplayerArrows}`
+      );
+      this._convertToMultiplayer();
+    }
+
+    return noteEvents;
   }
 
   /** Generates all the events from timing segments. */
@@ -502,10 +517,8 @@ module.exports = class Chart {
             /[XxYyZz]/.test(it) &&
             this.header.isDouble &&
             !this.header.isMultiplayer
-          ) {
-            this.header.isMultiplayer = true;
-            this.header.levelStr = this.header.levelStr.replace("d", "m");
-          }
+          )
+            this._convertToMultiplayer();
 
           return it
             .replace(/X/g, "1")
@@ -669,6 +682,26 @@ module.exports = class Chart {
           : _.last(this.events).timestamp;
     } catch (e) {}
   }
+
+  _hasMultiplayerCombos(type, activeArrows) {
+    if (
+      type === Events.NOTE &&
+      this.header.isDouble &&
+      !this.header.isMultiplayer
+    ) {
+      return (
+        (activeArrows[0] && activeArrows[9]) ||
+        (activeArrows[0] && activeArrows[8]) ||
+        (activeArrows[1] && activeArrows[9]) ||
+        (activeArrows[1] && activeArrows[8])
+      );
+    }
+  }
+
+  _convertToMultiplayer() {
+    this.header.isMultiplayer = true;
+    this.header.levelStr = this.header.levelStr.replace("d", "m");
+  }
 };
 
 const SECOND = 1000;
@@ -679,3 +712,4 @@ const FAST_BPM_WARP = 999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
 const NOTE_DATA_DOUBLE = /^[\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF][\dF]$/;
 const MAX_TIMESTAMP = 3600000;
+const MAX_SUSPICIOUS_MULTIPLAYER_ARROWS = 30;
