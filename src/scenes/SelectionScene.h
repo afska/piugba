@@ -164,6 +164,8 @@ class SelectionScene : public Scene {
                       isDouble());
   }
   inline void updateCustomOffset(int change) {
+    if (numericLevels.empty())
+      return;
     auto selectedNumericLevelIndex = getSelectedNumericLevelIndex();
 
     OFFSET_set(
