@@ -358,8 +358,8 @@ CODE_IWRAM void SongScene::updateArrows() {
       return;
     }
 
-    bool canBeJudged =
-        arrow->type == ArrowType::UNIQUE && !arrow->getIsPressed();
+    bool canBeJudged = arrow->type == ArrowType::UNIQUE &&
+                       !arrow->getIsPressed() && !arrow->isFake;
     u32 index = arrowBaseIndex + direction;
     if (canBeJudged && (nextArrows[index] == NULL ||
                         arrow->timestamp < nextArrows[index]->timestamp))
