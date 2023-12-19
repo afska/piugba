@@ -17,8 +17,8 @@ module.exports = class Chart {
 
   /**
    * Generates all the events from the chart.
-   * Timing events are metadata events (such as BPM changes, Stops, Warps, etc.)
-   * Note events are specifically NOTE, HOLD_START and HOLD_END
+   * Timing events are metadata events (such as BPM changes, Stops, Warps, etc.).
+   * Note events are specifically NOTE, HOLD_START and HOLD_END.
    */
   get events() {
     const timingEvents = this._getTimingEvents().map((it, i) => ({
