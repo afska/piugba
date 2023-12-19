@@ -116,16 +116,12 @@ module.exports = { getOffsetCorrections, applyOffsets };
 const apply = (chart, correction) => {
   if (correction.isDeleted) {
     chart.isDeleted = true;
-    console.log(`  ⚠️  deleting ${level(chart)}[${correction.subindex}] chart`);
+    console.log(`  ⚠️  deleting ${level(chart)} chart`);
     correction.used = true;
     return;
   }
 
-  console.log(
-    `  ⚠️  applying offset ${correction.offset} to ${level(chart)}[${
-      correction.subindex
-    }]`
-  );
+  console.log(`  ⚠️  applying offset ${correction.offset} to ${level(chart)}`);
   chart.header.$originalOffset = chart.header.offset;
   chart.header.offset = chart.header.offset - correction.offset; // [!] offsets in PIUS are negative
   correction.used = true;
