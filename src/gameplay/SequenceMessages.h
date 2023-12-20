@@ -21,11 +21,11 @@
   "  the CAMPAIGN mode to\r\n"   \
   "      unlock this."
 
-#define IMPOSSIBLE_MODE_LOCKED   \
-  "         LOCKED\r\n"          \
-  "  Complete the CAMPAIGN\r\n"  \
-  "  mode in any difficulty\r\n" \
-  "  level to unlock this."
+#define IMPOSSIBLE_MODE_LOCKED  \
+  "         LOCKED\r\n"         \
+  " Complete the CAMPAIGN\r\n"  \
+  " mode in any difficulty\r\n" \
+  " level to unlock this."
 
 #define MODE_CAMPAIGN             \
   "Play the CAMPAIGN MODE to\r\n" \
