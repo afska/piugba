@@ -65,15 +65,15 @@ void ModsScene::printOptions() {
   u8 autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
-  if (speedHack == 0)
-    printOption(OPTION_MULTIPLIER, "Multiplier",
-                std::to_string(multiplier) + "x", 3, true, "3x");
+  if (speedHack == 2)
+    printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
   else if (speedHack == 1)
     printOption(OPTION_MULTIPLIER, "AutoVelocity",
                 "AV" + std::to_string(AUTOVELOCITY_VALUES[multiplier - 1]), 3,
                 true, "AV700");
   else
-    printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
+    printOption(OPTION_MULTIPLIER, "Multiplier",
+                std::to_string(multiplier) + "x", 3, true, "3x");
   printOption(OPTION_STAGE_BREAK, "Stage break",
               stageBreak == 1   ? "OFF"
               : stageBreak == 2 ? "DEATH"
@@ -159,9 +159,13 @@ void ModsScene::printOptions() {
 
 bool ModsScene::selectOption(u32 selected, int direction) {
   bool autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
+  u8 speedHack = SAVEFILE_read8(SRAM->mods.speedHack);
 
   switch (selected) {
     case OPTION_MULTIPLIER: {
+      if (speedHack == 2)
+        return true;
+
       u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
       multiplier = 1 + change(multiplier - 1, ARROW_MAX_MULTIPLIER, direction);
 
