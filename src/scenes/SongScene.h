@@ -47,7 +47,7 @@ class SongScene : public Scene {
   Song* song;
   Chart* chart;
   Chart* remoteChart;
-  std::unique_ptr<ChartReader> chartReader[GAME_MAX_PLAYERS];
+  std::unique_ptr<ChartReader> chartReaders[GAME_MAX_PLAYERS];
   std::unique_ptr<LifeBar> lifeBars[GAME_MAX_PLAYERS];
   std::array<std::unique_ptr<Score>, GAME_MAX_PLAYERS> scores;
   std::unique_ptr<Judge> judge;
@@ -58,46 +58,52 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> selectInput;
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
+  bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
+      $isVsDifferentLevels;
+  u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
+      localPlayerId;
   int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
   u8 mosaic = 0;
   bool waitMosaic = true;
   int jumpDirection = 1;
-  int reduceDirection = -1;
+  int reduceDirection = 1;
+  int bounceDirection = -1;
   int rumbleBeatFrame = -1;
   int rumbleIdleFrame = 0;
+  u32 autoModDuration = 1;
+  u32 autoModCounter = 0;
+  u32 lastDownLeftKeys = 0;
+  u32 lastUpLeftKeys = 0;
+  u32 lastCenterKeys = 0;
 
-  inline u8 getPlatformCount() {
-    return isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
+  inline void setUpGameConfig() {
+    $isMultiplayer = isMultiplayer();
+    $isDouble = isDouble();
+    $isVs = isVs();
+    $isSinglePlayerDouble = isSinglePlayerDouble();
+    $isVsDifferentLevels = remoteChart->level != chart->level;
+    platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
+    playerCount = 1 + isVs();
+    localBaseIndex = isMultiplayer()
+                         ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
+                         : 0;
+    remoteBaseIndex = getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
+    localPlayerId = isVs() ? syncer->getLocalPlayerId() : 0;
   }
-  inline u8 getPlayerCount() { return (u8)(1 + isVs()); }
 
   inline ArrowDirection getDirectionFromIndex(u32 index) {
-    return static_cast<ArrowDirection>(
-        isDouble() ? index : DivMod(index, ARROWS_TOTAL));
+    return static_cast<ArrowDirection>($isDouble ? index
+                                                 : DivMod(index, ARROWS_TOTAL));
   }
 
   inline u8 getPlayerIdFromIndex(u32 index) {
-    return isDouble() ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
+    return $isDouble ? 0 : (index >= ARROWS_TOTAL ? 1 : 0);
   }
 
   inline u8 getBaseIndexFromPlayerId(u8 playerId) {
     return playerId * ARROWS_TOTAL;
-  }
-
-  inline u8 getLocalBaseIndex() {
-    return isMultiplayer()
-               ? getBaseIndexFromPlayerId(syncer->getLocalPlayerId())
-               : 0;
-  }
-
-  inline u8 getRemoteBaseIndex() {
-    return getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
-  }
-
-  inline u8 getLocalPlayerId() {
-    return isVs() ? syncer->getLocalPlayerId() : 0;
   }
 
   void setUpPalettes();
@@ -114,6 +120,7 @@ class SongScene : public Scene {
   void updateGameX();
   void updateGameY();
   void updateRumble();
+  void animateWinnerLifeBar();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);

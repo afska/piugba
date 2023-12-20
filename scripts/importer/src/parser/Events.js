@@ -1,19 +1,24 @@
 const events = {
-  SET_FAKE: 0,
-  NOTE: 1,
-  HOLD_START: 2,
-  HOLD_END: 3,
-  SET_TEMPO: 4,
-  SET_TICKCOUNT: 5,
-  STOP: 6,
-  WARP: 7,
-  FAKE_TAP: 101,
-  SET_SPEED: 104,
-  STOP_ASYNC: 106,
+  // Actual events:
+  NOTE: 0,
+  HOLD_START: 1,
+  HOLD_END: 2,
+  SET_TEMPO: 3,
+  SET_TICKCOUNT: 4,
+  STOP: 5,
+  WARP: 6,
+  // Temporary events:
+  FAKE_TAP: 100,
+  SET_SPEED: 103,
+  STOP_ASYNC: 105,
+  SET_FAKE: 200,
 };
 
 module.exports = {
   ...events,
+  isNote(type) {
+    return type === events.NOTE || type === events.HOLD_START;
+  },
   parse(note) {
     switch (note) {
       case "1":

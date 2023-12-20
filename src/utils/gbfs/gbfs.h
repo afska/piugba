@@ -46,8 +46,8 @@ extern "C" {
 
 /* to make a 300 KB space called samples do GBFS_SPACE(samples, 300) */
 
-#define GBFS_SPACE(filename, kbytes)                                \
-  const char filename[(kbytes)*1024] __attribute__((aligned(16))) = \
+#define GBFS_SPACE(filename, kbytes)                                  \
+  const char filename[(kbytes) * 1024] __attribute__((aligned(16))) = \
       "PinEightGBFSSpace-" #filename "-" #kbytes;
 
 typedef struct GBFS_FILE {

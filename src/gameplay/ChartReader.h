@@ -22,7 +22,7 @@ const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
 
 class ChartReader : public TimingProvider {
  public:
-  int debugOffset = 0;
+  int customOffset = 0;
   int beatDurationFrames = -1;
   u32 beatFrame = 0;
 
@@ -42,7 +42,10 @@ class ChartReader : public TimingProvider {
     u32 oldMultiplier = this->multiplier;
     this->multiplier =
         max(min(multiplier, ARROW_MAX_MULTIPLIER), ARROW_MIN_MULTIPLIER);
-    syncScrollSpeed();
+    if (didSetInitialBpm)
+      syncScrollSpeed();
+    else
+      syncInitialScrollSpeed(this->multiplier);
     resetMaxArrowTimeJump();
 
     return this->multiplier != oldMultiplier;
@@ -58,9 +61,26 @@ class ChartReader : public TimingProvider {
           MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
   }
 
-  bool isHoldActive(ArrowDirection direction);
-  bool hasJustStopped();
-  bool isAboutToResume();
+  inline int getJudgementOffset() {
+    if (!hasStopped)
+      return 0;
+
+    return stopAsync ? -(msecs - stopStart)
+                     : (isAboutToResume() ? -stopLength : 0);
+  }
+
+  inline bool isHoldActive(ArrowDirection direction) {
+    return holdArrowStates[direction].isActive;
+  }
+  inline bool hasJustStopped() {
+    return hasStopped && judge->isInsideTimingWindow(msecs - stopStart);
+  }
+  inline bool isAboutToResume() {
+    if (!hasStopped)
+      return false;
+
+    return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
+  }
 
   template <typename DEBUG>
   void logDebugInfo();
@@ -77,27 +97,32 @@ class ChartReader : public TimingProvider {
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
+  u32 rythmEventIndex = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
-  u32 scrollBpm = 0;
+  u32 autoVelocityFactor = 1;
   u32 maxArrowTimeJump = MAX_ARROW_TIME_JUMP;
   int lastBpmChange = 0;
   u32 tickCount = 2;  // 8th notes
-  bool fake = false;
+  bool didSetInitialBpm = false;
   int lastBeat = -1;
   int lastTick = -1;
   u32 stoppedMs = 0;
+  u32 asyncStoppedMs = 0;
   u32 warpedMs = 0;
-  u32 frameSkipCount = 0;
 
   template <typename F>
-  inline void processEvents(int targetMsecs, F action) {
-    u32 currentIndex = eventIndex;
+  inline void processEvents(Event* events,
+                            u32 count,
+                            u32& index,
+                            int targetMsecs,
+                            F action) {
+    u32 currentIndex = index;
     bool skipped = false;
 
-    while (targetMsecs >= chart->events[currentIndex].timestamp &&
-           currentIndex < chart->eventCount) {
-      auto event = chart->events + currentIndex;
+    while (targetMsecs >= events[currentIndex].timestamp &&
+           currentIndex < count) {
+      auto event = events + currentIndex;
       event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
@@ -113,7 +138,7 @@ class ChartReader : public TimingProvider {
       if (!event->handled[playerId])
         skipped = true;
       if (!skipped)
-        eventIndex = currentIndex;
+        index = currentIndex;
       if (stop)
         return;
     }
@@ -162,9 +187,23 @@ class ChartReader : public TimingProvider {
     }
   }
 
+  void syncInitialScrollSpeed(u32 multiplier) {
+    targetArrowTime = ARROW_TIME[multiplier];
+    syncArrowTime();
+  }
   inline void syncScrollSpeed() {
-    targetArrowTime = MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
-                               MATH_mul(scrollBpm, multiplier));
+    if (GameState.mods.speedHack == SpeedHackOpts::hAUTO_VELOCITY) {
+      u32 userScrollBpm = AUTOVELOCITY_VALUES[multiplier - 1];
+      if (autoVelocityFactor != 1)
+        userScrollBpm = MATH_fracumul(userScrollBpm, autoVelocityFactor);
+      targetArrowTime =
+          min(MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, userScrollBpm),
+              MAX_ARROW_TIME);
+    } else {
+      targetArrowTime = min(MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS,
+                                     MATH_mul(scrollBpm, multiplier)),
+                            MAX_ARROW_TIME);
+    }
   }
   inline void syncArrowTime() { arrowTime = targetArrowTime; }
   inline void resetMaxArrowTimeJump() {
@@ -172,9 +211,14 @@ class ChartReader : public TimingProvider {
   }
 
   int getYFor(int timestamp);
-  void processNextEvents();
-  void processUniqueNote(int timestamp, u8 data, u8 param);
-  void startHoldNote(int timestamp, u8 data, u8 offset = 0);
+  void processRythmEvents();
+  void processNextEvents(int now);
+  void processUniqueNote(int timestamp, u8 data, u8 param, bool isFake);
+  void startHoldNote(int timestamp,
+                     u8 data,
+                     u32 length,
+                     u8 offset,
+                     bool isFake);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
   bool processTicks(int rythmMsecs, bool checkHoldArrows);

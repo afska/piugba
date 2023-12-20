@@ -17,7 +17,8 @@
 */
 const u32 ARROW_TIME[] = {0, 2426, 1213, 809, 607, 485, 404};
 
-const u32 MAX_ARROW_TIME_JUMP = 100;
+const u32 MAX_ARROW_TIME = 2426;
+const u32 MAX_ARROW_TIME_JUMP = 150;
 const u32 MINUTE = 60000;
 const u32 FRAME_MS = 17;
 const u32 BEAT_UNIT = 4;
@@ -31,15 +32,20 @@ class TimingProvider {
   inline bool isStopped() { return hasStopped; }
   inline int getStopStart() { return stopStart; }
   inline u32 getStopLength() { return stopLength; }
-  inline bool isStopJudgeable() { return stopJudgeable; }
+  inline bool isStopAsync() { return stopAsync; }
+  inline int getLastWarpTime() { return lastWarpTime; }
+  inline u32 getScrollBpm() { return scrollBpm; }
 
  protected:
   int msecs = 0;
   bool hasStopped = false;
   u32 arrowTime;
+  u32 scrollBpm = 0;
   int stopStart = 0;
   u32 stopLength = 0;
-  bool stopJudgeable = false;
+  bool stopAsync = false;
+  u32 stopAsyncStoppedTime = 0;
+  int lastWarpTime = -999999999;
 };
 
 #endif  // TIMING_PROVIDER_H

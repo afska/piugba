@@ -24,7 +24,7 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
 
   LOGSTR("BPM:", 0);
   LOGN(bpm, 1);
-  LOGSTR("-> " + DSTR(getArrowTime()), 2);
+  LOGSTR("-> " + DSTR(scrollBpm) + " -> " + DSTR(getArrowTime()), 2);
   LOGSTR("MSECS:", 3);
   LOGN(msecs, 4);
 
@@ -48,17 +48,17 @@ void ChartReader::logDebugInfo<CHART_DEBUG>() {
     EventType type = static_cast<EventType>((nextEvent->data & EVENT_TYPE));
 
     switch (type) {
-      case EventType::SET_TEMPO:
-        typeStr = "tempo";
-        break;
-      case EventType::SET_TICKCOUNT:
-        typeStr = "tick";
+        // case EventType::SET_TEMPO:
+        //   typeStr = "tempo";
+        //   break;
+        // case EventType::SET_TICKCOUNT:
+        //   typeStr = "tick";
+        //   break;
+      case EventType::STOP:
+        typeStr = "stop";
         break;
       case EventType::WARP:
         typeStr = "warp";
-        break;
-      case EventType::STOP:
-        typeStr = "stop";
         break;
       default:
         typeStr = DSTR(type);

@@ -7,9 +7,7 @@
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
 
-#ifndef CODE_IWRAM
-#define CODE_IWRAM __attribute__((section(".iwram"), target("arm")))
-#endif
+#define CODE_IWRAM __attribute__((section(".iwram"), target("arm"), noinline))
 
 #define ARROWS_GAME_TOTAL (isDouble() ? 10 : 5)
 
@@ -54,7 +52,6 @@ enum ArrowDirection {
   UPRIGHT_DOUBLE,
   DOWNRIGHT_DOUBLE
 };
-enum ArrowState { ACTIVE, OUT };
 enum ArrowFlip { NO_FLIP, FLIP_X, FLIP_Y, FLIP_BOTH };
 
 const u32 ARROW_ANIMATION_FRAMES = 5;
@@ -66,6 +63,7 @@ const ArrowFlip ARROW_FLIP_TILE[] = {ArrowFlip::NO_FLIP, ArrowFlip::FLIP_Y,
                                      ArrowFlip::FLIP_X};
 const u32 ARROW_HOLD_FILL_TILE = 9;
 const u32 ARROW_HOLD_TAIL_TILE = 0;
+const u32 ARROW_HOLD_FILL_FAKE_TILE = 30;
 const u32 ARROW_FAKE_TILE = 2;
 
 #endif  // ARROW_ENUMS_H

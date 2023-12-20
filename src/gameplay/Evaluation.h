@@ -4,13 +4,6 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 #include "objects/score/Grade.h"
-#include "utils/MathUtils.h"
-
-const u32 FRACUMUL_0_05 = 214748365;
-const u32 FRACUMUL_0_20 = 858993459;
-const u32 FRACUMUL_0_45 = 1932735283;
-const u32 FRACUMUL_0_60 = 2576980377;
-const u32 FRACUMUL_0_90 = 3865470565;
 
 class Evaluation {
  public:
@@ -25,10 +18,9 @@ class Evaluation {
   u32 maxCombo = 0;
   u32 points = 0;
   u32 longNotes = 0;
+  u32 percent = 0;
 
   inline GradeType getGrade() {
-    u32 percent = getPercent();
-
     if (percent >= 95 && misses == 0)
       return GradeType::S;
     else if (percent >= 95)
@@ -42,21 +34,6 @@ class Evaluation {
     else
       return GradeType::F;
   }
-
-  inline u32 getPercent() {
-    return Div(max(perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
-                       MATH_fracumul(greats, FRACUMUL_0_90) +
-                       MATH_fracumul(goods, FRACUMUL_0_60) -
-                       MATH_fracumul(bads, FRACUMUL_0_45) -
-                       MATH_fracumul(misses, FRACUMUL_0_90) -
-                       MATH_fracumul(longNotes, FRACUMUL_0_20) +
-                       MATH_fracumul(maxCombo, FRACUMUL_0_05),
-                   0) *
-                   100,
-               totalNotes());
-  }
-
-  inline u32 totalNotes() { return perfects + greats + goods + bads + misses; }
 };
 
 #endif  // EVALUATION_H

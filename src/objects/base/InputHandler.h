@@ -3,12 +3,11 @@
 
 #include <libgba-sprite-engine/gba_engine.h>
 
-#include "objects/ArrowInfo.h"
-
 class InputHandler {
  public:
   InputHandler() {
-    this->isPressed = true;
+    this->isPressed = false;
+    this->isWaiting = true;
     // it starts as `true` to avoid firing events if the
     // key is already pressed when the scene starts
   }
@@ -22,13 +21,13 @@ class InputHandler {
   inline void setHandledFlag(bool value) { handledFlag = value; }
 
   inline void setIsPressed(bool isPressed) {
-    bool isNewPressEvent = !this->isPressed && isPressed;
-    bool isNewReleaseEvent = this->isPressed && !isPressed;
+    bool isNewPressEvent = !this->isWaiting && !this->isPressed && isPressed;
+    bool isNewReleaseEvent = !this->isWaiting && this->isPressed && !isPressed;
     this->isPressed = isPressed;
+    this->isWaiting = this->isWaiting && isPressed;
 
     this->isNewPressEvent = isNewPressEvent;
     this->isNewReleaseEvent = isNewReleaseEvent;
-    IFSTRESSTEST { this->isNewPressEvent = isPressed; }
   }
 
  protected:
@@ -36,6 +35,7 @@ class InputHandler {
   bool isNewPressEvent = false;
   bool isNewReleaseEvent;
   bool handledFlag = false;
+  bool isWaiting = false;
 };
 
 #endif  // INPUT_HANDLER_H

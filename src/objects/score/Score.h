@@ -10,10 +10,37 @@
 #include "combo/Combo.h"
 #include "gameplay/Evaluation.h"
 #include "objects/LifeBar.h"
+#include "utils/MathUtils.h"
+
+const u32 FRACUMUL_0_05 = 214748365;
+const u32 FRACUMUL_0_20 = 858993459;
+const u32 FRACUMUL_0_45 = 1932735283;
+const u32 FRACUMUL_0_60 = 2576980377;
+const u32 FRACUMUL_0_90 = 3865470565;
 
 class Score {
  public:
   Score(LifeBar* lifeBar, u8 playerId);
+
+  inline u32 getPoints() { return points; }
+  inline u32 getPercent() {
+    auto perfects = counters[FeedbackType::PERFECT];
+    auto greats = counters[FeedbackType::GREAT];
+    auto goods = counters[FeedbackType::GOOD];
+    auto bads = counters[FeedbackType::BAD];
+    auto misses = counters[FeedbackType::MISS];
+    auto totalNotes = perfects + greats + goods + bads + misses;
+    return Div(max(perfects + MATH_fracumul(perfects, FRACUMUL_0_20) +
+                       MATH_fracumul(greats, FRACUMUL_0_90) +
+                       MATH_fracumul(goods, FRACUMUL_0_60) -
+                       MATH_fracumul(bads, FRACUMUL_0_45) -
+                       MATH_fracumul(misses, FRACUMUL_0_90) -
+                       MATH_fracumul(longNotes, FRACUMUL_0_20) +
+                       MATH_fracumul(maxCombo, FRACUMUL_0_05),
+                   0) *
+                   100,
+               totalNotes);
+  }
 
   bool update(FeedbackType feedbackType, bool isLong);
   std::unique_ptr<Evaluation> evaluate();

@@ -15,6 +15,7 @@ extern "C" {
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
+void validateBuild();
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
@@ -33,15 +34,15 @@ LinkUniversal* linkUniversal =
                           .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                           .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
-                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID});
+                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
+                          .asyncACKTimerId = 2});
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
-  if (fs == NULL)
-    BSOD("GBFS file not found.");
-
   linkUniversal->deactivate();
+
+  validateBuild();
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
@@ -49,6 +50,7 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
+        LINK_UNIVERSAL_ISR_VBLANK();
         syncer->update();
         engine->update();
 
@@ -87,16 +89,18 @@ void ISR_reset() {
   SCENE_softReset();
 }
 
-void ISR_vblank() {
-  player_onVBlank();
-  LINK_UNIVERSAL_ISR_VBLANK();
+void validateBuild() {
+  if (fs == NULL)
+    BSOD("GBFS file not found.");
+  if (!ENV_ARCADE && gbfs_get_obj(fs, "_snm_0_list.txt", NULL) == NULL)
+    BSOD("This is not an ARCADE build.");
 }
 
 void setUpInterrupts() {
   interrupt_init();
 
   // VBlank
-  interrupt_set_handler(INTR_VBLANK, ISR_vblank);
+  interrupt_set_handler(INTR_VBLANK, player_onVBlank);
   interrupt_enable(INTR_VBLANK);
 
   // LinkUniversal
@@ -105,7 +109,7 @@ void setUpInterrupts() {
   interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
   interrupt_enable(INTR_TIMER3);
 
-  // LinkWireless async-ACK mod ([!])
+  // LinkWireless async-ACK
   interrupt_set_handler(INTR_TIMER2, LINK_UNIVERSAL_ISR_ACK_TIMER);
   interrupt_enable(INTR_TIMER2);
 

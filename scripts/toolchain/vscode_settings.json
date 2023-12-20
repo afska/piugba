@@ -1,10 +1,11 @@
 {
   "extensions.ignoreRecommendations": false,
-  "terminal.integrated.shell.windows": "C:\\Program Files\\Git\\bin\\bash.exe",
-  "terminal.integrated.shellArgs.windows": [
-      "--login",
-      "-i"
-  ],
+  "terminal.integrated.profiles.windows": {
+    "Git Bash": {
+        "source": "Git Bash"
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "Git Bash",
   "window.zoomLevel": 1,
   "C_Cpp.clang_format_style": "{ BasedOnStyle: Chromium }",
   "editor.formatOnSave": true,

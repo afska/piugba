@@ -32,9 +32,9 @@ typedef struct {
   u8 pixelate;     //   0x4C
   u8 jump;         //   0x4D
   u8 reduce;       //   0x4E
-  u8 decolorize;   //   0x4F
-  u8 randomSpeed;  //   0x50
-  u8 ___;          //   0x51 (unused)
+  u8 bounce;       //   0x4F
+  u8 colorFilter;  //   0x50
+  u8 speedHack;    //   0x51
   u8 hasMessage;   //   0x52
   char* message;   //   0x53 (optional - 107 bytes - including \0)
 

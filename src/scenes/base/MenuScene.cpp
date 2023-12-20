@@ -20,7 +20,7 @@ const u32 TEXT_COLOR = 0x7FFF;
 const int TEXT_COL_UNSELECTED = -2;
 const int TEXT_COL_SELECTED = -3;
 const int TEXT_COL_VALUE_MIDDLE = 20;
-const u32 BUTTON_MARGIN = 8;
+const u32 BUTTON_MARGIN = 3;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 SELECT_BUTTON_X = 112;
 
@@ -52,12 +52,14 @@ void MenuScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   selectButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::CENTER, false, true)};
+      new ArrowSelector(ArrowDirection::CENTER, false, true, true, true)};
   backButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNLEFT, true, true)};
+      new ArrowSelector(ArrowDirection::DOWNLEFT, true, true, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)};
+      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true, true, true)};
   closeInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  incrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  decrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   selectButton->get()->moveTo(SELECT_BUTTON_X,
                               GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
@@ -91,11 +93,14 @@ void MenuScene::tick(u16 keys) {
 void MenuScene::printOption(u32 id,
                             std::string name,
                             std::string value,
-                            u32 row) {
+                            u32 row,
+                            bool highlightChange,
+                            std::string defaultValue) {
   bool isActive = selected == id;
   TextStream::instance().setText(
-      (isActive ? ">" : "") + name, row,
-      isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
+      std::string(isActive ? ">" : "") +
+          (highlightChange && value != defaultValue ? "* " : "") + name,
+      row, isActive ? TEXT_COL_SELECTED : TEXT_COL_UNSELECTED);
 
   if (value.length() > 0) {
     auto valueString = "<" + value + ">";
@@ -104,8 +109,17 @@ void MenuScene::printOption(u32 id,
   }
 }
 
+u8 MenuScene::change(u8 value, u8 optionsCount, int direction) {
+  return direction >= 0 ? increment(value, optionsCount)
+                        : decrement(value, optionsCount);
+}
+
 u8 MenuScene::increment(u8 value, u8 optionsCount) {
-  return value == optionsCount - 1 ? 0 : value + 1;
+  return value >= optionsCount - 1 ? 0 : value + 1;
+}
+
+u8 MenuScene::decrement(u8 value, u8 optionsCount) {
+  return value == 0 ? optionsCount - 1 : value - 1;
 }
 
 void MenuScene::setUpSpritesPalette() {
@@ -122,10 +136,29 @@ void MenuScene::setUpBackground() {
 }
 
 void MenuScene::processKeys(u16 keys) {
-  selectButton->setIsPressed(KEY_CENTER(keys));
-  backButton->setIsPressed(KEY_DOWNLEFT(keys));
-  nextButton->setIsPressed(KEY_DOWNRIGHT(keys));
-  closeInput->setIsPressed(keys & getCloseKey());
+  if (SAVEFILE_isUsingGBAStyle() != isUsingGBAStyle)
+    blockButtons = true;
+
+  if (blockButtons && !(keys & KEY_ANY))
+    blockButtons = false;
+
+  if (SAVEFILE_isUsingGBAStyle()) {
+    isUsingGBAStyle = true;
+    selectButton->setIsPressed(!blockButtons && (keys & KEY_A));
+    backButton->setIsPressed(!blockButtons && (keys & KEY_UP));
+    nextButton->setIsPressed(!blockButtons && (keys & KEY_DOWN));
+    closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
+    incrementInput->setIsPressed(!blockButtons && (keys & (KEY_R | KEY_RIGHT)));
+    decrementInput->setIsPressed(!blockButtons && (keys & (KEY_L | KEY_LEFT)));
+  } else {
+    isUsingGBAStyle = false;
+    selectButton->setIsPressed(!blockButtons && (KEY_CENTER(keys)));
+    backButton->setIsPressed(!blockButtons && (KEY_DOWNLEFT(keys)));
+    nextButton->setIsPressed(!blockButtons && (KEY_DOWNRIGHT(keys)));
+    closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
+    incrementInput->setIsPressed(!blockButtons && (KEY_UPRIGHT(keys)));
+    decrementInput->setIsPressed(!blockButtons && (KEY_UPLEFT(keys)));
+  }
 
   if (closeInput->hasBeenPressedNow())
     close();
@@ -133,7 +166,13 @@ void MenuScene::processKeys(u16 keys) {
 
 void MenuScene::processSelection() {
   if (selectButton->hasBeenPressedNow())
-    select();
+    select(0);
+
+  if (incrementInput->hasBeenPressedNow())
+    select(1);
+
+  if (decrementInput->hasBeenPressedNow())
+    select(-1);
 
   if (nextButton->hasBeenPressedNow())
     move(1);
@@ -163,11 +202,11 @@ void MenuScene::move(int direction) {
   printMenu();
 }
 
-void MenuScene::select() {
+void MenuScene::select(int direction) {
   player_play(SOUND_STEP);
   pixelBlink->blink();
 
-  if (selectOption(selected))
+  if (selectOption(selected, direction))
     printMenu();
   else
     player_stop();

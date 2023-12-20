@@ -69,4 +69,22 @@ inline void BSOD(std::string message) {
     ;
 }
 
+inline void profileStart() {
+  REG_TM1CNT_L = 0;
+  REG_TM2CNT_L = 0;
+
+  REG_TM1CNT_H = 0;
+  REG_TM2CNT_H = 0;
+
+  REG_TM2CNT_H = TM_ENABLE | TM_CASCADE;
+  REG_TM1CNT_H = TM_ENABLE | TM_FREQ_1;
+}
+
+inline u32 profileStop() {
+  REG_TM1CNT_H = 0;
+  REG_TM2CNT_H = 0;
+
+  return (REG_TM1CNT_L | (REG_TM2CNT_L << 16));
+}
+
 #endif  // DEBUG_TOOLS_H

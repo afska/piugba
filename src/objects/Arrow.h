@@ -10,7 +10,7 @@
 #include "utils/SpriteUtils.h"
 #include "utils/pool/ObjectPool.h"
 
-#define BOUNCE_ANIMATION_START 15
+#define EXPLOSION_ANIMATION_START 15
 
 inline void ARROW_initialize(ArrowDirection direction,
                              u32& startTile,
@@ -21,6 +21,13 @@ inline void ARROW_initialize(ArrowDirection direction,
   startTile = ARROW_BASE_TILE[singleDirection];
   endTile = ARROW_END_TILE[singleDirection];
   flip = ARROW_FLIP_TILE[singleDirection];
+}
+
+inline void ARROW_setUpOrientation(Sprite* sprite, ArrowFlip flip) {
+  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
+                           flip == ArrowFlip::FLIP_BOTH);
+  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
+                         flip == ArrowFlip::FLIP_BOTH);
 }
 
 class Arrow : public IPoolable {
@@ -55,19 +62,20 @@ class Arrow : public IPoolable {
     this->startTile = startTile;
     this->endTile = endTile;
     this->endAnimationStartFrame =
-        isHoldFakeHead ? endTile : BOUNCE_ANIMATION_START;
+        isHoldFakeHead ? endTile : EXPLOSION_ANIMATION_START;
 
     sprite->enabled = true;
     sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
                    ARROW_INITIAL_Y);
 
-    if (isHoldFill || isHoldTail) {
+    if (isFake)
+      SPRITE_goToFrame(sprite.get(), isHoldFill ? ARROW_HOLD_FILL_FAKE_TILE
+                                                : endTile + ARROW_FAKE_TILE);
+    else if (isHoldFill || isHoldTail) {
       u32 tileOffset = isHoldFill ? ARROW_HOLD_FILL_TILE : ARROW_HOLD_TAIL_TILE;
       SPRITE_goToFrame(sprite.get(), startTile + tileOffset);
     } else if (isHoldFakeHead)
       animatePress();
-    else if (isFake)
-      SPRITE_goToFrame(sprite.get(), endTile + ARROW_FAKE_TILE);
     else
       sprite->makeAnimated(startTile, ARROW_ANIMATION_FRAMES,
                            ARROW_ANIMATION_DELAY);
@@ -80,8 +88,10 @@ class Arrow : public IPoolable {
     endAnimationFrame = 0;
     isPressed = false;
     needsAnimation = false;
+    wasMissed = false;
 
     sprite->setPriority(isHoldTail ? ARROW_LAYER_BACK : ARROW_LAYER_FRONT);
+    ARROW_setUpOrientation(sprite.get(), flip);
   }
 
   inline void initializeHoldBorder(ArrowType type,
@@ -97,7 +107,8 @@ class Arrow : public IPoolable {
   inline void initializeHoldFill(ArrowDirection direction,
                                  u8 playerId,
                                  HoldArrow* holdArrow) {
-    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp);
+    initialize(ArrowType::HOLD_FILL, direction, playerId, timestamp,
+               holdArrow->isFake);
     this->holdArrow = holdArrow;
   }
 
@@ -129,7 +140,11 @@ class Arrow : public IPoolable {
   inline bool getIsPressed() { return isPressed; }
   inline void markAsPressed() { isPressed = true; }
 
-  ArrowState tick(int newY, bool isPressing);
+  inline bool getWasMissed() { return wasMissed; }
+  inline void setWasMissed() { wasMissed = true; }
+  inline bool needsDiscard() { return SPRITE_isHidden(sprite.get()); }
+
+  bool tick(int newY, bool isPressing, int offsetX = 0);
   inline Sprite* get() { return sprite.get(); }
 
  private:
@@ -146,10 +161,11 @@ class Arrow : public IPoolable {
   u32 endAnimationFrame = 0;
   bool isPressed = false;
   bool needsAnimation = false;
+  bool wasMissed = false;
 
-  ArrowState end();
+  bool end();
   void animatePress();
-  bool isAligned();
+  bool isNearEndOrClose(int newY);
   bool isNearEnd(int newY);
 
   inline void refresh() {

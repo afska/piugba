@@ -25,7 +25,6 @@
 #define GAME_MAX_PLAYERS 2
 
 enum EventType {
-  SET_FAKE,
   NOTE,
   HOLD_START,
   HOLD_END,
@@ -54,20 +53,42 @@ inline bool EVENT_HAS_DATA2(EventType event, bool isDouble) {
 }
 
 inline bool EVENT_HAS_PARAM(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::SET_TICKCOUNT ||
-         event == EventType::SET_FAKE || event == EventType::STOP ||
+  return event == EventType::HOLD_START || event == EventType::SET_TEMPO ||
+         event == EventType::SET_TICKCOUNT || event == EventType::STOP ||
          event == EventType::WARP;
 }
 
 inline bool EVENT_HAS_PARAM2(EventType event) {
-  return event == EventType::SET_TEMPO || event == EventType::STOP;
+  return event == EventType::STOP || event == EventType::SET_TEMPO;
 }
 
 inline bool EVENT_HAS_PARAM3(EventType event) {
-  return event == EventType::SET_TEMPO;
+  return event == EventType::STOP || event == EventType::SET_TEMPO;
 }
 
 typedef struct {
+  // (PIUS file)
+  // u32 timestampAndData;
+  /*  {
+        [bit 0]      is fake (only note types)
+        [bits 1-23]  timestamp (signed int)
+        [bits 24-26] type (see EventType)
+        [bits 27-31] data (5-bit array with the arrows)
+      }
+  */
+
+  u8 data2;  // another 5-bit arrow array (only present in double charts)
+
+  u32 param;
+  u32 param2;
+  u32 param3;
+  // (params are not included in note-related events)
+
+  // custom fields:
+  u32 index = 0;
+  bool handled[GAME_MAX_PLAYERS];
+  // (RAM)
+  bool isFake;
   int timestamp;  // in ms
   u8 data;
   /*  {
@@ -75,16 +96,6 @@ typedef struct {
         [bits 3-7] data (5-bit array with the arrows)
       }
   */
-  u8 data2;  // another 5-bit arrow array (only present in double charts)
-
-  u32 param;
-  u32 param2;
-  u32 param3;
-  // (params are not present in note-related events)
-
-  // custom fields:
-  u32 index = 0;
-  bool handled[GAME_MAX_PLAYERS];
 } Event;
 
 #endif  // EVENT_H

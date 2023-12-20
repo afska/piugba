@@ -30,7 +30,7 @@ inline u32 MATH_mul(u32 n1, u32 n2) {
 }
 
 inline void MATH_approximate(u32* value, u32 targetValue, u32 maxJump) {
-  if (targetValue > *value)
+  if (*value < targetValue)
     *value += min(targetValue - *value, maxJump);
   else
     *value -= min(*value - targetValue, maxJump);

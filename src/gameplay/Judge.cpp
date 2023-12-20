@@ -14,9 +14,7 @@ Judge::Judge(ObjectPool<Arrow>* arrowPool,
 }
 
 bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
-  int actualMsecs = timingProvider->getMsecs() + offset;
-  int expectedMsecs = arrow->timestamp;
-  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
+  u32 diff = getDiff(arrow, timingProvider, offset);
 
   if (isInsideTimingWindow(diff)) {
     if (diff >= FRAME_MS * getTimingWindowOf(FeedbackType::BAD)) {
@@ -36,28 +34,6 @@ bool Judge::onPress(Arrow* arrow, TimingProvider* timingProvider, int offset) {
   return false;
 }
 
-void Judge::onOut(Arrow* arrow) {
-  bool isUnique = arrow->type == ArrowType::UNIQUE;
-  bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
-
-  if (isUnique && !arrow->getIsPressed()) {
-    FeedbackType result = onResult(arrow, FeedbackType::MISS);
-    if (result == FeedbackType::UNKNOWN)
-      return;
-  }
-
-  if (isHoldHead) {
-    FeedbackType result =
-        onResult(arrow, arrow->getIsPressed() ? FeedbackType::PERFECT
-                                              : FeedbackType::MISS);
-    if (result == FeedbackType::UNKNOWN)
-      return;
-  }
-
-  arrow->forAll(arrowPool,
-                [this](Arrow* arrow) { arrowPool->discard(arrow->id); });
-}
-
 void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
   bool isPressed = true;
 
@@ -73,6 +49,36 @@ void Judge::onHoldTick(u16 arrows, u8 playerId, bool canMiss) {
     updateScore(FeedbackType::PERFECT, playerId, true);
   else if (canMiss)
     updateScore(FeedbackType::MISS, playerId, true);
+}
+
+bool Judge::endIfNeeded(Arrow* arrow, TimingProvider* timingProvider) {
+  int actualMsecs = timingProvider->getMsecs();
+  int expectedMsecs = arrow->timestamp;
+  u32 diff = (u32)abs(actualMsecs - expectedMsecs);
+  if (isInsideTimingWindow(diff) || actualMsecs < expectedMsecs)
+    return false;
+  if (arrow->getWasMissed())
+    return true;
+
+  bool isUnique = arrow->type == ArrowType::UNIQUE;
+  bool isHoldHead = arrow->type == ArrowType::HOLD_HEAD;
+  bool isPressed = arrow->getIsPressed();
+
+  if (isUnique && !isPressed && canMiss(arrow, timingProvider)) {
+    FeedbackType result = onResult(arrow, FeedbackType::MISS);
+    if (result == FeedbackType::UNKNOWN)
+      return false;
+  }
+
+  if (isHoldHead && (isPressed || canMiss(arrow, timingProvider))) {
+    FeedbackType result =
+        onResult(arrow, isPressed ? FeedbackType::PERFECT : FeedbackType::MISS);
+    if (result == FeedbackType::UNKNOWN)
+      return false;
+  }
+
+  arrow->setWasMissed();
+  return true;
 }
 
 FeedbackType Judge::onResult(Arrow* arrow, FeedbackType partialResult) {

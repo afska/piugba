@@ -33,12 +33,13 @@ module.exports = class Simfile {
 
     return {
       title: this._unescape(subtitle || title || ""),
-      artist: this._unescape(artist),
+      artist: this._unescape(artist || ""),
       channel:
         this._getSingleMatchFromEnum(REGEXPS.metadata.channel, Channels) ||
         "UNKNOWN",
       lastMillisecond: this._toMilliseconds(
-        this._getSingleMatch(REGEXPS.metadata.lastSecondHint) || 999999
+        this._getSingleMatch(REGEXPS.metadata.lastSecondHint) ||
+          Chart.MAX_SECONDS
       ),
       sampleStart: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleStart)
@@ -51,20 +52,14 @@ module.exports = class Simfile {
   }
 
   get charts() {
-    return _([
-      (this.content.match(REGEXPS.chart.single) || []).map((rawChart) => ({
-        rawChart,
-        isDouble: false,
-      })),
-      (this.content.match(REGEXPS.chart.double) || []).map((rawChart) => ({
-        rawChart,
-        isDouble: true,
-      })),
-    ])
-      .flatten()
-      .map(({ rawChart, isDouble }) => {
+    let lastLevelStr = null;
+    let lastSubindex = 0;
+
+    return _(this.content.match(REGEXPS.chart.content) || [])
+      .map((rawChart, i) => {
         const startIndex = this.content.indexOf(rawChart);
         let level = "?";
+        let levelStr = "?";
 
         const name =
           this._getSingleMatch(REGEXPS.chart.name, rawChart, true) || "";
@@ -81,9 +76,22 @@ module.exports = class Simfile {
           level = utils.restrictTo(level, 0, 99);
 
           const type = this._getSingleMatch(REGEXPS.chart.type, rawChart, true);
-          const expectedType = isDouble ? "pump-double" : "pump-single";
-          if (_.isEmpty(type) || type != expectedType)
-            throw new Error("steps_type_doesnt_match_header");
+          let isDouble;
+          let isMultiplayer = false;
+          if (type === "pump-single") isDouble = false;
+          else if (
+            type === "pump-double" ||
+            type === "pump-couple" ||
+            type === "pump-routine"
+          )
+            isDouble = true;
+          else return null;
+          if (type === "pump-couple" || type === "pump-routine")
+            isMultiplayer = true;
+          levelStr = `${isMultiplayer ? "m" : isDouble ? "d" : "s"}${level}`;
+
+          if (isDouble && name.toLowerCase().includes("half"))
+            throw new Error("ignored: half double (based on description)");
 
           const order =
             this._getSingleMatch(REGEXPS.chart.customOrder, rawChart, true) ||
@@ -94,7 +102,7 @@ module.exports = class Simfile {
             rawChart
           );
           if (!_.isFinite(chartOffset)) chartOffset = 0;
-          const offset = -chartOffset * SECOND;
+          const offset = -chartOffset * SECOND; // [!] offsets in PIUS are negative
 
           const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
           if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
@@ -114,7 +122,10 @@ module.exports = class Simfile {
             name,
             difficulty,
             isDouble,
+            isMultiplayer,
             level,
+            levelStr,
+            variant: "\0",
             order,
             offset,
             bpms,
@@ -134,19 +145,47 @@ module.exports = class Simfile {
           );
 
           const chart = new Chart(this.metadata, header, rawNotes);
-          chart.events; // (check if it can be parsed correctly)
+          chart.index = i;
+          chart.events; // (ensure it can be parsed correctly)
           return chart;
         } catch (e) {
-          console.error(`  ⚠️  level-${level} error: ${e.message}`.yellow);
+          if ((e?.message || "").startsWith("ignored:")) return null;
+
+          console.error(
+            `  ⚠️  level-${levelStr.padEnd(3)} error: ${e.message}`.yellow
+          );
           return null;
         }
       })
       .compact()
-      .sortBy("header.level")
-      .value();
+      .sortBy(
+        (it) => it.header.isDouble,
+        (it) => it.header.isMultiplayer,
+        (it) => it.header.level,
+        (it) => it.index
+      )
+      .each((it) => {
+        if (it.header.levelStr === lastLevelStr) {
+          lastSubindex++;
+          it.header.levelStr += `[${lastSubindex}]`;
+        } else lastSubindex = 0;
+
+        lastLevelStr = it.header.levelStr;
+
+        return it;
+      });
   }
 
   _getSingleMatch(regexp, content = this.content, isChartExclusive = false) {
+    const globalPropertiesOnly = content === this.content;
+    if (globalPropertiesOnly) {
+      const firstChart = (content.match(REGEXPS.chart.content) || [])[0];
+      const indexOfFirstChart =
+        firstChart != null ? content.indexOf(firstChart) : -1;
+      if (indexOfFirstChart != -1)
+        content = content.slice(0, indexOfFirstChart);
+    }
+
     const exp = regexp.exp || regexp;
     const parse = regexp.parse || _.identity;
 
@@ -157,13 +196,14 @@ module.exports = class Simfile {
       ? this._toAsciiOnly(parsedData)
       : parsedData;
 
-    return content !== this.content && rawData === null && !isChartExclusive
+    return !globalPropertiesOnly && rawData === null && !isChartExclusive
       ? this._getSingleMatch(regexp)
       : finalData;
   }
 
-  _getSingleMatchFromEnum(regexp, options, content = this.content) {
-    const match = this._getSingleMatch(regexp, content);
+  _getSingleMatchFromEnum(regexp, options, content) {
+    const isChartExclusive = content != null;
+    const match = this._getSingleMatch(regexp, content, isChartExclusive);
     return _(options).keys(options).includes(match) ? match : null;
   }
 
@@ -238,8 +278,7 @@ const REGEXPS = {
     custom: OBJECT("PIUGBA"),
   },
   chart: {
-    single: /\/\/-+pump-single - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
-    double: /\/\/-+pump-double - (.+)-+\r?\n((.|(\r?\n))*?)#NOTES:/g,
+    content: /#NOTEDATA:;(?:(?:.|(?:\r?\n))*?)#NOTES:/g,
     name: PROPERTY("DESCRIPTION"),
     type: PROPERTY("STEPSTYPE"),
     difficulty: PROPERTY("DIFFICULTY"),

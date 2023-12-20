@@ -18,6 +18,7 @@
 #include "objects/ui/Button.h"
 #include "objects/ui/ChannelBadge.h"
 #include "objects/ui/Difficulty.h"
+#include "objects/ui/Explosion.h"
 #include "objects/ui/GradeBadge.h"
 #include "objects/ui/Lock.h"
 #include "objects/ui/Multiplier.h"
@@ -29,9 +30,13 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+enum InitialLevel { KEEP_LEVEL, FIRST_LEVEL, LAST_LEVEL };
+
 class SelectionScene : public Scene {
  public:
-  SelectionScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  SelectionScene(std::shared_ptr<GBAEngine> engine,
+                 const GBFS_FILE* fs,
+                 InitialLevel initialLevel = InitialLevel::KEEP_LEVEL);
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -44,6 +49,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Background> bg;
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
+  InitialLevel initialLevel;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
@@ -56,14 +62,16 @@ class SelectionScene : public Scene {
   std::unique_ptr<NumericProgress> progress;
   std::unique_ptr<InputHandler> settingsMenuInput;
   std::unique_ptr<Button> numericLevelBadge;
+  std::unique_ptr<Explosion> loadingIndicator1;
+  std::unique_ptr<Explosion> loadingIndicator2;
   std::vector<u8> numericLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
+  u32 selectedSongId = 0;
   bool confirmed = false;
   bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
-  int remoteNumericLevel = -1;
 
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
@@ -112,9 +120,17 @@ class SelectionScene : public Scene {
       return;
     }
 
+    auto currentLevel = getSelectedNumericLevel();
+    auto currentLevelIndex = getSelectedNumericLevelIndex();
+    bool wantsCurrentLevel = level == currentLevel;
+
     u32 min = 0;
     u32 minDiff = abs((int)numericLevels[0] - (int)level);
     for (u32 i = 0; i < numericLevels.size(); i++) {
+      if (wantsCurrentLevel && numericLevels[i] == currentLevel &&
+          i == currentLevelIndex)
+        return;
+
       u32 diff = (u32)abs((int)numericLevels[i] - (int)level);
       if (diff < minDiff) {
         min = i;
@@ -136,6 +152,26 @@ class SelectionScene : public Scene {
       return difficulty->getValue();
 
     return SAVEFILE_getMaxLibraryType();
+  }
+
+  inline bool isCustomOffsetAdjustmentEnabled() {
+    bool isOffsetEditingEnabled =
+        SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
+    return SAVEFILE_getGameMode() == GameMode::ARCADE && isOffsetEditingEnabled;
+  }
+  inline int getCustomOffset() {
+    return OFFSET_get(selectedSongId, getSelectedNumericLevelIndex(),
+                      isDouble());
+  }
+  inline void updateCustomOffset(int change) {
+    if (numericLevels.empty())
+      return;
+    auto selectedNumericLevelIndex = getSelectedNumericLevelIndex();
+
+    OFFSET_set(
+        selectedSongId, selectedNumericLevelIndex, isDouble(),
+        OFFSET_get(selectedSongId, selectedNumericLevelIndex, isDouble()) +
+            change);
   }
 
   void setUpSpritesPalette();
@@ -164,6 +200,7 @@ class SelectionScene : public Scene {
                          bool isOnPageEdge,
                          int direction);
   void onConfirmOrStart(bool isConfirmed);
+  bool onCustomOffsetChange(ArrowDirection selector, int offset);
 
   void updateSelection(bool isChangingLevel = false);
   void updateLevel(Song* song, bool isChangingLevel);
@@ -175,11 +212,9 @@ class SelectionScene : public Scene {
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);
-  void printNumericLevel(DifficultyLevel difficulty) {
-    printNumericLevel(difficulty, 0);
-  }
-  void printNumericLevel(DifficultyLevel difficulty, s8 offset);
-  void loadSelectedSongGrade(u8 songId);
+  void printNumericLevel(Chart* chart) { printNumericLevel(chart, 0); }
+  void printNumericLevel(Chart* chart, s8 offsetY);
+  void loadSelectedSongGrade();
   void processMultiplayerUpdates();
   void syncNumericLevelChanged(u8 newValue);
   void quit();

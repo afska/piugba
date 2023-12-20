@@ -124,10 +124,11 @@ MODE ?= auto
 SORT ?= level
 SONGS ?= src/data/content/songs
 ENV ?= development
+BOSS ?= true
 ARCADE ?= false
 
 ifeq ($(ENV), debug)
-	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true -DCODE_IWRAM=
+	CXXFLAGS += -DENV_DEBUG=true -DENV_DEVELOPMENT=true -DSENV_DEBUG=true -DSENV_DEVELOPMENT=true -DENV_ARCADE=$(ARCADE)
 else ifeq ($(ENV), development)
 	CXXFLAGS += -DENV_DEVELOPMENT=true -DSENV_DEVELOPMENT=true -DENV_ARCADE=$(ARCADE)
 else
@@ -219,7 +220,7 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --sort "$(SORT)" --directory "$(SONGS)" --arcade=$(ARCADE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --boss=$(BOSS) --arcade=$(ARCADE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)

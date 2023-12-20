@@ -39,8 +39,6 @@ const FILE_AUDIO = /\.(mp3|flac)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "auto";
-const SORTING_OPTIONS = ["level", "dir"];
-const SORTING_DEFAULT = "level";
 const SELECTOR_PREFIXES = {
   NORMAL: "_snm_",
   HARD: "_shd_",
@@ -61,7 +59,7 @@ const opt = getopt
       "songs directory (defaults to: src/data/content/songs)",
     ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
-    ["s", "sort=SORT", "how songs should be ordered (one of: *level*|dir)"],
+    ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
     ["j", "json", "generate JSON debug files"],
   ])
@@ -71,9 +69,8 @@ const opt = getopt
 global.GLOBAL_OPTIONS = opt.options;
 if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
-if (!_.includes(SORTING_OPTIONS, GLOBAL_OPTIONS.sort))
-  GLOBAL_OPTIONS.sort = SORTING_DEFAULT;
 GLOBAL_OPTIONS.directory = GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH;
+GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
 
 const GET_SONG_FILES = ({ path, name }) => {
@@ -166,7 +163,20 @@ const songs = _(
 if (_.uniqBy(songs, "outputName").length !== songs.length)
   throw new Error("repeated_song_names");
 if (_.isEmpty(songs)) throw new Error("no_songs_found");
-if (songs.length > MAX_SONGS) throw new Error("song_limit_reached");
+if (songs.length > MAX_SONGS)
+  throw new Error(
+    `song_limit_reached: found=${songs.length}, max=${MAX_SONGS}`
+  );
+(function () {
+  if (reuseRomId != null) {
+    const romIdBuffer = Buffer.alloc(4);
+    romIdBuffer.writeUInt32LE(reuseRomId);
+    if (songs.length !== romIdBuffer.readUInt8())
+      throw new Error(
+        `song_count_doesnt_match_rom_id: delete \`${ROM_ID_FILE_REUSE}\` or fix`
+      );
+  }
+})();
 
 const processedSongs = songs.map((song, i) => {
   const { id, outputName } = song;
@@ -219,7 +229,7 @@ const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
   return {
     difficultyLevel,
     songs: withIds(
-      GLOBAL_OPTIONS.arcade || GLOBAL_OPTIONS.sort === "dir"
+      GLOBAL_OPTIONS.arcade
         ? processedSongs
         : _.orderBy(
             processedSongs,
@@ -238,6 +248,63 @@ const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
     ),
   };
 });
+
+// -----------
+// BOSS LEVELS
+// -----------
+
+if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
+  console.log(`${"Adding".bold} bosses...`);
+
+  sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
+    songs.forEach(({ song, simfile }, i) => {
+      const chart = simfile.getChartByDifficulty(difficultyLevel);
+      const nextSong = songs[i + 1];
+      const nextChart = nextSong?.simfile?.getChartByDifficulty(
+        difficultyLevel
+      );
+
+      let isFinalBoss = nextSong == null;
+      const isBoss =
+        isFinalBoss ||
+        (i >= 4 &&
+          nextChart != null &&
+          nextChart.header.order > chart.header.order);
+      if (isBoss && simfile._isFinalBoss) isFinalBoss = true;
+
+      if (simfile.boss == null) simfile.boss = {};
+      simfile.boss[difficultyLevel] = isBoss;
+      simfile._isFinalBoss = isFinalBoss;
+      const applyTo = `${+(simfile.boss.NORMAL || false)}${+(
+        simfile.boss.HARD || false
+      )}${+(simfile.boss.CRAZY || false)}`;
+
+      if (isBoss) {
+        const { id, outputName } = song;
+        const { metadataFile } = GET_SONG_FILES(song);
+
+        const prefix = isFinalBoss
+          ? `#PIUGBA:
+APPLY_TO=${applyTo},,,
+IS_BOSS=TRUE,,,
+PIXELATE=BLINK_IN,,,
+JUMP=LINEAR,,,
+REDUCE=MICRO,,,
+BOUNCE=ALL;`
+          : isBoss
+          ? `#PIUGBA:
+APPLY_TO=${applyTo},,,
+IS_BOSS=TRUE,,,
+PIXELATE=LIFE,,,
+REDUCE=MICRO,,,
+BOUNCE=ALL;`
+          : null;
+
+        importers.metadata(outputName, metadataFile, OUTPUT_PATH, id, prefix);
+      }
+    });
+  });
+}
 
 // ---------
 // SELECTORS

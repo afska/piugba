@@ -22,6 +22,7 @@ mv *.h *.c "$DESTINATION"
 # SelectionScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_combo.bmp \
   spr_numbers.bmp \
   spr_difficulties.bmp \
@@ -33,6 +34,8 @@ grit \
   spr_level.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
 mv \
+  spr_arrows_alt_keys.h \
+  spr_arrows_alt_keys.c \
   spr_difficulties.h \
   spr_difficulties.c \
   spr_of.h \
@@ -78,6 +81,7 @@ mv \
 # StageBreakScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_break.c
 mv \

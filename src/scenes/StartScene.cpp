@@ -21,12 +21,11 @@ extern "C" {
 #include "player/player.h"
 }
 
-const std::string TITLES[] = {"Campaign", "Arcade",     "Multi vs",
-                              "Single",   "Multi coop", "Impossible"};
+const std::string TITLES[] = {"Campaign", "Arcade",     "Multi VS",
+                              "Single",   "Multi COOP", "Impossible"};
 
 const u32 BPM = 145;
 const u32 ARROW_POOL_SIZE = 10;
-const u32 ARROW_SPEED = 3;
 const u32 DEMO_ARROW_INITIAL_Y = 78;
 const u32 BUTTONS_TOTAL = 6;
 
@@ -41,10 +40,12 @@ const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
 const u32 BUTTONS_X[] = {141, 175, 170, 183, 196, 209};
 const u32 BUTTONS_Y[] = {128, 128, 136, 136, 136, 128};
+const u32 BOUNCE_STEPS[] = {0, 6, 10, 13, 11, 9, 6, 3, 1, 0};
 const u32 INPUTS = 3;
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
 const u32 INPUT_SELECT = 2;
+const u32 INPUT_SELECT_ALT = 3;
 const u32 GAME_X = 72;
 const u32 GAME_Y = 13;
 
@@ -70,6 +71,11 @@ std::vector<Sprite*> StartScene::sprites() {
   sprites.push_back(buttons[3]->get());
   sprites.push_back(buttons[4]->get());
 
+  sprites.push_back(inputs[INPUT_LEFT]->get());
+  sprites.push_back(inputs[INPUT_RIGHT]->get());
+  sprites.push_back(inputs[INPUT_SELECT]->get());
+  sprites.push_back(inputs[INPUT_SELECT_ALT]->get());
+
   arrowPool->forEach([&sprites](Arrow* it) {
     it->index = sprites.size();
     sprites.push_back(it->get());
@@ -82,12 +88,14 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
   SCENE_init();
 
   setUpSpritesPalette();
   setUpBackground();
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
+  setUpInputs();
   setUpButtons();
   setUpGameAnimation();
 
@@ -99,7 +107,7 @@ void StartScene::tick(u16 keys) {
     return;
 
   if (!hasStarted) {
-    darkener->initialize(0, BackgroundType::FULL_BGA_DARK, 254);
+    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
     printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
@@ -107,16 +115,24 @@ void StartScene::tick(u16 keys) {
     player_loop(SOUND_LOOP);
   }
 
+  __qran_seed += keys;
+  processKeys(keys);
+
+  animateBpm();
+  int bounceOffset = bounceDirection * BOUNCE_STEPS[darkenerOpacity] *
+                     !!didWinImpossibleMode();
   darkenerOpacity = min(darkenerOpacity + 1, ALPHA_BLINK_LEVEL);
   EFFECT_setBlendAlpha(darkenerOpacity);
 
-  pixelBlink->tick();
-  animateBpm();
-  animateArrows();
+  animateInputs(bounceOffset);
+  for (auto& it : inputs)
+    it->tick();
+  animateArrows(bounceOffset);
 
-  processKeys(keys);
   processSelectionChange();
   navigateToAdminMenuIfNeeded(keys);
+
+  pixelBlink->tick();
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -131,6 +147,21 @@ void StartScene::setUpBackground() {
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
+}
+
+void StartScene::setUpInputs() {
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::DOWNLEFT, false, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+  inputs.push_back(std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::CENTER, true, true)});
+
+  animateInputs(0);
 }
 
 void StartScene::setUpButtons() {
@@ -150,9 +181,6 @@ void StartScene::setUpButtons() {
   buttons[2]->hide();
   buttons[3]->hide();
   buttons[4]->hide();
-
-  for (u32 i = 0; i < INPUTS; i++)
-    inputHandlers.push_back(std::unique_ptr<InputHandler>{new InputHandler()});
 
   if (ENV_ARCADE) {
     isExpanded = true;
@@ -189,39 +217,61 @@ void StartScene::setUpGameAnimation() {
 }
 
 void StartScene::animateBpm() {
-  int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
+  int audioLag = (int)GameState.settings.audioLag;
   int msecs = PlaybackState.msecs - audioLag;
-  int beat = Div(msecs * BPM, MINUTE);
+  int beat = MATH_fracumul(msecs * BPM, FRACUMUL_DIV_BY_MINUTE);
+  int tick =
+      MATH_fracumul(msecs * BPM * getTickCount(), FRACUMUL_DIV_BY_MINUTE);
 
   if (beat != lastBeat && beat != 0) {
     lastBeat = beat;
     darkenerOpacity = 0;
+    bounceDirection *= -1;
 
     pixelBlink->blink();
-
     for (auto& it : arrowHolders)
       it->blink();
+  }
+
+  if (tick != lastTick && beat != 0) {
+    lastTick = tick;
 
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
                      static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
-                     0, 0);
+                     0, 0, didWinImpossibleMode() && qran_range(1, 100) > 50);
       it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
       it->press();
     });
   }
 }
 
-void StartScene::animateArrows() {
+void StartScene::animateArrows(int bounceOffset) {
   for (auto& it : arrowHolders)
     it->tick();
 
-  arrowPool->forEachActive([this](Arrow* arrow) {
-    int newY = arrow->get()->getY() - ARROW_SPEED;
+  u32 arrowSpeed = getArrowSpeed();
+  arrowPool->forEachActive([this, arrowSpeed, bounceOffset](Arrow* arrow) {
+    int newY = arrow->get()->getY() - arrowSpeed;
 
-    if (arrow->tick(newY, false) == ArrowState::OUT)
+    arrow->tick(newY, false, bounceOffset);
+    if (arrow->needsDiscard())
       arrowPool->discard(arrow->id - ARROW_TILEMAP_LOADING_ID);
   });
+}
+
+void StartScene::animateInputs(int bounceOffset) {
+  if (SAVEFILE_isUsingGBAStyle()) {
+    inputs[INPUT_LEFT]->get()->moveTo(23 + bounceOffset, 48);
+    inputs[INPUT_RIGHT]->get()->moveTo(42 + bounceOffset, 48);
+    inputs[INPUT_SELECT]->get()->moveTo(202 + bounceOffset, 46);
+    SPRITE_hide(inputs[INPUT_SELECT_ALT]->get());
+  } else {
+    inputs[INPUT_LEFT]->get()->moveTo(24 + bounceOffset, 47);
+    inputs[INPUT_RIGHT]->get()->moveTo(201 + bounceOffset, 44);
+    inputs[INPUT_SELECT]->get()->moveTo(42 + bounceOffset, 47);
+    inputs[INPUT_SELECT_ALT]->get()->moveTo(185 + bounceOffset, 53);
+  }
 }
 
 void StartScene::printTitle() {
@@ -233,15 +283,23 @@ void StartScene::printTitle() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  inputHandlers[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-  inputHandlers[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-  inputHandlers[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+  if (SAVEFILE_isUsingGBAStyle()) {
+    inputs[INPUT_LEFT]->setIsPressed(keys & KEY_LEFT);
+    inputs[INPUT_RIGHT]->setIsPressed(keys & KEY_RIGHT);
+    inputs[INPUT_SELECT]->setIsPressed(keys & KEY_A);
+    inputs[INPUT_SELECT_ALT]->setIsPressed(false);
+  } else {
+    inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
+    inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
+    inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
+    inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
+  }
 }
 
 void StartScene::processSelectionChange() {
   bool canGoLeft =
       (!ENV_ARCADE && selectedMode > 0) || (ENV_ARCADE && selectedMode > 2);
-  if (inputHandlers[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
+  if (inputs[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
     if (selectedMode == 4 && !isExpanded)
       selectedMode -= 3;
@@ -253,7 +311,7 @@ void StartScene::processSelectionChange() {
 
   bool canGoRight =
       (!ENV_ARCADE && selectedMode < 5) || (ENV_ARCADE && selectedMode < 4);
-  if (inputHandlers[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
+  if (inputs[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
     if (selectedMode == 2 && !isExpanded)
       selectedMode += 3;
@@ -263,7 +321,7 @@ void StartScene::processSelectionChange() {
     printTitle();
   }
 
-  if (inputHandlers[INPUT_SELECT]->hasBeenPressedNow())
+  if (inputs[INPUT_SELECT]->hasBeenPressedNow())
     goToGame();
 
   for (u32 i = 0; i < BUTTONS_TOTAL; i++)
@@ -282,8 +340,8 @@ void StartScene::navigateToAdminMenuIfNeeded(u16 keys) {
 }
 
 bool StartScene::isPressingAdminCombo(u16 keys) {
-  return KEY_DOWNLEFT(keys) && KEY_UPLEFT(keys) && KEY_UPRIGHT(keys) &&
-         KEY_DOWNRIGHT(keys);
+  return (keys & KEY_L) && (keys & KEY_R) && (keys & KEY_START) &&
+         (keys & KEY_SELECT);
 }
 
 void StartScene::goToGame() {
@@ -328,6 +386,6 @@ void StartScene::goToGame() {
 
 StartScene::~StartScene() {
   buttons.clear();
-  inputHandlers.clear();
+  inputs.clear();
   arrowHolders.clear();
 }

@@ -31,7 +31,7 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 }
 
 Scene* SEQUENCE_getInitialScene() {
-  SAVEFILE_initialize(_fs);
+  u32 fixes = SAVEFILE_initialize(_fs);
 
   if (!SAVEFILE_isWorking(_fs)) {
     auto scene = new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
@@ -39,9 +39,19 @@ Scene* SEQUENCE_getInitialScene() {
     return scene;
   }
 
+  if (fixes > 0) {
+    auto scene =
+        new TalkScene(_engine, _fs,
+                      "Save file fixed!\r\n -> code: " + std::to_string(fixes) +
+                          "\r\n\r\n=> Press A+B+START+SELECT",
+                      [](u16 keys) {});
+    scene->withButton = false;
+    return scene;
+  }
+
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   auto gameMode = SAVEFILE_getGameMode();
-  SAVEFILE_write8(SRAM->state.isPlaying, 0);
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
 
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
@@ -85,7 +95,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
         true));
@@ -96,7 +108,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, IMPOSSIBLE_MODE_LOCKED,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
         true));
@@ -106,15 +120,17 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   auto lastGameMode = SAVEFILE_getGameMode();
   if (lastGameMode != gameMode) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
+    SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
     SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
+    SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   if (IS_MULTIPLAYER(gameMode)) {
     u16 keys = ~REG_KEYS & KEY_ANY;
     linkUniversal->setProtocol((keys & KEY_START)
-                                   ? LinkUniversal::Protocol::WIRELESS_CLIENT
+                                   ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);
@@ -125,7 +141,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SelectionScene(_engine, _fs));
         },
         true));
@@ -142,21 +160,28 @@ void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
   auto gameMode = SAVEFILE_getGameMode();
 
+  if (!isMultiplayer())
+    SAVEFILE_write8(SRAM->state.isPlaying, true);
+
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
-    goTo(new TalkScene(_engine, _fs, std::string(song->message),
-                       [song, chart](u16 keys) {
-                         if (KEY_CENTER(keys))
-                           goTo(new SongScene(_engine, _fs, song, chart));
-                       }));
+    goTo(new TalkScene(
+        _engine, _fs, std::string(song->message), [song, chart](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        }));
     return;
   }
 
-  if (gameMode == GameMode::CAMPAIGN && song->index == 1) {
+  if (gameMode == GameMode::CAMPAIGN && song->index == 0) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_HINT,
         [song, chart](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
         true));
@@ -168,7 +193,23 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_TRAINING_HINT,
         [song, chart](u16 keys) {
-          if (KEY_CENTER(keys))
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
+    return;
+  }
+
+  if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() &&
+      chart->type == ChartType::DOUBLE_COOP_CHART) {
+    goTo(new TalkScene(
+        _engine, _fs, COOP_HINT,
+        [song, chart](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
         true));
@@ -182,12 +223,16 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
   if (IS_STORY(gameMode) && isLastSong)
-    goTo(new TalkScene(_engine, _fs,
-                       gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
-                       [](u16 keys) {
-                         if (KEY_CENTER(keys))
-                           goTo(new SelectionScene(_engine, _fs));
-                       }));
+    goTo(new TalkScene(
+        _engine, _fs, gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
+        [isLastSong](u16 keys) {
+          bool isPressed =
+              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          if (isPressed) {
+            goTo(isLastSong ? SEQUENCE_getMainScene()
+                            : new SelectionScene(_engine, _fs));
+          }
+        }));
   else
     goTo(new SelectionScene(_engine, _fs));
 }

@@ -108,6 +108,8 @@ void TextScene::autoWrite() {
   if (character != "") {
     TextStream::instance().setText(character, 2 + row * 2, col);
     col++;
+    if (character == " ")
+      wait = true;
   } else {
     row++;
     col = 0;

@@ -9,6 +9,7 @@
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/base/InputHandler.h"
+#include "objects/ui/ArrowSelector.h"
 #include "objects/ui/Button.h"
 #include "ui/Darkener.h"
 #include "utils/PixelBlink.h"
@@ -36,22 +37,66 @@ class StartScene : public Scene {
 
   std::unique_ptr<Darkener> darkener;
   std::vector<std::unique_ptr<Button>> buttons;
-  std::vector<std::unique_ptr<InputHandler>> inputHandlers;
+  std::vector<std::unique_ptr<ArrowSelector>> inputs;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
   bool isExpanded = false;
   bool wasNotPressingAdminCombo = false;
   int lastBeat = 0;
+  int lastTick = 0;
+  int bounceDirection = -1;
   u8 selectedMode = 0;
   u8 darkenerOpacity;
 
+  inline bool didWinImpossibleMode() {
+    return SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY) ||
+           SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD) ||
+           SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+  }
+
+  inline u32 getTickCount() {
+    bool didCompleteCrazy =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY);
+    bool didCompleteHard =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD);
+    bool didCompleteNormal =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+
+    return didCompleteCrazy    ? 4
+           : didCompleteHard   ? 2
+           : didCompleteNormal ? 1
+                               : 1;
+  }
+
+  inline u32 getArrowSpeed() {
+    bool didCompleteCrazy =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::CRAZY) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::CRAZY);
+    bool didCompleteHard =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::HARD) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::HARD);
+    bool didCompleteNormal =
+        SAVEFILE_didComplete(GameMode::CAMPAIGN, DifficultyLevel::NORMAL) ||
+        SAVEFILE_didComplete(GameMode::IMPOSSIBLE, DifficultyLevel::NORMAL);
+
+    return didCompleteCrazy    ? 6
+           : didCompleteHard   ? 5
+           : didCompleteNormal ? 3
+                               : 3;
+  }
+
   void setUpSpritesPalette();
   void setUpBackground();
+  void setUpInputs();
   void setUpButtons();
   void setUpGameAnimation();
 
   void animateBpm();
-  void animateArrows();
+  void animateArrows(int bounceOffset);
+  void animateInputs(int bounceOffset);
 
   void printTitle();
   void processKeys(u16 keys);

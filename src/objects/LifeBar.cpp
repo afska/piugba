@@ -67,6 +67,13 @@ void LifeBar::die() {
   isDead = true;
 }
 
+void LifeBar::relocate() {
+  sprite->moveTo(
+      (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
+          LIFEBAR_POSITION_X,
+      sprite->getY());
+}
+
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 
@@ -122,9 +129,10 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
     }
 
     foregroundPalette->change(0, PALETTE_INDEXES[playerId][i], color);
-    if (GameState.mods.decolorize != DecolorizeOpts::dOFF)
-      SCENE_decolorizeIndex(foregroundPalette, 0, PALETTE_INDEXES[playerId][i],
-                            GameState.mods.decolorize);
+    if (GameState.mods.colorFilter != ColorFilter::NO_FILTER)
+      SCENE_applyColorFilterIndex(foregroundPalette, 0,
+                                  PALETTE_INDEXES[playerId][i],
+                                  GameState.mods.colorFilter);
 
     isBorder = !isBorder;
   }

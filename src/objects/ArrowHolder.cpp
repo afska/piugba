@@ -28,21 +28,21 @@ ArrowHolder::ArrowHolder(ArrowDirection direction,
     SPRITE_reuseTiles(sprite.get());
 
   SPRITE_goToFrame(sprite.get(), endTile);
+  ARROW_setUpOrientation(sprite.get(), flip);
 }
 
 void ArrowHolder::blink() {
   isBlinking = true;
 }
 
-void ArrowHolder::tick() {
-  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
-                           flip == ArrowFlip::FLIP_BOTH);
-  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
-                         flip == ArrowFlip::FLIP_BOTH);
-
+void ArrowHolder::tick(int offsetX) {
   u32 currentFrame = sprite->getCurrentFrame();
   u32 idleFrame = endTile;
   u32 pressedFrame = endTile + ARROW_HOLDER_PRESSED_OFFSET;
+
+  sprite->moveTo(
+      ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction + offsetX,
+      ARROW_FINAL_Y());
 
   if ((isPressed || isBlinking) && currentFrame < pressedFrame) {
     SPRITE_goToFrame(sprite.get(), currentFrame + 1);

@@ -37,11 +37,8 @@ std::vector<Sprite*> ControlsScene::sprites() {
   std::vector<Sprite*> sprites;
 
   sprites.push_back(instructor->get());
-  sprites.push_back(buttons[ArrowDirection::UPLEFT]->get());
-  sprites.push_back(buttons[ArrowDirection::DOWNLEFT]->get());
-  sprites.push_back(buttons[ArrowDirection::CENTER]->get());
-  sprites.push_back(buttons[ArrowDirection::UPRIGHT]->get());
-  sprites.push_back(buttons[ArrowDirection::DOWNRIGHT]->get());
+  for (auto& it : buttons)
+    sprites.push_back(it->get());
   sprites.push_back(buttons[RIGHT_CENTER]->get());
 
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
@@ -73,6 +70,7 @@ void ControlsScene::tick(u16 keys) {
     player_play(SOUND_ENTER);
   }
 
+  __qran_seed += keys;
   processKeys(keys);
   processCombo();
 
@@ -102,12 +100,12 @@ void ControlsScene::setUpBackground() {
 void ControlsScene::setUpArrows() {
   for (u32 i = 0; i < ARROWS_TOTAL; i++) {
     auto direction = static_cast<ArrowDirection>(i);
-    buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-        direction, direction != ArrowDirection::UPLEFT, true)});
+    buttons.push_back(std::unique_ptr<ArrowSelector>{
+        new ArrowSelector(direction, direction > 0, true, false)});
   }
 
   buttons.push_back(std::unique_ptr<ArrowSelector>{new ArrowSelector(
-      static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true)});
+      static_cast<ArrowDirection>(ArrowDirection::CENTER), true, true, false)});
 
   buttons[ArrowDirection::DOWNLEFT]->get()->moveTo(22, 67);
   buttons[ArrowDirection::UPLEFT]->get()->moveTo(29, 25);

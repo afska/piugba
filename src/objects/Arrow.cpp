@@ -7,6 +7,8 @@
 #include "utils/SpriteUtils.h"
 
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
+const u32 END_ANIMATION_TOTAL_FRAMES = 12;
+const u32 END_ANIMATION_FRAMES[] = {0, 0, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1};
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
@@ -56,48 +58,38 @@ void Arrow::press() {
   }
 }
 
-ArrowState Arrow::tick(int newY, bool isPressing) {
-  sprite->flipHorizontally(flip == ArrowFlip::FLIP_X ||
-                           flip == ArrowFlip::FLIP_BOTH);
-  sprite->flipVertically(flip == ArrowFlip::FLIP_Y ||
-                         flip == ArrowFlip::FLIP_BOTH);
+CODE_IWRAM bool Arrow::tick(int newY, bool isPressing, int offsetX) {
   if (SPRITE_isHidden(get()))
-    return ArrowState::OUT;
+    return true;
 
   bool isHoldArrow = type == ArrowType::HOLD_HEAD ||
                      type == ArrowType::HOLD_TAIL ||
                      type == ArrowType::HOLD_FILL;
   bool isHoldFill = type == ArrowType::HOLD_FILL;
   bool isFakeHead = type == ArrowType::HOLD_FAKE_HEAD;
-  int newX = ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction;
+  int newX =
+      ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction + offsetX;
+  bool $isNearEndOrClose = isNearEndOrClose(newY);
 
   if (isFakeHead || hasEnded) {
     endAnimationFrame++;
     sprite->moveTo(newX, sprite->getY());
 
-    if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES) {
-      if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 1)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 2)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 3)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 3);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 4)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 2);
-      else if (endAnimationFrame == END_ANIMATION_DELAY_FRAMES * 5)
-        SPRITE_goToFrame(sprite.get(), endAnimationStartFrame + 1);
-      else if (endAnimationFrame >= END_ANIMATION_DELAY_FRAMES * 6) {
-        if (type == ArrowType::HOLD_FAKE_HEAD)
-          animatePress();
-        else
-          return end();
-      }
+    if (endAnimationFrame < END_ANIMATION_TOTAL_FRAMES) {
+      SPRITE_goToFrame(
+          sprite.get(),
+          endAnimationStartFrame + END_ANIMATION_FRAMES[endAnimationFrame]);
+    } else {
+      if (type == ArrowType::HOLD_FAKE_HEAD)
+        animatePress();
+      else
+        return end();
     }
-  } else if (isAligned() && isPressed && needsAnimation) {
+  } else if ($isNearEndOrClose && needsAnimation) {
     animatePress();
   } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
              isPressing) {
-    if (!isHoldFill && isPressing)
+    if (!isHoldFill)
       markAsPressed();
 
     return end();
@@ -106,17 +98,17 @@ ArrowState Arrow::tick(int newY, bool isPressing) {
   } else
     sprite->moveTo(newX, newY);
 
-  return ArrowState::ACTIVE;
+  return $isNearEndOrClose;
 }
 
-ArrowState Arrow::end() {
+bool Arrow::end() {
   SPRITE_hide(sprite.get());
   sprite->stopAnimating();
 
   if (type == ArrowType::HOLD_FILL)
     holdArrow->activeFillCount--;
 
-  return ArrowState::OUT;
+  return true;
 }
 
 void Arrow::animatePress() {
@@ -129,8 +121,8 @@ void Arrow::animatePress() {
   SPRITE_goToFrame(sprite.get(), endAnimationStartFrame);
 }
 
-bool Arrow::isAligned() {
-  return abs(sprite->getY() - (int)ARROW_FINAL_Y()) < ARROW_QUARTER_SIZE;
+bool Arrow::isNearEndOrClose(int newY) {
+  return newY <= (int)ARROW_FINAL_Y() + (int)ARROW_QUARTER_SIZE;
 }
 
 bool Arrow::isNearEnd(int newY) {

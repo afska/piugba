@@ -17,7 +17,13 @@ MAX_ROM_SIZE_KB=$((32 * $KB - 1))
 INITIAL_REQUIRED_SIZE_KB=1024
 
 ROM_SIZE=$(wc -c < $FILE_INPUT)
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 GBFS_SIZE=$(wc -c < $DATA)
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 ROM_SIZE_KB=$(($ROM_SIZE / $KB))
 GBFS_SIZE_KB=$(($GBFS_SIZE / $KB))
 MAX_REQUIRED_SIZE_KB=$(($MAX_ROM_SIZE_KB - $GBFS_SIZE_KB))
@@ -36,6 +42,15 @@ REQUIRED_SIZE_KB=$(($INITIAL_REQUIRED_SIZE_KB > $MAX_REQUIRED_SIZE_KB ? $MAX_REQ
 PAD_NEEDED=$((($REQUIRED_SIZE_KB * $KB) - $ROM_SIZE))
 
 cp $FILE_INPUT $FILE_TMP
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 dd if=/dev/zero bs=1 count=$PAD_NEEDED >> $FILE_TMP
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 cat $FILE_TMP $DATA > $FILE_OUTPUT
+if [ $? -ne 0 ]; then
+  exit 1
+fi
 rm $FILE_TMP

@@ -4,6 +4,7 @@ const _ = require("lodash");
 
 const KNOWN_CHANNELS = ["ORIGINAL", "KPOP", "WORLD"];
 const NON_NUMERIC_LEVELS = ["CRAZY", "HARD", "NORMAL"];
+const VARIANTS = ["\0", ..."abcdefghijklmnopqrstuvwxyz"];
 
 const HEURISTICS = {
   NORMAL: [6, 5, 4, 3, 2, 1, 7, 8],
@@ -13,6 +14,7 @@ const HEURISTICS = {
 const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
 module.exports = (metadata, charts, content, filePath) => {
+  // channel
   if (metadata.channel === "UNKNOWN") {
     if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
     else {
@@ -29,6 +31,7 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   }
 
+  // difficulty input method
   charts.forEach((it) => {
     if (
       GLOBAL_OPTIONS.mode === "manual" ||
@@ -38,6 +41,7 @@ module.exports = (metadata, charts, content, filePath) => {
       it.header.mode = "NUMERIC";
   });
 
+  // difficulty
   if (!GLOBAL_OPTIONS.arcade) {
     const singleCharts = charts.filter((it) => !it.header.isDouble);
     NON_NUMERIC_LEVELS.forEach((difficulty) => {
@@ -50,6 +54,70 @@ module.exports = (metadata, charts, content, filePath) => {
     });
     checkLevelOrder(singleCharts);
   }
+
+  // separate level 99 charts
+  const numberOf99Charts = _.sumBy(charts, (it) => it.header.level === 99);
+  if (numberOf99Charts > 10) throw new Error("too_many_level_99_charts");
+  if (numberOf99Charts > 1) {
+    let variantIndex = 1;
+    let updatedLevel = 99 - numberOf99Charts + 1;
+    for (let chart of charts) {
+      if (chart.header.level === 99) {
+        chart.header.level = updatedLevel;
+        chart.header.variant = VARIANTS[variantIndex];
+        chart.header.order = updatedLevel;
+        updatedLevel++;
+        variantIndex++;
+      }
+    }
+  }
+
+  // add variants
+  const normal = getChartByDifficulty(charts, "NORMAL");
+  const hard = getChartByDifficulty(charts, "HARD");
+  const crazy = getChartByDifficulty(charts, "CRAZY");
+  const setVariant = (chart, index) => {
+    const variant = VARIANTS[1 + index];
+    if (variant == null)
+      throw new Error(
+        chart.header.isMultiplayer
+          ? "too_many_multiplayer_charts"
+          : "too_many_charts_with_level: " + chart.header.level
+      );
+    chart.header.variant = variant;
+  };
+  _(charts)
+    .filter((it) => !it.header.isMultiplayer && !it.header.isDouble)
+    .filter((it) => it !== normal && it !== hard && it !== crazy)
+    .groupBy((it) => it.header.level)
+    .filter((v, k) => v.length > 1)
+    .each((sameLevelCharts, levelStr) => {
+      sameLevelCharts.forEach((it, i) => setVariant(it, i));
+    });
+  _(charts)
+    .filter((it) => !it.header.isMultiplayer && it.header.isDouble)
+    .groupBy((it) => it.header.level)
+    .filter((v, k) => v.length > 1)
+    .each((sameLevelCharts, levelStr) => {
+      sameLevelCharts.forEach((it, i) => setVariant(it, i));
+    });
+  const multiplayerCharts = charts.filter(
+    (it) => it.header.isMultiplayer && it.header.isDouble
+  );
+  if (multiplayerCharts.length > 1)
+    multiplayerCharts.forEach((it, i) => setVariant(it, i));
+
+  // add offset labels
+  const allChartsHaveSameOffset = _.every(
+    charts,
+    (it) => it.header.offset === charts[0]?.header.offset
+  );
+  const offsets = [];
+  _(charts).each((it) => {
+    if (!offsets.includes(it.header.offset)) offsets.push(it.header.offset);
+    const variant = VARIANTS[1 + offsets.indexOf(it.header.offset)] || "?";
+    it.header.offsetLabel = allChartsHaveSameOffset ? "!" : variant;
+  });
 
   return {
     metadata,

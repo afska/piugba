@@ -2,10 +2,6 @@
 
 #include "gameplay/Key.h"
 
-extern "C" {
-#include "player/player.h"
-}
-
 #define ASSERT(CONDITION, FAILURE_REASON) \
   if (!(CONDITION)) {                     \
     fail(FAILURE_REASON);                 \
@@ -183,10 +179,6 @@ void Syncer::checkTimeout() {
 }
 
 void Syncer::startPlaying() {
-  SAVEFILE_write8(SRAM->memory.pageIndex, 0);
-  SAVEFILE_write8(SRAM->memory.songIndex, 0);
-
-  player_reinit();
   setState(SyncState::SYNC_STATE_PLAYING);
 }
 
@@ -220,6 +212,12 @@ void Syncer::resetData() {
 void Syncer::resetGameState() {
   $libraryType = 0;
   $completedSongs = 0;
+
+  $remoteNumericLevel = -1;
+  SAVEFILE_write8(SRAM->memory.numericLevel, 0);
+  SAVEFILE_write8(SRAM->memory.pageIndex, 0);
+  SAVEFILE_write8(SRAM->memory.songIndex, 0);
+
   resetSongState();
 }
 

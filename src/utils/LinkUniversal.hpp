@@ -1,6 +1,10 @@
 #ifndef LINK_UNIVERSAL_H
 #define LINK_UNIVERSAL_H
 
+// [!]
+// This library has some tweaks (marked with "[!]") for piuGBA.
+// You should check out the gba-link-connection's original code instead of this.
+
 // --------------------------------------------------------------------------
 //  A multiplayer connection for the Link Cable and the Wireless Adapter.
 // --------------------------------------------------------------------------
@@ -12,6 +16,8 @@
 //       irq_add(II_VBLANK, LINK_UNIVERSAL_ISR_VBLANK);
 //       irq_add(II_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
 //       irq_add(II_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
+//       irq_add(II_TIMER2, LINK_UNIVERSAL_ISR_ACK_TIMER); // (optional)
+//       // for `LinkWireless::asyncACKTimerId` --------------^
 // - 3) Initialize the library with:
 //       linkUniversal->activate();
 // - 4) Sync:
@@ -36,9 +42,10 @@
 //   (they mean 'disconnected' and 'no data' respectively)
 // --------------------------------------------------------------------------
 
+#include <tonc_bios.h>
 #include <tonc_core.h>
-#include "LinkCable.h"
-#include "LinkWireless.h"
+#include "LinkCable.hpp"
+#include "LinkWireless.hpp"
 
 #define LINK_UNIVERSAL_MAX_PLAYERS LINK_CABLE_MAX_PLAYERS
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
@@ -51,7 +58,7 @@
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES 60
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM 30
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v5.0.2";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v6.0.0";
 
 void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
@@ -61,7 +68,13 @@ class LinkUniversal {
  public:
   enum State { INITIALIZING, WAITING, CONNECTED };
   enum Mode { LINK_CABLE, LINK_WIRELESS };
-  enum Protocol { AUTODETECT, CABLE, WIRELESS_AUTO, WIRELESS_CLIENT };
+  enum Protocol {
+    AUTODETECT,
+    CABLE,
+    WIRELESS_AUTO,
+    WIRELESS_SERVER,
+    WIRELESS_CLIENT
+  };
 
   struct CableOptions {
     LinkCable::BaudRate baudRate;
@@ -78,6 +91,7 @@ class LinkUniversal {
     u32 remoteTimeout;
     u16 interval;
     u8 sendTimerId;
+    s8 asyncACKTimerId;
   };
 
   explicit LinkUniversal(
@@ -91,14 +105,16 @@ class LinkUniversal {
       WirelessOptions wirelessOptions = WirelessOptions{
           true, LINK_WIRELESS_MAX_PLAYERS, LINK_WIRELESS_DEFAULT_TIMEOUT,
           LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT, LINK_WIRELESS_DEFAULT_INTERVAL,
-          LINK_WIRELESS_DEFAULT_SEND_TIMER_ID}) {
+          LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
+          LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID}) {
     this->linkCable = new LinkCable(
         cableOptions.baudRate, cableOptions.timeout, cableOptions.remoteTimeout,
         cableOptions.interval, cableOptions.sendTimerId);
     this->linkWireless = new LinkWireless(
         wirelessOptions.retransmission, true, wirelessOptions.maxPlayers,
         wirelessOptions.timeout, wirelessOptions.remoteTimeout,
-        wirelessOptions.interval, wirelessOptions.sendTimerId);
+        wirelessOptions.interval, wirelessOptions.sendTimerId,
+        wirelessOptions.asyncACKTimerId);
 
     this->config.protocol = protocol;
     this->config.gameName = gameName;
@@ -113,9 +129,9 @@ class LinkUniversal {
 
   void deactivate() {
     isEnabled = false;
-
     linkCable->deactivate();
     linkWireless->deactivate();
+    resetState();
   }
 
   void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
@@ -141,6 +157,9 @@ class LinkUniversal {
     __qran_seed += keys;
     __qran_seed += REG_RCNT;
     __qran_seed += REG_SIOCNT;
+
+    if (mode == LINK_CABLE)
+      linkCable->sync();
 
     switch (state) {
       case INITIALIZING: {
@@ -198,14 +217,29 @@ class LinkUniversal {
         break;
       }
     }
+  }
 
-    if (mode == LINK_CABLE)
-      linkCable->consume();
+  bool waitFor(u8 playerId) {
+    return waitFor(playerId, []() { return false; });
+  }
+
+  template <typename F>
+  bool waitFor(u8 playerId, F cancel) {
+    sync();
+    u8 timerId = mode == LINK_CABLE ? linkCable->config.sendTimerId
+                                    : linkWireless->config.sendTimerId;
+    while (isConnected() && !canRead(playerId) && !cancel()) {
+      IntrWait(1, IRQ_SERIAL | LINK_CABLE_TIMER_IRQ_IDS[timerId]);
+      sync();
+    }
+    return isConnected() && canRead(playerId);
   }
 
   bool canRead(u8 playerId) { return !incomingMessages[playerId].isEmpty(); }
 
   u16 read(u8 playerId) { return incomingMessages[playerId].pop(); }
+
+  u16 peek(u8 playerId) { return incomingMessages[playerId].peek(); }
 
   void send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
@@ -255,6 +289,9 @@ class LinkUniversal {
       linkWireless->_onACKTimer();
   }
 
+  LinkCable* linkCable;
+  LinkWireless* linkWireless;
+
  private:
   struct Config {
     Protocol protocol;
@@ -262,8 +299,6 @@ class LinkUniversal {
   };
 
   LinkCable::U16Queue incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
-  LinkCable* linkCable;
-  LinkWireless* linkWireless;
   Config config;
   State state = INITIALIZING;
   Mode mode = LINK_CABLE;
@@ -271,7 +306,7 @@ class LinkUniversal {
   u32 switchWait = 0;
   u32 subWaitCount = 0;
   u32 serveWait = 0;
-  bool isEnabled = false;
+  volatile bool isEnabled = false;
 
   void receiveCableMessages() {
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
@@ -356,7 +391,7 @@ class LinkUniversal {
       }
     }
 
-    if (maxRandomNumber > 0) {
+    if (maxRandomNumber > 0 && config.protocol != WIRELESS_SERVER) {
       if (!linkWireless->connect(servers[serverIndex].id))
         return false;
     } else {
@@ -385,6 +420,7 @@ class LinkUniversal {
         break;
       }
       case WIRELESS_AUTO:
+      case WIRELESS_SERVER:
       case WIRELESS_CLIENT: {
         setMode(LINK_WIRELESS);
         break;
@@ -410,6 +446,7 @@ class LinkUniversal {
         break;
       }
       case WIRELESS_AUTO:
+      case WIRELESS_SERVER:
       case WIRELESS_CLIENT: {
         setMode(LINK_WIRELESS);
         break;
@@ -451,17 +488,9 @@ inline void LINK_UNIVERSAL_ISR_VBLANK() {
   linkUniversal->_onVBlank();
 }
 
-inline void LINK_UNIVERSAL_ISR_SERIAL() {
-  linkUniversal->_onSerial();
-}
-
-inline void LINK_UNIVERSAL_ISR_TIMER() {
-  linkUniversal->_onTimer();
-}
-
 // [!]
-inline void LINK_UNIVERSAL_ISR_ACK_TIMER() {
-  linkUniversal->_onACKTimer();
-}
+void LINK_UNIVERSAL_ISR_SERIAL();
+void LINK_UNIVERSAL_ISR_TIMER();
+void LINK_UNIVERSAL_ISR_ACK_TIMER();
 
 #endif  // LINK_UNIVERSAL_H

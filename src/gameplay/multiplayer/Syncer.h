@@ -8,7 +8,7 @@
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/LinkUniversal.h"
+#include "utils/LinkUniversal.hpp"
 
 // Max invalid messages
 #define SYNC_CABLE_TIMEOUT 10
@@ -61,6 +61,7 @@ class Syncer {
  public:
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
+  int $remoteNumericLevel = -1;
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;

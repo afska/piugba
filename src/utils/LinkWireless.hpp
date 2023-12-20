@@ -1,6 +1,10 @@
 #ifndef LINK_WIRELESS_H
 #define LINK_WIRELESS_H
 
+// [!]
+// This library has some tweaks (marked with "[!]") for piuGBA.
+// You should check out the gba-link-connection's original code instead of this.
+
 // --------------------------------------------------------------------------
 // A high level driver for the GBA Wireless Adapter.
 // --------------------------------------------------------------------------
@@ -12,6 +16,8 @@
 //       irq_add(II_VBLANK, LINK_WIRELESS_ISR_VBLANK);
 //       irq_add(II_SERIAL, LINK_WIRELESS_ISR_SERIAL);
 //       irq_add(II_TIMER3, LINK_WIRELESS_ISR_TIMER);
+//       irq_add(II_TIMER2, LINK_WIRELESS_ISR_ACK_TIMER); // --v
+//       // optional, for `LinkWireless::asyncACKTimerId` -----^
 // - 3) Initialize the library with:
 //       linkWireless->activate();
 // - 4) Start a server:
@@ -54,29 +60,39 @@
 
 #include <tonc_core.h>
 #include <string>
-#include "LinkGPIO.h"
-#include "LinkSPI.h"
+#include "LinkGPIO.hpp"
+#include "LinkSPI.hpp"
 
 // #include <functional>
 
 // Buffer size
-#define LINK_WIRELESS_QUEUE_SIZE 10  // [!]
+#define LINK_WIRELESS_QUEUE_SIZE 10
 
 // Max command response length
-#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30  // [!]
+#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30
 
-// ACK Timer [!]
-#define LINK_WIRELESS_ACK_TIMER 2
+// Max server transfer length
+#define LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH 6
+
+// Max client transfer length
+#define LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH 4
+
+// Put Interrupt Service Routines (ISR) in IWRAM (uncomment to enable)
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM
+
+// Use send/receive latch (uncomment to enable)
+#define LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
 
 #define LINK_WIRELESS_MAX_PLAYERS 5
 #define LINK_WIRELESS_MIN_PLAYERS 2
 #define LINK_WIRELESS_END 0
-#define LINK_WIRELESS_DEFAULT_TIMEOUT 8
+#define LINK_WIRELESS_DEFAULT_TIMEOUT 10
 #define LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT 10
 #define LINK_WIRELESS_DEFAULT_INTERVAL 50
 #define LINK_WIRELESS_DEFAULT_SEND_TIMER_ID 3
+#define LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID -1
 #define LINK_WIRELESS_BASE_FREQUENCY TM_FREQ_1024
-#define LINK_WIRELESS_PACKET_ID_BITS 6
+#define LINK_WIRELESS_PACKET_ID_BITS 5  // [!]
 #define LINK_WIRELESS_MAX_PACKET_IDS (1 << LINK_WIRELESS_PACKET_ID_BITS)
 #define LINK_WIRELESS_PACKET_ID_MASK (LINK_WIRELESS_MAX_PACKET_IDS - 1)
 #define LINK_WIRELESS_MSG_PING 0xffff
@@ -86,8 +102,6 @@
 #define LINK_WIRELESS_CMD_TIMEOUT 100
 #define LINK_WIRELESS_MAX_GAME_NAME_LENGTH 14
 #define LINK_WIRELESS_MAX_USER_NAME_LENGTH 8
-#define LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH 20
-#define LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH 4
 #define LINK_WIRELESS_LOGIN_STEPS 9
 #define LINK_WIRELESS_COMMAND_HEADER 0x9966
 #define LINK_WIRELESS_RESPONSE_ACK 0x80
@@ -97,8 +111,8 @@
 #define LINK_WIRELESS_BROADCAST_LENGTH 6
 #define LINK_WIRELESS_BROADCAST_RESPONSE_LENGTH \
   (1 + LINK_WIRELESS_BROADCAST_LENGTH)
-#define LINK_WIRELESS_MAX_TRANSFER_LENGTH \
-  LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
+#define LINK_WIRELESS_MAX_TRANSFER_LENGTH 20
+#define LINK_WIRELESS_MAX_COMMAND_TRANSFER_LENGTH 22
 #define LINK_WIRELESS_MAX_SERVERS              \
   (LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH / \
    LINK_WIRELESS_BROADCAST_RESPONSE_LENGTH)
@@ -107,6 +121,7 @@
 #define LINK_WIRELESS_COMMAND_BROADCAST 0x16
 #define LINK_WIRELESS_COMMAND_START_HOST 0x19
 #define LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS 0x1a
+#define LINK_WIRELESS_COMMAND_END_HOST 0x1b
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_START 0x1c
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_POLL 0x1d
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_END 0x1e
@@ -116,6 +131,9 @@
 #define LINK_WIRELESS_COMMAND_SEND_DATA 0x24
 #define LINK_WIRELESS_COMMAND_RECEIVE_DATA 0x26
 #define LINK_WIRELESS_BARRIER asm volatile("" ::: "memory")
+#define LINK_WIRELESS_CODE_IWRAM \
+  __attribute__((section(".iwram"), target("arm"), noinline))
+#define LINK_WIRELESS_ALWAYS_INLINE inline __attribute__((always_inline))
 
 #define LINK_WIRELESS_RESET_IF_NEEDED \
   if (!isEnabled)                     \
@@ -124,7 +142,7 @@
     if (!reset())                     \
       return false;
 
-static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v5.0.2";
+static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v6.0.0";
 
 void LINK_WIRELESS_ISR_VBLANK();
 void LINK_WIRELESS_ISR_SERIAL();
@@ -136,7 +154,24 @@ const u16 LINK_WIRELESS_TIMER_IRQ_IDS[] = {IRQ_TIMER0, IRQ_TIMER1, IRQ_TIMER2,
 
 class LinkWireless {
  public:
-  // std::function<void(std::string str)> debug;
+  // [!] mod to quickly send/receive keys
+  u32 SEND_ARROWS = 0;
+  u32 RECEIVE_ARROWS = 0;
+
+// std::function<void(std::string str)> debug;
+// #define PROFILING_ENABLED
+#ifdef PROFILING_ENABLED
+  u32 lastVBlankTime = 0;
+  u32 lastSerialTime = 0;
+  u32 lastTimerTime = 0;
+  u32 lastACKTimerTime = 0;
+  u32 lastFrameSerialIRQs = 0;
+  u32 lastFrameTimerIRQs = 0;
+  u32 lastFrameACKTimerIRQs = 0;
+  u32 serialIRQCount = 0;
+  u32 timerIRQCount = 0;
+  u32 ackTimerIRQCount = 0;
+#endif
 
   enum State {
     NEEDS_RESET,
@@ -184,14 +219,16 @@ class LinkWireless {
       u32 timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
       u32 remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
       u16 interval = LINK_WIRELESS_DEFAULT_INTERVAL,
-      u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID) {
+      u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
+      s8 asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID) {
     this->config.forwarding = forwarding;
     this->config.retransmission = retransmission;
     this->config.maxPlayers = maxPlayers;
     this->config.timeout = timeout;
     this->config.remoteTimeout = remoteTimeout;
     this->config.interval = interval;
-    this->config.sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID;
+    this->config.sendTimerId = sendTimerId;
+    this->config.asyncACKTimerId = asyncACKTimerId;
   }
 
   bool isActive() { return isEnabled; }
@@ -441,7 +478,7 @@ class LinkWireless {
     while (!sessionState.incomingMessages.isEmpty()) {
       auto message = sessionState.incomingMessages.pop();
       messages[i] = message;
-      forwardMessageIfNeeded(message);
+      // forwardMessageIfNeeded(message); // [!]
       i++;
     }
 
@@ -488,25 +525,152 @@ class LinkWireless {
                : sessionState.outgoingMessages.peek().packetId;
   }
 
-  // [!]
-  void _startACKTimer() {
-    REG_TM[LINK_WIRELESS_ACK_TIMER].start = -1;
-    REG_TM[LINK_WIRELESS_ACK_TIMER].cnt =
-        TM_ENABLE | TM_IRQ | LINK_WIRELESS_BASE_FREQUENCY;
+  void _onVBlank() {
+    if (!isEnabled)
+      return;
+
+#ifdef PROFILING_ENABLED
+    profileStart();
+#endif
+
+    if (!isSessionActive())
+      return;
+
+    if (isConnected() && sessionState.frameRecvCount == 0)
+      sessionState.recvTimeout++;
+
+    if (sessionState.recvTimeout >= config.timeout) {
+      isEnabled = false;  // [!]
+      reset();
+      lastError = TIMEOUT;
+      isEnabled = true;  // [!]
+      return;
+    }
+
+    if (!checkRemoteTimeouts()) {
+      reset();
+      lastError = REMOTE_TIMEOUT;
+      return;
+    }
+
+    sessionState.frameRecvCount = 0;
+    sessionState.acceptCalled = false;
+    sessionState.pingSent = false;
+
+#ifdef PROFILING_ENABLED
+    lastVBlankTime = profileStop();
+    lastFrameSerialIRQs = serialIRQCount;
+    lastFrameTimerIRQs = timerIRQCount;
+    lastFrameACKTimerIRQs = ackTimerIRQCount;
+    serialIRQCount = 0;
+    timerIRQCount = 0;
+    ackTimerIRQCount = 0;
+#endif
   }
 
-  // [!]
-  void _stopACKTimer() {
-    REG_TM[LINK_WIRELESS_ACK_TIMER].cnt =
-        REG_TM[LINK_WIRELESS_ACK_TIMER].cnt & (~TM_ENABLE);
+#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+  void _onSerial();
+  void _onTimer();
+  void _onACKTimer();
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+  void _onSerial() { __onSerial(); }
+  void _onTimer() { __onTimer(); }
+  void _onACKTimer() { __onACKTimer(); }
+#endif
+
+  LINK_WIRELESS_ALWAYS_INLINE void __onSerial() {
+    if (!isEnabled)
+      return;
+
+#ifdef PROFILING_ENABLED
+    profileStart();
+#endif
+
+    linkSPI->_onSerial(true);
+
+    bool hasNewData = linkSPI->getAsyncState() == LinkSPI::AsyncState::READY;
+    u32 newData = linkSPI->getAsyncData();  // [!]
+
+    if (!isSessionActive())
+      return;
+
+    if (asyncCommand.isActive) {  // [!]
+      if (asyncCommand.ackStep != AsyncCommand::ACKStep::READY)
+        return;
+
+      if (hasNewData) {
+        linkSPI->_setSOLow();
+        asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_HIGH;
+        asyncCommand.pendingData = newData;
+        startACKTimer();
+      } else
+        return;
+    }
+
+#ifdef PROFILING_ENABLED
+    lastSerialTime = profileStop();
+    serialIRQCount++;
+#endif
   }
 
-  void _onVBlank();    // [!]
-  void _onACKTimer();  // [!]
-  void _onSerial();    // [!]
-  void _onTimer();     // [!]
+  LINK_WIRELESS_ALWAYS_INLINE void __onTimer() {
+    if (!isEnabled)
+      return;
 
- private:
+#ifdef PROFILING_ENABLED
+    profileStart();
+#endif
+
+    if (!isSessionActive())
+      return;
+
+    if (!asyncCommand.isActive)
+      acceptConnectionsOrTransferData();
+
+#ifdef PROFILING_ENABLED
+    lastTimerTime = profileStop();
+    timerIRQCount++;
+#endif
+  }
+
+  LINK_WIRELESS_ALWAYS_INLINE void __onACKTimer() {
+    if (!isEnabled || !asyncCommand.isActive ||
+        asyncCommand.ackStep == AsyncCommand::ACKStep::READY)
+      return;
+
+    if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_HIGH) {
+      if (!linkSPI->_isSIHigh())
+        return;
+
+      linkSPI->_setSOHigh();
+      asyncCommand.ackStep = AsyncCommand::ACKStep::WAITING_FOR_LOW;
+    } else if (asyncCommand.ackStep == AsyncCommand::ACKStep::WAITING_FOR_LOW) {
+      if (linkSPI->_isSIHigh())
+        return;
+
+#ifdef PROFILING_ENABLED
+      profileStart();
+#endif
+
+      linkSPI->_setSOLow();
+      asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
+      stopACKTimer();
+
+      if (asyncCommand.state == AsyncCommand::State::PENDING) {
+        updateAsyncCommand(asyncCommand.pendingData);
+
+        if (asyncCommand.state == AsyncCommand::State::COMPLETED)
+          processAsyncCommand();
+      }
+
+#ifdef PROFILING_ENABLED
+      lastACKTimerTime = profileStop();
+      ackTimerIRQCount++;
+#endif
+    }
+  }
+
   struct Config {
     bool forwarding;
     bool retransmission;
@@ -515,8 +679,12 @@ class LinkWireless {
     u32 remoteTimeout;
     u32 interval;
     u32 sendTimerId;
+    s8 asyncACKTimerId;
   };
 
+  Config config;
+
+ private:
   class MessageQueue {
    public:
     void push(Message item) {
@@ -557,8 +725,8 @@ class LinkWireless {
     }
 
     void clear() {
-      while (!isEmpty())
-        pop();
+      front = count = 0;
+      rear = -1;
     }
 
     int size() { return count; }
@@ -582,8 +750,10 @@ class LinkWireless {
     u32 frameRecvCount = 0;
     bool acceptCalled = false;
     bool pingSent = false;
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
     bool sendReceiveLatch = false;
     bool shouldWaitForServer = false;
+#endif
 
     u8 playerCount = 1;
     u8 currentPlayerId = 0;
@@ -599,8 +769,8 @@ class LinkWireless {
   struct MessageHeader {
     unsigned int partialPacketId : LINK_WIRELESS_PACKET_ID_BITS;
     unsigned int isConfirmation : 1;
-    unsigned int playerId : 3;
-    unsigned int clientCount : 2;
+    unsigned int playerId : 1;       // [!]
+    unsigned int pressedArrows : 5;  // [!]
     unsigned int dataChecksum : 4;
   };
 
@@ -630,39 +800,39 @@ class LinkWireless {
       DATA_REQUEST
     };
 
-    enum ACKStep { READY, WAITING_FOR_HIGH, WAITING_FOR_LOW };  // [!]
+    enum ACKStep { READY, WAITING_FOR_HIGH, WAITING_FOR_LOW };
 
     u8 type;
-    u32 parameters[LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH];
+    u32 parameters[LINK_WIRELESS_MAX_COMMAND_TRANSFER_LENGTH];
     u32 responses[LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH];
     CommandResult result;
     State state;
     Step step;
     u32 sentParameters, totalParameters;
     u32 receivedResponses, totalResponses;
-    u32 pendingData;  // [!]
-    ACKStep ackStep;  // [!]
+    u32 pendingData;
+    ACKStep ackStep;
     bool isActive;
   };
 
   SessionState sessionState;
   AsyncCommand asyncCommand;
-  Config config;
   LinkSPI* linkSPI = new LinkSPI();
   LinkGPIO* linkGPIO = new LinkGPIO();
   State state = NEEDS_RESET;
-  u32 nextCommandData[LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH];
+  u32 nextCommandData[LINK_WIRELESS_MAX_COMMAND_TRANSFER_LENGTH];
   u32 nextCommandDataSize = 0;
   volatile bool isReadingMessages = false;
   volatile bool isAddingMessage = false;
-  volatile bool isPendingClearActive = false;
   Error lastError = NONE;
-  bool isEnabled = false;
+  volatile bool isEnabled = false;
 
-  void forwardMessageIfNeeded(Message& message) {
-    if (state == SERVING && config.forwarding && sessionState.playerCount > 2)
-      send(message.data, message.playerId);
-  }
+  // [!]
+  // void forwardMessageIfNeeded(Message& message) {
+  //   if (state == SERVING && config.forwarding && sessionState.playerCount >
+  //   2)
+  //     send(message.data, message.playerId);
+  // }
 
   void processAsyncCommand() {  // (irq only)
     if (!asyncCommand.result.success) {
@@ -681,40 +851,66 @@ class LinkWireless {
 
     switch (asyncCommand.type) {
       case LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS: {
-        // Accept connections (end)
+        // AcceptConnections (end)
+        u8 oldPlayerCount = sessionState.playerCount;
         sessionState.playerCount = 1 + asyncCommand.result.responsesSize;
+
+        if (sessionState.playerCount > oldPlayerCount &&
+            sessionState.playerCount == /* [!] config.maxPlayers */ 2) {
+          // EndHost (start)
+          sendCommandAsync(LINK_WIRELESS_COMMAND_END_HOST);
+        }
 
         break;
       }
+      // case LINK_WIRELESS_COMMAND_END_HOST: {
+      //   // EndHost (end)
+      //   break;
+      // }
       case LINK_WIRELESS_COMMAND_SEND_DATA: {
-        // Send data (end)
+        // SendData (end)
+
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         if (state == CONNECTED)
           sessionState.shouldWaitForServer = true;
         sessionState.sendReceiveLatch = !sessionState.sendReceiveLatch;
+#endif
+#ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
+        if (state == SERVING) {
+          // ReceiveData (start)
+          sendCommandAsync(LINK_WIRELESS_COMMAND_RECEIVE_DATA);
+        }
+#endif
 
         break;
       }
       case LINK_WIRELESS_COMMAND_RECEIVE_DATA: {
-        // Receive data (end)
+        // ReceiveData (end)
+
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         sessionState.sendReceiveLatch =
             sessionState.shouldWaitForServer || !sessionState.sendReceiveLatch;
+#endif
+
         if (asyncCommand.result.responsesSize == 0)
           break;
 
         sessionState.frameRecvCount++;
         sessionState.recvTimeout = 0;
+
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         sessionState.shouldWaitForServer = false;
+#endif
 
         trackRemoteTimeouts();
+        addIncomingMessagesFromData(asyncCommand.result);
 
-        if (!addIncomingMessagesFromData(asyncCommand.result))
-          return;
-
-        if (!checkRemoteTimeouts()) {
-          reset();
-          lastError = REMOTE_TIMEOUT;
-          return;
+#ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
+        if (state == CONNECTED) {
+          // SendData (start)
+          sendPendingData();
         }
+#endif
 
         break;
       }
@@ -723,38 +919,48 @@ class LinkWireless {
     }
   }
 
-  void acceptConnectionsOrSendData() {  // (irq only)
+  void acceptConnectionsOrTransferData() {  // (irq only)
     if (state == SERVING && !sessionState.acceptCalled &&
-        sessionState.playerCount < config.maxPlayers) {
-      // Accept connections (start)
+        sessionState.playerCount < /* [!] config.maxPlayers */ 2) {
+      // AcceptConnections (start)
       sendCommandAsync(LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS);
       sessionState.acceptCalled = true;
     } else if (state == CONNECTED || isConnected()) {
-      if (!sessionState.sendReceiveLatch || sessionState.shouldWaitForServer) {
-        // Receive data (start)
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
+      bool shouldReceive =
+          !sessionState.sendReceiveLatch || sessionState.shouldWaitForServer;
+#endif
+#ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
+      bool shouldReceive = state == CONNECTED;
+#endif
+
+      if (shouldReceive) {
+        // ReceiveData (start)
         sendCommandAsync(LINK_WIRELESS_COMMAND_RECEIVE_DATA);
       } else {
-        // Send data (start)
+        // SendData (start)
         sendPendingData();
       }
     }
   }
 
   void sendPendingData() {  // (irq only)
-    int lastPacketId = setDataFromOutgoingMessages();
+    // [!]
+    copyOutgoingState();
+    /*int lastPacketId = */ setDataFromOutgoingMessages();
     sendCommandAsync(LINK_WIRELESS_COMMAND_SEND_DATA, true);
-    clearOutgoingMessagesIfNeeded(lastPacketId);
+    // clearOutgoingMessagesIfNeeded(lastPacketId);
   }
 
-  int setDataFromOutgoingMessages() {  // (irq only)
+  void setDataFromOutgoingMessages() {  // (irq only) // [!]
     u32 maxTransferLength = getDeviceTransferLength();
 
     addData(0, true);
 
-    if (config.retransmission)
-      addConfirmations();
-    else
-      addPingMessageIfNeeded();
+    // if (/* [!] config.retransmission */ true)
+    addConfirmations();
+    // else
+    //   addPingMessageIfNeeded();
 
     int lastPacketId = -1;
 
@@ -776,15 +982,12 @@ class LinkWireless {
 
     // (add wireless header)
     u32 bytes = (nextCommandDataSize - 1) * 4;
-    nextCommandData[0] =
-        sessionState.currentPlayerId == 0
-            ? bytes
-            : (1 << (3 + sessionState.currentPlayerId * 5)) * bytes;
-
-    return lastPacketId;
+    nextCommandData[0] = sessionState.currentPlayerId == 0
+                             ? bytes
+                             : bytes << (3 + sessionState.currentPlayerId * 5);
   }
 
-  bool addIncomingMessagesFromData(CommandResult& result) {  // (irq only)
+  void addIncomingMessagesFromData(CommandResult& result) {  // (irq only)
     for (u32 i = 1; i < result.responsesSize; i++) {
       u32 rawMessage = result.responses[i];
       u16 headerInt = msB32(rawMessage);
@@ -797,7 +1000,7 @@ class LinkWireless {
       u32 partialPacketId = header.partialPacketId;
       bool isConfirmation = header.isConfirmation;
       u8 remotePlayerId = header.playerId;
-      u8 remotePlayerCount = LINK_WIRELESS_MIN_PLAYERS + header.clientCount;
+      RECEIVE_ARROWS = header.pressedArrows;  // [!]
       u32 checksum = header.dataChecksum;
       bool isPing = data == LINK_WIRELESS_MSG_PING;
 
@@ -812,18 +1015,17 @@ class LinkWireless {
       message.data = data;
       message.playerId = remotePlayerId;
 
-      if (!acceptMessage(message, isConfirmation, remotePlayerCount) || isPing)
+      if (!acceptMessage(message, isConfirmation, 2) || isPing)  // [!]
         continue;
 
-      if (config.retransmission && isConfirmation) {
+      if (/* [!] config.retransmission */ /*true &&*/ isConfirmation) {
         if (!handleConfirmation(message))
           continue;
       } else {
         sessionState.tmpMessagesToReceive.push(message);
       }
     }
-
-    return true;
+    copyIncomingState();
   }
 
   bool acceptMessage(Message& message,
@@ -834,7 +1036,7 @@ class LinkWireless {
           (sessionState.lastPacketIdFromClients[message.playerId] + 1) %
           LINK_WIRELESS_MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
+      if (/* [!] config.retransmission */ /*true &&*/ !isConfirmation &&
           message.packetId != expectedPacketId)
         return false;
 
@@ -845,7 +1047,7 @@ class LinkWireless {
       u32 expectedPacketId = (sessionState.lastPacketIdFromServer + 1) %
                              LINK_WIRELESS_MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
+      if (/* [!] config.retransmission */ /*true &&*/ !isConfirmation &&
           message.packetId != expectedPacketId)
         return false;
 
@@ -861,10 +1063,10 @@ class LinkWireless {
     return !isMessageFromCurrentPlayer;
   }
 
-  void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
-    if (!config.retransmission && lastPacketId > -1)
-      removeConfirmedMessages(lastPacketId);
-  }
+  // void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
+  //   if (!/* [!] config.retransmission */ true && lastPacketId > -1)
+  //     removeConfirmedMessages(lastPacketId);
+  // }
 
   void addPingMessageIfNeeded() {  // (irq only)
     if (sessionState.outgoingMessages.isEmpty() && !sessionState.pingSent) {
@@ -879,23 +1081,23 @@ class LinkWireless {
 
   void addConfirmations() {  // (irq only)
     if (state == SERVING) {
-      if (config.maxPlayers > 2 &&
-          (sessionState.lastPacketIdFromClients[1] == 0 ||
-           sessionState.lastPacketIdFromClients[2] == 0 ||
-           sessionState.lastPacketIdFromClients[3] == 0 ||
-           sessionState.lastPacketIdFromClients[4] == 0)) {
-        u32 lastPacketId = sessionState.lastPacketId;
-        u16 header = buildConfirmationHeader(0, lastPacketId);
-        u32 rawMessage = buildU32(header, lastPacketId & 0xffff);
-        addData(rawMessage);
-      }
+      // if (/* [!] config.maxPlayers */ 2 > 2 &&
+      //     (sessionState.lastPacketIdFromClients[1] == 0 ||
+      //      sessionState.lastPacketIdFromClients[2] == 0 ||
+      //      sessionState.lastPacketIdFromClients[3] == 0 ||
+      //      sessionState.lastPacketIdFromClients[4] == 0)) {
+      //   u32 lastPacketId = sessionState.lastPacketId;
+      //   u16 header = buildConfirmationHeader(0, lastPacketId);
+      //   u32 rawMessage = buildU32(header, lastPacketId & 0xffff);
+      //   addData(rawMessage);
+      // }
 
-      for (int i = 0; i < config.maxPlayers - 1; i++) {
-        u32 confirmationData = sessionState.lastPacketIdFromClients[1 + i];
-        u16 header = buildConfirmationHeader(1 + i, confirmationData);
-        u32 rawMessage = buildU32(header, confirmationData & 0xffff);
-        addData(rawMessage);
-      }
+      // for (int i = 0; i < /* [!] config.maxPlayers */ 2 - 1; i++) {
+      u32 confirmationData = sessionState.lastPacketIdFromClients[1];
+      u16 header = buildConfirmationHeader(1, confirmationData);
+      u32 rawMessage = buildU32(header, confirmationData & 0xffff);
+      addData(rawMessage);
+      // }
     } else {
       u32 confirmationData = sessionState.lastPacketIdFromServer;
       u16 header = buildConfirmationHeader(sessionState.currentPlayerId,
@@ -935,11 +1137,11 @@ class LinkWireless {
     sessionState.lastConfirmationFromClients[playerId] = confirmationData;
 
     u32 min = 0xffffffff;
-    for (int i = 0; i < config.maxPlayers - 1; i++) {
-      u32 confirmationData = sessionState.lastConfirmationFromClients[1 + i];
-      if (confirmationData > 0 && confirmationData < min)
-        min = confirmationData;
-    }
+    // for (int i = 0; i < /* [!] config.maxPlayers */ 2 - 1; i++) {
+    u32 data = sessionState.lastConfirmationFromClients[1];
+    if (data > 0 && data < min)
+      min = data;
+    // }
     if (min < 0xffffffff)
       removeConfirmedMessages(min);
   }
@@ -968,7 +1170,7 @@ class LinkWireless {
     header.partialPacketId = packetId % LINK_WIRELESS_MAX_PACKET_IDS;
     header.isConfirmation = isConfirmation;
     header.playerId = playerId;
-    header.clientCount = sessionState.playerCount - LINK_WIRELESS_MIN_PLAYERS;
+    header.pressedArrows = SEND_ARROWS;  // [!]
     header.dataChecksum = dataChecksum;
 
     MessageHeaderSerializer serializer;
@@ -998,38 +1200,38 @@ class LinkWireless {
   }
 
   u32 getDeviceTransferLength() {  // (irq only)
-    return state == SERVING
-               ? /*LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH*/ 8  // [!]
-               : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
-  }
-
-  void copyState() {  // (irq only)
-    copyOutgoingState();
-    copyIncomingState();
+    return state == SERVING ? LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
+                            : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
   }
 
   void copyOutgoingState() {  // (irq only)
-    if (!isAddingMessage) {
-      while (!sessionState.tmpMessagesToSend.isEmpty()) {
-        if (isSessionActive() && !_canSend())
-          break;
+    if (isAddingMessage)
+      return;
 
-        auto message = sessionState.tmpMessagesToSend.pop();
+    while (!sessionState.tmpMessagesToSend.isEmpty()) {
+      if (isSessionActive() && !_canSend())
+        break;
 
-        if (isSessionActive()) {
-          message.packetId = newPacketId();
-          sessionState.outgoingMessages.push(message);
-        }
-      }
+      auto message = sessionState.tmpMessagesToSend.pop();
 
-      if (isPendingClearActive) {
-        sessionState.outgoingMessages.clear();
-        isPendingClearActive = false;
+      if (isSessionActive()) {
+        message.packetId = newPacketId();
+        sessionState.outgoingMessages.push(message);
       }
     }
   }
 
-  void copyIncomingState();  // (irq only) [!]
+  void copyIncomingState() {  // (irq only)
+    if (isReadingMessages)
+      return;
+
+    while (!sessionState.tmpMessagesToReceive.isEmpty()) {
+      auto message = sessionState.tmpMessagesToReceive.pop();
+
+      if (state == SERVING || state == CONNECTED)
+        sessionState.incomingMessages.push(message);
+    }
+  }
 
   u32 newPacketId() {  // (irq only)
     return ++sessionState.lastPacketId;
@@ -1040,6 +1242,17 @@ class LinkWireless {
       nextCommandDataSize = 0;
     nextCommandData[nextCommandDataSize] = value;
     nextCommandDataSize++;
+  }
+
+  void startACKTimer() {
+    REG_TM[config.asyncACKTimerId].start = -1;
+    REG_TM[config.asyncACKTimerId].cnt =
+        TM_ENABLE | TM_IRQ | LINK_WIRELESS_BASE_FREQUENCY;
+  }
+
+  void stopACKTimer() {
+    REG_TM[config.asyncACKTimerId].cnt =
+        REG_TM[config.asyncACKTimerId].cnt & (~TM_ENABLE);
   }
 
   void recoverName(std::string& name,
@@ -1069,15 +1282,19 @@ class LinkWireless {
   }
 
   void resetState() {
+    SEND_ARROWS = 0;     // [!]
+    RECEIVE_ARROWS = 0;  // [!]
     this->state = NEEDS_RESET;
     this->sessionState.playerCount = 1;
     this->sessionState.currentPlayerId = 0;
     this->sessionState.recvTimeout = 0;
     this->sessionState.frameRecvCount = 0;
     this->sessionState.acceptCalled = false;
-    this->sessionState.sendReceiveLatch = false;
     this->sessionState.pingSent = false;
+#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
+    this->sessionState.sendReceiveLatch = false;
     this->sessionState.shouldWaitForServer = false;
+#endif
     this->sessionState.didReceiveLastPacketIdFromServer = false;
     this->sessionState.lastPacketId = 0;
     this->sessionState.lastPacketIdFromServer = 0;
@@ -1092,13 +1309,13 @@ class LinkWireless {
 
     if (!isReadingMessages)
       this->sessionState.incomingMessages.clear();
-
-    isPendingClearActive = true;
+    this->sessionState.outgoingMessages.clear();
   }
 
   void stop() {
     stopTimer();
-    _stopACKTimer();  // [!]
+    // if (usesAsyncACK()) // [!]
+    stopACKTimer();
 
     linkSPI->deactivate();
   }
@@ -1226,8 +1443,8 @@ class LinkWireless {
     asyncCommand.totalParameters = withData ? nextCommandDataSize : 0;
     asyncCommand.receivedResponses = 0;
     asyncCommand.totalResponses = 0;
-    asyncCommand.pendingData = 0;                         // [!]
-    asyncCommand.ackStep = AsyncCommand::ACKStep::READY;  // [!]
+    asyncCommand.pendingData = 0;
+    asyncCommand.ackStep = AsyncCommand::ACKStep::READY;
     asyncCommand.isActive = true;
 
     u32 command = buildCommand(type, asyncCommand.totalParameters);
@@ -1346,6 +1563,8 @@ class LinkWireless {
     return true;
   }
 
+  // bool usesAsyncACK() { return config.asyncACKTimerId > -1; }
+
   bool cmdTimeout(u32& lines, u32& vCount) {
     return timeout(LINK_WIRELESS_CMD_TIMEOUT, lines, vCount);
   }
@@ -1394,6 +1613,33 @@ class LinkWireless {
   u16 lsB32(u32 value) { return value & 0xffff; }
   u8 msB16(u16 value) { return value >> 8; }
   u8 lsB16(u16 value) { return value & 0xff; }
+
+#ifdef PROFILING_ENABLED
+  void profileStart() {
+    REG_TM1CNT_L = 0;
+    REG_TM2CNT_L = 0;
+
+    REG_TM1CNT_H = 0;
+    REG_TM2CNT_H = 0;
+
+    REG_TM2CNT_H = TM_ENABLE | TM_CASCADE;
+    REG_TM1CNT_H = TM_ENABLE | TM_FREQ_1;
+  }
+
+  u32 profileStop() {
+    REG_TM1CNT_H = 0;
+    REG_TM2CNT_H = 0;
+
+    return (REG_TM1CNT_L | (REG_TM2CNT_L << 16));
+  }
+
+ public:
+  u32 toMs(u32 cycles) {
+    // CPU Frequency * time per frame = cycles per frame
+    // 16780000 * (1/60) ~= 279666
+    return (cycles * 1000) / (279666 * 60);
+  }
+#endif
 };
 
 extern LinkWireless* linkWireless;
@@ -1408,6 +1654,10 @@ inline void LINK_WIRELESS_ISR_SERIAL() {
 
 inline void LINK_WIRELESS_ISR_TIMER() {
   linkWireless->_onTimer();
+}
+
+inline void LINK_WIRELESS_ISR_ACK_TIMER() {
+  linkWireless->_onACKTimer();
 }
 
 #endif  // LINK_WIRELESS_H
