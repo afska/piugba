@@ -29,7 +29,9 @@ module.exports = class Chart {
 
     return this._applyOffset(
       this._applyAsyncStopsAndAddHoldLengths(
-        this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
+        this._combineWarps(
+          this._applyFakes(this._sort([...timingEvents, ...noteEvents]))
+        )
       )
     );
   }
@@ -336,6 +338,27 @@ module.exports = class Chart {
 
       return it;
     });
+  }
+
+  /**
+   * Combines warp segments (#WARPS:...=... or #BPMS:...=1000000) that occur in the exact same beat.
+   * Retains the segment with greater length.
+   */
+  _combineWarps(events) {
+    let lastWarp = null;
+
+    return _.map(events, (it) => {
+      if (it.type === Events.WARP) {
+        if (lastWarp != null && lastWarp.beat === it.beat) {
+          if (it.length >= lastWarp.length) lastWarp.isIgnoredWarp = true;
+          else it.isIgnoredWarp = true;
+        }
+
+        if (!it.isIgnoredWarp) lastWarp = it;
+      }
+
+      return it;
+    }).filter((it) => !it.isIgnoredWarp);
   }
 
   /**
