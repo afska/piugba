@@ -39,7 +39,6 @@ std::vector<Sprite*> ControlsScene::sprites() {
   sprites.push_back(instructor->get());
   for (auto& it : buttons)
     sprites.push_back(it->get());
-  sprites.push_back(buttons[RIGHT_CENTER]->get());
 
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
     sprites.push_back(comboArrows[i]->get());
