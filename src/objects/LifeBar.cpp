@@ -12,12 +12,11 @@
 
 #define LIFEBAR_COLORS 18
 
-const u32 ANIMATION_OFFSET = 2;
+const int ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
 const u32 MIN_VALUE = 0;
 const u32 ALMOST_MIN_VALUE = 1;
 const u32 MAX_VALUE = 10;
-const u32 MIN_ANIMATED_VALUE = 1;
 const u32 UNIT = 2;
 const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
     {127, 4345, 410, 7606, 2686, 1595, 766, 700, 927, 894, 988, 923, 1017, 951,
@@ -58,8 +57,8 @@ void LifeBar::setLife(int life) {
   mosaicValue = LIFE_TO_MOSAIC_LUT[absLife];
 }
 
-void LifeBar::blink(ForegroundPaletteManager* foregroundPalette) {
-  animatedValue = value;
+void LifeBar::blink() {
+  animatedOffset = 0;
   wait = WAIT_TIME;
 }
 
@@ -83,9 +82,8 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   if (wait == 0 || wait == 2)
     animatedFlag = !animatedFlag;
 
-  if (animatedValue > (u32)max(MIN_ANIMATED_VALUE, value - ANIMATION_OFFSET) &&
-      wait == 0) {
-    animatedValue--;
+  if (animatedOffset > -ANIMATION_OFFSET && wait == 0) {
+    animatedOffset--;
     wait = WAIT_TIME;
   } else if (wait > 0)
     wait--;
@@ -115,7 +113,7 @@ void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
       COLOR disabled = isBorder ? DISABLED_COLOR_BORDER : DISABLED_COLOR;
       COLOR cursor = isBorder ? CURSOR_COLOR_BORDER : CURSOR_COLOR;
       u32 index = value - 1;
-      u32 animatedIndex = animatedValue - 1;
+      u32 animatedIndex = max(index + animatedOffset, 0);
 
       color = PALETTE_COLORS[playerId][i];
       if (i >= animatedIndex * UNIT)

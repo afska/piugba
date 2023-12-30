@@ -607,7 +607,7 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
   blinkFrame = min(blinkFrame + ALPHA_BLINK_LEVEL, ALPHA_BLINK_LEVEL);
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
-    lifeBars[playerId]->blink(foregroundPalette.get());
+    lifeBars[playerId]->blink();
 
   for (auto& arrowHolder : arrowHolders)
     if (!isAnyKeyPressed)

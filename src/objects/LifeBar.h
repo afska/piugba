@@ -18,7 +18,7 @@ class LifeBar {
   inline u8 getMosaicValue() { return mosaicValue; }
 
   void setLife(int life);
-  void blink(ForegroundPaletteManager* foregroundPalette);
+  void blink();
   void die();
   void relocate();
 
@@ -32,7 +32,7 @@ class LifeBar {
   u8 playerId;
   u32 value = Div(INITIAL_LIFE, 10);
   u32 absLife = INITIAL_LIFE;
-  u32 animatedValue = value;
+  int animatedOffset = 0;
   u32 wait = 0;
   u8 mosaicValue = 0;
   bool animatedFlag = false;
