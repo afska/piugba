@@ -45,9 +45,9 @@
   "- Screen has visual MODS"
 
 #define MODE_DEATH_MIX            \
-  "In DEATHMIX MODE, you\r\n"     \
-  "play parts of all songs.\r\n"  \
-  "MISS? Lose a life or DIE.\r\n" \
+  "In DEATHMIX MODE, you'll\r\n"  \
+  "play a mixed nonstop set.\r\n" \
+  "> If you MISS, you DIE <\r\n"  \
   "Earn lives with combos!"
 
 #define KEYS_HINT                 \

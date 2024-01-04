@@ -8,8 +8,8 @@
 #include "gameplay/SequenceMessages.h"
 #include "utils/SceneUtils.h"
 
-const u32 DIFFICULTY_X = 110;
-const u32 DIFFICULTY_Y = 109;
+const u32 DIFFICULTY_X = 0;  // TODO: 110
+const u32 DIFFICULTY_Y = 0;  // TODO: 109
 
 std::vector<Sprite*> DeathMixScene::sprites() {
   auto sprites = TalkScene::sprites();
