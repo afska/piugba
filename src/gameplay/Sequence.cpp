@@ -11,6 +11,7 @@
 #include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
+#include "scenes/DeathMixScene.h"
 #include "scenes/MultiplayerLobbyScene.h"
 #include "scenes/SelectionScene.h"
 #include "scenes/SongScene.h"
@@ -134,11 +135,12 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
                                    : LinkUniversal::Protocol::AUTODETECT);
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);
+  } else if (gameMode == GameMode::DEATH_MIX) {
+    goTo(new DeathMixScene(_engine, _fs));
   } else {
-    auto message = gameMode == GameMode::CAMPAIGN     ? MODE_CAMPAIGN
-                   : gameMode == GameMode::ARCADE     ? MODE_ARCADE
-                   : gameMode == GameMode::IMPOSSIBLE ? MODE_IMPOSSIBLE
-                                                      : MODE_DEATH_MIX;
+    auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
+                   : gameMode == GameMode::ARCADE ? MODE_ARCADE
+                                                  : MODE_IMPOSSIBLE;
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {
