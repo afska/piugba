@@ -135,9 +135,10 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);
   } else {
-    auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
-                   : gameMode == GameMode::ARCADE ? MODE_ARCADE
-                                                  : MODE_IMPOSSIBLE;
+    auto message = gameMode == GameMode::CAMPAIGN     ? MODE_CAMPAIGN
+                   : gameMode == GameMode::ARCADE     ? MODE_ARCADE
+                   : gameMode == GameMode::IMPOSSIBLE ? MODE_IMPOSSIBLE
+                                                      : MODE_DEATH_MIX;
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {

@@ -405,6 +405,10 @@ void StartScene::goToGame() {
       gameMode = GameMode::IMPOSSIBLE;
       break;
     }
+    case 7: {
+      gameMode = GameMode::DEATH_MIX;
+      break;
+    }
     default: {
       gameMode = GameMode::CAMPAIGN;
     }

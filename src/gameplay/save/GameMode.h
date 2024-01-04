@@ -3,7 +3,14 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-enum GameMode : u8 { CAMPAIGN, ARCADE, IMPOSSIBLE, MULTI_VS, MULTI_COOP };
+enum GameMode : u8 {
+  CAMPAIGN,
+  ARCADE,
+  IMPOSSIBLE,
+  MULTI_VS,
+  MULTI_COOP,
+  DEATH_MIX
+};
 
 #define IS_STORY(GAME_MODE) \
   (GAME_MODE == GameMode::CAMPAIGN || GAME_MODE == GameMode::IMPOSSIBLE)

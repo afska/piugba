@@ -157,7 +157,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   // validate state
   u8 isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   u8 gameMode = SAVEFILE_read8(SRAM->state.gameMode);
-  if (isPlaying >= 2 || gameMode >= 5) {
+  if (isPlaying >= 2 || gameMode >= 6) {
     SAVEFILE_write8(SRAM->state.isPlaying, 0);
     SAVEFILE_write8(SRAM->state.gameMode, 0);
     fixes |= 0b1000;

@@ -44,6 +44,12 @@
   "- Patterns are MIRRORED\r\n" \
   "- Screen has visual MODS"
 
+#define MODE_DEATH_MIX            \
+  "In DEATHMIX MODE, you\r\n"     \
+  "play parts of all songs.\r\n"  \
+  "MISS? Lose a life or DIE.\r\n" \
+  "Earn lives with combos!"
+
 #define KEYS_HINT                 \
   "To change the speed, use:\r\n" \
   "      START/SELECT\r\n"        \
