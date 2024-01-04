@@ -1,7 +1,5 @@
 #include "DanceGradeScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
 #include "data/content/_compiled_sprites/palette_grade_multi.h"

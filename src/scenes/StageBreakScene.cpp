@@ -1,7 +1,5 @@
 #include "StageBreakScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_break.h"

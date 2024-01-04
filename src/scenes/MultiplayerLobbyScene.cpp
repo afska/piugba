@@ -1,7 +1,5 @@
 #include "MultiplayerLobbyScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include <string>
 
 #include "SelectionScene.h"

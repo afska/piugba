@@ -1,7 +1,5 @@
 #include "SettingsScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include "CalibrateScene.h"
 #include "StartScene.h"
 #include "assets.h"

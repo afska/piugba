@@ -1,6 +1,5 @@
 #include "SongScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 

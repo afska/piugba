@@ -1,7 +1,6 @@
 #include "StartScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 
