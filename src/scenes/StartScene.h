@@ -98,6 +98,7 @@ class StartScene : public Scene {
   void animateBpm();
   void animateArrows(int bounceOffset);
   void animateInputs(int bounceOffset);
+  void updateExpandedOrCollapsedButtons();
 
   void printTitle();
   void processKeys(u16 keys);

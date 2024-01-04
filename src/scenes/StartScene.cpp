@@ -282,6 +282,33 @@ void StartScene::animateInputs(int bounceOffset) {
   }
 }
 
+void StartScene::updateExpandedOrCollapsedButtons() {
+  isArcadeExpanded = ENV_ARCADE || (selectedMode >= 2 && selectedMode <= 4);
+  isChallengesExpanded = selectedMode >= 6;
+
+  if (isArcadeExpanded) {
+    buttons[1]->hide();
+    buttons[2]->show();
+    buttons[3]->show();
+    buttons[4]->show();
+  } else {
+    buttons[1]->show();
+    buttons[2]->hide();
+    buttons[3]->hide();
+    buttons[4]->hide();
+  }
+
+  if (isChallengesExpanded) {
+    buttons[5]->hide();
+    buttons[6]->show();
+    buttons[7]->show();
+  } else {
+    buttons[5]->show();
+    buttons[6]->hide();
+    buttons[7]->hide();
+  }
+}
+
 void StartScene::printTitle() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().clear();
@@ -309,12 +336,15 @@ void StartScene::processSelectionChange() {
       (!ENV_ARCADE && selectedMode > 0) || (ENV_ARCADE && selectedMode > 2);
   if (inputs[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
+
     if (selectedMode == 5 && isChallengesExpanded)
       selectedMode--;
     if (selectedMode == 4 && !isArcadeExpanded)
       selectedMode -= 3;
     if (selectedMode == 1 && isArcadeExpanded)
       selectedMode--;
+
+    updateExpandedOrCollapsedButtons();
     pixelBlink->blink();
     printTitle();
   }
@@ -325,12 +355,15 @@ void StartScene::processSelectionChange() {
       (ENV_ARCADE && selectedMode < 4);
   if (inputs[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
+
     if (selectedMode == 2 && !isArcadeExpanded)
       selectedMode += 3;
     if (selectedMode == 1 && isArcadeExpanded)
       selectedMode++;
     if (selectedMode == 5 && isChallengesExpanded)
       selectedMode++;
+
+    updateExpandedOrCollapsedButtons();
     pixelBlink->blink();
     printTitle();
   }
@@ -360,12 +393,8 @@ bool StartScene::isPressingAdminCombo(u16 keys) {
 
 void StartScene::goToGame() {
   if (selectedMode == 1) {
-    isArcadeExpanded = true;
-    buttons[1]->hide();
-    buttons[2]->show();
-    buttons[3]->show();
-    buttons[4]->show();
     selectedMode = 3;
+    updateExpandedOrCollapsedButtons();
     pixelBlink->blink();
     printTitle();
     return;
@@ -375,10 +404,8 @@ void StartScene::goToGame() {
         SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
     if (isImpossibleModeUnlocked) {
       isChallengesExpanded = true;
-      buttons[5]->hide();
-      buttons[6]->show();
-      buttons[7]->show();
       selectedMode = 6;
+      updateExpandedOrCollapsedButtons();
       pixelBlink->blink();
       printTitle();
       return;
