@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include "objects/ui/Instructor.h"
-
 extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
@@ -28,8 +26,6 @@ class TextScene : public Scene {
   bool hasStarted = false;
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
-
-  std::unique_ptr<Instructor> instructor;
 
   void write(std::string text);
   inline bool hasFinished() { return row == lines.size(); }

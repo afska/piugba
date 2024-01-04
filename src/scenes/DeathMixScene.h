@@ -3,6 +3,8 @@
 
 #include "TalkScene.h"
 #include "gameplay/SequenceMessages.h"
+#include "objects/ui/Difficulty.h"
+#include "objects/ui/NumericProgress.h"
 
 class DeathMixScene : public TalkScene {
  public:
@@ -21,6 +23,11 @@ class DeathMixScene : public TalkScene {
   void tick(u16 keys) override;
 
  private:
+  std::unique_ptr<Difficulty> difficulty;
+  std::unique_ptr<NumericProgress> progress;
+
+  void setUpSpritesPalette();
+
   void confirm(u16 keys);
 };
 

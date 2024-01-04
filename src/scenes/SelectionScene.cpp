@@ -33,6 +33,8 @@ const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
 const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
+const u32 DIFFICULTY_X = 79;
+const u32 DIFFICULTY_Y = 16;
 const u32 CHANNEL_BADGE_X[] = {22, 82, 142, 202};
 const u32 CHANNEL_BADGE_Y = 49;
 const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
@@ -114,7 +116,8 @@ void SelectionScene::load() {
   TextStream::instance().setMosaic(true);
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
-  difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
+  difficulty =
+      std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
   multiplier = std::unique_ptr<Multiplier>{
       new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
   progress = std::unique_ptr<NumericProgress>{new NumericProgress()};

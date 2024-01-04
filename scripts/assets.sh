@@ -81,7 +81,6 @@ mv \
 # StageBreakScene
 grit \
   spr_arrows.bmp \
-  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_break.c
 mv \
@@ -112,6 +111,18 @@ mv \
   spr_grades_mini_evaluation.h \
   spr_grades_mini_evaluation.c \
   palette_grade_multi.* \
+  "$DESTINATION"
+
+# DeathMixScene
+grit \
+  spr_arrows.bmp \
+  spr_combo.bmp \
+  spr_numbers.bmp \
+  spr_difficulties.bmp \
+  spr_of.bmp \
+  -ftc -pS -gB8 -gT ff00ff -O palette_deathmix.c
+mv \
+  palette_deathmix.* \
   "$DESTINATION"
 
 # [Cleanup]

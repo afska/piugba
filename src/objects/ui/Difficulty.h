@@ -9,7 +9,7 @@
 
 class Difficulty {
  public:
-  Difficulty();
+  Difficulty(u32 x, u32 y);
 
   inline DifficultyLevel getValue() { return value; }
 
@@ -22,6 +22,8 @@ class Difficulty {
   DifficultyLevel value = DifficultyLevel::NORMAL;
   std::unique_ptr<Sprite> leftSprite;
   std::unique_ptr<Sprite> rightSprite;
+  u32 x;
+  u32 y;
 };
 
 #endif  // DIFFICULTY_H
