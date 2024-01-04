@@ -40,7 +40,8 @@ class StartScene : public Scene {
   std::vector<std::unique_ptr<ArrowSelector>> inputs;
   std::vector<std::unique_ptr<ArrowHolder>> arrowHolders;
   std::unique_ptr<ObjectPool<Arrow>> arrowPool;
-  bool isExpanded = false;
+  bool isArcadeExpanded = false;
+  bool isChallengesExpanded = false;
   bool wasNotPressingAdminCombo = false;
   int lastBeat = 0;
   int lastTick = 0;

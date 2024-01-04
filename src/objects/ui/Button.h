@@ -3,7 +3,14 @@
 
 #include <libgba-sprite-engine/sprites/sprite.h>
 
-enum ButtonType { BLUE, GRAY, ORANGE, LEVEL_METER, SUB_BUTTON };
+enum ButtonType {
+  BLUE,
+  GRAY,
+  ORANGE,
+  LEVEL_METER,
+  SUB_BUTTON,
+  SUB_BUTTON_ORANGE
+};
 
 class Button {
  public:

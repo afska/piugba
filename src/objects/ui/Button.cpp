@@ -13,16 +13,20 @@ Button::Button(ButtonType type, u32 x, u32 y, bool reuseTiles) {
   SpriteBuilder<Sprite> builder;
   sprite =
       builder
-          .withData(type == ButtonType::LEVEL_METER
-                        ? spr_levelTiles
-                        : type == ButtonType::SUB_BUTTON ? spr_buttons_miniTiles
-                                                         : spr_buttonsTiles,
-                    type == ButtonType::LEVEL_METER
-                        ? sizeof(spr_levelTiles)
-                        : type == ButtonType::SUB_BUTTON
-                              ? sizeof(spr_buttons_miniTiles)
-                              : sizeof(spr_buttonsTiles))
-          .withSize(type == ButtonType::SUB_BUTTON ? SIZE_16_16 : SIZE_32_32)
+          .withData(type == ButtonType::LEVEL_METER ? spr_levelTiles
+                    : type == ButtonType::SUB_BUTTON ||
+                            type == ButtonType::SUB_BUTTON_ORANGE
+                        ? spr_buttons_miniTiles
+                        : spr_buttonsTiles,
+                    type == ButtonType::LEVEL_METER ? sizeof(spr_levelTiles)
+                    : type == ButtonType::SUB_BUTTON ||
+                            type == ButtonType::SUB_BUTTON_ORANGE
+                        ? sizeof(spr_buttons_miniTiles)
+                        : sizeof(spr_buttonsTiles))
+          .withSize(type == ButtonType::SUB_BUTTON ||
+                            type == ButtonType::SUB_BUTTON_ORANGE
+                        ? SIZE_16_16
+                        : SIZE_32_32)
           .withLocation(x, y)
           .buildPtr();
 
@@ -33,13 +37,20 @@ Button::Button(ButtonType type, u32 x, u32 y, bool reuseTiles) {
   if (reuseTiles)
     SPRITE_reuseTiles(sprite.get());
 
-  if (type != ButtonType::LEVEL_METER && type != ButtonType::SUB_BUTTON)
+  if (type != ButtonType::LEVEL_METER && type != ButtonType::SUB_BUTTON &&
+      type != ButtonType::SUB_BUTTON_ORANGE)
     SPRITE_goToFrame(sprite.get(), type);
+  if (type == SUB_BUTTON_ORANGE)
+    SPRITE_goToFrame(sprite.get(), 2);
 }
 
 void Button::setSelected(bool isSelected) {
   if (type == ButtonType::SUB_BUTTON) {
     SPRITE_goToFrame(sprite.get(), isSelected ? 1 : 0);
+    return;
+  }
+  if (type == ButtonType::SUB_BUTTON_ORANGE) {
+    SPRITE_goToFrame(sprite.get(), isSelected ? 3 : 2);
     return;
   }
 
