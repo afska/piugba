@@ -18,4 +18,7 @@ enum GameMode : u8 {
 #define IS_MULTIPLAYER(GAME_MODE) \
   (GAME_MODE == GameMode::MULTI_VS || GAME_MODE == GameMode::MULTI_COOP)
 
+#define IS_CHALLENGE(GAME_MODE) \
+  (GAME_MODE == GameMode::IMPOSSIBLE || GAME_MODE == GameMode::DEATH_MIX)
+
 #endif  // GAME_MODE_H

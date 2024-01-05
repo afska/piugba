@@ -123,9 +123,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   auto lastGameMode = SAVEFILE_getGameMode();
   bool isTransitioningBetweenCampaignAndChallenges =
-      (lastGameMode == GameMode::CAMPAIGN &&
-       gameMode >= GameMode::IMPOSSIBLE) ||
-      (lastGameMode >= GameMode::IMPOSSIBLE && gameMode == GameMode::CAMPAIGN);
+      (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
+      (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
   if (lastGameMode != gameMode &&
       !isTransitioningBetweenCampaignAndChallenges) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;

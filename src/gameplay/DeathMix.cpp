@@ -24,11 +24,10 @@ DeathMix::DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel) {
 }
 
 SongChart DeathMix::getNextSongChart() {
-  if (current == total - 1)
+  if (current >= total)
     return SongChart{.song = NULL, .chart = NULL};
 
-  Song* song =
-      SONG_parse(fs, songFiles[current].get(), true, std::vector<u8>{});
+  Song* song = SONG_parse(fs, songFiles[current].get(), true);
   Chart* chart = SONG_findChartByDifficultyLevel(song, difficultyLevel);
 
   current++;
