@@ -52,12 +52,14 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
                      Song* song,
                      Chart* chart,
-                     Chart* remoteChart)
+                     Chart* remoteChart,
+                     std::unique_ptr<DeathMix> deathMix)
     : Scene(engine) {
   this->fs = fs;
   this->song = song;
   this->chart = chart;
   this->remoteChart = remoteChart != NULL ? remoteChart : chart;
+  this->deathMix = std::move(deathMix);
 }
 
 std::vector<Background*> SongScene::backgrounds() {

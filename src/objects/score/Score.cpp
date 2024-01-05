@@ -1,6 +1,7 @@
 #include "Score.h"
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
+#include "gameplay/save/State.h"
 
 const int LIFE_DIFFS[] = {1, 1, 0, -6, -12};
 const int POINT_DIFFS[] = {1000, 500, 100, -200, -500};
@@ -18,6 +19,9 @@ Score::Score(LifeBar* lifeBar, u8 playerId) {
 
   for (u32 i = 0; i < counters.size(); i++)
     counters[i] = 0;
+
+  if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH)
+    lifeBar->setLife(MIN_LIFE);
 }
 
 bool Score::update(FeedbackType feedbackType, bool isLong) {
@@ -63,6 +67,8 @@ void Score::tick() {
 bool Score::updateLife(FeedbackType feedbackType) {
   if (lifeBar->getIsDead())
     return true;
+  if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH)
+    return life >= MIN_LIFE;
 
   u32 bonus = 0;
   if (feedbackType == FeedbackType::PERFECT) {

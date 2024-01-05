@@ -155,7 +155,8 @@ void DeathMixScene::confirm(u16 keys) {
 
     STATE_setup(songChart.song, songChart.chart);
     engine->transitionIntoScene(
-        new SongScene(engine, fs, songChart.song, songChart.chart, NULL),
+        new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
+                      std::move(deathMix)),
         new PixelTransitionEffect());
   }
 }
