@@ -67,6 +67,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     chart->type = static_cast<ChartType>(parse_u8(data, &cursor));
     chart->isDouble = chart->type == ChartType::DOUBLE_CHART ||
                       chart->type == ChartType::DOUBLE_COOP_CHART;
+    chart->customOffset = 0;
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
     bool shouldParseEvents =
