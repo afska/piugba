@@ -35,6 +35,8 @@ const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 DIFFICULTY_X = 79;
 const u32 DIFFICULTY_Y = 16;
+const u32 PROGRESS_X = 63;
+const u32 PROGRESS_Y = 131;
 const u32 CHANNEL_BADGE_X[] = {22, 82, 142, 202};
 const u32 CHANNEL_BADGE_Y = 49;
 const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
@@ -120,7 +122,8 @@ void SelectionScene::load() {
       std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
   multiplier = std::unique_ptr<Multiplier>{
       new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
-  progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
+  progress = std::unique_ptr<NumericProgress>{
+      new NumericProgress(PROGRESS_X, PROGRESS_Y)};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   if (IS_STORY(SAVEFILE_getGameMode())) {
@@ -169,6 +172,8 @@ void SelectionScene::tick(u16 keys) {
     init++;
   }
 
+  processKeys(keys);
+
   if (pixelBlink->tick() && isCrossingPage)
     stopPageCross();
   for (auto& it : arrowSelectors)
@@ -179,8 +184,6 @@ void SelectionScene::tick(u16 keys) {
     loadingIndicator1->tick();
     loadingIndicator2->tick();
   }
-
-  processKeys(keys);
 
   if (isMultiplayer()) {
     processMultiplayerUpdates();

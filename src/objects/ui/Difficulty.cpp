@@ -27,9 +27,9 @@ Difficulty::Difficulty(u32 x, u32 y) {
   SPRITE_reuseTiles(rightSprite.get());
   SPRITE_goToFrame(rightSprite.get(), FRAME_MAL);
 
-  setValue(value);
   this->x = x;
   this->y = y;
+  setValue(value);
 }
 
 void Difficulty::setValue(DifficultyLevel value) {

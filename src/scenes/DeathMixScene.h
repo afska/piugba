@@ -25,9 +25,12 @@ class DeathMixScene : public TalkScene {
  private:
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
+  std::unique_ptr<ArrowSelector> backButton;
+  std::unique_ptr<ArrowSelector> nextButton;
 
   void setUpSpritesPalette();
 
+  void processKeys(u16 keys);
   void confirm(u16 keys);
 };
 

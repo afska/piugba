@@ -10,7 +10,7 @@
 
 class NumericProgress {
  public:
-  NumericProgress();
+  NumericProgress(u32 x, u32 y);
 
   void setValue(u32 current, u32 total);
 
