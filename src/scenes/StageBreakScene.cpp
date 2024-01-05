@@ -1,5 +1,6 @@
 #include "StageBreakScene.h"
 
+#include "DeathMixScene.h"
 #include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_break.h"
@@ -162,8 +163,14 @@ void StageBreakScene::animate() {
 
 void StageBreakScene::finish() {
   player_stop();
-  engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new PixelTransitionEffect());
+
+  if (SAVEFILE_getGameMode() == GameMode::DEATH_MIX) {
+    engine->transitionIntoScene(new DeathMixScene(engine, fs),
+                                new PixelTransitionEffect());
+  } else {
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new PixelTransitionEffect());
+  }
 }
 
 void StageBreakScene::processMultiplayerUpdates() {

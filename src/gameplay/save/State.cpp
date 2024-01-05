@@ -123,6 +123,13 @@ void STATE_setup(Song* song, Chart* chart) {
     }
   }
 
+  if (gameMode == GameMode::DEATH_MIX) {
+    GameState.mods.stageBreak =
+        !ENV_DEVELOPMENT || ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
+            ? StageBreakOpts::sSUDDEN_DEATH
+            : StageBreakOpts::sOFF;
+  }
+
   GameState.positionX[0] =
       isMultiplayer() ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)
       : isSinglePlayerDouble()
