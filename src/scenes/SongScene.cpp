@@ -704,27 +704,27 @@ void SongScene::processModsBeat() {
     autoModCounter++;
     if (autoModCounter == autoModDuration) {
       autoModCounter = 0;
-      autoModDuration = qran_range(1, 4);
+      autoModDuration = qran_range(1, 5);
 
       auto previousColorFilter = GameState.mods.colorFilter;
       GameState.mods.pixelate =
-          qran_range(1, 100) > 75
-              ? (qran_range(1, 100) > 50 ? PixelateOpts::pBLINK_IN
+          qran_range(1, 101) > 75
+              ? (qran_range(1, 101) > 50 ? PixelateOpts::pBLINK_IN
                                          : PixelateOpts::pFIXED)
               : PixelateOpts::pOFF;
-      GameState.mods.jump = qran_range(1, 100) > 50 && !$isDouble
+      GameState.mods.jump = qran_range(1, 101) > 50 && !$isDouble
                                 ? JumpOpts::jLINEAR
                                 : JumpOpts::jOFF;
       GameState.mods.reduce =
           GameState.mods.autoMod == AutoModOpts::aINSANE
-              ? (qran_range(1, 100) > 50
-                     ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
+              ? (qran_range(1, 101) > 50
+                     ? (qran_range(1, 101) > 50 ? ReduceOpts::rLINEAR
                                                 : ReduceOpts::rMICRO)
                      : ReduceOpts::rOFF)
               : ReduceOpts::rMICRO;
       GameState.mods.bounce = BounceOpts::bALL;
       GameState.mods.colorFilter =
-          qran_range(1, 100) > 50 ? static_cast<ColorFilter>(qran_range(1, 16))
+          qran_range(1, 101) > 50 ? static_cast<ColorFilter>(qran_range(1, 17))
                                   : ColorFilter::NO_FILTER;
 
       mosaic = targetMosaic = 0;

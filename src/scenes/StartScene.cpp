@@ -247,7 +247,7 @@ void StartScene::animateBpm() {
     arrowPool->create([this](Arrow* it) {
       it->initialize(ArrowType::UNIQUE,
                      static_cast<ArrowDirection>(qran_range(0, ARROWS_TOTAL)),
-                     0, 0, didWinImpossibleMode() && qran_range(1, 100) > 50);
+                     0, 0, didWinImpossibleMode() && qran_range(1, 101) > 50);
       it->get()->moveTo(it->get()->getX(), DEMO_ARROW_INITIAL_Y);
       it->press();
     });
