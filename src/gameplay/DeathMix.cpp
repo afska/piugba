@@ -9,8 +9,8 @@ DeathMix::DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel) {
   u32 pages =
       Div(librarySize, PAGE_SIZE) + (DivMod(librarySize, PAGE_SIZE) > 0);
 
-  for (u32 i = 0; i < pages; i += PAGE_SIZE)
-    library->loadSongs(songFiles, difficultyLevel, i);
+  for (u32 i = 0; i < pages; i++)
+    library->loadSongs(songFiles, difficultyLevel, i * PAGE_SIZE);
 
   for (int i = songFiles.size() - 1; i > 0; --i) {
     int j = qran_range(0, i + 1);
