@@ -166,6 +166,8 @@ void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
+  STATE_setup(song, chart);
+
   auto gameMode = SAVEFILE_getGameMode();
 
   if (!isMultiplayer())

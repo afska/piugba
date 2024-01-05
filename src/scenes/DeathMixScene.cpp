@@ -3,9 +3,10 @@
 #include <string>
 
 #include "SettingsScene.h"
-#include "StartScene.h"  // TODO: REMOVE
+#include "SongScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
+#include "gameplay/DeathMix.h"
 #include "gameplay/Key.h"
 #include "gameplay/SequenceMessages.h"
 #include "utils/SceneUtils.h"
@@ -120,7 +121,7 @@ void DeathMixScene::processMenuEvents() {
 
   if (settingsMenuInput->hasBeenPressedNow()) {
     player_stop();
-    engine->transitionIntoScene(new SettingsScene(engine, fs, true),
+    engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new PixelTransitionEffect());
   }
 }
@@ -148,7 +149,13 @@ void DeathMixScene::confirm(u16 keys) {
       SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
 
   if (isPressed) {
-    engine->transitionIntoScene(new StartScene(engine, fs),
-                                new PixelTransitionEffect());
+    auto deathMix =
+        std::unique_ptr<DeathMix>{new DeathMix(fs, difficulty->getValue())};
+    auto songChart = deathMix->getNextSongChart();
+
+    STATE_setup(songChart.song, songChart.chart);
+    engine->transitionIntoScene(
+        new SongScene(engine, fs, songChart.song, songChart.chart, NULL),
+        new PixelTransitionEffect());
   }
 }

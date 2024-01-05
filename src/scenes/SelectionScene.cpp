@@ -359,7 +359,6 @@ void SelectionScene::goToSong() {
   if (remoteChart != NULL)
     remoteChart->customOffset = customOffset;
 
-  STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
