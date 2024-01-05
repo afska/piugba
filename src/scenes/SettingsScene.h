@@ -7,7 +7,7 @@ class SettingsScene : public MenuScene {
  public:
   SettingsScene(std::shared_ptr<GBAEngine> engine,
                 const GBFS_FILE* fs,
-                bool deathMix = false);
+                bool returnToDeathMix = false);
 
  protected:
   u16 getCloseKey() override;
@@ -18,7 +18,7 @@ class SettingsScene : public MenuScene {
   void close() override;
 
  private:
-  bool deathMix = false;
+  bool returnToDeathMix = false;
 };
 
 #endif  // SETTINGS_SCENE_H

@@ -20,9 +20,9 @@
 
 SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs,
-                             bool deathMix)
+                             bool returnToDeathMix)
     : MenuScene(engine, fs) {
-  this->deathMix = deathMix;
+  this->returnToDeathMix = returnToDeathMix;
 }
 
 u16 SettingsScene::getCloseKey() {
@@ -137,7 +137,7 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
 void SettingsScene::close() {
   player_stop();
 
-  if (deathMix) {
+  if (returnToDeathMix) {
     engine->transitionIntoScene(new DeathMixScene(engine, fs),
                                 new PixelTransitionEffect());
   } else {
