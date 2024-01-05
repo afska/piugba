@@ -119,7 +119,12 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   auto lastGameMode = SAVEFILE_getGameMode();
-  if (lastGameMode != gameMode) {
+  bool isTransitioningBetweenCampaignAndChallenges =
+      (lastGameMode == GameMode::CAMPAIGN &&
+       gameMode >= GameMode::IMPOSSIBLE) ||
+      (lastGameMode >= GameMode::IMPOSSIBLE && gameMode == GameMode::CAMPAIGN);
+  if (lastGameMode != gameMode &&
+      !isTransitioningBetweenCampaignAndChallenges) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
