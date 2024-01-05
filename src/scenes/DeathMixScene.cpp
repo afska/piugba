@@ -14,6 +14,7 @@ extern "C" {
 #include "player/player.h"
 }
 
+const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 DIFFICULTY_X = 111;
 const u32 DIFFICULTY_Y = 115;
 const u32 PROGRESS_X = 94;
@@ -42,6 +43,7 @@ void DeathMixScene::load() {
 
   setUpSpritesPalette();
 
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   multiplier = std::unique_ptr<Multiplier>{new Multiplier(
       MULTIPLIER_X, MULTIPLIER_Y, SAVEFILE_read8(SRAM->mods.multiplier))};
   difficulty =
@@ -55,6 +57,9 @@ void DeathMixScene::load() {
   backButton->get()->moveTo(BACK_X, BACK_Y);
   nextButton->get()->moveTo(NEXT_X, NEXT_Y);
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
+
+  auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+  difficulty->setValue(static_cast<DifficultyLevel>(level));
 }
 
 void DeathMixScene::tick(u16 keys) {
@@ -65,6 +70,7 @@ void DeathMixScene::tick(u16 keys) {
 
   processKeys(keys);
 
+  pixelBlink->tick();
   backButton->tick();
   nextButton->tick();
   multiplier->tick();
@@ -94,7 +100,15 @@ void DeathMixScene::processKeys(u16 keys) {
 }
 
 void DeathMixScene::processDifficultyChangeEvents() {
-  // TODO: IMPLEMENT
+  if (onDifficultyLevelChange(
+          nextButton.get(),
+          static_cast<DifficultyLevel>(
+              min((int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
+    return;
+
+  onDifficultyLevelChange(
+      backButton.get(),
+      static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
 }
 
 void DeathMixScene::processMenuEvents() {
@@ -108,6 +122,24 @@ void DeathMixScene::processMenuEvents() {
     engine->transitionIntoScene(new SettingsScene(engine, fs, true),
                                 new PixelTransitionEffect());
   }
+}
+
+bool DeathMixScene::onDifficultyLevelChange(ArrowSelector* button,
+                                            DifficultyLevel newValue) {
+  if (button->hasBeenPressedNow()) {
+    player_play(SOUND_STEP);
+
+    if (newValue == difficulty->getValue())
+      return true;
+
+    SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
+    difficulty->setValue(newValue);
+    pixelBlink->blink();
+
+    return true;
+  }
+
+  return false;
 }
 
 void DeathMixScene::confirm(u16 keys) {

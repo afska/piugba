@@ -8,6 +8,7 @@
 #include "objects/ui/Difficulty.h"
 #include "objects/ui/Multiplier.h"
 #include "objects/ui/NumericProgress.h"
+#include "utils/PixelBlink.h"
 
 class DeathMixScene : public TalkScene {
  public:
@@ -26,6 +27,7 @@ class DeathMixScene : public TalkScene {
   void tick(u16 keys) override;
 
  private:
+  std::unique_ptr<PixelBlink> pixelBlink;
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
@@ -38,6 +40,9 @@ class DeathMixScene : public TalkScene {
   void processKeys(u16 keys);
   void processDifficultyChangeEvents();
   void processMenuEvents();
+
+  bool onDifficultyLevelChange(ArrowSelector* button, DifficultyLevel newValue);
+
   void confirm(u16 keys);
 };
 
