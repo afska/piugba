@@ -167,6 +167,9 @@ void MenuScene::processSelection() {
   if (selectButton->hasBeenPressedNow())
     select(0);
 
+  if (engine->isTransitioning())
+    return;
+
   if (incrementInput->hasBeenPressedNow())
     select(1);
 

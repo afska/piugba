@@ -1,6 +1,8 @@
 #include "SettingsScene.h"
 
 #include "CalibrateScene.h"
+#include "DeathMixScene.h"
+#include "SelectionScene.h"
 #include "StartScene.h"
 #include "assets.h"
 #include "gameplay/multiplayer/Syncer.h"
@@ -17,8 +19,11 @@
 #define OPTION_QUIT 5
 
 SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
-                             const GBFS_FILE* fs)
-    : MenuScene(engine, fs) {}
+                             const GBFS_FILE* fs,
+                             bool deathMix)
+    : MenuScene(engine, fs) {
+  this->deathMix = deathMix;
+}
 
 u16 SettingsScene::getCloseKey() {
   return KEY_START | KEY_SELECT;
@@ -127,4 +132,16 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
   }
 
   return true;
+}
+
+void SettingsScene::close() {
+  player_stop();
+
+  if (deathMix) {
+    engine->transitionIntoScene(new DeathMixScene(engine, fs),
+                                new PixelTransitionEffect());
+  } else {
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new PixelTransitionEffect());
+  }
 }

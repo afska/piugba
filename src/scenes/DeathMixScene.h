@@ -3,7 +3,10 @@
 
 #include "TalkScene.h"
 #include "gameplay/SequenceMessages.h"
+#include "gameplay/save/SaveFile.h"
+#include "objects/base/InputHandler.h"
 #include "objects/ui/Difficulty.h"
+#include "objects/ui/Multiplier.h"
 #include "objects/ui/NumericProgress.h"
 
 class DeathMixScene : public TalkScene {
@@ -23,14 +26,18 @@ class DeathMixScene : public TalkScene {
   void tick(u16 keys) override;
 
  private:
+  std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
+  std::unique_ptr<InputHandler> settingsMenuInput;
 
   void setUpSpritesPalette();
 
   void processKeys(u16 keys);
+  void processDifficultyChangeEvents();
+  void processMenuEvents();
   void confirm(u16 keys);
 };
 

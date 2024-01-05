@@ -7,7 +7,7 @@
 
 class Multiplier : public InputHandler {
  public:
-  Multiplier(u32 initialValue);
+  Multiplier(u32 x, u32 y, u32 initialValue);
 
   u32 change();
 

@@ -35,6 +35,8 @@ const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 DIFFICULTY_X = 79;
 const u32 DIFFICULTY_Y = 16;
+const u32 MULTIPLIER_X = 111;
+const u32 MULTIPLIER_Y = 34;
 const u32 PROGRESS_X = 63;
 const u32 PROGRESS_Y = 131;
 const u32 CHANNEL_BADGE_X[] = {22, 82, 142, 202};
@@ -120,8 +122,8 @@ void SelectionScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   difficulty =
       std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
-  multiplier = std::unique_ptr<Multiplier>{
-      new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
+  multiplier = std::unique_ptr<Multiplier>{new Multiplier(
+      MULTIPLIER_X, MULTIPLIER_Y, SAVEFILE_read8(SRAM->mods.multiplier))};
   progress = std::unique_ptr<NumericProgress>{
       new NumericProgress(PROGRESS_X, PROGRESS_Y)};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
@@ -194,8 +196,7 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
   processConfirmEvents();
-
-  processMenuEvents(keys);
+  processMenuEvents();
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
                    HIGHLIGHTER_OPACITY);
@@ -450,7 +451,7 @@ void SelectionScene::processConfirmEvents() {
   }
 }
 
-void SelectionScene::processMenuEvents(u16 keys) {
+void SelectionScene::processMenuEvents() {
   if (isMultiplayer()) {
     if (syncer->isMaster() && multiplier->hasBeenPressedNow()) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
