@@ -54,6 +54,9 @@ Scene* SEQUENCE_getInitialScene() {
   auto gameMode = SAVEFILE_getGameMode();
   SAVEFILE_write8(SRAM->state.isPlaying, false);
 
+  if (isPlaying && gameMode == GameMode::DEATH_MIX)
+    return new DeathMixScene(_engine, _fs);
+
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
 

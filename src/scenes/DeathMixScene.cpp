@@ -153,6 +153,7 @@ void DeathMixScene::confirm(u16 keys) {
         std::unique_ptr<DeathMix>{new DeathMix(fs, difficulty->getValue())};
     auto songChart = deathMix->getNextSongChart();
 
+    SAVEFILE_write8(SRAM->state.isPlaying, true);
     STATE_setup(songChart.song, songChart.chart);
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
