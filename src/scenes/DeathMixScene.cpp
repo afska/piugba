@@ -16,15 +16,15 @@ extern "C" {
 
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 DIFFICULTY_X = 111;
-const u32 DIFFICULTY_Y = 115;
+const u32 DIFFICULTY_Y = 113;
 const u32 PROGRESS_X = 94;
-const u32 PROGRESS_Y = 132;
+const u32 PROGRESS_Y = 130;
 const u32 BACK_X = 89;
-const u32 BACK_Y = 114;
+const u32 BACK_Y = 112;
 const u32 NEXT_X = 198;
-const u32 NEXT_Y = 114;
+const u32 NEXT_Y = 112;
 const u32 MULTIPLIER_X = 143;
-const u32 MULTIPLIER_Y = 95;
+const u32 MULTIPLIER_Y = 93;
 
 std::vector<Sprite*> DeathMixScene::sprites() {
   auto sprites = TalkScene::sprites();
