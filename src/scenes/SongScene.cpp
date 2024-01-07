@@ -37,6 +37,7 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
+const u32 DEATH_MIX_ANTICIPATION_LEVEL = 5;
 const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
                             8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
@@ -299,7 +300,7 @@ initialized:
       chartReaders[0]->turnOffObjectPools();
 
       player_seek(song->sampleStart);
-      chartReaders[0]->setMultiplier(ARROW_MAX_MULTIPLIER);
+      chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
       chartReaders[0]->update(song->sampleStart);
       deathMix->didStartScroll = true;
       return false;
