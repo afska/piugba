@@ -31,6 +31,7 @@ typedef struct {
   Settings settings;
   AdminSettings adminSettings;
   Mods mods;
+  GameMode mode;
 } RAMState;
 
 extern RAMState GameState;

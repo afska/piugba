@@ -10,6 +10,7 @@ void STATE_setup(Song* song, Chart* chart) {
   if (song == NULL)
     gameMode = GameMode::ARCADE;
 
+  GameState.mode = gameMode;
   GameState.settings.audioLag = SAVEFILE_read32(SRAM->settings.audioLag);
   GameState.settings.gamePosition =
       static_cast<GamePosition>(SAVEFILE_read8(SRAM->settings.gamePosition));
@@ -121,13 +122,6 @@ void STATE_setup(Song* song, Chart* chart) {
       GameState.mods.autoMod = AutoModOpts::aOFF;
       GameState.mods.trainingMode = TrainingModeOpts::tOFF;
     }
-  }
-
-  if (gameMode == GameMode::DEATH_MIX) {
-    GameState.mods.stageBreak =
-        !ENV_DEVELOPMENT || !((~REG_KEYS & KEY_ANY) & KEY_SELECT)
-            ? StageBreakOpts::sSUDDEN_DEATH
-            : StageBreakOpts::sOFF;
   }
 
   GameState.positionX[0] =

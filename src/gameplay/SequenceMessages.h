@@ -47,8 +47,8 @@
 #define MODE_DEATH_MIX            \
   "In DEATHMIX MODE, you'll\r\n"  \
   "play a mixed nonstop set.\r\n" \
-  "> If you MISS, you DIE <\r\n"  \
-  "Earn lives on each song!"
+  "Life can't be recovered,\r\n"  \
+  "so try not to MISS!"
 
 #define KEYS_HINT                 \
   "To change the speed, use:\r\n" \

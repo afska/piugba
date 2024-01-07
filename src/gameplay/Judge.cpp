@@ -110,12 +110,6 @@ void Judge::updateScore(FeedbackType result, u8 playerId, bool isLong) {
   if (isDisabled)
     return;
 
-  if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH &&
-      result == FeedbackType::MISS) {
-    onStageBreak(playerId);
-    return;
-  }
-
   if (isMultiplayer()) {
     if ((isVs() && playerId == syncer->getLocalPlayerId()) ||
         (isCoop() && syncer->isMaster()))
