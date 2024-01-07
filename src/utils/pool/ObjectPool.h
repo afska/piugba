@@ -102,7 +102,7 @@ class ObjectPool {
  private:
   std::vector<PooledObject<T>*> objects;
   u32 activeObjects = 0;
-  bool allowNew = false;
+  bool allowNew = true;
 };
 
 #endif  // OBJECT_POOL_H
