@@ -47,6 +47,7 @@ typedef struct {
   std::string backgroundTilesPath;
   std::string backgroundPalettePath;
   std::string backgroundMapPath;
+  u32 totalSize;
 } Song;
 
 Song* SONG_parse(const GBFS_FILE* fs,
@@ -57,11 +58,13 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
                         GameMode gameMode,
                         SongFile* file,
                         DifficultyLevel difficultyLevel);
+u32 SONG_findChartIndexByDifficultyLevel(Song* song,
+                                         DifficultyLevel difficultyLevel);
+Chart* SONG_findChartByDifficultyLevel(Song* song,
+                                       DifficultyLevel difficultyLevel);
 Chart* SONG_findChartByNumericLevelIndex(Song* song,
                                          u8 numericLevelIndex,
                                          bool isDouble);
-Chart* SONG_findChartByDifficultyLevel(Song* song,
-                                       DifficultyLevel difficultyLevel);
 void SONG_free(Song* song);
 
 #endif  // SONG_H

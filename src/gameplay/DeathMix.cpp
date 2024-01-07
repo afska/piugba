@@ -27,8 +27,13 @@ SongChart DeathMix::getNextSongChart() {
   if (current >= total)
     return SongChart{.song = NULL, .chart = NULL};
 
-  Song* song = SONG_parse(fs, songFiles[current].get(), true);
-  Chart* chart = SONG_findChartByDifficultyLevel(song, difficultyLevel);
+  Song* tempSong = SONG_parse(fs, songFiles[current].get(), false);
+  u32 index = SONG_findChartIndexByDifficultyLevel(tempSong, difficultyLevel);
+  u8 level = tempSong->charts[index].level;
+  SONG_free(tempSong);
+  Song* song =
+      SONG_parse(fs, songFiles[current].get(), true, std::vector<u8>{level});
+  Chart* chart = song->charts + index;
 
   current++;
 

@@ -126,7 +126,6 @@ class ChartReader : public TimingProvider {
     while (targetMsecs >= events[currentIndex].timestamp &&
            currentIndex < count) {
       auto event = events + currentIndex;
-      event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
       if (event->handled[playerId]) {

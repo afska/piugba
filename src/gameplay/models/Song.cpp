@@ -27,6 +27,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   auto song = new Song();
 
   song->id = parse_u8(data, &cursor);
+  song->totalSize = 0;
 
   song->title = (char*)malloc(TITLE_LEN);
   parse_array(data, &cursor, song->title, TITLE_LEN);
@@ -58,9 +59,16 @@ Song* SONG_parse(const GBFS_FILE* fs,
 
   song->chartCount = parse_u8(data, &cursor);
   song->charts = (Chart*)malloc(sizeof(Chart) * song->chartCount);
-  if (song->charts == NULL)
+  song->totalSize += sizeof(Chart) * song->chartCount;
+  if (song->charts == NULL) {
+#ifdef SENV_DEBUG
     BSOD("NO RAM (charts) [" +
          std::to_string(sizeof(Chart) * song->chartCount / 1024) + "kb]");
+#endif
+#ifndef SENV_DEBUG
+    SCENE_softReset();
+#endif
+  }
   for (u32 i = 0; i < song->chartCount; i++) {
     auto chart = song->charts + i;
 
@@ -74,10 +82,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     chart->customOffset = 0;
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
-    bool shouldParseEvents =
-        full &&
-        ((levels.empty() && chart->difficulty != DifficultyLevel::NUMERIC) ||
-         VECTOR_contains(levels, chart->level));
+    bool shouldParseEvents = full && VECTOR_contains(levels, chart->level);
     if (!shouldParseEvents) {
       cursor += chart->eventChunkSize;
       chart->rythmEventCount = 0;
@@ -87,18 +92,32 @@ Song* SONG_parse(const GBFS_FILE* fs,
 
     chart->rythmEventCount = parse_u32le(data, &cursor);
     chart->rythmEvents = (Event*)malloc(sizeof(Event) * chart->rythmEventCount);
-    if (chart->rythmEvents == NULL)
+    song->totalSize += sizeof(Event) * chart->rythmEventCount;
+    if (chart->rythmEvents == NULL) {
+#ifdef SENV_DEBUG
       BSOD("NO RAM (rythm) [" +
            std::to_string(sizeof(Event) * chart->rythmEventCount / 1024) +
            "kb]");
+#endif
+#ifndef SENV_DEBUG
+      SCENE_softReset();
+#endif
+    }
     parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
     chart->events = (Event*)malloc(sizeof(Event) * chart->eventCount);
-    if (chart->events == NULL)
+    song->totalSize += sizeof(Event) * chart->eventCount;
+    if (chart->events == NULL) {
+#ifdef SENV_DEBUG
       BSOD("NO RAM (rythm) [" +
            std::to_string(sizeof(Event) * chart->eventCount / 1024) + "kb]");
+#endif
+#ifndef SENV_DEBUG
+      SCENE_softReset();
+#endif
+    }
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);
   }
@@ -147,14 +166,20 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   return isBoss ? Channel::BOSS : channel;
 }
 
-Chart* SONG_findChartByDifficultyLevel(Song* song,
-                                       DifficultyLevel difficultyLevel) {
+u32 SONG_findChartIndexByDifficultyLevel(Song* song,
+                                         DifficultyLevel difficultyLevel) {
   for (u32 i = 0; i < song->chartCount; i++) {
     if (song->charts[i].difficulty == difficultyLevel)
-      return song->charts + i;
+      return i;
   }
 
-  return NULL;
+  return 0;
+}
+
+Chart* SONG_findChartByDifficultyLevel(Song* song,
+                                       DifficultyLevel difficultyLevel) {
+  u32 index = SONG_findChartIndexByDifficultyLevel(song, difficultyLevel);
+  return song->charts + index;
 }
 
 Chart* SONG_findChartByNumericLevelIndex(Song* song,

@@ -338,7 +338,13 @@ void SelectionScene::goToSong() {
   bool hasRemoteChart = isVs() && syncer->$remoteNumericLevel != -1;
   std::vector<u8> selectedLevels;
 
-  if (!isStory) {
+  if (isStory) {
+    Song* song = SONG_parse(fs, getSelectedSong(), false);
+    u32 index =
+        SONG_findChartIndexByDifficultyLevel(song, difficulty->getValue());
+    selectedLevels.push_back(song->charts[index].level);
+    SONG_free(song);
+  } else {
     selectedLevels.push_back(getSelectedNumericLevel());
     if (hasRemoteChart)
       selectedLevels.push_back(numericLevels[syncer->$remoteNumericLevel]);

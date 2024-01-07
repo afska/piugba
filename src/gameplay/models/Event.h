@@ -77,15 +77,14 @@ typedef struct {
       }
   */
 
-  u8 data2;  // another 5-bit arrow array (only present in double charts)
-
   u32 param;
   u32 param2;
   u32 param3;
   // (params are not included in note-related events)
 
+  u8 data2;  // another 5-bit arrow array (only present in double charts)
+
   // custom fields:
-  u32 index = 0;
   bool handled[GAME_MAX_PLAYERS];
   // (RAM)
   bool isFake;
