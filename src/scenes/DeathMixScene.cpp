@@ -69,7 +69,7 @@ void DeathMixScene::tick(u16 keys) {
 
   TalkScene::tick(keys);
 
-  __qran_seed += (1 + keys) * REG_VCOUNT;
+  __qran_seed += ((1 + keys) * REG_VCOUNT) * SAVEFILE_read32(SRAM->randomSeed);
   processKeys(keys);
 
   pixelBlink->tick();
@@ -149,6 +149,8 @@ void DeathMixScene::confirm(u16 keys) {
       SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
 
   if (isPressed) {
+    SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
+
     auto deathMix =
         std::unique_ptr<DeathMix>{new DeathMix(fs, difficulty->getValue())};
     auto songChart = deathMix->getNextSongChart();

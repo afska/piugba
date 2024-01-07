@@ -45,7 +45,8 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[10];
+  char padding2[6];
+  u32 randomSeed;
   u8 beat;
 
   Mods mods;
