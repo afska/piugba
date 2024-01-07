@@ -195,10 +195,6 @@ void SONG_free(Song* song) {
   if (song->hasMessage)
     delete[] song->message;
 
-  for (u32 i = 0; i < song->chartCount; i++) {
-    if ((song->charts + i)->eventCount > 0)
-      delete[] (song->charts + i)->events;
-  }
   delete[] song->charts;
 
   delete song;
