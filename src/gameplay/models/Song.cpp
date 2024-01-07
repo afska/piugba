@@ -10,6 +10,13 @@ const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
+typedef struct {
+  Event rythmEvents[250];
+  Event events[3000];
+} ChartAllocation;  // (78000 bytes)
+
+__attribute__((section(".ewram"))) ChartAllocation chartAllocations[2];
+
 void parseEvents(Event* events,
                  u32 count,
                  bool isDouble,
@@ -59,15 +66,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->chartCount = parse_u8(data, &cursor);
   song->charts = new (std::nothrow) Chart[song->chartCount];
   song->totalSize += sizeof(Chart) * song->chartCount;
-  if (song->charts == NULL) {
-#ifdef SENV_DEBUG
-    BSOD("NO RAM (charts) [" +
-         std::to_string(sizeof(Chart) * song->chartCount / 1024) + "kb]");
-#endif
-#ifndef SENV_DEBUG
-    SCENE_softReset();
-#endif
-  }
+  u32 slot = 0;
   for (u32 i = 0; i < song->chartCount; i++) {
     auto chart = song->charts + i;
 
@@ -90,35 +89,17 @@ Song* SONG_parse(const GBFS_FILE* fs,
     }
 
     chart->rythmEventCount = parse_u32le(data, &cursor);
-    chart->rythmEvents = new (std::nothrow) Event[chart->rythmEventCount];
+    chart->rythmEvents = chartAllocations[slot].rythmEvents;
     song->totalSize += sizeof(Event) * chart->rythmEventCount;
-    if (chart->rythmEvents == NULL) {
-#ifdef SENV_DEBUG
-      BSOD("NO RAM (rythm) [" +
-           std::to_string(sizeof(Event) * chart->rythmEventCount / 1024) +
-           "kb]");
-#endif
-#ifndef SENV_DEBUG
-      SCENE_softReset();
-#endif
-    }
     parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
-    chart->events = new (std::nothrow) Event[chart->eventCount];
+    chart->events = chartAllocations[slot].events;
     song->totalSize += sizeof(Event) * chart->eventCount;
-    if (chart->events == NULL) {
-#ifdef SENV_DEBUG
-      BSOD("NO RAM (rythm) [" +
-           std::to_string(sizeof(Event) * chart->eventCount / 1024) + "kb]");
-#endif
-#ifndef SENV_DEBUG
-      SCENE_softReset();
-#endif
-    }
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);
+    slot++;
   }
 
   song->index = file->index;

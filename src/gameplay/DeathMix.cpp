@@ -33,6 +33,7 @@ SongChart DeathMix::getNextSongChart() {
   Song* song = SONG_parse(fs, songFiles[current].get(), std::vector<u8>{index});
   Chart* chart = song->charts + index;
 
+  // TODO: REMOVE!
   current++;
   if (current == 65)
     current = 2;
