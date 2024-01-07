@@ -69,7 +69,7 @@ void DeathMixScene::tick(u16 keys) {
 
   TalkScene::tick(keys);
 
-  __qran_seed += keys;
+  __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
 
   pixelBlink->tick();

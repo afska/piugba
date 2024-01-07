@@ -116,7 +116,7 @@ void StartScene::tick(u16 keys) {
     player_loop(SOUND_LOOP);
   }
 
-  __qran_seed += keys;
+  __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
 
   animateBpm();
