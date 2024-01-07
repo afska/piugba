@@ -86,7 +86,6 @@ typedef struct {
 
   // custom fields:
   bool handled[GAME_MAX_PLAYERS];
-  // (RAM)
   bool isFake;
   int timestamp;  // in ms
   u8 data;

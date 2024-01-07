@@ -29,10 +29,10 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->id = parse_u8(data, &cursor);
   song->totalSize = 0;
 
-  song->title = (char*)malloc(TITLE_LEN);
+  song->title = new (std::nothrow) char[TITLE_LEN];
   parse_array(data, &cursor, song->title, TITLE_LEN);
 
-  song->artist = (char*)malloc(ARTIST_LEN);
+  song->artist = new (std::nothrow) char[ARTIST_LEN];
   parse_array(data, &cursor, song->artist, ARTIST_LEN);
 
   song->channel = static_cast<Channel>(parse_u8(data, &cursor));
@@ -53,12 +53,12 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->hasMessage = parse_u8(data, &cursor);
 
   if (song->hasMessage) {
-    song->message = (char*)malloc(MESSAGE_LEN);
+    song->message = new (std::nothrow) char[MESSAGE_LEN];
     parse_array(data, &cursor, song->message, MESSAGE_LEN);
   }
 
   song->chartCount = parse_u8(data, &cursor);
-  song->charts = (Chart*)malloc(sizeof(Chart) * song->chartCount);
+  song->charts = new (std::nothrow) Chart[song->chartCount];
   song->totalSize += sizeof(Chart) * song->chartCount;
   if (song->charts == NULL) {
 #ifdef SENV_DEBUG
@@ -91,7 +91,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     }
 
     chart->rythmEventCount = parse_u32le(data, &cursor);
-    chart->rythmEvents = (Event*)malloc(sizeof(Event) * chart->rythmEventCount);
+    chart->rythmEvents = new (std::nothrow) Event[chart->rythmEventCount];
     song->totalSize += sizeof(Event) * chart->rythmEventCount;
     if (chart->rythmEvents == NULL) {
 #ifdef SENV_DEBUG
@@ -107,7 +107,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
-    chart->events = (Event*)malloc(sizeof(Event) * chart->eventCount);
+    chart->events = new (std::nothrow) Event[chart->eventCount];
     song->totalSize += sizeof(Event) * chart->eventCount;
     if (chart->events == NULL) {
 #ifdef SENV_DEBUG
@@ -201,17 +201,17 @@ Chart* SONG_findChartByNumericLevelIndex(Song* song,
 }
 
 void SONG_free(Song* song) {
-  free(song->title);
-  free(song->artist);
+  delete[] song->title;
+  delete[] song->artist;
 
   if (song->hasMessage)
-    free(song->message);
+    delete[] song->message;
 
   for (u32 i = 0; i < song->chartCount; i++) {
     if ((song->charts + i)->eventCount > 0)
-      free((song->charts + i)->events);
+      delete[] (song->charts + i)->events;
   }
-  free(song->charts);
+  delete[] song->charts;
 
   delete song;
 }

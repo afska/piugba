@@ -36,6 +36,8 @@ SongChart DeathMix::getNextSongChart() {
   Chart* chart = song->charts + index;
 
   current++;
+  if (current == 65)
+    current = 2;
 
   return SongChart{.song = song, .chart = chart};
 }
