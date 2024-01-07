@@ -166,8 +166,13 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
 
   // validate arcade progress
   if (!ARCADE_isInitialized()) {
-    ARCADE_initialize();
-    fixes |= 0b10000;
+    if (ARCADE_isLegacy()) {
+      ARCADE_migrate();
+      fixes |= 0b10001;
+    } else {
+      ARCADE_initialize();
+      fixes |= 0b10000;
+    }
   }
 
   // validate admin settings
@@ -364,9 +369,9 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
       SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
 }
 
-inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevel) {
-  return SAVEFILE_isPlayingDouble() ? ARCADE_readDouble(songId, numericLevel)
-                                    : ARCADE_readSingle(songId, numericLevel);
+inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 levelIndex) {
+  return SAVEFILE_isPlayingDouble() ? ARCADE_readDouble(songId, levelIndex)
+                                    : ARCADE_readSingle(songId, levelIndex);
 }
 
 inline GradeType SAVEFILE_toggleDefectiveGrade(u8 currentGrade) {
@@ -377,13 +382,13 @@ inline GradeType SAVEFILE_toggleDefectiveGrade(u8 currentGrade) {
 inline bool SAVEFILE_setGradeOf(u8 songIndex,
                                 DifficultyLevel level,
                                 u8 songId,
-                                u8 numericLevel,
+                                u8 numericLevelIndex,
                                 GradeType grade) {
   if (SAVEFILE_isPlayingDouble()) {
-    u8 currentGrade = ARCADE_readDouble(songId, numericLevel);
+    u8 currentGrade = ARCADE_readDouble(songId, numericLevelIndex);
 
     if (grade == GradeType::DEFECTIVE) {
-      ARCADE_writeDouble(songId, numericLevel,
+      ARCADE_writeDouble(songId, numericLevelIndex,
                          SAVEFILE_toggleDefectiveGrade(currentGrade));
       return false;
     }
@@ -393,7 +398,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
       return false;
 
     if (grade < currentGrade)
-      ARCADE_writeDouble(songId, numericLevel, grade);
+      ARCADE_writeDouble(songId, numericLevelIndex, grade);
 
     return false;
   }
@@ -429,10 +434,10 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
     {
       case GameMode::ARCADE:
       case GameMode::MULTI_VS:
-        u8 currentGrade = ARCADE_readSingle(songId, numericLevel);
+        u8 currentGrade = ARCADE_readSingle(songId, numericLevelIndex);
 
         if (grade == GradeType::DEFECTIVE) {
-          ARCADE_writeSingle(songId, numericLevel,
+          ARCADE_writeSingle(songId, numericLevelIndex,
                              SAVEFILE_toggleDefectiveGrade(currentGrade));
           return false;
         }
@@ -442,7 +447,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
           return false;
 
         if (grade < currentGrade)
-          ARCADE_writeSingle(songId, numericLevel, grade);
+          ARCADE_writeSingle(songId, numericLevelIndex, grade);
 
         return false;
     }

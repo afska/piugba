@@ -363,8 +363,11 @@ void SelectionScene::goToSong() {
 
   int customOffset = getCustomOffset();
   chart->customOffset = customOffset;
-  if (remoteChart != NULL)
+  chart->levelIndex = getSelectedNumericLevelIndex();
+  if (remoteChart != NULL) {
     remoteChart->customOffset = customOffset;
+    remoteChart->levelIndex = (u8)syncer->$remoteNumericLevel;
+  }
 
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
@@ -829,10 +832,10 @@ void SelectionScene::loadSelectedSongGrade() {
     return;
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    gradeBadges[i]->setType(i == selected
-                                ? SAVEFILE_getArcadeGradeOf(
-                                      selectedSongId, getSelectedNumericLevel())
-                                : GradeType::UNPLAYED);
+    gradeBadges[i]->setType(
+        i == selected ? SAVEFILE_getArcadeGradeOf(
+                            selectedSongId, getSelectedNumericLevelIndex())
+                      : GradeType::UNPLAYED);
   }
 }
 

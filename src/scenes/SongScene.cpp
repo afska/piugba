@@ -326,8 +326,8 @@ initialized:
       (keys & KEY_SELECT)) {
     // (if START and SELECT are pressed on start, the chart will be marked as
     // defective and return to the selection scene)
-    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
-                        GradeType::DEFECTIVE);
+    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
+                        chart->levelIndex, GradeType::DEFECTIVE);
 
     if ($isMultiplayer) {
       syncer->send(SYNC_EVENT_ABORT, 0);
@@ -720,7 +720,7 @@ void SongScene::finishAndGoToEvaluation() {
   auto evaluation = scores[localPlayerId]->evaluate();
   bool isLastSong =
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
-                          chart->level, evaluation->getGrade());
+                          chart->levelIndex, evaluation->getGrade());
 
   engine->transitionIntoScene(
       new DanceGradeScene(

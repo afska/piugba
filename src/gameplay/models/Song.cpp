@@ -78,6 +78,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     chart->isDouble = chart->type == ChartType::DOUBLE_CHART ||
                       chart->type == ChartType::DOUBLE_COOP_CHART;
     chart->customOffset = 0;
+    chart->levelIndex = 0;
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
     bool shouldParseEvents = VECTOR_contains(chartIndexes, i);
