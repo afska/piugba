@@ -288,7 +288,6 @@ bool SongScene::initializeGame(u16 keys) {
 initialized:
   if (deathMix != NULL) {
     if (!deathMix->didStartScroll) {
-      judge->disable();
       arrowPool->turnOff();
       chartReaders[0]->turnOffObjectPools();
 
@@ -297,7 +296,6 @@ initialized:
       deathMix->didStartScroll = true;
       return false;
     } else {
-      judge->enable();
       arrowPool->turnOn();
       chartReaders[0]->turnOnObjectPools();
     }
