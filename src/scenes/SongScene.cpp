@@ -134,7 +134,8 @@ void SongScene::load() {
                 [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = GameState.settings.audioLag;
-  u32 multiplier = GameState.mods.multiplier;
+  u32 multiplier =
+      deathMix != NULL ? deathMix->multiplier : GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     chartReaders[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
         playerId == localPlayerId ? chart : remoteChart, playerId,
@@ -185,8 +186,14 @@ void SongScene::tick(u16 keys) {
   }
 
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
-  if (isNewBeat)
+  if (isNewBeat) {
     onNewBeat(KEY_ANY_PRESSED(keys));
+    if (deathMix != NULL &&
+        PlaybackState.msecs >= song->sampleStart + song->sampleLength) {
+      finishAndGoToEvaluation();
+      return;
+    }
+  }
   if ($isVs)
     chartReaders[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
@@ -292,12 +299,25 @@ initialized:
       chartReaders[0]->turnOffObjectPools();
 
       player_seek(song->sampleStart);
+      chartReaders[0]->setMultiplier(ARROW_MAX_MULTIPLIER);
       chartReaders[0]->update(song->sampleStart);
       deathMix->didStartScroll = true;
       return false;
     } else {
       arrowPool->turnOn();
       chartReaders[0]->turnOnObjectPools();
+      chartReaders[0]->setMultiplier(deathMix->multiplier);
+
+      if (!deathMix->isInitialSong()) {
+        scores[0]->setLife(deathMix->life);
+        scores[0]->getCombo()->setValue(deathMix->combo);
+        scores[0]->setHasMissCombo(deathMix->hasMissCombo);
+        scores[0]->setHalfLifeBonus(deathMix->halfLifeBonus);
+        scores[0]->setMaxCombo(deathMix->maxCombo);
+        scores[0]->setCounters(deathMix->counters);
+        scores[0]->setPoints(deathMix->points);
+        scores[0]->setLongNotes(deathMix->longNotes);
+      }
     }
   }
 
@@ -714,7 +734,17 @@ void SongScene::continueDeathMix() {
 
   if (songChart.song != NULL) {
     deathMix->didStartScroll = false;
-    SAVEFILE_write8(SRAM->state.isPlaying, true);
+    deathMix->multiplier = chartReaders[0]->getMultiplier();
+    deathMix->life = scores[0]->getLife();
+    deathMix->combo = scores[0]->getCombo()->getValue() *
+                      (scores[0]->getHasMissCombo() ? -1 : 1);
+    deathMix->hasMissCombo = scores[0]->getHasMissCombo();
+    deathMix->halfLifeBonus = scores[0]->getHalfLifeBonus();
+    deathMix->maxCombo = scores[0]->getMaxCombo();
+    deathMix->counters = scores[0]->getCounters();
+    deathMix->points = scores[0]->getPoints();
+    deathMix->longNotes = scores[0]->getLongNotes();
+
     STATE_setup(songChart.song, songChart.chart);
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
