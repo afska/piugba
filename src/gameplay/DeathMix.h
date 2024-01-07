@@ -13,6 +13,8 @@ typedef struct {
 
 class DeathMix {
  public:
+  bool didStartScroll = false;
+
   DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel);
 
   SongChart getNextSongChart();

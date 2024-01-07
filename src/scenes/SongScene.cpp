@@ -272,6 +272,9 @@ void SongScene::initializeBackground() {
 }
 
 bool SongScene::initializeGame(u16 keys) {
+  if (deathMix != NULL && deathMix->didStartScroll)
+    goto initialized;
+
   if (GameState.mods.autoMod)
     EFFECT_setMosaic(MAX_MOSAIC);
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
@@ -281,6 +284,24 @@ bool SongScene::initializeGame(u16 keys) {
         [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
   player_play(song->audioPath.c_str());
   processModsLoad();
+
+initialized:
+  if (deathMix != NULL) {
+    if (!deathMix->didStartScroll) {
+      judge->disable();
+      arrowPool->turnOff();
+      chartReaders[0]->turnOffObjectPools();
+
+      player_seek(song->sampleStart);
+      chartReaders[0]->update(song->sampleStart);
+      deathMix->didStartScroll = true;
+      return false;
+    } else {
+      judge->enable();
+      arrowPool->turnOn();
+      chartReaders[0]->turnOnObjectPools();
+    }
+  }
 
   if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
       (keys & KEY_SELECT)) {

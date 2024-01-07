@@ -82,6 +82,9 @@ class ChartReader : public TimingProvider {
     return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
   }
 
+  inline void turnOffObjectPools() { holdArrows->turnOff(); }
+  inline void turnOnObjectPools() { holdArrows->turnOn(); }
+
   template <typename DEBUG>
   void logDebugInfo();
 

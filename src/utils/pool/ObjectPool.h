@@ -86,6 +86,18 @@ class ObjectPool {
         action(it->object);
   }
 
+  void turnOff() {
+    for (auto& it : objects) {
+      it->isActive = true;
+    }
+  }
+
+  void turnOn() {
+    for (auto& it : objects) {
+      it->isActive = false;
+    }
+  }
+
   ~ObjectPool() {
     for (auto& it : objects) {
       delete it->object;
