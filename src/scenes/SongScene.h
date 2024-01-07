@@ -132,6 +132,7 @@ class SongScene : public Scene {
   void onAbort();
   void breakStage();
   void finishAndGoToEvaluation();
+  void continueDeathMix();
 
   void processModsLoad();
   void processModsTick();

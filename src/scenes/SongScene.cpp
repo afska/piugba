@@ -691,18 +691,46 @@ void SongScene::breakStage() {
 }
 
 void SongScene::finishAndGoToEvaluation() {
+  unload();
+
+  if (deathMix != NULL) {
+    continueDeathMix();
+    return;
+  }
+
   auto evaluation = scores[localPlayerId]->evaluate();
   bool isLastSong =
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
                           chart->level, evaluation->getGrade());
 
-  unload();
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           $isVsDifferentLevels, isLastSong),
       new PixelTransitionEffect());
+}
+
+void SongScene::continueDeathMix() {
+  auto songChart = deathMix->getNextSongChart();
+
+  if (songChart.song != NULL) {
+    deathMix->didStartScroll = false;
+    SAVEFILE_write8(SRAM->state.isPlaying, true);
+    STATE_setup(songChart.song, songChart.chart);
+    engine->transitionIntoScene(
+        new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
+                      std::move(deathMix)),
+        new PixelTransitionEffect());
+  } else {
+    auto evaluation = scores[localPlayerId]->evaluate();
+    // TODO: SAVE DEATHMIX GRADE
+
+    engine->transitionIntoScene(
+        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, false,
+                            true),
+        new PixelTransitionEffect());
+  }
 }
 
 void SongScene::processModsLoad() {
