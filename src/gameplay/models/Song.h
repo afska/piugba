@@ -52,8 +52,7 @@ typedef struct {
 
 Song* SONG_parse(const GBFS_FILE* fs,
                  SongFile* file,
-                 bool full,
-                 std::vector<u8> levels = std::vector<u8>{});
+                 std::vector<u8> chartIndexes = std::vector<u8>{});
 Channel SONG_getChannel(const GBFS_FILE* fs,
                         GameMode gameMode,
                         SongFile* file,
@@ -62,6 +61,9 @@ u32 SONG_findChartIndexByDifficultyLevel(Song* song,
                                          DifficultyLevel difficultyLevel);
 Chart* SONG_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel);
+u32 SONG_findChartIndexByNumericLevelIndex(Song* song,
+                                           u8 numericLevelIndex,
+                                           bool isDouble);
 Chart* SONG_findChartByNumericLevelIndex(Song* song,
                                          u8 numericLevelIndex,
                                          bool isDouble);

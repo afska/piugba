@@ -18,8 +18,7 @@ void parseEvents(Event* events,
 
 Song* SONG_parse(const GBFS_FILE* fs,
                  SongFile* file,
-                 bool full,
-                 std::vector<u8> levels) {
+                 std::vector<u8> chartIndexes) {
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -82,7 +81,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     chart->customOffset = 0;
 
     chart->eventChunkSize = parse_u32le(data, &cursor);
-    bool shouldParseEvents = full && VECTOR_contains(levels, chart->level);
+    bool shouldParseEvents = VECTOR_contains(chartIndexes, i);
     if (!shouldParseEvents) {
       cursor += chart->eventChunkSize;
       chart->rythmEventCount = 0;
@@ -182,9 +181,9 @@ Chart* SONG_findChartByDifficultyLevel(Song* song,
   return song->charts + index;
 }
 
-Chart* SONG_findChartByNumericLevelIndex(Song* song,
-                                         u8 numericLevelIndex,
-                                         bool isDouble) {
+u32 SONG_findChartIndexByNumericLevelIndex(Song* song,
+                                           u8 numericLevelIndex,
+                                           bool isDouble) {
   u32 currentIndex = 0;
 
   for (u32 i = 0; i < song->chartCount; i++) {
@@ -192,12 +191,20 @@ Chart* SONG_findChartByNumericLevelIndex(Song* song,
       continue;
 
     if (currentIndex == numericLevelIndex)
-      return song->charts + i;
+      return i;
 
     currentIndex++;
   }
 
-  return NULL;
+  return 0;
+}
+
+Chart* SONG_findChartByNumericLevelIndex(Song* song,
+                                         u8 numericLevelIndex,
+                                         bool isDouble) {
+  u32 index =
+      SONG_findChartIndexByNumericLevelIndex(song, numericLevelIndex, isDouble);
+  return song->charts + index;
 }
 
 void SONG_free(Song* song) {

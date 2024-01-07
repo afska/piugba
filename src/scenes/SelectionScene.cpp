@@ -336,21 +336,22 @@ void SelectionScene::goToSong() {
 
   bool isStory = IS_STORY(SAVEFILE_getGameMode());
   bool hasRemoteChart = isVs() && syncer->$remoteNumericLevel != -1;
-  std::vector<u8> selectedLevels;
+  std::vector<u8> chartIndexes;
 
+  Song* tempSong = SONG_parse(fs, getSelectedSong());
   if (isStory) {
-    Song* song = SONG_parse(fs, getSelectedSong(), false);
-    u32 index =
-        SONG_findChartIndexByDifficultyLevel(song, difficulty->getValue());
-    selectedLevels.push_back(song->charts[index].level);
-    SONG_free(song);
+    chartIndexes.push_back(
+        SONG_findChartIndexByDifficultyLevel(tempSong, difficulty->getValue()));
   } else {
-    selectedLevels.push_back(getSelectedNumericLevel());
+    chartIndexes.push_back(SONG_findChartIndexByNumericLevelIndex(
+        tempSong, getSelectedNumericLevelIndex(), isDouble()));
     if (hasRemoteChart)
-      selectedLevels.push_back(numericLevels[syncer->$remoteNumericLevel]);
+      chartIndexes.push_back(SONG_findChartIndexByNumericLevelIndex(
+          tempSong, (u8)syncer->$remoteNumericLevel, false));
   }
+  SONG_free(tempSong);
 
-  Song* song = SONG_parse(fs, getSelectedSong(), true, selectedLevels);
+  Song* song = SONG_parse(fs, getSelectedSong(), chartIndexes);
   Chart* chart =
       isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
               : SONG_findChartByNumericLevelIndex(
@@ -628,7 +629,7 @@ void SelectionScene::onConfirmOrStart(bool isConfirmed) {
 }
 
 void SelectionScene::updateSelection(bool isChangingLevel) {
-  Song* song = SONG_parse(fs, getSelectedSong(), false);
+  Song* song = SONG_parse(fs, getSelectedSong());
   selectedSongId = song->id;
 
   updateLevel(song, isChangingLevel);
