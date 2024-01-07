@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gameplay/debug/DebugTools.h"
 #include "utils/VectorUtils.h"
 
 const u32 TITLE_LEN = 31;
@@ -57,6 +58,9 @@ Song* SONG_parse(const GBFS_FILE* fs,
 
   song->chartCount = parse_u8(data, &cursor);
   song->charts = (Chart*)malloc(sizeof(Chart) * song->chartCount);
+  if (song->charts == NULL)
+    BSOD("NO RAM (charts) [" +
+         std::to_string(sizeof(Chart) * song->chartCount / 1024) + "kb]");
   for (u32 i = 0; i < song->chartCount; i++) {
     auto chart = song->charts + i;
 
@@ -83,11 +87,18 @@ Song* SONG_parse(const GBFS_FILE* fs,
 
     chart->rythmEventCount = parse_u32le(data, &cursor);
     chart->rythmEvents = (Event*)malloc(sizeof(Event) * chart->rythmEventCount);
+    if (chart->rythmEvents == NULL)
+      BSOD("NO RAM (rythm) [" +
+           std::to_string(sizeof(Event) * chart->rythmEventCount / 1024) +
+           "kb]");
     parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
     chart->events = (Event*)malloc(sizeof(Event) * chart->eventCount);
+    if (chart->events == NULL)
+      BSOD("NO RAM (rythm) [" +
+           std::to_string(sizeof(Event) * chart->eventCount / 1024) + "kb]");
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);
   }
