@@ -20,6 +20,8 @@ const u32 DIFFICULTY_X = 111;
 const u32 DIFFICULTY_Y = 113;
 const u32 PROGRESS_X = 94;
 const u32 PROGRESS_Y = 130;
+const u32 GRADE_X = 143;
+const u32 GRADE_Y = 135;
 const u32 BACK_X = 89;
 const u32 BACK_Y = 112;
 const u32 NEXT_X = 198;
@@ -30,10 +32,11 @@ const u32 MULTIPLIER_Y = 93;
 std::vector<Sprite*> DeathMixScene::sprites() {
   auto sprites = TalkScene::sprites();
 
-  difficulty->render(&sprites);
-  progress->render(&sprites);
   sprites.push_back(backButton->get());
   sprites.push_back(nextButton->get());
+  difficulty->render(&sprites);
+  progress->render(&sprites);
+  sprites.push_back(gradeBadge->get());
   sprites.push_back(multiplier->get());
 
   return sprites;
@@ -51,8 +54,11 @@ void DeathMixScene::load() {
       std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
   progress = std::unique_ptr<NumericProgress>{
       new NumericProgress(PROGRESS_X, PROGRESS_Y)};
+  gradeBadge = std::unique_ptr<GradeBadge>{
+      new GradeBadge(GRADE_X, GRADE_Y, false, false)};
+  gradeBadge->setType(GradeType::UNPLAYED);
   backButton = std::unique_ptr<ArrowSelector>{
-      new ArrowSelector(ArrowDirection::UPLEFT, false, true)};
+      new ArrowSelector(ArrowDirection::UPLEFT, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::UPRIGHT, true, true)};
   backButton->get()->moveTo(BACK_X, BACK_Y);
@@ -61,6 +67,8 @@ void DeathMixScene::load() {
 
   auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
   difficulty->setValue(static_cast<DifficultyLevel>(level));
+
+  loadProgress();
 }
 
 void DeathMixScene::tick(u16 keys) {
@@ -136,12 +144,32 @@ bool DeathMixScene::onDifficultyLevelChange(ArrowSelector* button,
 
     SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
     difficulty->setValue(newValue);
+    loadProgress();
     pixelBlink->blink();
 
     return true;
   }
 
   return false;
+}
+
+void DeathMixScene::loadProgress() {
+  u32 completed = SAVEFILE_read8(
+      SRAM->deathMixProgress.completedSongs[difficulty->getValue()]);
+  u32 total = SAVEFILE_getLibrarySize();
+
+  progress->setValue(completed, total);
+
+  if (completed == total) {
+    auto gradeType = static_cast<GradeType>(
+        SAVEFILE_read8(SRAM->deathMixProgress.grades[difficulty->getValue()]));
+
+    progress->hide();
+    gradeBadge->setType(gradeType);
+  } else {
+    progress->show();
+    gradeBadge->setType(GradeType::UNPLAYED);
+  }
 }
 
 void DeathMixScene::confirm(u16 keys) {

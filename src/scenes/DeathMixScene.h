@@ -6,6 +6,7 @@
 #include "gameplay/save/SaveFile.h"
 #include "objects/base/InputHandler.h"
 #include "objects/ui/Difficulty.h"
+#include "objects/ui/GradeBadge.h"
 #include "objects/ui/Multiplier.h"
 #include "objects/ui/NumericProgress.h"
 #include "utils/PixelBlink.h"
@@ -31,6 +32,7 @@ class DeathMixScene : public TalkScene {
   std::unique_ptr<Multiplier> multiplier;
   std::unique_ptr<Difficulty> difficulty;
   std::unique_ptr<NumericProgress> progress;
+  std::unique_ptr<GradeBadge> gradeBadge;
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
   std::unique_ptr<InputHandler> settingsMenuInput;
@@ -42,6 +44,7 @@ class DeathMixScene : public TalkScene {
   void processMenuEvents();
 
   bool onDifficultyLevelChange(ArrowSelector* button, DifficultyLevel newValue);
+  void loadProgress();
 
   void confirm(u16 keys);
 };

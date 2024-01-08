@@ -13,6 +13,8 @@ class NumericProgress {
   NumericProgress(u32 x, u32 y);
 
   void setValue(u32 current, u32 total);
+  void show();
+  void hide();
 
   void render(std::vector<Sprite*>* sprites);
 
@@ -22,6 +24,9 @@ class NumericProgress {
   std::vector<std::unique_ptr<Digit>> completedDigits;
   std::vector<std::unique_ptr<Digit>> totalDigits;
   std::unique_ptr<Of> of;
+
+  u32 x;
+  u32 y;
 };
 
 #endif  // NUMERIC_PROGRESS_H

@@ -441,7 +441,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
         int lastIndex =
             SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
         u8 librarySize = SAVEFILE_getLibrarySize();
-        bool firstTime = songIndex > lastIndex;
+        bool firstTime = (int)songIndex > lastIndex;
 
         if (firstTime) {
           auto nextSongIndex = (u8)min(songIndex + 1, librarySize - 1);

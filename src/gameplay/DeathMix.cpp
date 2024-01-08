@@ -17,6 +17,9 @@ DeathMix::DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel) {
     std::swap(songFiles[i], songFiles[j]);
   }
 
+  for (u32 i = 0; i < songFiles.size(); i++)
+    songFiles[i]->index = i;
+
   this->fs = fs;
   this->difficultyLevel = difficultyLevel;
   this->current = 0;

@@ -731,6 +731,17 @@ void SongScene::finishAndGoToEvaluation() {
 }
 
 void SongScene::continueDeathMix() {
+  int lastIndex =
+      SAVEFILE_read8(SRAM->deathMixProgress.completedSongs[chart->difficulty]) -
+      1;
+  u8 librarySize = SAVEFILE_getLibrarySize();
+  bool firstTime = (int)song->index > lastIndex;
+  if (firstTime) {
+    auto completedSongs = (u8)min(song->index + 1, librarySize);
+    SAVEFILE_write8(SRAM->deathMixProgress.completedSongs[chart->difficulty],
+                    completedSongs);
+  }
+
   auto songChart = deathMix->getNextSongChart();
 
   if (songChart.song != NULL) {
@@ -746,14 +757,25 @@ void SongScene::continueDeathMix() {
     deathMix->points = scores[0]->getPoints();
     deathMix->longNotes = scores[0]->getLongNotes();
 
+#ifdef SENV_DEVELOPMENT
+    auto stageBreak = GameState.mods.stageBreak;
+#endif
     STATE_setup(songChart.song, songChart.chart);
+#ifdef SENV_DEVELOPMENT
+    GameState.mods.stageBreak = stageBreak;
+#endif
+
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
                       std::move(deathMix)),
         new PixelTransitionEffect());
   } else {
     auto evaluation = scores[localPlayerId]->evaluate();
-    // TODO: SAVE DEATHMIX GRADE
+    auto grade = evaluation->getGrade();
+    u8 currentGrade =
+        SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
+    if (firstTime || grade < currentGrade)
+      SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
 
     engine->transitionIntoScene(
         new DanceGradeScene(engine, fs, std::move(evaluation), NULL, false,

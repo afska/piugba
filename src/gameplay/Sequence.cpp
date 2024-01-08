@@ -234,16 +234,14 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
-  if (IS_STORY(gameMode) && isLastSong)
+  if ((IS_STORY(gameMode) || gameMode == GameMode::DEATH_MIX) && isLastSong)
     goTo(new TalkScene(
         _engine, _fs, gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
-        [isLastSong](u16 keys) {
+        [](u16 keys) {
           bool isPressed =
               SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
-          if (isPressed) {
-            goTo(isLastSong ? SEQUENCE_getMainScene()
-                            : new SelectionScene(_engine, _fs));
-          }
+          if (isPressed)
+            goTo(SEQUENCE_getMainScene());
         }));
   else
     goTo(new SelectionScene(_engine, _fs));

@@ -76,7 +76,7 @@ void ARCADE_migrate() {
   for (u32 i = 0; i < pages; i++)
     library->loadSongs(songFiles, DifficultyLevel::CRAZY, i * PAGE_SIZE);
 
-  for (int i = 0; i < songFiles.size(); i++) {
+  for (u32 i = 0; i < songFiles.size(); i++) {
     Song* song = SONG_parse(fs, songFiles[i].get());
 
     std::vector<GradeType> singleGrades;
