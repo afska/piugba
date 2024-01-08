@@ -82,6 +82,9 @@ class ChartReader : public TimingProvider {
     return judge->isInsideTimingWindow((stopStart + (int)stopLength) - msecs);
   }
 
+  inline void turnOffObjectPools() { holdArrows->turnOff(); }
+  inline void turnOnObjectPools() { holdArrows->turnOn(); }
+
   template <typename DEBUG>
   void logDebugInfo();
 
@@ -123,7 +126,6 @@ class ChartReader : public TimingProvider {
     while (targetMsecs >= events[currentIndex].timestamp &&
            currentIndex < count) {
       auto event = events + currentIndex;
-      event->index = currentIndex;
       EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
 
       if (event->handled[playerId]) {

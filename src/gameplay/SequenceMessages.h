@@ -44,6 +44,12 @@
   "- Patterns are MIRRORED\r\n" \
   "- Screen has visual MODS"
 
+#define MODE_DEATH_MIX            \
+  "In DEATHMIX MODE, you'll\r\n"  \
+  "play a mixed nonstop set.\r\n" \
+  "Life can't be recovered,\r\n"  \
+  "so try not to MISS!"
+
 #define KEYS_HINT                 \
   "To change the speed, use:\r\n" \
   "      START/SELECT\r\n"        \

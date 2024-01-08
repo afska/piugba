@@ -81,7 +81,6 @@ mv \
 # StageBreakScene
 grit \
   spr_arrows.bmp \
-  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_break.c
 mv \

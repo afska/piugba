@@ -44,6 +44,7 @@
 
 #include <tonc_bios.h>
 #include <tonc_core.h>
+#include <tonc_math.h>
 #include "LinkCable.hpp"
 #include "LinkWireless.hpp"
 
@@ -58,7 +59,7 @@
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES 60
 #define LINK_UNIVERSAL_SERVE_WAIT_FRAMES_RANDOM 30
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v6.0.0";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v6.0.3";
 
 void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
@@ -103,7 +104,7 @@ class LinkUniversal {
               LINK_CABLE_DEFAULT_REMOTE_TIMEOUT, LINK_CABLE_DEFAULT_INTERVAL,
               LINK_CABLE_DEFAULT_SEND_TIMER_ID},
       WirelessOptions wirelessOptions = WirelessOptions{
-          true, LINK_WIRELESS_MAX_PLAYERS, LINK_WIRELESS_DEFAULT_TIMEOUT,
+          true, LINK_UNIVERSAL_MAX_PLAYERS, LINK_WIRELESS_DEFAULT_TIMEOUT,
           LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT, LINK_WIRELESS_DEFAULT_INTERVAL,
           LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
           LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID}) {
@@ -111,7 +112,8 @@ class LinkUniversal {
         cableOptions.baudRate, cableOptions.timeout, cableOptions.remoteTimeout,
         cableOptions.interval, cableOptions.sendTimerId);
     this->linkWireless = new LinkWireless(
-        wirelessOptions.retransmission, true, wirelessOptions.maxPlayers,
+        wirelessOptions.retransmission, true,
+        min(wirelessOptions.maxPlayers, LINK_UNIVERSAL_MAX_PLAYERS),
         wirelessOptions.timeout, wirelessOptions.remoteTimeout,
         wirelessOptions.interval, wirelessOptions.sendTimerId,
         wirelessOptions.asyncACKTimerId);
@@ -316,10 +318,10 @@ class LinkUniversal {
   }
 
   void receiveWirelessMessages() {
-    LinkWireless::Message messages[LINK_WIRELESS_MAX_TRANSFER_LENGTH];
+    LinkWireless::Message messages[LINK_WIRELESS_QUEUE_SIZE];
     linkWireless->receive(messages);
 
-    for (u32 i = 0; i < LINK_WIRELESS_MAX_TRANSFER_LENGTH; i++) {
+    for (u32 i = 0; i < LINK_WIRELESS_QUEUE_SIZE; i++) {
       auto message = messages[i];
       if (message.packetId == LINK_WIRELESS_END)
         break;
@@ -384,8 +386,9 @@ class LinkUniversal {
 
       u32 randomNumber = server.userName;  // [!]
 
-      if (server.gameName == config.gameName &&
-          randomNumber > maxRandomNumber) {
+      if (!server.isFull() && server.gameName == config.gameName &&
+          randomNumber > maxRandomNumber &&
+          randomNumber < LINK_UNIVERSAL_MAX_ROOM_NUMBER) {
         maxRandomNumber = randomNumber;
         serverIndex = i;
       }

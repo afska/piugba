@@ -12,4 +12,9 @@ typedef struct __attribute__((__packed__)) {
   u8 grades[MAX_PROGRESS_REGISTERS];
 } Progress;
 
+typedef struct __attribute__((__packed__)) {
+  u8 completedSongs[3];
+  u8 grades[3];
+} DeathMixProgress;
+
 #endif  // PROGRESS_H

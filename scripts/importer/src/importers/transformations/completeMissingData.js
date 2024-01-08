@@ -72,6 +72,12 @@ module.exports = (metadata, charts, content, filePath) => {
     }
   }
 
+  // check limits
+  const singleCharts = charts.filter((it) => !it.header.isDouble);
+  const doubleCharts = charts.filter((it) => it.header.isDouble);
+  if (singleCharts.length > 99) throw new Error("too_many_single_charts");
+  if (doubleCharts.length > 99) throw new Error("too_many_double_charts");
+
   // add variants
   const normal = getChartByDifficulty(charts, "NORMAL");
   const hard = getChartByDifficulty(charts, "HARD");

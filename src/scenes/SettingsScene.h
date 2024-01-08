@@ -13,6 +13,7 @@ class SettingsScene : public MenuScene {
   void loadBackground(u32 id) override;
   void printOptions() override;
   bool selectOption(u32 selected, int direction) override;
+  void close() override;
 };
 
 #endif  // SETTINGS_SCENE_H

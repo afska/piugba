@@ -57,6 +57,34 @@ class Score {
     combo->show();
   }
 
+  // ---
+  inline int getLife() { return life; }
+  inline bool getHasMissCombo() { return hasMissCombo; }
+  inline bool getHalfLifeBonus() { return halfLifeBonus; }
+  inline u32 getMaxCombo() { return maxCombo; }
+  inline std::array<u32, FEEDBACK_TYPES_TOTAL> getCounters() {
+    return counters;
+  }
+  inline u32 getLongNotes() { return longNotes; }
+  inline void setLife(int life) {
+    this->life = life;
+    lifeBar->setLife(life);
+  }
+  inline void setHasMissCombo(bool hasMissCombo) {
+    this->hasMissCombo = hasMissCombo;
+  }
+  inline void setHalfLifeBonus(bool halfLifeBonus) {
+    this->halfLifeBonus = halfLifeBonus;
+  }
+  inline void setMaxCombo(u32 maxCombo) { this->maxCombo = maxCombo; }
+  inline void setCounters(std::array<u32, FEEDBACK_TYPES_TOTAL> counters) {
+    for (u32 i = 0; i < FEEDBACK_TYPES_TOTAL; i++)
+      this->counters[i] = counters[i];
+  }
+  inline void setPoints(u32 points) { this->points = points; }
+  inline void setLongNotes(u32 longNotes) { this->longNotes = longNotes; }
+  // ---
+
  private:
   std::unique_ptr<Feedback> feedback;
   std::unique_ptr<Combo> combo;
@@ -65,7 +93,7 @@ class Score {
 
   int life = INITIAL_LIFE;
   bool hasMissCombo = false;
-  bool halfLifeBonus = 0;
+  bool halfLifeBonus = false;
   u32 maxCombo = 0;
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;

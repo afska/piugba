@@ -1,7 +1,6 @@
 #include "TextScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_controls.h"
@@ -18,9 +17,6 @@ const int TEXT_OFFSET_X = 2;
 const int TEXT_BASE_OFFSET_Y = -3;
 const int TEXT_LINE_OFFSETS_Y[] = {0, -24, -16, -8, 0};
 
-const u32 INSTRUCTOR_X = 2;
-const u32 INSTRUCTOR_Y = 96;
-
 TextScene::TextScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : Scene(engine) {
   this->fs = fs;
@@ -32,10 +28,6 @@ std::vector<Background*> TextScene::backgrounds() {
 
 std::vector<Sprite*> TextScene::sprites() {
   std::vector<Sprite*> sprites;
-
-#ifndef SENV_DEBUG
-  sprites.push_back(instructor->get());
-#endif
 
   return sprites;
 }
@@ -49,9 +41,6 @@ void TextScene::load() {
 
   EFFECT_setUpBlend(BLD_BG0, BLD_BG1);
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
-
-  instructor = std::unique_ptr<Instructor>{
-      new Instructor(InstructorType::Boy, INSTRUCTOR_X, INSTRUCTOR_Y)};
 }
 
 void TextScene::tick(u16 keys) {

@@ -1,7 +1,6 @@
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba_engine.h>
 
 #include "gameplay/models/Song.h"

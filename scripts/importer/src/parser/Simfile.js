@@ -1,6 +1,7 @@
 const Chart = require("./Chart");
 const Channels = require("./Channels");
 const DifficultyLevels = require("./DifficultyLevels");
+const Events = require("./Events");
 const Mods = require("./Mods");
 const utils = require("../utils");
 const _ = require("lodash");
@@ -146,7 +147,20 @@ module.exports = class Simfile {
 
           const chart = new Chart(this.metadata, header, rawNotes);
           chart.index = i;
-          chart.events; // (ensure it can be parsed correctly)
+
+          const events = chart.events; // (ensure it can be parsed correctly)
+
+          // check limits
+          const [rythmEvents, normalEvents] = _.partition(
+            events,
+            (it) =>
+              it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
+          );
+          if (rythmEvents.length > MAX_RYTHM_EVENTS)
+            throw new Error(`too_big: ${rythmEvents.length} rythm events`);
+          if (normalEvents.length > MAX_NORMAL_EVENTS)
+            throw new Error(`too_big: ${normalEvents.length} normal events`);
+
           return chart;
         } catch (e) {
           if ((e?.message || "").startsWith("ignored:")) return null;
@@ -296,4 +310,6 @@ const REGEXPS = {
   },
 };
 
+const MAX_RYTHM_EVENTS = 1000;
+const MAX_NORMAL_EVENTS = 3000;
 const SECOND = 1000;

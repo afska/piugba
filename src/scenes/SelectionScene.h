@@ -191,7 +191,7 @@ class SelectionScene : public Scene {
   void processDifficultyChangeEvents();
   void processSelectionChangeEvents();
   void processConfirmEvents();
-  void processMenuEvents(u16 keys);
+  void processMenuEvents();
   bool onDifficultyLevelChange(ArrowDirection selector,
                                DifficultyLevel newValue);
   bool onNumericLevelChange(ArrowDirection selector, u8 newValue);

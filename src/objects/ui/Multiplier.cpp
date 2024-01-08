@@ -7,15 +7,13 @@
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
 
-const u32 POSITION_X = 111;
-const u32 POSITION_Y = 34;
 const u32 BLINK_FRAME = 6;
 
-Multiplier::Multiplier(u32 initialValue) {
+Multiplier::Multiplier(u32 x, u32 y, u32 initialValue) {
   SpriteBuilder<Sprite> builder;
   sprite = builder.withData(spr_multipliersTiles, sizeof(spr_multipliersTiles))
                .withSize(SIZE_16_16)
-               .withLocation(POSITION_X, POSITION_Y)
+               .withLocation(x, y)
                .buildPtr();
 
   value = initialValue;

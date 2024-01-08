@@ -1,7 +1,5 @@
 #include "MultiplayerLobbyScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include <string>
 
 #include "SelectionScene.h"
@@ -22,10 +20,6 @@ const u32 LOADING_INDICATOR_Y = GBA_SCREEN_HEIGHT - 16 - 4;
 
 std::vector<Sprite*> MultiplayerLobbyScene::sprites() {
   std::vector<Sprite*> sprites;
-
-#ifndef SENV_DEBUG
-  sprites.push_back(instructor->get());
-#endif
 
   sprites.push_back(loadingIndicator->get());
 

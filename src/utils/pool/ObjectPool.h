@@ -37,6 +37,9 @@ class ObjectPool {
 
   template <typename F>
   inline T* create(F initialize) {
+    if (!allowNew)
+      return NULL;
+
     for (auto& it : objects) {
       if (!it->isActive) {
         it->isActive = true;
@@ -86,6 +89,9 @@ class ObjectPool {
         action(it->object);
   }
 
+  void turnOff() { allowNew = false; }
+  void turnOn() { allowNew = true; }
+
   ~ObjectPool() {
     for (auto& it : objects) {
       delete it->object;
@@ -96,6 +102,7 @@ class ObjectPool {
  private:
   std::vector<PooledObject<T>*> objects;
   u32 activeObjects = 0;
+  bool allowNew = true;
 };
 
 #endif  // OBJECT_POOL_H

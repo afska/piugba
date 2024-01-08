@@ -1,6 +1,5 @@
 #include "SongScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
@@ -38,6 +37,7 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
+const u32 DEATH_MIX_ANTICIPATION_LEVEL = 5;
 const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
                             8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
@@ -53,12 +53,14 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
                      Song* song,
                      Chart* chart,
-                     Chart* remoteChart)
+                     Chart* remoteChart,
+                     std::unique_ptr<DeathMix> deathMix)
     : Scene(engine) {
   this->fs = fs;
   this->song = song;
   this->chart = chart;
   this->remoteChart = remoteChart != NULL ? remoteChart : chart;
+  this->deathMix = std::move(deathMix);
 }
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -133,7 +135,8 @@ void SongScene::load() {
                 [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = GameState.settings.audioLag;
-  u32 multiplier = GameState.mods.multiplier;
+  u32 multiplier =
+      deathMix != NULL ? deathMix->multiplier : GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     chartReaders[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
         playerId == localPlayerId ? chart : remoteChart, playerId,
@@ -174,7 +177,7 @@ void SongScene::tick(u16 keys) {
     return;
   }
 
-  __qran_seed += keys;
+  __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
 
   if ($isMultiplayer) {
@@ -184,8 +187,14 @@ void SongScene::tick(u16 keys) {
   }
 
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
-  if (isNewBeat)
+  if (isNewBeat) {
     onNewBeat(KEY_ANY_PRESSED(keys));
+    if (deathMix != NULL &&
+        PlaybackState.msecs >= song->sampleStart + song->sampleLength) {
+      finishAndGoToEvaluation();
+      return;
+    }
+  }
   if ($isVs)
     chartReaders[syncer->getRemotePlayerId()]->update((int)songMsecs);
 
@@ -271,6 +280,9 @@ void SongScene::initializeBackground() {
 }
 
 bool SongScene::initializeGame(u16 keys) {
+  if (deathMix != NULL && deathMix->didStartScroll)
+    goto initialized;
+
   if (GameState.mods.autoMod)
     EFFECT_setMosaic(MAX_MOSAIC);
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
@@ -281,12 +293,41 @@ bool SongScene::initializeGame(u16 keys) {
   player_play(song->audioPath.c_str());
   processModsLoad();
 
+initialized:
+  if (deathMix != NULL) {
+    if (!deathMix->didStartScroll) {
+      arrowPool->turnOff();
+      chartReaders[0]->turnOffObjectPools();
+
+      player_seek(song->sampleStart);
+      chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
+      chartReaders[0]->update(song->sampleStart);
+      deathMix->didStartScroll = true;
+      return false;
+    } else {
+      arrowPool->turnOn();
+      chartReaders[0]->turnOnObjectPools();
+      chartReaders[0]->setMultiplier(deathMix->multiplier);
+
+      if (!deathMix->isInitialSong()) {
+        scores[0]->setLife(deathMix->life);
+        scores[0]->getCombo()->setValue(deathMix->combo);
+        scores[0]->setHasMissCombo(deathMix->hasMissCombo);
+        scores[0]->setHalfLifeBonus(deathMix->halfLifeBonus);
+        scores[0]->setMaxCombo(deathMix->maxCombo);
+        scores[0]->setCounters(deathMix->counters);
+        scores[0]->setPoints(deathMix->points);
+        scores[0]->setLongNotes(deathMix->longNotes);
+      }
+    }
+  }
+
   if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
       (keys & KEY_SELECT)) {
     // (if START and SELECT are pressed on start, the chart will be marked as
     // defective and return to the selection scene)
-    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id, chart->level,
-                        GradeType::DEFECTIVE);
+    SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
+                        chart->levelIndex, GradeType::DEFECTIVE);
 
     if ($isMultiplayer) {
       syncer->send(SYNC_EVENT_ABORT, 0);
@@ -669,18 +710,78 @@ void SongScene::breakStage() {
 }
 
 void SongScene::finishAndGoToEvaluation() {
+  unload();
+
+  if (deathMix != NULL) {
+    continueDeathMix();
+    return;
+  }
+
   auto evaluation = scores[localPlayerId]->evaluate();
   bool isLastSong =
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
-                          chart->level, evaluation->getGrade());
+                          chart->levelIndex, evaluation->getGrade());
 
-  unload();
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
           $isVsDifferentLevels, isLastSong),
       new PixelTransitionEffect());
+}
+
+void SongScene::continueDeathMix() {
+  int lastIndex =
+      SAVEFILE_read8(SRAM->deathMixProgress.completedSongs[chart->difficulty]) -
+      1;
+  u8 librarySize = SAVEFILE_getLibrarySize();
+  bool firstTime = (int)song->index > lastIndex;
+  if (firstTime) {
+    auto completedSongs = (u8)min(song->index + 1, librarySize);
+    SAVEFILE_write8(SRAM->deathMixProgress.completedSongs[chart->difficulty],
+                    completedSongs);
+  }
+
+  auto songChart = deathMix->getNextSongChart();
+
+  if (songChart.song != NULL) {
+    deathMix->didStartScroll = false;
+    deathMix->multiplier = chartReaders[0]->getMultiplier();
+    deathMix->life = scores[0]->getLife();
+    deathMix->combo = scores[0]->getCombo()->getValue() *
+                      (scores[0]->getHasMissCombo() ? -1 : 1);
+    deathMix->hasMissCombo = scores[0]->getHasMissCombo();
+    deathMix->halfLifeBonus = scores[0]->getHalfLifeBonus();
+    deathMix->maxCombo = scores[0]->getMaxCombo();
+    deathMix->counters = scores[0]->getCounters();
+    deathMix->points = scores[0]->getPoints();
+    deathMix->longNotes = scores[0]->getLongNotes();
+
+#ifdef SENV_DEVELOPMENT
+    auto stageBreak = GameState.mods.stageBreak;
+#endif
+    STATE_setup(songChart.song, songChart.chart);
+#ifdef SENV_DEVELOPMENT
+    GameState.mods.stageBreak = stageBreak;
+#endif
+
+    engine->transitionIntoScene(
+        new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
+                      std::move(deathMix)),
+        new PixelTransitionEffect());
+  } else {
+    auto evaluation = scores[localPlayerId]->evaluate();
+    auto grade = evaluation->getGrade();
+    u8 currentGrade =
+        SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
+    if (firstTime || grade < currentGrade)
+      SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
+
+    engine->transitionIntoScene(
+        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, false,
+                            true),
+        new PixelTransitionEffect());
+  }
 }
 
 void SongScene::processModsLoad() {
@@ -705,27 +806,27 @@ void SongScene::processModsBeat() {
     autoModCounter++;
     if (autoModCounter == autoModDuration) {
       autoModCounter = 0;
-      autoModDuration = qran_range(1, 4);
+      autoModDuration = qran_range(1, 5);
 
       auto previousColorFilter = GameState.mods.colorFilter;
       GameState.mods.pixelate =
-          qran_range(1, 100) > 75
-              ? (qran_range(1, 100) > 50 ? PixelateOpts::pBLINK_IN
+          qran_range(1, 101) > 75
+              ? (qran_range(1, 101) > 50 ? PixelateOpts::pBLINK_IN
                                          : PixelateOpts::pFIXED)
               : PixelateOpts::pOFF;
-      GameState.mods.jump = qran_range(1, 100) > 50 && !$isDouble
+      GameState.mods.jump = qran_range(1, 101) > 50 && !$isDouble
                                 ? JumpOpts::jLINEAR
                                 : JumpOpts::jOFF;
       GameState.mods.reduce =
           GameState.mods.autoMod == AutoModOpts::aINSANE
-              ? (qran_range(1, 100) > 50
-                     ? (qran_range(1, 100) > 50 ? ReduceOpts::rLINEAR
+              ? (qran_range(1, 101) > 50
+                     ? (qran_range(1, 101) > 50 ? ReduceOpts::rLINEAR
                                                 : ReduceOpts::rMICRO)
                      : ReduceOpts::rOFF)
               : ReduceOpts::rMICRO;
       GameState.mods.bounce = BounceOpts::bALL;
       GameState.mods.colorFilter =
-          qran_range(1, 100) > 50 ? static_cast<ColorFilter>(qran_range(1, 16))
+          qran_range(1, 101) > 50 ? static_cast<ColorFilter>(qran_range(1, 17))
                                   : ColorFilter::NO_FILTER;
 
       mosaic = targetMosaic = 0;

@@ -69,7 +69,7 @@ void ControlsScene::tick(u16 keys) {
     player_play(SOUND_ENTER);
   }
 
-  __qran_seed += keys;
+  __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
   processCombo();
 

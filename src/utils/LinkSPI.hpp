@@ -54,7 +54,7 @@
 #define LINK_SPI_BIT_GENERAL_PURPOSE_HIGH 15
 #define LINK_SPI_BIT_GENERAL_PURPOSE_SD 5  // [!]
 
-static volatile char LINK_SPI_VERSION[] = "LinkSPI/v6.0.0";
+static volatile char LINK_SPI_VERSION[] = "LinkSPI/v6.0.3";
 
 class LinkSPI {
  public:

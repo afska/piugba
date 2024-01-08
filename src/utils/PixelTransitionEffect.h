@@ -2,6 +2,7 @@
 #include <libgba-sprite-engine/scene.h>
 
 #include "utils/EffectUtils.h"
+#include "utils/SceneUtils.h"
 
 const u32 TARGET_MOSAIC = 10;
 
@@ -12,6 +13,8 @@ class PixelTransitionEffect : public SceneEffect {
   void update() override {
     EFFECT_setMosaic(value);
     value++;
+    if (isDone())
+      BACKGROUND_enable(false, false, false, false);
   }
 
   bool isDone() override { return value >= TARGET_MOSAIC; }

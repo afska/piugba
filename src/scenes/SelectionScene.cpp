@@ -1,7 +1,6 @@
 #include "SelectionScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 #include <libgba-sprite-engine/gba/tonc_bios.h>
 #include <tonc_input.h>
 
@@ -34,6 +33,12 @@ const u32 TEXT_ROW = 13;
 const int TEXT_SCROLL_NORMAL = -6;
 const int TEXT_SCROLL_CONFIRMED = -10;
 const u32 PIXEL_BLINK_LEVEL = 4;
+const u32 DIFFICULTY_X = 79;
+const u32 DIFFICULTY_Y = 16;
+const u32 MULTIPLIER_X = 111;
+const u32 MULTIPLIER_Y = 34;
+const u32 PROGRESS_X = 63;
+const u32 PROGRESS_Y = 131;
 const u32 CHANNEL_BADGE_X[] = {22, 82, 142, 202};
 const u32 CHANNEL_BADGE_Y = 49;
 const u32 GRADE_BADGE_X[] = {43, 103, 163, 222};
@@ -115,10 +120,12 @@ void SelectionScene::load() {
   TextStream::instance().setMosaic(true);
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
-  difficulty = std::unique_ptr<Difficulty>{new Difficulty()};
-  multiplier = std::unique_ptr<Multiplier>{
-      new Multiplier(SAVEFILE_read8(SRAM->mods.multiplier))};
-  progress = std::unique_ptr<NumericProgress>{new NumericProgress()};
+  difficulty =
+      std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
+  multiplier = std::unique_ptr<Multiplier>{new Multiplier(
+      MULTIPLIER_X, MULTIPLIER_Y, SAVEFILE_read8(SRAM->mods.multiplier))};
+  progress = std::unique_ptr<NumericProgress>{
+      new NumericProgress(PROGRESS_X, PROGRESS_Y)};
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   if (IS_STORY(SAVEFILE_getGameMode())) {
@@ -167,6 +174,8 @@ void SelectionScene::tick(u16 keys) {
     init++;
   }
 
+  processKeys(keys);
+
   if (pixelBlink->tick() && isCrossingPage)
     stopPageCross();
   for (auto& it : arrowSelectors)
@@ -178,8 +187,6 @@ void SelectionScene::tick(u16 keys) {
     loadingIndicator2->tick();
   }
 
-  processKeys(keys);
-
   if (isMultiplayer()) {
     processMultiplayerUpdates();
     if (!syncer->isPlaying())
@@ -189,8 +196,7 @@ void SelectionScene::tick(u16 keys) {
   processDifficultyChangeEvents();
   processSelectionChangeEvents();
   processConfirmEvents();
-
-  processMenuEvents(keys);
+  processMenuEvents();
 
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
                    HIGHLIGHTER_OPACITY);
@@ -330,15 +336,22 @@ void SelectionScene::goToSong() {
 
   bool isStory = IS_STORY(SAVEFILE_getGameMode());
   bool hasRemoteChart = isVs() && syncer->$remoteNumericLevel != -1;
-  std::vector<u8> selectedLevels;
+  std::vector<u8> chartIndexes;
 
-  if (!isStory) {
-    selectedLevels.push_back(getSelectedNumericLevel());
+  Song* tempSong = SONG_parse(fs, getSelectedSong());
+  if (isStory) {
+    chartIndexes.push_back(
+        SONG_findChartIndexByDifficultyLevel(tempSong, difficulty->getValue()));
+  } else {
+    chartIndexes.push_back(SONG_findChartIndexByNumericLevelIndex(
+        tempSong, getSelectedNumericLevelIndex(), isDouble()));
     if (hasRemoteChart)
-      selectedLevels.push_back(numericLevels[syncer->$remoteNumericLevel]);
+      chartIndexes.push_back(SONG_findChartIndexByNumericLevelIndex(
+          tempSong, (u8)syncer->$remoteNumericLevel, false));
   }
+  SONG_free(tempSong);
 
-  Song* song = SONG_parse(fs, getSelectedSong(), true, selectedLevels);
+  Song* song = SONG_parse(fs, getSelectedSong(), chartIndexes);
   Chart* chart =
       isStory ? SONG_findChartByDifficultyLevel(song, difficulty->getValue())
               : SONG_findChartByNumericLevelIndex(
@@ -350,10 +363,12 @@ void SelectionScene::goToSong() {
 
   int customOffset = getCustomOffset();
   chart->customOffset = customOffset;
-  if (remoteChart != NULL)
+  chart->levelIndex = getSelectedNumericLevelIndex();
+  if (remoteChart != NULL) {
     remoteChart->customOffset = customOffset;
+    remoteChart->levelIndex = (u8)syncer->$remoteNumericLevel;
+  }
 
-  STATE_setup(song, chart);
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
@@ -445,7 +460,7 @@ void SelectionScene::processConfirmEvents() {
   }
 }
 
-void SelectionScene::processMenuEvents(u16 keys) {
+void SelectionScene::processMenuEvents() {
   if (isMultiplayer()) {
     if (syncer->isMaster() && multiplier->hasBeenPressedNow()) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
@@ -617,7 +632,7 @@ void SelectionScene::onConfirmOrStart(bool isConfirmed) {
 }
 
 void SelectionScene::updateSelection(bool isChangingLevel) {
-  Song* song = SONG_parse(fs, getSelectedSong(), false);
+  Song* song = SONG_parse(fs, getSelectedSong());
   selectedSongId = song->id;
 
   updateLevel(song, isChangingLevel);
@@ -817,10 +832,10 @@ void SelectionScene::loadSelectedSongGrade() {
     return;
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
-    gradeBadges[i]->setType(i == selected
-                                ? SAVEFILE_getArcadeGradeOf(
-                                      selectedSongId, getSelectedNumericLevel())
-                                : GradeType::UNPLAYED);
+    gradeBadges[i]->setType(
+        i == selected ? SAVEFILE_getArcadeGradeOf(
+                            selectedSongId, getSelectedNumericLevelIndex())
+                      : GradeType::UNPLAYED);
   }
 }
 

@@ -27,7 +27,8 @@ typedef struct {
   // custom fields:
   bool isDouble;  // type == ChartType::DOUBLE_CHART ||
                   // type == ChartType::DOUBLE_COOP_CHART
-  int customOffset = 0;
+  int customOffset;
+  u8 levelIndex;
 } Chart;
 
 #endif  // CHART_H

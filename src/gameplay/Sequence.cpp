@@ -11,6 +11,7 @@
 #include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
+#include "scenes/DeathMixScene.h"
 #include "scenes/MultiplayerLobbyScene.h"
 #include "scenes/SelectionScene.h"
 #include "scenes/SongScene.h"
@@ -52,6 +53,9 @@ Scene* SEQUENCE_getInitialScene() {
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
   auto gameMode = SAVEFILE_getGameMode();
   SAVEFILE_write8(SRAM->state.isPlaying, false);
+
+  if (isPlaying && gameMode == GameMode::DEATH_MIX)
+    return new DeathMixScene(_engine, _fs);
 
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
@@ -118,7 +122,11 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   auto lastGameMode = SAVEFILE_getGameMode();
-  if (lastGameMode != gameMode) {
+  bool isTransitioningBetweenCampaignAndChallenges =
+      (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
+      (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
+  if (lastGameMode != gameMode &&
+      !isTransitioningBetweenCampaignAndChallenges) {
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
@@ -134,6 +142,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
                                    : LinkUniversal::Protocol::AUTODETECT);
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);
+  } else if (gameMode == GameMode::DEATH_MIX) {
+    goTo(new DeathMixScene(_engine, _fs));
   } else {
     auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
                    : gameMode == GameMode::ARCADE ? MODE_ARCADE
@@ -158,6 +168,8 @@ void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode) {
 }
 
 void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
+  STATE_setup(song, chart);
+
   auto gameMode = SAVEFILE_getGameMode();
 
   if (!isMultiplayer())
@@ -222,16 +234,14 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
-  if (IS_STORY(gameMode) && isLastSong)
+  if ((IS_STORY(gameMode) || gameMode == GameMode::DEATH_MIX) && isLastSong)
     goTo(new TalkScene(
         _engine, _fs, gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
-        [isLastSong](u16 keys) {
+        [](u16 keys) {
           bool isPressed =
               SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
-          if (isPressed) {
-            goTo(isLastSong ? SEQUENCE_getMainScene()
-                            : new SelectionScene(_engine, _fs));
-          }
+          if (isPressed)
+            goTo(SEQUENCE_getMainScene());
         }));
   else
     goTo(new SelectionScene(_engine, _fs));

@@ -1,7 +1,6 @@
 #include "MenuScene.h"
 
 #include <libgba-sprite-engine/background/text_stream.h>
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
 
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/Key.h"
@@ -167,6 +166,9 @@ void MenuScene::processKeys(u16 keys) {
 void MenuScene::processSelection() {
   if (selectButton->hasBeenPressedNow())
     select(0);
+
+  if (engine->isTransitioning())
+    return;
 
   if (incrementInput->hasBeenPressedNow())
     select(1);

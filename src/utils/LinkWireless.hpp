@@ -41,7 +41,7 @@
 // - 6) Send data:
 //       linkWireless->send(0x1234);
 // - 7) Receive data:
-//       LinkWireless::Message messages[LINK_WIRELESS_MAX_TRANSFER_LENGTH];
+//       LinkWireless::Message messages[LINK_WIRELESS_QUEUE_SIZE];
 //       linkWireless->receive(messages);
 //       if (messages[0].packetId != LINK_WIRELESS_END) {
 //         // ...
@@ -59,6 +59,7 @@
 // --------------------------------------------------------------------------
 
 #include <tonc_core.h>
+#include <tonc_math.h>
 #include <string>
 #include "LinkGPIO.hpp"
 #include "LinkSPI.hpp"
@@ -67,9 +68,6 @@
 
 // Buffer size
 #define LINK_WIRELESS_QUEUE_SIZE 10
-
-// Max command response length
-#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30
 
 // Max server transfer length
 #define LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH 6
@@ -100,6 +98,8 @@
 #define LINK_WIRELESS_TRANSFER_WAIT 15
 #define LINK_WIRELESS_BROADCAST_SEARCH_WAIT_FRAMES 60
 #define LINK_WIRELESS_CMD_TIMEOUT 100
+#define LINK_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30
+#define LINK_WIRELESS_MAX_GAME_ID 0x7fff
 #define LINK_WIRELESS_MAX_GAME_NAME_LENGTH 14
 #define LINK_WIRELESS_MAX_USER_NAME_LENGTH 8
 #define LINK_WIRELESS_LOGIN_STEPS 9
@@ -107,6 +107,7 @@
 #define LINK_WIRELESS_RESPONSE_ACK 0x80
 #define LINK_WIRELESS_DATA_REQUEST 0x80000000
 #define LINK_WIRELESS_SETUP_MAGIC 0x003c0420
+#define LINK_WIRELESS_SETUP_MAX_PLAYERS_BIT 16
 #define LINK_WIRELESS_STILL_CONNECTING 0x01000000
 #define LINK_WIRELESS_BROADCAST_LENGTH 6
 #define LINK_WIRELESS_BROADCAST_RESPONSE_LENGTH \
@@ -121,7 +122,6 @@
 #define LINK_WIRELESS_COMMAND_BROADCAST 0x16
 #define LINK_WIRELESS_COMMAND_START_HOST 0x19
 #define LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS 0x1a
-#define LINK_WIRELESS_COMMAND_END_HOST 0x1b
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_START 0x1c
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_POLL 0x1d
 #define LINK_WIRELESS_COMMAND_BROADCAST_READ_END 0x1e
@@ -130,6 +130,7 @@
 #define LINK_WIRELESS_COMMAND_FINISH_CONNECTION 0x21
 #define LINK_WIRELESS_COMMAND_SEND_DATA 0x24
 #define LINK_WIRELESS_COMMAND_RECEIVE_DATA 0x26
+#define LINK_WIRELESS_COMMAND_BYE 0x3d
 #define LINK_WIRELESS_BARRIER asm volatile("" ::: "memory")
 #define LINK_WIRELESS_CODE_IWRAM \
   __attribute__((section(".iwram"), target("arm"), noinline))
@@ -142,7 +143,7 @@
     if (!reset())                     \
       return false;
 
-static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v6.0.0";
+static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v6.0.3";
 
 void LINK_WIRELESS_ISR_VBLANK();
 void LINK_WIRELESS_ISR_SERIAL();
@@ -208,8 +209,12 @@ class LinkWireless {
 
   struct Server {
     u16 id = 0;
+    u16 gameId;
     std::string gameName;
     u32 userName;  // [!]
+    u8 currentPlayerCount;
+
+    bool isFull() { return currentPlayerCount == 0; }
   };
 
   explicit LinkWireless(
@@ -245,16 +250,22 @@ class LinkWireless {
     return success;
   }
 
-  void deactivate() {
+  bool deactivate() {
+    bool success = sendCommand(LINK_WIRELESS_COMMAND_BYE).success;
+
     lastError = NONE;
     isEnabled = false;
     resetState();
     stop();
+
+    return success;
   }
 
-  bool serve(std::string gameName = "", u32 userName = 0) {  // [!]
+  bool serve(std::string gameName = "",
+             u32 userName = 0,  // [!]
+             u16 gameId = LINK_WIRELESS_MAX_GAME_ID) {
     LINK_WIRELESS_RESET_IF_NEEDED
-    if (state != AUTHENTICATED) {
+    if (state != AUTHENTICATED && state != SERVING) {
       lastError = WRONG_STATE;
       return false;
     }
@@ -266,7 +277,11 @@ class LinkWireless {
     // [!]
     gameName.append(LINK_WIRELESS_MAX_GAME_NAME_LENGTH - gameName.length(), 0);
 
-    addData(buildU32(buildU16(gameName[1], gameName[0]), buildU16(0x02, 0x02)),
+    if (state != SERVING)
+      setup(config.maxPlayers);
+
+    addData(buildU32(buildU16(gameName[1], gameName[0]),
+                     gameId & LINK_WIRELESS_MAX_GAME_ID),
             true);
     addData(buildU32(buildU16(gameName[5], gameName[4]),
                      buildU16(gameName[3], gameName[2])));
@@ -276,8 +291,13 @@ class LinkWireless {
                      buildU16(gameName[11], gameName[10])));
     addData(0);         // [!]
     addData(userName);  // [!]
-    bool success = sendCommand(LINK_WIRELESS_COMMAND_BROADCAST, true).success &&
-                   sendCommand(LINK_WIRELESS_COMMAND_START_HOST).success;
+
+    bool success = sendCommand(LINK_WIRELESS_COMMAND_BROADCAST, true).success;
+
+    if (state != SERVING) {
+      success =
+          success && sendCommand(LINK_WIRELESS_COMMAND_START_HOST).success;
+    }
 
     if (!success) {
       reset();
@@ -364,11 +384,15 @@ class LinkWireless {
 
       Server server;
       server.id = (u16)result.responses[start];
+      server.gameId = result.responses[start + 1] & LINK_WIRELESS_MAX_GAME_ID;
       recoverName(server.gameName, result.responses[start + 1], false);
       recoverName(server.gameName, result.responses[start + 2]);
       recoverName(server.gameName, result.responses[start + 3]);
       recoverName(server.gameName, result.responses[start + 4]);
       server.userName = start + 6;  // [!]
+      u8 connectedClients = (result.responses[start] >> 16) & 0xff;
+      server.currentPlayerCount =
+          connectedClients == 0xff ? 0 : (1 + connectedClients);
 
       servers[i] = server;
     }
@@ -463,6 +487,11 @@ class LinkWireless {
     isAddingMessage = false;
     LINK_WIRELESS_BARRIER;
 
+    if (isPendingClearActive) {
+      sessionState.tmpMessagesToSend.clear();
+      isPendingClearActive = false;
+    }
+
     return true;
   }
 
@@ -506,6 +535,7 @@ class LinkWireless {
     delete linkGPIO;
   }
 
+  bool _hasActiveAsyncCommand() { return asyncCommand.isActive; }
   bool _canSend() { return !sessionState.outgoingMessages.isFull(); }
   u32 _getPendingCount() { return sessionState.outgoingMessages.size(); }
   u32 _lastPacketId() { return sessionState.lastPacketId; }
@@ -824,6 +854,7 @@ class LinkWireless {
   u32 nextCommandDataSize = 0;
   volatile bool isReadingMessages = false;
   volatile bool isAddingMessage = false;
+  volatile bool isPendingClearActive = false;
   Error lastError = NONE;
   volatile bool isEnabled = false;
 
@@ -852,21 +883,11 @@ class LinkWireless {
     switch (asyncCommand.type) {
       case LINK_WIRELESS_COMMAND_ACCEPT_CONNECTIONS: {
         // AcceptConnections (end)
-        u8 oldPlayerCount = sessionState.playerCount;
-        sessionState.playerCount = 1 + asyncCommand.result.responsesSize;
-
-        if (sessionState.playerCount > oldPlayerCount &&
-            sessionState.playerCount == /* [!] config.maxPlayers */ 2) {
-          // EndHost (start)
-          sendCommandAsync(LINK_WIRELESS_COMMAND_END_HOST);
-        }
+        sessionState.playerCount =
+            min(1 + asyncCommand.result.responsesSize, config.maxPlayers);
 
         break;
       }
-      // case LINK_WIRELESS_COMMAND_END_HOST: {
-      //   // EndHost (end)
-      //   break;
-      // }
       case LINK_WIRELESS_COMMAND_SEND_DATA: {
         // SendData (end)
 
@@ -1209,15 +1230,12 @@ class LinkWireless {
       return;
 
     while (!sessionState.tmpMessagesToSend.isEmpty()) {
-      if (isSessionActive() && !_canSend())
+      if (!_canSend())
         break;
 
       auto message = sessionState.tmpMessagesToSend.pop();
-
-      if (isSessionActive()) {
-        message.packetId = newPacketId();
-        sessionState.outgoingMessages.push(message);
-      }
+      message.packetId = newPacketId();
+      sessionState.outgoingMessages.push(message);
     }
   }
 
@@ -1227,9 +1245,7 @@ class LinkWireless {
 
     while (!sessionState.tmpMessagesToReceive.isEmpty()) {
       auto message = sessionState.tmpMessagesToReceive.pop();
-
-      if (state == SERVING || state == CONNECTED)
-        sessionState.incomingMessages.push(message);
+      sessionState.incomingMessages.push(message);
     }
   }
 
@@ -1310,6 +1326,12 @@ class LinkWireless {
     if (!isReadingMessages)
       this->sessionState.incomingMessages.clear();
     this->sessionState.outgoingMessages.clear();
+
+    this->sessionState.tmpMessagesToReceive.clear();
+    if (!isAddingMessage)
+      this->sessionState.tmpMessagesToSend.clear();
+    else
+      isPendingClearActive = true;
   }
 
   void stop() {
@@ -1334,8 +1356,7 @@ class LinkWireless {
     if (!sendCommand(LINK_WIRELESS_COMMAND_HELLO).success)
       return false;
 
-    addData(LINK_WIRELESS_SETUP_MAGIC, true);
-    if (!sendCommand(LINK_WIRELESS_COMMAND_SETUP, true).success)
+    if (!setup())
       return false;
 
     linkSPI->activate(LinkSPI::Mode::MASTER_2MBPS);
@@ -1392,6 +1413,14 @@ class LinkWireless {
     memory.previousAdapterData = expectedResponse;
 
     return true;
+  }
+
+  bool setup(u8 maxPlayers = LINK_WIRELESS_MAX_PLAYERS) {
+    addData(LINK_WIRELESS_SETUP_MAGIC |
+                (((LINK_WIRELESS_MAX_PLAYERS - maxPlayers) & 0b11)
+                 << LINK_WIRELESS_SETUP_MAX_PLAYERS_BIT),
+            true);
+    return sendCommand(LINK_WIRELESS_COMMAND_SETUP, true).success;
   }
 
   CommandResult sendCommand(u8 type, bool withData = false) {
@@ -1571,7 +1600,7 @@ class LinkWireless {
 
   bool timeout(u32 limit, u32& lines, u32& vCount) {
     if (REG_VCOUNT != vCount) {
-      lines += std::max((int)REG_VCOUNT - (int)vCount, 0);
+      lines += max((int)REG_VCOUNT - (int)vCount, 0);
       vCount = REG_VCOUNT;
     }
 
@@ -1584,7 +1613,7 @@ class LinkWireless {
 
     while (count < verticalLines) {
       if (REG_VCOUNT != vCount) {
-        count += std::max((int)REG_VCOUNT - (int)vCount, 0);
+        count++;
         vCount = REG_VCOUNT;
       }
     };

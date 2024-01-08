@@ -31,7 +31,7 @@ class TalkScene : public TextScene {
  private:
   std::string message;
   std::function<void(u16 keys)> onKeyPress;
-  std::unique_ptr<ArrowSelector> nextButton;
+  std::unique_ptr<ArrowSelector> confirmButton;
   bool skippable;
   bool canTriggerInput = false;
 };

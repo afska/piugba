@@ -5,30 +5,29 @@
 #include "utils/SpriteUtils.h"
 
 const u32 DIGITS = 2;
-const u32 DIGITS_CURRENT_POSITION_X = 63;
-const u32 DIGITS_TOTAL_POSITION_X = 121;
-const u32 OF_POSITION_X = 104;
-const u32 DIGITS_POSITION_Y = 131;
-const u32 OF_POSITION_Y = DIGITS_POSITION_Y;
+const u32 OF_POSITION_X = 41;
+const u32 DIGITS_TOTAL_POSITION_X = 58;
 
-NumericProgress::NumericProgress() {
+NumericProgress::NumericProgress(u32 x, u32 y) {
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{new Digit(DigitSize::BIG,
-                                                  DIGITS_CURRENT_POSITION_X,
-                                                  DIGITS_POSITION_Y, i, false)};
+    auto digit =
+        std::unique_ptr<Digit>{new Digit(DigitSize::BIG, x, y, i, false)};
     digit->showAt(0);
     completedDigits.push_back(std::move(digit));
   }
 
   for (u32 i = 0; i < DIGITS; i++) {
-    auto digit = std::unique_ptr<Digit>{new Digit(
-        DigitSize::BIG, DIGITS_TOTAL_POSITION_X, DIGITS_POSITION_Y, i, false)};
+    auto digit = std::unique_ptr<Digit>{
+        new Digit(DigitSize::BIG, x + DIGITS_TOTAL_POSITION_X, y, i, false)};
     SPRITE_reuseTiles(digit->get());
     digit->showAt(0);
     totalDigits.push_back(std::move(digit));
   }
 
-  of = std::unique_ptr<Of>{new Of(OF_POSITION_X, OF_POSITION_Y)};
+  of = std::unique_ptr<Of>{new Of(x + OF_POSITION_X, y)};
+
+  this->x = x;
+  this->y = y;
 }
 
 void NumericProgress::setValue(u32 completed, u32 total) {
@@ -37,6 +36,26 @@ void NumericProgress::setValue(u32 completed, u32 total) {
 
   totalDigits[0]->set(THREE_DIGITS_LUT[total * LUT_DIGITS + 1], false);
   totalDigits[1]->set(THREE_DIGITS_LUT[total * LUT_DIGITS + 2], false);
+}
+
+void NumericProgress::show() {
+  for (u32 i = 0; i < DIGITS; i++) {
+    completedDigits[i]->relocate(DigitSize::BIG, x, y, i);
+    completedDigits[i]->show();
+  }
+  for (u32 i = 0; i < DIGITS; i++) {
+    totalDigits[i]->relocate(DigitSize::BIG, x + DIGITS_TOTAL_POSITION_X, y, i);
+    totalDigits[i]->show();
+  }
+  of->get()->moveTo(x + OF_POSITION_X, y);
+}
+
+void NumericProgress::hide() {
+  for (u32 i = 0; i < DIGITS; i++)
+    SPRITE_hide(completedDigits[i]->get());
+  for (u32 i = 0; i < DIGITS; i++)
+    SPRITE_hide(totalDigits[i]->get());
+  SPRITE_hide(of->get());
 }
 
 void NumericProgress::render(std::vector<Sprite*>* sprites) {

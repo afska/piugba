@@ -1,8 +1,8 @@
 #include "SettingsScene.h"
 
-#include <libgba-sprite-engine/effects/fade_out_scene.h>
-
 #include "CalibrateScene.h"
+#include "DeathMixScene.h"
+#include "SelectionScene.h"
 #include "StartScene.h"
 #include "assets.h"
 #include "gameplay/multiplayer/Syncer.h"
@@ -129,4 +129,16 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
   }
 
   return true;
+}
+
+void SettingsScene::close() {
+  player_stop();
+
+  if (SAVEFILE_getGameMode() == GameMode::DEATH_MIX) {
+    engine->transitionIntoScene(new DeathMixScene(engine, fs),
+                                new PixelTransitionEffect());
+  } else {
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new PixelTransitionEffect());
+  }
 }
