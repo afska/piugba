@@ -283,7 +283,10 @@ void StartScene::animateInputs(int bounceOffset) {
 }
 
 void StartScene::updateExpandedOrCollapsedButtons() {
-  isArcadeExpanded = ENV_ARCADE || (selectedMode >= 2 && selectedMode <= 4);
+  if (ENV_ARCADE)
+    return;
+
+  isArcadeExpanded = selectedMode >= 2 && selectedMode <= 4;
   isChallengesExpanded = selectedMode >= 6;
 
   if (isArcadeExpanded) {
