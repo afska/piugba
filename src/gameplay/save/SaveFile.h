@@ -50,7 +50,9 @@ typedef struct __attribute__((__packed__)) {
   u8 beat;
 
   Mods mods;
-  char padding3[10];
+  char padding3[4];
+
+  DeathMixProgress deathMixProgress;
 
   s8 customOffsets[CUSTOM_OFFSET_TABLE_SIZE];
 } SaveFile;
@@ -168,7 +170,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   if (!ARCADE_isInitialized()) {
     if (ARCADE_isLegacy()) {
       ARCADE_migrate();
-      fixes |= 0b10001;
+      fixes |= 0b100000000;
     } else {
       ARCADE_initialize();
       fixes |= 0b10000;
@@ -216,6 +218,24 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
     fixes |= 0b10000000;
   }
 
+  // validate deathmix progress
+  u8 maxDeathMixNormal = SAVEFILE_read8(
+      SRAM->deathMixProgress.completedSongs[DifficultyLevel::NORMAL]);
+  u8 maxDeathMixHard = SAVEFILE_read8(
+      SRAM->deathMixProgress.completedSongs[DifficultyLevel::HARD]);
+  u8 maxDeathMixCrazy = SAVEFILE_read8(
+      SRAM->deathMixProgress.completedSongs[DifficultyLevel::CRAZY]);
+  if (maxDeathMixNormal > librarySize || maxDeathMixHard > librarySize ||
+      maxDeathMixCrazy > librarySize) {
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::NORMAL], 0);
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::HARD], 0);
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::CRAZY], 0);
+    fixes |= 0b1000000000;
+  }
+
   return fixes;
 }
 
@@ -259,6 +279,13 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
     ARCADE_initialize();
     OFFSET_initialize();
     SAVEFILE_resetAdminSettings();
+
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::NORMAL], 0);
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::HARD], 0);
+    SAVEFILE_write8(
+        SRAM->deathMixProgress.completedSongs[DifficultyLevel::CRAZY], 0);
   }
 
   return SAVEFILE_normalize(librarySize);
