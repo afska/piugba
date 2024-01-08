@@ -11,9 +11,9 @@ const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
 typedef struct {
-  Event rythmEvents[250];
+  Event rythmEvents[1000];
   Event events[3000];
-} ChartAllocation;  // (78000 bytes)
+} ChartAllocation;  // (96000 bytes)
 
 __attribute__((section(".ewram"))) ChartAllocation chartAllocations[2];
 

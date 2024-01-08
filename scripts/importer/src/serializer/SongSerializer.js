@@ -73,11 +73,14 @@ module.exports = class SongSerializer {
             it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
         );
 
-        if (
-          rythmEvents.length > MAX_RYTHM_EVENTS ||
-          normalEvents.length > MAX_NORMAL_EVENTS
-        )
-          throw new Error(`chart_too_big: ${chart.header.levelStr}`);
+        if (rythmEvents.length > MAX_RYTHM_EVENTS)
+          throw new Error(
+            `chart_too_big: ${chart.header.levelStr} - ${rythmEvents.length} rythm events`
+          );
+        if (normalEvents.length > MAX_NORMAL_EVENTS)
+          throw new Error(
+            `chart_too_big: ${chart.header.levelStr} - ${normalEvents.length} normal events`
+          );
 
         const eventChunkSize = _.sumBy(events, (it) =>
           EVENT_SERIALIZERS.get(it).size(it)
@@ -242,7 +245,7 @@ const normalizeInt = (number) => {
 const TITLE_LEN = 30 + 1; // +1 = \0;
 const ARTIST_LEN = 26 + 1; // +1 = \0;
 const MESSAGE_LEN = 25 + 2 + 25 + 2 + 25 + 2 + 25 + 1; // +2 = \r\n ; +1 = \0
-const MAX_RYTHM_EVENTS = 250;
+const MAX_RYTHM_EVENTS = 1000;
 const MAX_NORMAL_EVENTS = 3000;
 const INFINITY = 0xffffffff;
 
