@@ -396,9 +396,10 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
       SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
 }
 
-inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 levelIndex) {
-  return SAVEFILE_isPlayingDouble() ? ARCADE_readDouble(songId, levelIndex)
-                                    : ARCADE_readSingle(songId, levelIndex);
+inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevelIndex) {
+  return SAVEFILE_isPlayingDouble()
+             ? ARCADE_readDouble(songId, numericLevelIndex)
+             : ARCADE_readSingle(songId, numericLevelIndex);
 }
 
 inline GradeType SAVEFILE_toggleDefectiveGrade(u8 currentGrade) {

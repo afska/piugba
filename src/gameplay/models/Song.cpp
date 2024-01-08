@@ -1,9 +1,7 @@
 #include "Song.h"
 
-#include <stdlib.h>
 #include <string.h>
 
-#include "gameplay/debug/DebugTools.h"
 #include "utils/VectorUtils.h"
 
 const u32 TITLE_LEN = 31;
