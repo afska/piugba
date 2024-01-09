@@ -125,10 +125,11 @@ void STATE_setup(Song* song, Chart* chart) {
   }
 
 #ifdef SENV_DEVELOPMENT
-  if (gameMode == GameMode::DEATH_MIX)
+  if (gameMode == GameMode::DEATH_MIX) {
     GameState.mods.stageBreak = ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
                                     ? StageBreakOpts::sON
                                     : StageBreakOpts::sOFF;
+  }
 #endif
 
   GameState.positionX[0] =

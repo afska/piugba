@@ -37,7 +37,8 @@ const u32 LIFEBAR_TILE_END = 15;
 const u32 RUMBLE_FRAMES = 4;
 const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
-const u32 DEATH_MIX_ANTICIPATION_LEVEL = 5;
+const u32 DEATH_MIX_ANTICIPATION_LEVEL = 6;
+const u32 DEATH_MIX_SEEK_SPEED_FRAMES = 5;
 const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
                             8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
@@ -290,25 +291,11 @@ bool SongScene::initializeGame(u16 keys) {
   if (GameState.mods.autoMod)
     backupPalettes(
         [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
-  player_play(song->audioPath.c_str());
   processModsLoad();
 
 initialized:
   if (deathMix != NULL) {
     if (!deathMix->didStartScroll) {
-      arrowPool->turnOff();
-      chartReaders[0]->turnOffObjectPools();
-
-      player_seek(song->sampleStart);
-      chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
-      chartReaders[0]->update(song->sampleStart);
-      deathMix->didStartScroll = true;
-      return false;
-    } else {
-      arrowPool->turnOn();
-      chartReaders[0]->turnOnObjectPools();
-      chartReaders[0]->setMultiplier(deathMix->multiplier);
-
       if (!deathMix->isInitialSong()) {
         scores[0]->setLife(deathMix->life);
         scores[0]->getCombo()->setValue(deathMix->combo);
@@ -318,9 +305,32 @@ initialized:
         scores[0]->setCounters(deathMix->counters);
         scores[0]->setPoints(deathMix->points);
         scores[0]->setLongNotes(deathMix->longNotes);
+        lifeBars[0]->tick(foregroundPalette.get());
       }
+
+      arrowPool->turnOff();
+      chartReaders[0]->turnOffObjectPools();
+
+      GameState.mods.speedHack = SpeedHackOpts::hAUTO_VELOCITY;
+      chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
+      for (u32 t = 0; t < song->sampleStart;
+           t += FRAME_MS * DEATH_MIX_SEEK_SPEED_FRAMES)
+        chartReaders[0]->update(t);
+      chartReaders[0]->update(song->sampleStart);
+      GameState.mods.speedHack = SpeedHackOpts::hOFF;
+
+      deathMix->didStartScroll = true;
+      return false;
+    } else {
+      arrowPool->turnOn();
+      chartReaders[0]->turnOnObjectPools();
+      chartReaders[0]->setMultiplier(deathMix->multiplier);
     }
   }
+
+  player_play(song->audioPath.c_str());
+  if (deathMix != NULL)
+    player_seek(song->sampleStart);
 
   if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
       (keys & KEY_SELECT)) {
