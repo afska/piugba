@@ -217,7 +217,9 @@ void CalibrateScene::save() {
 void CalibrateScene::goBack() {
   if (onFinish != NULL)
     onFinish();
-  else
+  else {
+    player_stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new PixelTransitionEffect());
+  }
 }

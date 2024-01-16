@@ -204,6 +204,7 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
       SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                       change(value, 2, direction));
+      player_stop();
       engine->transitionIntoScene(new AdminScene(engine, fs, true),
                                   new PixelTransitionEffect());
       return false;

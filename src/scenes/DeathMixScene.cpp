@@ -186,6 +186,7 @@ void DeathMixScene::confirm(u16 keys) {
     SAVEFILE_write8(SRAM->state.isPlaying, true);
     STATE_setup(songChart.song, songChart.chart);
     deathMix->multiplier = GameState.mods.multiplier;
+    player_stop();
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
                       std::move(deathMix)),

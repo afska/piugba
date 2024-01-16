@@ -79,11 +79,13 @@ void MultiplayerLobbyScene::refresh(int newMessageId) {
 }
 
 void MultiplayerLobbyScene::start() {
+  player_stop();
   engine->transitionIntoScene(new SelectionScene(engine, fs),
                               new PixelTransitionEffect());
 }
 
 void MultiplayerLobbyScene::goBack() {
+  player_stop();
   engine->transitionIntoScene(new StartScene(engine, fs),
                               new PixelTransitionEffect());
   syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);

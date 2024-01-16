@@ -79,6 +79,7 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
       if (direction != 0)
         return true;
 
+      player_stop();
       engine->transitionIntoScene(new CalibrateScene(engine, fs),
                                   new PixelTransitionEffect());
       return false;
@@ -122,6 +123,7 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
       if (direction != 0)
         return true;
 
+      player_stop();
       engine->transitionIntoScene(new StartScene(engine, fs),
                                   new PixelTransitionEffect());
       return false;

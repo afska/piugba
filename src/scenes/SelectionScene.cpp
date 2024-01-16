@@ -558,6 +558,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
       if (selector == ArrowDirection::UPRIGHT && !isDouble) {
         SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
                         ArcadeChartsOpts::DOUBLE);
+        player_stop();
         engine->transitionIntoScene(
             new SelectionScene(engine, fs, InitialLevel::FIRST_LEVEL),
             new PixelTransitionEffect());
@@ -565,6 +566,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
       } else if (selector == ArrowDirection::UPLEFT && isDouble) {
         SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
                         ArcadeChartsOpts::SINGLE);
+        player_stop();
         engine->transitionIntoScene(
             new SelectionScene(engine, fs, InitialLevel::LAST_LEVEL),
             new PixelTransitionEffect());
