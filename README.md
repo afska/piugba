@@ -184,6 +184,13 @@ cat rom.gba files.gbfs > rom.out.gba
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
 ```
 
+#### Build importer.exe
+
+```bash
+npm install -g pkg
+pkg --targets node14-win --config package.json -o importer.exe --public --public-packages "*" --no-bytecode --compress GZip src/importer.js
+```
+
 ### Troubleshooting
 
 #### How to debug

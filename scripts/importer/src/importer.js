@@ -21,14 +21,11 @@ const NORMALIZE_FILENAME = (it, prefix = "") =>
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
 const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
 
-const DATA_PATH = $path.join(__dirname, "../../../src/data");
-const CONTENT_PATH = $path.join(DATA_PATH, "content");
-const AUDIO_PATH = $path.join(DATA_PATH, "assets/audio");
-const IMAGES_PATH = $path.join(DATA_PATH, "assets/images");
-const BLACK_DOT_FILE = $path.join(IMAGES_PATH, "black.bmp");
-const OUTPUT_PATH = $path.join(CONTENT_PATH, "_compiled_files");
-
-const DEFAULT_SONGS_PATH = $path.join(CONTENT_PATH, "songs");
+const DATA_PATH = $path.resolve(__dirname, "../../../src/data");
+const CONTENT_PATH = $path.resolve(DATA_PATH, "content");
+const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
+const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
+const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -58,6 +55,16 @@ const opt = getopt
       "directory=DIRECTORY",
       "songs directory (defaults to: src/data/content/songs)",
     ],
+    [
+      "o",
+      "output=OUTPUT",
+      "output directory (defaults to: ../../../src/data/content/_compiled_files)",
+    ],
+    [
+      "s",
+      "assets=ASSETS",
+      "assets directory (defaults to: ../../../src/data/assets)",
+    ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
@@ -69,9 +76,28 @@ const opt = getopt
 global.GLOBAL_OPTIONS = opt.options;
 if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
   GLOBAL_OPTIONS.mode = MODE_DEFAULT;
-GLOBAL_OPTIONS.directory = GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH;
+GLOBAL_OPTIONS.directory = $path.resolve(
+  GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH
+);
+GLOBAL_OPTIONS.output = $path.resolve(
+  GLOBAL_OPTIONS.output || DEFAULT_OUTPUT_PATH
+);
+GLOBAL_OPTIONS.assets = $path.resolve(
+  GLOBAL_OPTIONS.assets || DEFAULT_ASSETS_PATH
+);
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
+
+const AUDIO_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "audio");
+const IMAGES_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "images");
+const BLACK_DOT_FILE = $path.resolve(IMAGES_PATH, "black.bmp");
+
+if (!fs.existsSync(GLOBAL_OPTIONS.directory))
+  throw new Error("Songs directory not found: " + GLOBAL_OPTIONS.directory);
+if (!fs.existsSync(GLOBAL_OPTIONS.output))
+  throw new Error("Output directory not found: " + GLOBAL_OPTIONS.output);
+if (!fs.existsSync(GLOBAL_OPTIONS.assets))
+  throw new Error("Assets directory not found: " + GLOBAL_OPTIONS.assets);
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
@@ -101,8 +127,8 @@ try {
       `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
   );
 } catch (e) {}
-utils.run(`rm -rf ${OUTPUT_PATH}`);
-mkdirp.sync(OUTPUT_PATH);
+utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
+mkdirp.sync(GLOBAL_OPTIONS.output);
 
 // ------------
 // AUDIO ASSETS
@@ -115,7 +141,10 @@ fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
   const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
   const path = $path.join(AUDIO_PATH, audioFile);
 
-  utils.report(() => importers.audio(name, path, OUTPUT_PATH), audioFile);
+  utils.report(
+    () => importers.audio(name, path, GLOBAL_OPTIONS.output),
+    audioFile
+  );
 });
 
 // ------------
@@ -129,7 +158,10 @@ fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
   const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
   const path = $path.join(IMAGES_PATH, imageFile);
 
-  utils.report(() => importers.background(name, path, OUTPUT_PATH), imageFile);
+  utils.report(
+    () => importers.background(name, path, GLOBAL_OPTIONS.output),
+    imageFile
+  );
 });
 
 // --------------
@@ -190,13 +222,14 @@ const processedSongs = songs.map((song, i) => {
 
   // metadata
   const simfile = utils.report(
-    () => importers.metadata(outputName, metadataFile, OUTPUT_PATH, id),
+    () =>
+      importers.metadata(outputName, metadataFile, GLOBAL_OPTIONS.output, id),
     "charts"
   );
 
   // audio
   utils.report(
-    () => importers.audio(outputName, audioFile, OUTPUT_PATH),
+    () => importers.audio(outputName, audioFile, GLOBAL_OPTIONS.output),
     "audio"
   );
 
@@ -206,7 +239,7 @@ const processedSongs = songs.map((song, i) => {
       importers.background(
         outputName,
         backgroundFile,
-        OUTPUT_PATH,
+        GLOBAL_OPTIONS.output,
         BLACK_DOT_FILE
       ),
     "background"
@@ -300,7 +333,13 @@ REDUCE=MICRO,,,
 BOUNCE=ALL;`
           : null;
 
-        importers.metadata(outputName, metadataFile, OUTPUT_PATH, id, prefix);
+        importers.metadata(
+          outputName,
+          metadataFile,
+          GLOBAL_OPTIONS.output,
+          id,
+          prefix
+        );
       }
     });
   });
@@ -331,11 +370,15 @@ sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
       const name = SELECTOR_PREFIXES[difficultyLevel] + from;
       const library =
         options.map(({ song }) => song.outputName).join("\r\n") + "\0";
-      fs.writeFileSync($path.join(OUTPUT_PATH, name + LIBRARY_SUFFIX), library);
+      fs.writeFileSync(
+        $path.join(GLOBAL_OPTIONS.output, name + LIBRARY_SUFFIX),
+        library
+      );
 
       lastSelectorBuilt = i;
       utils.report(
-        () => importers.selector(name, options, OUTPUT_PATH, IMAGES_PATH),
+        () =>
+          importers.selector(name, options, GLOBAL_OPTIONS.output, IMAGES_PATH),
         `[${from}-${to}]`
       );
     }
@@ -352,7 +395,7 @@ else {
   romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
   romIdBuffer.writeUInt8(songs.length);
 }
-fs.writeFileSync($path.join(OUTPUT_PATH, ROM_ID_FILE), romIdBuffer);
+fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_ID_FILE), romIdBuffer);
 fs.writeFileSync(
   $path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE),
   romIdBuffer
@@ -369,7 +412,7 @@ try {
     .toString();
   name = _.padEnd(romName.substring(0, 12), 13, "\0");
 } catch (e) {}
-fs.writeFileSync($path.join(OUTPUT_PATH, ROM_NAME_FILE), name);
+fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_NAME_FILE), name);
 
 // ----------
 // SONG LISTS
