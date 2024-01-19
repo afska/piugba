@@ -127,10 +127,18 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
       (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
   if (lastGameMode != gameMode &&
       !isTransitioningBetweenCampaignAndChallenges) {
+    bool shouldResetCursor =
+        !(IS_STORY(lastGameMode) && gameMode == GameMode::ARCADE &&
+          SAVEFILE_getMaxLibraryType() ==
+              static_cast<DifficultyLevel>(
+                  SAVEFILE_read8(SRAM->memory.difficultyLevel)));
+
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
-    SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
-    SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
+    if (shouldResetCursor) {
+      SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
+      SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
+    }
     SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   }
 
