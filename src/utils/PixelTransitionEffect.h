@@ -1,3 +1,6 @@
+#ifndef PIXEL_TRANSITION_EFFECT_H
+#define PIXEL_TRANSITION_EFFECT_H
+
 #include <libgba-sprite-engine/effects/scene_effect.h>
 #include <libgba-sprite-engine/scene.h>
 
@@ -12,7 +15,9 @@ class PixelTransitionEffect : public SceneEffect {
 
   void update() override {
     EFFECT_setMosaic(value);
+
     value++;
+
     if (isDone())
       BACKGROUND_enable(false, false, false, false);
   }
@@ -22,3 +27,5 @@ class PixelTransitionEffect : public SceneEffect {
  private:
   u32 value = 0;
 };
+
+#endif  // PIXEL_TRANSITION_EFFECT_H

@@ -31,6 +31,7 @@ class DeathMix {
 
   bool isInitialSong() { return next == 1; }
   SongChart getNextSongChart();
+  u32 getCurrentSongNumber() { return next - 1; }
 
  private:
   const GBFS_FILE* fs;
