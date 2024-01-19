@@ -29,14 +29,14 @@ class DeathMix {
 
   DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel);
 
-  bool isInitialSong() { return current == 1; }
+  bool isInitialSong() { return next == 1; }
   SongChart getNextSongChart();
 
  private:
   const GBFS_FILE* fs;
   DifficultyLevel difficultyLevel;
   std::vector<std::unique_ptr<SongFile>> songFiles;
-  u32 current;
+  u32 next;
   u32 total;
 };
 

@@ -22,21 +22,21 @@ DeathMix::DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel) {
 
   this->fs = fs;
   this->difficultyLevel = difficultyLevel;
-  this->current = 0;
+  this->next = 0;
   this->total = librarySize;
 }
 
 SongChart DeathMix::getNextSongChart() {
-  if (current >= total)
+  if (next >= total)
     return SongChart{.song = NULL, .chart = NULL};
 
-  Song* tempSong = SONG_parse(fs, songFiles[current].get());
+  Song* tempSong = SONG_parse(fs, songFiles[next].get());
   u8 index = SONG_findChartIndexByDifficultyLevel(tempSong, difficultyLevel);
   SONG_free(tempSong);
-  Song* song = SONG_parse(fs, songFiles[current].get(), std::vector<u8>{index});
+  Song* song = SONG_parse(fs, songFiles[next].get(), std::vector<u8>{index});
   Chart* chart = song->charts + index;
 
-  current++;
+  next++;
 
   return SongChart{.song = song, .chart = chart};
 }
