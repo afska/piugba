@@ -9,9 +9,8 @@ const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
 typedef struct {
-  Event rythmEvents[1000];
-  Event events[3000];
-} ChartAllocation;  // (96000 bytes)
+  Event events[3250];
+} ChartAllocation;  // (78000 bytes) -> (3250)*24
 
 __attribute__((section(".ewram"))) ChartAllocation chartAllocations[2];
 
@@ -88,13 +87,13 @@ Song* SONG_parse(const GBFS_FILE* fs,
     }
 
     chart->rythmEventCount = parse_u32le(data, &cursor);
-    chart->rythmEvents = chartAllocations[slot].rythmEvents;
+    chart->rythmEvents = chartAllocations[slot].events;
     song->totalSize += sizeof(Event) * chart->rythmEventCount;
     parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
-    chart->events = chartAllocations[slot].events;
+    chart->events = chartAllocations[slot].events + chart->rythmEventCount;
     song->totalSize += sizeof(Event) * chart->eventCount;
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);

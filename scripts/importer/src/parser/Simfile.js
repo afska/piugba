@@ -156,10 +156,10 @@ module.exports = class Simfile {
             (it) =>
               it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
           );
-          if (rythmEvents.length > MAX_RYTHM_EVENTS)
-            throw new Error(`too_big: ${rythmEvents.length} rythm events`);
-          if (normalEvents.length > MAX_NORMAL_EVENTS)
-            throw new Error(`too_big: ${normalEvents.length} normal events`);
+          if (rythmEvents.length + normalEvents.length > MAX_EVENTS)
+            throw new Error(
+              `too_big: (${rythmEvents.length} rythm + ${normalEvents} normal) events`
+            );
 
           return chart;
         } catch (e) {
@@ -310,6 +310,5 @@ const REGEXPS = {
   },
 };
 
-const MAX_RYTHM_EVENTS = 1000;
-const MAX_NORMAL_EVENTS = 3000;
+const MAX_EVENTS = 3250;
 const SECOND = 1000;
