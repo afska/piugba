@@ -332,7 +332,7 @@ initialized:
     player_seek(song->sampleStart);
   processModsLoad();
 
-  if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
+  if (IS_ARCADE(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
       (keys & KEY_SELECT)) {
     // (if START and SELECT are pressed on start, the chart will be marked as
     // defective and return to the selection scene)

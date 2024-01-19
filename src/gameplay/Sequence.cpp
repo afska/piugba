@@ -95,7 +95,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
 
-  if (!IS_STORY(gameMode) && !areArcadeModesUnlocked) {
+  if (IS_ARCADE(gameMode) && !areArcadeModesUnlocked) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
