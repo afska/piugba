@@ -225,7 +225,6 @@ CODE_EWRAM void player_seek(unsigned int msecs) {
 CODE_EWRAM void player_setRate(int newRate) {
   rate = newRate;
   rateCounter = 0;
-  currentAudioChunk = 0;
 }
 
 CODE_EWRAM void player_stop() {

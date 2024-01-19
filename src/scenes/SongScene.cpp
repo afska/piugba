@@ -291,7 +291,6 @@ bool SongScene::initializeGame(u16 keys) {
   if (GameState.mods.autoMod)
     backupPalettes(
         [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
-  processModsLoad();
 
 initialized:
   if (deathMix != NULL) {
@@ -331,6 +330,7 @@ initialized:
   player_play(song->audioPath.c_str());
   if (deathMix != NULL)
     player_seek(song->sampleStart);
+  processModsLoad();
 
   if (!IS_STORY(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
       (keys & KEY_SELECT)) {
