@@ -42,6 +42,8 @@ static const GBFS_FILE* fs = find_first_gbfs_file(0);
 int main() {
   linkUniversal->deactivate();
 
+  REG_WAITCNT = 0x4317;  // (regular waitstates, prefetch ON)
+
   validateBuild();
   setUpInterrupts();
   player_init();
