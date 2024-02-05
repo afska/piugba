@@ -39,8 +39,8 @@ const u32 RUMBLE_PRELOAD_FRAMES = 2;
 const u32 RUMBLE_IDLE_FREQUENCY = 5;
 const u32 DEATH_MIX_ANTICIPATION_LEVEL = 6;
 const u32 DEATH_MIX_SEEK_SPEED_FRAMES = 5;
-const u32 BOUNCE_STEPS[] = {0, 1,  2, 4, 6,
-                            8, 10, 7, 3, 0};  // <~>ALPHA_BLINK_LEVEL
+const u32 BOUNCE_STEPS[] = {0, 1, 2, 4, 5,
+                            8, 7, 5, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
 static std::unique_ptr<Darkener> darkener{
     new Darkener(DARKENER_ID, DARKENER_PRIORITY)};
