@@ -13,7 +13,7 @@ const HEURISTICS = {
 };
 const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
-module.exports = (metadata, charts, content, filePath) => {
+module.exports = (metadata, charts) => {
   // channel
   if (metadata.channel === "UNKNOWN") {
     if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
@@ -53,23 +53,6 @@ module.exports = (metadata, charts, content, filePath) => {
       else setDifficulty(singleCharts, difficulty);
     });
     checkLevelOrder(singleCharts);
-  }
-
-  // separate level 99 charts
-  const numberOf99Charts = _.sumBy(charts, (it) => it.header.level === 99);
-  if (numberOf99Charts > 10) throw new Error("too_many_level_99_charts");
-  if (numberOf99Charts > 1) {
-    let variantIndex = 1;
-    let updatedLevel = 99 - numberOf99Charts + 1;
-    for (let chart of charts) {
-      if (chart.header.level === 99) {
-        chart.header.level = updatedLevel;
-        chart.header.variant = VARIANTS[variantIndex];
-        chart.header.order = updatedLevel;
-        updatedLevel++;
-        variantIndex++;
-      }
-    }
   }
 
   // check limits
