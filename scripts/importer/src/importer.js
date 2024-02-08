@@ -35,6 +35,11 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc$/i;
 const FILE_AUDIO = /\.(mp3|flac|ogg)$/i;
 const FILE_BACKGROUND = /\.png$/i;
+const FILE_VIDEO = (name) =>
+  new RegExp(
+    `${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(mp4|mpg|mpeg)$`,
+    "i"
+  );
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "auto";
 const SELECTOR_PREFIXES = {
@@ -111,10 +116,36 @@ if (!fs.existsSync(GLOBAL_OPTIONS.assets))
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
 
+  let videoFiles = [];
+  try {
+    videoFiles = fs
+      .readdirSync(GLOBAL_OPTIONS.videos)
+      .map((it) => $path.join(path, it));
+  } catch (e) {
+    if (e?.code !== "ENOENT") throw e;
+  }
+
+  const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
+  const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
+  const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
+
+  let videoFile = null;
+  if (audioFile != null) {
+    const audioFileName = $path.parse(audioFile).name;
+    videoFile =
+      _.find(videoFiles, (it) => FILE_VIDEO(audioFileName).test(it)) || null;
+  }
+
+  if (!metadataFile) throw new Error("Metadata (.SSC) file not found: " + name);
+  if (!audioFile) throw new Error("Audio (.MP3) file not found: " + name);
+  if (!backgroundFile)
+    throw new Error("Background (.PNG) file not found: " + name);
+
   return {
-    metadataFile: _.find(files, (it) => FILE_METADATA.test(it)),
-    audioFile: _.find(files, (it) => FILE_AUDIO.test(it)),
-    backgroundFile: _.find(files, (it) => FILE_BACKGROUND.test(it)),
+    metadataFile,
+    audioFile,
+    backgroundFile,
+    videoFile,
   };
 };
 
@@ -253,6 +284,18 @@ const processedSongs = songs.map((song, i) => {
       ),
     "background"
   );
+
+  // video
+  // utils.report(
+  //   () =>
+  //     importers.video(
+  //       outputName,
+  //       backgroundFile,
+  //       GLOBAL_OPTIONS.output,
+  //       BLACK_DOT_FILE
+  //     ),
+  //   "video"
+  // );
 
   return { song, simfile };
 });
