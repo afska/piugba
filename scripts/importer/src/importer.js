@@ -26,6 +26,7 @@ const CONTENT_PATH = $path.resolve(DATA_PATH, "content");
 const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
 const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
 const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
+const DEFAULT_VIDEOS_PATH = $path.resolve(CONTENT_PATH, "videos");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -65,6 +66,11 @@ const opt = getopt
       "assets=ASSETS",
       "assets directory (defaults to: ../../../src/data/assets)",
     ],
+    [
+      "v",
+      "videos=VIDEOS",
+      "videos directory (defaults to: ../../../src/data/videos)",
+    ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
@@ -84,6 +90,9 @@ GLOBAL_OPTIONS.output = $path.resolve(
 );
 GLOBAL_OPTIONS.assets = $path.resolve(
   GLOBAL_OPTIONS.assets || DEFAULT_ASSETS_PATH
+);
+GLOBAL_OPTIONS.videos = $path.resolve(
+  GLOBAL_OPTIONS.videos || DEFAULT_VIDEOS_PATH
 );
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
