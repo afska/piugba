@@ -1,5 +1,6 @@
 const Channels = require("./parser/Channels");
 const importers = require("./importers");
+const { VIDEO_LIB_HEADER_SIZE } = require("./importers/video");
 const {
   getOffsetCorrections,
 } = require("./importers/transformations/applyOffsets");
@@ -82,9 +83,10 @@ const opt = getopt
       "videolib=VIDEOLIB",
       "video library output file (defaults to: ../../../src/data/content/videos.bin)",
     ],
+    ["x", "videoenable=VIDEOENABLE", "enable video (one of: *false*|true)"],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
-    ["a", "arcade=ARCADE", "arcade mode only  (one of: *false*|true)"],
+    ["a", "arcade=ARCADE", "arcade mode only (one of: *false*|true)"],
     ["j", "json", "generate JSON debug files"],
   ])
   .bindHelp()
@@ -108,6 +110,7 @@ GLOBAL_OPTIONS.videos = $path.resolve(
 GLOBAL_OPTIONS.videolib = $path.resolve(
   GLOBAL_OPTIONS.videolib || DEFAULT_VIDEOLIB_PATH
 );
+GLOBAL_OPTIONS.videoenable = GLOBAL_OPTIONS.videoenable === "true";
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
 
@@ -121,25 +124,23 @@ if (!fs.existsSync(GLOBAL_OPTIONS.output))
   throw new Error("Output directory not found: " + GLOBAL_OPTIONS.output);
 if (!fs.existsSync(GLOBAL_OPTIONS.assets))
   throw new Error("Assets directory not found: " + GLOBAL_OPTIONS.assets);
+if (GLOBAL_OPTIONS.videoenable && !fs.existsSync(GLOBAL_OPTIONS.videos))
+  throw new Error("Videos directory not found: " + GLOBAL_OPTIONS.videos);
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
-
-  let videoFiles = [];
-  try {
-    videoFiles = fs
-      .readdirSync(GLOBAL_OPTIONS.videos)
-      .map((it) => $path.join(path, it));
-  } catch (e) {
-    if (e?.code !== "ENOENT") throw e;
-  }
+  const videoFiles = GLOBAL_OPTIONS.videoenable
+    ? fs
+        .readdirSync(GLOBAL_OPTIONS.videos)
+        .map((it) => $path.join(GLOBAL_OPTIONS.videos, it))
+    : [];
 
   const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
   const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
   const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
 
   let videoFile = null;
-  if (audioFile != null) {
+  if (GLOBAL_OPTIONS.videoenable && audioFile != null) {
     const audioFileName = $path.parse(audioFile).name;
     videoFile =
       _.find(videoFiles, (it) => FILE_VIDEO(audioFileName).test(it)) || null;
@@ -178,7 +179,12 @@ try {
 } catch (e) {}
 utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
 mkdirp.sync(GLOBAL_OPTIONS.output);
-utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
+if (GLOBAL_OPTIONS.videoenable) {
+  utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
+  utils.run(
+    `dd if=/dev/zero bs=1 count=${VIDEO_LIB_HEADER_SIZE} > ${GLOBAL_OPTIONS.videolib}`
+  );
+}
 
 // ------------
 // AUDIO ASSETS
