@@ -27,6 +27,7 @@ const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
 const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
 const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
 const DEFAULT_VIDEOS_PATH = $path.resolve(CONTENT_PATH, "videos");
+const DEFAULT_VIDEOLIB_PATH = $path.resolve(CONTENT_PATH, "videos.bin");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -74,7 +75,12 @@ const opt = getopt
     [
       "v",
       "videos=VIDEOS",
-      "videos directory (defaults to: ../../../src/data/videos)",
+      "videos directory (defaults to: ../../../src/data/content/videos)",
+    ],
+    [
+      "w",
+      "videolib=VIDEOLIB",
+      "video library output file (defaults to: ../../../src/data/content/videos.bin)",
     ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
@@ -98,6 +104,9 @@ GLOBAL_OPTIONS.assets = $path.resolve(
 );
 GLOBAL_OPTIONS.videos = $path.resolve(
   GLOBAL_OPTIONS.videos || DEFAULT_VIDEOS_PATH
+);
+GLOBAL_OPTIONS.videolib = $path.resolve(
+  GLOBAL_OPTIONS.videolib || DEFAULT_VIDEOLIB_PATH
 );
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
@@ -169,6 +178,7 @@ try {
 } catch (e) {}
 utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
 mkdirp.sync(GLOBAL_OPTIONS.output);
+utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
 
 // ------------
 // AUDIO ASSETS
@@ -252,7 +262,9 @@ if (songs.length > MAX_SONGS)
 
 const processedSongs = songs.map((song, i) => {
   const { id, outputName } = song;
-  const { metadataFile, audioFile, backgroundFile } = GET_SONG_FILES(song);
+  const { metadataFile, audioFile, backgroundFile, videoFile } = GET_SONG_FILES(
+    song
+  );
 
   console.log(
     `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
@@ -286,16 +298,12 @@ const processedSongs = songs.map((song, i) => {
   );
 
   // video
-  // utils.report(
-  //   () =>
-  //     importers.video(
-  //       outputName,
-  //       backgroundFile,
-  //       GLOBAL_OPTIONS.output,
-  //       BLACK_DOT_FILE
-  //     ),
-  //   "video"
-  // );
+  if (videoFile != null) {
+    utils.report(
+      () => importers.video(id, videoFile, GLOBAL_OPTIONS.videolib),
+      "video"
+    );
+  }
 
   return { song, simfile };
 });
