@@ -18,7 +18,7 @@ module.exports = (name, filePath, outputPath, id, prefix = null) => {
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);
   charts = charts.filter((it) => !it.isDeleted);
-  const simfile = completeMissingData(metadata, charts, content, filePath);
+  const simfile = completeMissingData(metadata, charts);
   simfile.id = id;
 
   if (GLOBAL_OPTIONS.json) {
