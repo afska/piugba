@@ -1,6 +1,9 @@
 const Channels = require("./parser/Channels");
 const importers = require("./importers");
-const { VIDEO_LIB_HEADER_SIZE } = require("./importers/video");
+const {
+  VIDEO_LIB_METADATA_SIZE,
+  VIDEO_LIB_HEADER_SIZE,
+} = require("./importers/video");
 const {
   getOffsetCorrections,
 } = require("./importers/transformations/applyOffsets");
@@ -182,7 +185,7 @@ mkdirp.sync(GLOBAL_OPTIONS.output);
 if (GLOBAL_OPTIONS.videoenable) {
   utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
   utils.run(
-    `dd if=/dev/zero bs=1 count=${VIDEO_LIB_HEADER_SIZE} > ${GLOBAL_OPTIONS.videolib}`
+    `dd if=/dev/zero bs=1 count=${VIDEO_LIB_METADATA_SIZE} > ${GLOBAL_OPTIONS.videolib}`
   );
 }
 
@@ -479,6 +482,27 @@ try {
   name = _.padEnd(romName.substring(0, 12), 13, "\0");
 } catch (e) {}
 fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_NAME_FILE), name);
+
+// --------------
+// VIDEO METADATA
+// --------------
+
+if (GLOBAL_OPTIONS.videoenable) {
+  const header = Buffer.alloc(VIDEO_LIB_HEADER_SIZE);
+
+  const magic = "!!piuGBA-video-library!!";
+  for (let i = 0; i < 24; i++) header.writeUInt8(magic.charCodeAt(i), i);
+  header.writeUInt32LE(
+    fs
+      .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
+      .readUInt32LE(),
+    24
+  );
+
+  const lib = fs.openSync(GLOBAL_OPTIONS.videolib, "r+");
+  fs.writeSync(lib, header, 0, VIDEO_LIB_HEADER_SIZE);
+  fs.closeSync(lib);
+}
 
 // ----------
 // SONG LISTS

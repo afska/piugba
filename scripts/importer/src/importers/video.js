@@ -9,7 +9,9 @@ const COMMAND_GET_FRAMES = (input, output) =>
 const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB1 -Mw2 -Mh2 -p -ftb`;
 const COMMAND_APPEND = (input, output) => `cat "${input}" >> "${output}"`;
 
-const VIDEO_LIB_HEADER_SIZE = 840;
+const VIDEO_LIB_METADATA_SIZE = 840;
+const VIDEO_LIB_HEADER_SIZE = 40;
+const VIDEO_LIB_ENTRY_SIZE = 8;
 
 module.exports = (id, filePath, videoLibFile) => {
   const tempPath = `${filePath}_tmp`;
@@ -17,6 +19,8 @@ module.exports = (id, filePath, videoLibFile) => {
   utils.run(COMMAND_RM_DIR(tempPath));
   utils.run(COMMAND_MK_DIR(tempPath));
   utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
+
+  const videoContentOffset = fs.statSync(videoLibFile).size;
 
   const frames = fs.readdirSync(tempPath);
   let i = 0;
@@ -32,7 +36,14 @@ module.exports = (id, filePath, videoLibFile) => {
     utils.run(COMMAND_APPEND(`${baseFile}.img.bin`, videoLibFile));
   }
 
-  // TODO: IMPLEMENT
+  const videoEntryOffset = VIDEO_LIB_HEADER_SIZE + VIDEO_LIB_ENTRY_SIZE * id;
+  const videoEntry = Buffer.alloc(VIDEO_LIB_ENTRY_SIZE);
+  videoEntry.writeUInt32LE(frames.length);
+  videoEntry.writeUInt32LE(videoContentOffset, 4);
+  const lib = fs.openSync(videoLibFile, "r+");
+  fs.writeSync(lib, videoEntry, 0, VIDEO_LIB_ENTRY_SIZE, videoEntryOffset);
+  fs.closeSync(lib);
 };
 
+module.exports.VIDEO_LIB_METADATA_SIZE = VIDEO_LIB_METADATA_SIZE;
 module.exports.VIDEO_LIB_HEADER_SIZE = VIDEO_LIB_HEADER_SIZE;
