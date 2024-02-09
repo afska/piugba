@@ -209,8 +209,8 @@ CODE_EWRAM void player_loop(const char* name) {
 CODE_EWRAM void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
-  // msecs = cursor * msecsPerSample
-  // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
+  // msecs = cursor * msecsPerByte
+  // msecsPerByte = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
   // => msecs = cursor * 0.267
   // => cursor = msecs / 0.267 = msecs * 3.7453
   // => cursor = msecs * (3 + 0.7453)

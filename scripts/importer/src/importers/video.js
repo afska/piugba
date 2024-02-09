@@ -13,6 +13,8 @@ const COMMAND_BUILD_REMAP = (input, firstColorPalette, tempPalette, output) =>
   `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -remap "${tempPalette}" "${output}" && ` +
   `rm "${tempPalette}"`;
 const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
+const COMMAND_PAD_PAL = (input) => `truncate -s 512 "${input}`;
+const COMMAND_PAD = (input) => `truncate -s 38464 "${input}`; // TODO: INCORRECT! FIX LATER - ADD SIZE HEADER
 const RESOLUTION = "240x160!";
 const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
@@ -55,6 +57,8 @@ module.exports = (id, filePath, videoLibFile, transparentColor) => {
       )
     );
     utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: tempPath });
+    utils.run(COMMAND_PAD_PAL(`${baseFile}.pal.bin`));
+    utils.run(COMMAND_PAD(`${baseFile}.img.bin`));
     utils.run(
       COMMAND_APPEND(
         `${baseFile}.pal.bin`,

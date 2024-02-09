@@ -21,6 +21,10 @@ extern "C" {
 
 #define DEBUG_OFFSET_CORRECTION 8
 
+static u32 length;
+static u8* video = NULL;
+static u32 videoCursor = 0;
+
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
 const u32 MAIN_BACKGROUND_ID = 1;
@@ -187,6 +191,8 @@ void SongScene::tick(u16 keys) {
       return;
   }
 
+  drawVideo();
+
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
   if (isNewBeat) {
     onNewBeat(KEY_ANY_PRESSED(keys));
@@ -240,6 +246,10 @@ void SongScene::setUpBackground() {
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->usePriority(MAIN_BACKGROUND_PRIORITY);
   bg->setMosaic(true);
+
+  // TODO: Remove test code
+  video = (u8*)gbfs_get_obj(fs, "video-test.bin", &length);
+  videoCursor = 840;
 }
 
 void SongScene::setUpArrows() {
@@ -559,7 +569,28 @@ void SongScene::animateWinnerLifeBar() {
 }
 
 void SongScene::drawVideo() {
-  // TODO: IMPLEMENT
+  // TODO: Test code
+
+  if (videoCursor + 512 + 38464 + 2048 > length)
+    videoCursor = 840;
+  dma3_cpy(pal_bg_mem, video + videoCursor, 254 * sizeof(u16));
+  videoCursor += 256 * sizeof(u16);
+
+  u32 backgroundTilesLength = 38464;
+  u32 backgroundMapLength = 2048;
+  const void* backgroundMapData = (const void*)(video + videoCursor);
+  videoCursor += backgroundMapLength;
+  const void* backgroundTilesData = (const void*)(video + videoCursor);
+  videoCursor += backgroundTilesLength;
+
+  Background background(MAIN_BACKGROUND_ID, backgroundTilesData,
+                        backgroundTilesLength, backgroundMapData,
+                        backgroundMapLength);
+  background.useCharBlock(BANK_BACKGROUND_TILES);
+  background.useMapScreenBlock(BANK_BACKGROUND_MAP);
+  background.usePriority(MAIN_BACKGROUND_PRIORITY);
+  background.setMosaic(true);
+  background.persist();
 }
 
 void SongScene::processKeys(u16 keys) {

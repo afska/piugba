@@ -87,4 +87,10 @@ inline u32 profileStop() {
   return (REG_TM1CNT_L | (REG_TM2CNT_L << 16));
 }
 
+inline u32 toMs(u32 cycles) {
+  // CPU Frequency * time per frame = cycles per frame
+  // 16780000 * (1/60) ~= 279666
+  return (cycles * 1000) / (279666 * 60);
+}
+
 #endif  // DEBUG_TOOLS_H
