@@ -309,7 +309,8 @@ const processedSongs = songs.map((song, i) => {
   // video
   if (videoFile != null) {
     utils.report(
-      () => importers.video(id, videoFile, GLOBAL_OPTIONS.videolib),
+      () =>
+        importers.video(id, videoFile, GLOBAL_OPTIONS.videolib, BLACK_DOT_FILE),
       "video"
     );
   }

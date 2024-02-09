@@ -18,7 +18,7 @@ const COMMAND_RM = (file) => `rm "${file}"`;
 const COMMAND_FIX = (input) => `pngfix -f "${input}`;
 const RESOLUTION = "240x160!";
 const COLORS = "253";
-const EXTENSIONS_TMP = ["pal.bpm", "bmp", "h"];
+const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
 const EXTENSION_FIXED = "-fixed.png";
 const UNIQUE_MAP_MD5SUM = "f4eda4328302c379fd68847b35e9d8a8";
 const UNIQUE_MAP_NAME = "_unique_map.map.bin";

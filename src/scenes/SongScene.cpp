@@ -558,6 +558,10 @@ void SongScene::animateWinnerLifeBar() {
                                  BOUNCE_STEPS[blinkFrame * isWinning1] / 2);
 }
 
+void SongScene::drawVideo() {
+  // TODO: IMPLEMENT
+}
+
 void SongScene::processKeys(u16 keys) {
   u32 downLeftKeys = (keys & KEY_DOWN) | (keys & KEY_LEFT);
   u32 upLeftKeys = (keys & KEY_L) | (keys & KEY_UP);

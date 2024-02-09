@@ -124,6 +124,7 @@ class SongScene : public Scene {
   void updateGameY();
   void updateRumble();
   void animateWinnerLifeBar();
+  void drawVideo();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);
