@@ -69,6 +69,14 @@ inline void BSOD(std::string message) {
     ;
 }
 
+inline void BSOL(std::string message) {
+  REG_RCNT |= 1 << 15;  // (disable link cable)
+  player_stop();
+  SCENE_init();
+  BACKGROUND_enable(true, false, false, false);
+  TextStream::instance().setText(message, 0, -3);
+}
+
 inline void profileStart() {
   REG_TM1CNT_L = 0;
   REG_TM2CNT_L = 0;

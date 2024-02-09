@@ -17,6 +17,8 @@
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashio/everdrivex5/bios.h"
+#include "utils/flashio/everdrivex5/disk.h"
 }
 
 #define DEBUG_OFFSET_CORRECTION 8
@@ -24,6 +26,7 @@ extern "C" {
 static u32 length;
 static u8* video = NULL;
 static u32 videoCursor = 0;
+static u32 sdCursor = 0;
 
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
@@ -248,8 +251,10 @@ void SongScene::setUpBackground() {
   bg->setMosaic(true);
 
   // TODO: Remove test code
-  video = (u8*)gbfs_get_obj(fs, "video-test.bin", &length);
-  videoCursor = 840;
+  bi_init();
+  diskInit();
+  videoCursor = 1024;
+  sdCursor = 2098048;
 }
 
 void SongScene::setUpArrows() {
@@ -571,26 +576,35 @@ void SongScene::animateWinnerLifeBar() {
 void SongScene::drawVideo() {
   // TODO: Test code
 
-  if (videoCursor + 512 + 38464 + 2048 > length)
-    videoCursor = 840;
-  dma3_cpy(pal_bg_mem, video + videoCursor, 254 * sizeof(u16));
-  videoCursor += 256 * sizeof(u16);
+  // if (videoCursor + 512 + 38912 + 2048 > length)
+  //   videoCursor = 1024;
 
-  u32 backgroundTilesLength = 38464;
+  if (!waitMosaic) {
+    waitMosaic = true;
+    return;
+  } else {
+    waitMosaic = false;
+  }
+
+  u8 buff[512];
+  diskRead(sdCursor + videoCursor / 512, buff, 1);
+  videoCursor += 512;
+  dma3_cpy(pal_bg_mem, buff, 254 * sizeof(u16));
+  // TODO: RESTORE LAST COLORS INSTEAD OF TWO DMAs
+
+  u32 backgroundTilesLength = 38912;
   u32 backgroundMapLength = 2048;
-  const void* backgroundMapData = (const void*)(video + videoCursor);
-  videoCursor += backgroundMapLength;
-  const void* backgroundTilesData = (const void*)(video + videoCursor);
-  videoCursor += backgroundTilesLength;
 
-  Background background(MAIN_BACKGROUND_ID, backgroundTilesData,
-                        backgroundTilesLength, backgroundMapData,
+  Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
                         backgroundMapLength);
   background.useCharBlock(BANK_BACKGROUND_TILES);
   background.useMapScreenBlock(BANK_BACKGROUND_MAP);
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
-  background.persist();
+  background.persist2([](void* dst, u32 size) {
+    diskRead(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
+    videoCursor += size;
+  });
 }
 
 void SongScene::processKeys(u16 keys) {

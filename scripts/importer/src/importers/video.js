@@ -14,7 +14,7 @@ const COMMAND_BUILD_REMAP = (input, firstColorPalette, tempPalette, output) =>
   `rm "${tempPalette}"`;
 const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
 const COMMAND_PAD_PAL = (input) => `truncate -s 512 "${input}`;
-const COMMAND_PAD = (input) => `truncate -s 38464 "${input}`; // TODO: INCORRECT! FIX LATER - ADD SIZE HEADER
+const COMMAND_PAD = (input) => `truncate -s 38912 "${input}`; // TODO: INCORRECT! FIX LATER - ADD SIZE HEADER
 const RESOLUTION = "240x160!";
 const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
@@ -22,7 +22,7 @@ const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
 const COMMAND_APPEND = (input1, input2, input3, output) =>
   `cat "${input1}" "${input2}" "${input3}" >> "${output}"`;
 
-const VIDEO_LIB_METADATA_SIZE = 840;
+const VIDEO_LIB_METADATA_SIZE = 1024;
 const VIDEO_LIB_HEADER_SIZE = 40;
 const VIDEO_LIB_ENTRY_SIZE = 8;
 

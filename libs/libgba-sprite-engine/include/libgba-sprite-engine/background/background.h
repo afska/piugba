@@ -8,6 +8,7 @@
 #pragma GCC system_header
 
 #include <libgba-sprite-engine/gba/tonc_types.h>
+#include <functional>  // TODO: REMOVE
 
 #define MAPLAYOUT_32X32 0
 #define MAPLAYOUT_32X64 1
@@ -69,6 +70,25 @@ class Background {
   void updateMap(const void* map);
   void clearMap();
   void clearData();
+
+  void* screen_block2(unsigned long block) {
+    return (void*)(0x6000000 + (block * 0x800));
+  }
+
+  void* char_block2(unsigned long block) {
+    return (void*)(0x6000000 + (block * 0x4000));
+  }
+
+  template <typename F>
+  void persist2(F copyy) {
+    if (this->map) {
+      copyy(screen_block2(screenBlockIndex), this->mapSize);
+    }
+
+    copyy(char_block2(charBlockIndex), this->size);
+
+    buildRegister();
+  }
 };
 
 #endif  // GBA_SPRITE_ENGINE_BACKGROUND_H
