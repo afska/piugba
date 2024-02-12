@@ -26,8 +26,8 @@
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
-#define REG_DMA1CNT_L *(vu16*)(REG_BASE + 0x0c4)
-#define REG_DMA1CNT_H *(vu16*)(REG_BASE + 0x0c6)
+#define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0cc)
+#define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0ce)
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 #define INLINE static inline __attribute__((always_inline))
@@ -100,11 +100,11 @@ INLINE void gsmInit(gsm r) {
 }
 
 INLINE void mute() {
-  DSOUNDCTRL = DSOUNDCTRL & CHANNEL_A_MUTE;
+  DSOUNDCTRL = DSOUNDCTRL & CHANNEL_B_MUTE;
 }
 
 INLINE void unmute() {
-  DSOUNDCTRL = DSOUNDCTRL | CHANNEL_A_UNMUTE;
+  DSOUNDCTRL = DSOUNDCTRL | CHANNEL_B_UNMUTE;
 }
 
 INLINE void turnOnSound() {
@@ -116,9 +116,9 @@ INLINE void turnOnSound() {
 
 INLINE void init() {
   /* TMxCNT_L is count; TMxCNT_H is control */
-  REG_TM0CNT_H = 0;
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
-  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
+  REG_TM1CNT_H = 0;
+  REG_TM1CNT_L = 0x10000 - (924 / 2);
+  REG_TM1CNT_H = TIMER_16MHZ | TIMER_START;
 
   mute();
 }
@@ -140,12 +140,12 @@ INLINE void stop() {
 INLINE void disableAudioDMA() {
   // ----------------------------------------------------
   // This convoluted process was taken from the official manual.
-  // It's supposed to disable DMA1 in a "safe" way, avoiding DMA lockups.
+  // It's supposed to disable DMA2 in a "safe" way, avoiding DMA lockups.
   //
   // 32-bit write
   // enabled = 1; start timing = immediately; transfer type = 32 bits;
   // repeat = off; destination = fixed; other bits = no change
-  REG_DMA1CNT = (REG_DMA1CNT & 0b00000000000000001100110111111111) |
+  REG_DMA2CNT = (REG_DMA2CNT & 0b00000000000000001100110111111111) |
                 (0x0004 << 16) | DMA_ENABLE | DMA32 | DMA_DST_FIXED;
   //
   // wait 4 cycles
@@ -155,7 +155,7 @@ INLINE void disableAudioDMA() {
   // 16-bit write
   // enabled = 0; start timing = immediately; transfer type = 32 bits;
   // repeat = off; destination = fixed; other bits = no change
-  REG_DMA1CNT_H = (REG_DMA1CNT_H & 0b0100110111111111) |
+  REG_DMA2CNT_H = (REG_DMA2CNT_H & 0b0100110111111111) |
                   0b0000010100000000;  // DMA32 | DMA_DST_FIXED
   //
   // wait 4 more cycles
@@ -165,15 +165,15 @@ INLINE void disableAudioDMA() {
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
-  // // disable DMA1
+  // disable DMA2
   // disableAudioDMA();
+  REG_DMA2CNT = 0;  // TODO: FIX
 
-  // // setup DMA1 for audio
-  // REG_DMA1SAD = (intptr_t)src;
-  // REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
-  // REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 |
-  // DMA_SPECIAL |
-  //               DMA_ENABLE | 1;
+  // setup DMA2 for audio
+  REG_DMA2SAD = (intptr_t)src;
+  REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
+  REG_DMA2CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
+                DMA_ENABLE | 1;
 }
 /* ---------------------------------------------------- */
 
@@ -182,9 +182,9 @@ CODE_EWRAM void player_init() {
   turnOnSound();
   init();
 
-  REG_DMA1SAD = (intptr_t)double_buffers[0];
-  REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
-  REG_DMA1CNT_L = 0x0004;
+  REG_DMA2SAD = (intptr_t)double_buffers[0];
+  REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
+  REG_DMA2CNT_L = 0x0004;
 }
 
 CODE_EWRAM void player_unload() {
@@ -210,8 +210,8 @@ CODE_EWRAM void player_loop(const char* name) {
 CODE_EWRAM void player_seek(unsigned int msecs) {
   // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
   // cursor = src_pos - src
-  // msecs = cursor * msecsPerByte
-  // msecsPerByte = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
+  // msecs = cursor * msecsPerSample
+  // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
   // => msecs = cursor * 0.267
   // => cursor = msecs / 0.267 = msecs * 3.7453
   // => cursor = msecs * (3 + 0.7453)
