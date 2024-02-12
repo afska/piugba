@@ -165,14 +165,15 @@ INLINE void disableAudioDMA() {
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
-  // disable DMA1
-  disableAudioDMA();
+  // // disable DMA1
+  // disableAudioDMA();
 
-  // setup DMA1 for audio
-  REG_DMA1SAD = (intptr_t)src;
-  REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
-  REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
-                DMA_ENABLE | 1;
+  // // setup DMA1 for audio
+  // REG_DMA1SAD = (intptr_t)src;
+  // REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
+  // REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 |
+  // DMA_SPECIAL |
+  //               DMA_ENABLE | 1;
 }
 /* ---------------------------------------------------- */
 

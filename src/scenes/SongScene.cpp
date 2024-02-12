@@ -575,12 +575,18 @@ void SongScene::animateWinnerLifeBar() {
 }
 
 static bool videoinit = false;
+static bool render = true;
 
 void SongScene::drawVideo() {
   // TODO: Test code
 
-  interrupt_disable(INTR_VBLANK);
-  player_unload();
+  // 30fps
+  if (!render) {
+    render = true;
+    return;
+  } else {
+    render = false;
+  }
 
   if (!videoinit) {
     bi_init();
@@ -591,10 +597,12 @@ void SongScene::drawVideo() {
   u8 buff[512];
   u8 resp;
 
-  diskRead(sdCursor + videoCursor / 512, buff, 1);
+  auto c1 = pal_bg_mem[254];
+  auto c2 = pal_bg_mem[255];
+  diskRead(sdCursor + videoCursor / 512, (u8*)pal_bg_mem, 1);
   videoCursor += 512;
-  dma3_cpy(pal_bg_mem, buff, 254 * sizeof(u16));
-  // TODO: RESTORE LAST COLORS INSTEAD OF TWO DMAs
+  pal_bg_mem[254] = c1;
+  pal_bg_mem[255] = c2;
 
   u32 backgroundTilesLength = 38912;
   u32 backgroundMapLength = 2048;
@@ -609,8 +617,6 @@ void SongScene::drawVideo() {
     diskRead(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
     videoCursor += size;
   });
-
-  interrupt_enable(INTR_VBLANK);
 }
 
 void SongScene::processKeys(u16 keys) {
