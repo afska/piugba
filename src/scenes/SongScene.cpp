@@ -3,6 +3,7 @@
 #include <libgba-sprite-engine/gba/tonc_math.h>
 #include <libgba-sprite-engine/palette/palette_manager.h>
 
+#include "../libs/interrupt.h"
 #include "DanceGradeScene.h"
 #include "SelectionScene.h"
 #include "StageBreakScene.h"
@@ -586,6 +587,9 @@ void SongScene::drawVideo() {
     waitMosaic = false;
   }
 
+  interrupt_disable(INTR_VBLANK);
+  player_unload();
+
   u8 buff[512];
   diskRead(sdCursor + videoCursor / 512, buff, 1);
   videoCursor += 512;
@@ -605,6 +609,8 @@ void SongScene::drawVideo() {
     diskRead(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
     videoCursor += size;
   });
+
+  interrupt_enable(INTR_VBLANK);
 }
 
 void SongScene::processKeys(u16 keys) {
