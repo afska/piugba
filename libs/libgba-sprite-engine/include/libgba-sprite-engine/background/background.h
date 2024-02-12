@@ -81,12 +81,8 @@ class Background {
 
   template <typename F>
   void persist2(F copyy) {
-    if (this->map) {
-      copyy(screen_block2(screenBlockIndex), this->mapSize);
-    }
-
+    copyy(screen_block2(screenBlockIndex), this->mapSize);
     copyy(char_block2(charBlockIndex), this->size);
-
     buildRegister();
   }
 };

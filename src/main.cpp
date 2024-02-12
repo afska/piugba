@@ -78,7 +78,8 @@ int main() {
   //     if (resp)
   //       BSOD("resp = 1");
   //   }
-  //   BSOD(std::to_string(cursor));
+  //
+  //   BSOL(std::to_string(cursor));
   // }
   // diskPowerDown();
   // bi_lock_regs();

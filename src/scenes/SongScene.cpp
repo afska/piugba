@@ -181,10 +181,10 @@ void SongScene::tick(u16 keys) {
 
   u32 songMsecs = PlaybackState.msecs;
 
-  if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
-    onStagePass();
-    return;
-  }
+  // if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
+  //   onStagePass();
+  //   return;
+  // }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
@@ -574,23 +574,23 @@ void SongScene::animateWinnerLifeBar() {
                                  BOUNCE_STEPS[blinkFrame * isWinning1] / 2);
 }
 
+static bool videoinit = false;
+
 void SongScene::drawVideo() {
   // TODO: Test code
-
-  // if (videoCursor + 512 + 38912 + 2048 > length)
-  //   videoCursor = 1024;
-
-  if (!waitMosaic) {
-    waitMosaic = true;
-    return;
-  } else {
-    waitMosaic = false;
-  }
 
   interrupt_disable(INTR_VBLANK);
   player_unload();
 
+  if (!videoinit) {
+    bi_init();
+    diskInit();
+    videoinit = true;
+  }
+
   u8 buff[512];
+  u8 resp;
+
   diskRead(sdCursor + videoCursor / 512, buff, 1);
   videoCursor += 512;
   dma3_cpy(pal_bg_mem, buff, 254 * sizeof(u16));
