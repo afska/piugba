@@ -14,7 +14,7 @@ class FadeOutPixelTransitionEffect : public SceneEffect {
  public:
   FadeOutPixelTransitionEffect(){};
 
-  void update() override {
+  void render() override {
     EFFECT_setBlendAlpha(opacity * 3 / 4);
     EFFECT_setMosaic(mosaic);
 

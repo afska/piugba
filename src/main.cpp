@@ -55,7 +55,8 @@ int main() {
         LINK_UNIVERSAL_ISR_VBLANK();
         syncer->update();
         engine->update();
-        engine->render();  // TODO: SPLIT
+        EFFECT_render();  // TODO: SPLIT
+        engine->render();
 
         if (syncer->$isPlayingSong && !syncer->$hasStartedAudio)
           synchronizeSongStart();
