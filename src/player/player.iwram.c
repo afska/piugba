@@ -261,18 +261,14 @@ CODE_EWRAM void updateRate() {
   }
 }
 
-void player_forever(int (*update)(),
+void player_forever(int (*onUpdate)(),
+                    void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
-    updateRate();
+    int expectedAudioChunk = onUpdate();
 
-    unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, AS_MSECS);
-    PlaybackState.msecs = msecs;
-    int expectedAudioChunk = update();
     bool isSynchronized = expectedAudioChunk > 0;
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
-
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
       // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
@@ -305,7 +301,16 @@ void player_forever(int (*update)(),
           }
         });
 
+    updateRate();
+
     onAudioChunks(currentAudioChunk);
+
+    unsigned int msecs = src_pos - src;
+    msecs = fracumul(msecs, AS_MSECS);
+    PlaybackState.msecs = msecs;
+
     VBlankIntrWait();
+
+    onRender();
   }
 }

@@ -52,11 +52,10 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
+        // (onUpdate)
         LINK_UNIVERSAL_ISR_VBLANK();
         syncer->update();
         engine->update();
-        EFFECT_render();  // TODO: SPLIT
-        engine->render();
 
         if (syncer->$isPlayingSong && !syncer->$hasStartedAudio)
           synchronizeSongStart();
@@ -65,7 +64,13 @@ int main() {
                    ? (int)syncer->$currentAudioChunk
                    : 0;  // (unsynchronized)
       },
+      []() {
+        // (onRender)
+        EFFECT_render();
+        engine->render();
+      },
       [](u32 current) {
+        // (onAudioChunk)
         if (syncer->$isPlayingSong) {
           if (syncer->isMaster()) {
             syncer->$currentAudioChunk = current;
