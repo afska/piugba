@@ -37,6 +37,7 @@ class SongScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
   ~SongScene();
 

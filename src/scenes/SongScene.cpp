@@ -220,6 +220,10 @@ void SongScene::tick(u16 keys) {
 #endif
 }
 
+void SongScene::render() {
+  darkener->render();
+}
+
 void SongScene::setUpPalettes() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
       new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal))};
@@ -499,7 +503,7 @@ void SongScene::updateGameX() {
 
   auto backgroundType = GameState.settings.backgroundType;
   if (backgroundType == BackgroundType::HALF_BGA_DARK)
-    REG_BG_OFS[DARKENER_ID].x = -GameState.positionX[0];
+    darkener->setX(-GameState.positionX[0]);
 }
 
 void SongScene::updateGameY() {
