@@ -29,7 +29,7 @@ void Arrow::discard() {
   SPRITE_hide(get());
 
   sprite->enabled = false;
-  refresh();
+  sprite->update();
 }
 
 void Arrow::scheduleDiscard() {

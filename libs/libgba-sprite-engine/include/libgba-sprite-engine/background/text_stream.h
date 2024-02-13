@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 28/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_TEXT_STREAM_H
 #define GBA_SPRITE_ENGINE_TEXT_STREAM_H
 
@@ -20,24 +16,10 @@
 #define PALETTE_COLOR_INDEX 15
 #define PALETTE_TEXT_BANK 15
 
-#define failure_gba(__mess) \
-  (consoleLog_func(__FILE__, __LINE__, __PRETTY_FUNCTION__, #__mess))
+#define failure_gba(__mess) (log_text(#__mess))
 void log_text(const char* text);
-void consoleLog_func(const char* fileName,
-                     const int lineNr,
-                     const char* fnName,
-                     const char* msg);
 
 class TextStream : public Background {
- private:
-  int currRow, currCol;
-  std::unique_ptr<BackgroundPaletteManager> palette;
-
-  static TextStream* inst;
-  TextStream();
-  TextStream(TextStream& other) = delete;
-  TextStream(TextStream&& other) = delete;
-
  public:
   void clear();
   void setText(std::string text, int row, int col);
@@ -54,6 +36,15 @@ class TextStream : public Background {
   TextStream& operator<<(const int s);
   TextStream& operator<<(const u32 s);
   TextStream& operator<<(const bool s);
+
+ private:
+  int currRow, currCol;
+  std::unique_ptr<BackgroundPaletteManager> palette;
+
+  static TextStream* inst;
+  TextStream();
+  TextStream(TextStream& other) = delete;
+  TextStream(TextStream&& other) = delete;
 };
 
 #endif  // GBA_SPRITE_ENGINE_TEXT_STREAM_H

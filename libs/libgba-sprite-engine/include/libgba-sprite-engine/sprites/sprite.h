@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 26/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_SPRITE_H
 #define GBA_SPRITE_ENGINE_SPRITE_H
 
@@ -16,12 +12,8 @@
 
 #include <libgba-sprite-engine/gba/tonc_types.h>
 
-#include <memory>
-#ifdef CODE_COMPILED_AS_PART_OF_TEST
-#include <libgba-sprite-engine/gba/tonc_math_stub.h>
-#else
 #include <libgba-sprite-engine/gba/tonc_math.h>
-#endif
+#include <memory>
 
 #define COLOR_MODE_16 0
 #define COLOR_MODE_256 1
@@ -52,28 +44,7 @@ enum SpriteSize {
 class SpriteManager;
 
 class Sprite {
- private:
-  inline void updateAnimation();
-  inline void syncPosition();
-
- protected:
-  const void* data;
-  int x, y;
-  u8 animation_offset;
-  u32 priority, w, h, size_bits, shape_bits;
-  u32 imageSize, tileIndex;
-  SpriteSize spriteSize;
-  u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
-      animationCounter;
-  bool animating;
-
-  inline void syncAnimation();
-  inline void syncOam();
-  inline void buildOam(int tileIndex);
-  inline void setAttributesBasedOnSize(SpriteSize size);
-
  public:
-  OBJ_ATTR oam;
   bool enabled = true;
   explicit Sprite(const Sprite& other);
   explicit Sprite(const void* imageData,
@@ -99,7 +70,6 @@ class Sprite {
   inline void update();
 
   inline void moveTo(int x, int y);
-  inline bool collidesWith(Sprite& s2);
 
   inline void flipVertically(bool flip);
   inline void flipHorizontally(bool flip);
@@ -113,18 +83,35 @@ class Sprite {
   inline u32 getNumberOfFrames() { return numberOfFrames; }
   inline u32 getCurrentFrame() { return currentFrame; }
   inline bool isAnimating() { return animating; };
-  inline bool isOffScreen();
 
   friend class SpriteManager;
+
+ protected:
+  const void* data;
+  int x, y;
+  u8 animation_offset;
+  u32 priority, w, h, size_bits, shape_bits;
+  u32 imageSize, tileIndex;
+  SpriteSize spriteSize;
+  u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
+      animationCounter;
+  bool animating;
+
+  inline void syncAnimation();
+  inline void syncOam();
+  inline void buildOam(int tileIndex);
+  inline void setAttributesBasedOnSize(SpriteSize size);
+
+ private:
+  OBJ_ATTR oam;
+
+  inline void updateAnimation();
+  inline void syncPosition();
 };
 
 inline void Sprite::moveTo(int x, int y) {
   this->x = x;
   this->y = y;
-}
-
-inline bool Sprite::isOffScreen() {
-  return x < 0 || x > GBA_SCREEN_WIDTH || y < 0 || y > GBA_SCREEN_HEIGHT;
 }
 
 inline void Sprite::flipHorizontally(bool flip) {
@@ -288,16 +275,6 @@ inline void Sprite::setAttributesBasedOnSize(SpriteSize size) {
       animation_offset = 32;
       break;
   }
-}
-
-inline bool Sprite::collidesWith(Sprite& s2) {
-  const Sprite& s1 = *this;
-
-  if (s1.x < s2.x + s2.w && s1.x + s1.w > s2.x && s1.y < s2.y + s2.h &&
-      s1.h + s1.y > s2.y) {
-    return true;
-  }
-  return false;
 }
 
 inline void Sprite::buildOam(int tileIndex) {

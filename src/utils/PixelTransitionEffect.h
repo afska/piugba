@@ -13,7 +13,7 @@ class PixelTransitionEffect : public SceneEffect {
  public:
   PixelTransitionEffect(){};
 
-  void update() override {
+  void render() override {
     EFFECT_setMosaic(value);
 
     value++;
