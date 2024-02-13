@@ -116,7 +116,7 @@ void SelectionScene::load() {
   SAVEFILE_write8(SRAM->state.isPlaying, false);
   SCENE_init();
 
-  TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
+  TextStream::instance().scrollNow(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
@@ -710,7 +710,7 @@ void SelectionScene::confirm() {
   player_play(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
-  TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
+  TextStream::instance().scrollNow(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
   printNumericLevel(NULL, NUMERIC_LEVEL_BADGE_OFFSET_ROW);
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
@@ -723,7 +723,7 @@ void SelectionScene::unconfirm() {
                                        NUMERIC_LEVEL_BADGE_Y);
 
     SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
-    TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
+    TextStream::instance().scrollNow(0, TEXT_SCROLL_NORMAL);
     updateSelection();
   }
   confirmed = false;

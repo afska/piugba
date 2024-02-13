@@ -2,6 +2,7 @@
 #define DARKENER_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+#include <libgba-sprite-engine/gba/tonc_memmap.h>
 
 #include "gameplay/save/Settings.h"
 

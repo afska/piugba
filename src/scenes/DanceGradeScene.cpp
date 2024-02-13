@@ -194,7 +194,7 @@ void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
   if (isVs()) {
-    TextStream::instance().scroll(0, -1);
+    TextStream::instance().scrollNow(0, -1);
 
     auto player1Evaluation = syncer->getLocalPlayerId() == 0
                                  ? evaluation.get()

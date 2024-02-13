@@ -34,16 +34,12 @@ class GBAEngine {
     if (sceneToTransitionTo) {
       currentEffectForTransition->render();
 
-      if (currentEffectForTransition->isDone())
+      if (currentEffectForTransition->isDone()) {
         setScene(sceneToTransitionTo);
+      }
     }
 
     currentScene->render();
-
-    if (mainBackground != nullptr)
-      mainBackground->render();
-    if (!this->disableTextBg)
-      TextStream::instance().render();
     spriteManager.render();
   }
 
@@ -57,7 +53,6 @@ class GBAEngine {
 
   bool disableTextBg;
   SpriteManager spriteManager;
-  Background* mainBackground = nullptr;
 
   void cleanupPreviousScene();
 };

@@ -36,7 +36,7 @@ void SettingsScene::loadBackground(u32 id) {
 }
 
 void SettingsScene::printOptions() {
-  TextStream::instance().scroll(0, -2);
+  TextStream::instance().scrollNow(0, -2);
   SCENE_write(TITLE, 1);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);

@@ -81,7 +81,7 @@ void TextScene::setUpBackground() {
 
 void TextScene::alignText() {
   auto offsetY = TEXT_BASE_OFFSET_Y + TEXT_LINE_OFFSETS_Y[lines.size()];
-  TextStream::instance().scroll(TEXT_OFFSET_X, offsetY);
+  TextStream::instance().scrollNow(TEXT_OFFSET_X, offsetY);
   // 25 cols, 7 rows (separated by blanks, so actually 4 of them are usable)
 }
 

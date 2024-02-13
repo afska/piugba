@@ -100,7 +100,7 @@ void StartScene::load() {
   setUpButtons();
   setUpGameAnimation();
 
-  TextStream::instance().scroll(0, TEXT_OFFSET_Y);
+  TextStream::instance().scrollNow(0, TEXT_OFFSET_Y);
 }
 
 void StartScene::tick(u16 keys) {

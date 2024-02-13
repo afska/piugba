@@ -53,7 +53,7 @@ class Background {
   void clearMap();
   void clearData();
   void scroll(int x, int y);
-  void scrollDelta(int dx, int dy);
+  void scrollNow(int x, int y);
 
   template <typename F>
   void persistNow(F copyMemory) {
@@ -69,8 +69,8 @@ class Background {
   int mapSize, mapLayout;
   int screenBlockIndex, charBlockIndex, priority;
   bool mosaicEnabled = false;
-  u32 scrollX = 0;
-  u32 scrollY = 0;
+  int scrollX = 0;
+  int scrollY = 0;
 
  private:
   void buildRegister();

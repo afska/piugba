@@ -54,7 +54,7 @@ void AdminScene::printOptions() {
     withSound = false;
   }
 
-  TextStream::instance().scroll(0, -2);
+  TextStream::instance().scrollNow(0, -2);
 
   if (submenu == SUBMENU_OFFSETS) {
     SCENE_write("CUSTOM OFFSETS", 1);
