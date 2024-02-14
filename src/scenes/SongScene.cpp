@@ -214,6 +214,11 @@ void SongScene::render() {
   if (engine->isTransitioning())
     return;
 
+  darkener->render();
+
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
+    lifeBars[playerId]->tick(foregroundPalette.get());
+
   if (init == 0) {
     initializeBackground();
     init++;
@@ -224,11 +229,6 @@ void SongScene::render() {
       return;
     init++;
   }
-
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    lifeBars[playerId]->tick(foregroundPalette.get());
-
-  darkener->render();
 }
 
 void SongScene::setUpPalettes() {
@@ -295,13 +295,17 @@ bool SongScene::initializeGame(u16 keys) {
   if (deathMix != NULL && deathMix->didStartScroll)
     goto initialized;
 
-  if (GameState.mods.autoMod)
+  if (GameState.mods.autoMod) {
     EFFECT_setMosaic(MAX_MOSAIC);
+    EFFECT_render();
+  }
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
   if (GameState.mods.autoMod)
-    backupPalettes(
-        [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
+    backupPalettes([](u32 progress) {
+      EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0));
+      EFFECT_render();
+    });
 
 initialized:
   if (deathMix != NULL) {
