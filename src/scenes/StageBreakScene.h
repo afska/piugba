@@ -40,7 +40,7 @@ class StageBreakScene : public Scene {
 
   void animate();
   void finish();
-  bool processMultiplayerUpdates();
+  void processMultiplayerUpdates();
 };
 
 #endif  // STAGE_BREAK_SCENE_H

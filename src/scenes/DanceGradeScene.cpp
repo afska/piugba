@@ -141,8 +141,7 @@ void DanceGradeScene::tick(u16 keys) {
   }
 
   if (isMultiplayer()) {
-    if (!processMultiplayerUpdates())
-      return;
+    processMultiplayerUpdates();
     if (!syncer->isPlaying())
       return;
   }
@@ -282,7 +281,7 @@ void DanceGradeScene::playSound() {
   }
 }
 
-bool DanceGradeScene::processMultiplayerUpdates() {
+void DanceGradeScene::processMultiplayerUpdates() {
   auto remoteId = syncer->getRemotePlayerId();
 
   while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
@@ -295,8 +294,7 @@ bool DanceGradeScene::processMultiplayerUpdates() {
     }
 
     switch (event) {
-      case SYNC_EVENT_CONFIRM_SONG_END:
-      case SYNC_EVENT_ABORT: {
+      case SYNC_EVENT_CONFIRM_SONG_END: {
         finish();
 
         syncer->clearTimeout();
@@ -307,13 +305,4 @@ bool DanceGradeScene::processMultiplayerUpdates() {
       }
     }
   }
-
-  if (syncer->$resetFlag && !engine->isTransitioning()) {
-    syncer->send(SYNC_EVENT_ABORT, 0);
-    syncer->clearTimeout();
-    finish();
-    return false;
-  }
-
-  return true;
 }

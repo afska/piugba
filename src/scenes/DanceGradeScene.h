@@ -61,7 +61,7 @@ class DanceGradeScene : public Scene {
   u32 getMultiplayerPointsOf(Evaluation* evaluation);
 
   void playSound();
-  bool processMultiplayerUpdates();
+  void processMultiplayerUpdates();
 };
 
 #endif  // DANCE_GRADE_SCENE_H

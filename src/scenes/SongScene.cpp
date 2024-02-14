@@ -170,8 +170,7 @@ void SongScene::tick(u16 keys) {
   processKeys(keys);
 
   if ($isMultiplayer) {
-    if (!processMultiplayerUpdates())
-      return;
+    processMultiplayerUpdates();
     if (!syncer->isPlaying())
       return;
   }
@@ -1013,7 +1012,7 @@ void SongScene::processTrainingModeMod() {
     startInput->setHandledFlag(false);
 }
 
-bool SongScene::processMultiplayerUpdates() {
+void SongScene::processMultiplayerUpdates() {
   u32 keys =
       SYNC_MSG_KEYS_BUILD(arrowHolders[localBaseIndex + 0]->getIsPressed(),
                           arrowHolders[localBaseIndex + 1]->getIsPressed(),
@@ -1114,10 +1113,8 @@ bool SongScene::processMultiplayerUpdates() {
     syncer->send(SYNC_EVENT_ABORT, 0);
     syncer->clearTimeout();
     onAbort();
-    return false;
+    return;
   }
-
-  return true;
 }
 
 bool SongScene::setRate(int rate) {
@@ -1135,7 +1132,9 @@ void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
 
-  if (!$isMultiplayer)
+  if ($isMultiplayer)
+    syncer->resetSongState();
+  else
     IOPORT_sdLow();
 }
 
