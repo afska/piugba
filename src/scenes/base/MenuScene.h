@@ -25,6 +25,7 @@ class MenuScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  protected:
   std::unique_ptr<Background> bg;

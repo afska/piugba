@@ -44,16 +44,18 @@ void TextScene::load() {
 }
 
 void TextScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
 
+  autoWrite();
+}
+
+void TextScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     hasStarted = true;
   }
-
-  autoWrite();
 }
 
 void TextScene::write(std::string text) {

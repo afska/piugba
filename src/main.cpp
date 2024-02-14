@@ -66,8 +66,8 @@ int main() {
       },
       []() {
         // (onRender)
-        EFFECT_render();
         engine->render();
+        EFFECT_render();
       },
       [](u32 current) {
         // (onAudioChunk)

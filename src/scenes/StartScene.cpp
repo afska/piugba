@@ -101,20 +101,13 @@ void StartScene::load() {
   setUpGameAnimation();
 
   TextStream::instance().scrollNow(0, TEXT_OFFSET_Y);
+
+  player_loop(SOUND_LOOP);
 }
 
 void StartScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
-    printTitle();
-    BACKGROUND_enable(true, true, true, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_loop(SOUND_LOOP);
-  }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
@@ -134,6 +127,16 @@ void StartScene::tick(u16 keys) {
   navigateToAdminMenuIfNeeded(keys);
 
   pixelBlink->tick();
+}
+
+void StartScene::render() {
+  if (!hasStarted) {
+    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
+    printTitle();
+    BACKGROUND_enable(true, true, true, false);
+    SPRITE_enable();
+    hasStarted = true;
+  }
 }
 
 void StartScene::setUpSpritesPalette() {

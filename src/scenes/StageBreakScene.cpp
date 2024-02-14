@@ -75,23 +75,18 @@ void StageBreakScene::load() {
 
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
+
+  player_play(SOUND_STAGE_BREAK);
 }
 
 void StageBreakScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     player_stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_play(SOUND_STAGE_BREAK);
   }
 
   if (isMultiplayer()) {
@@ -114,6 +109,14 @@ void StageBreakScene::tick(u16 keys) {
     }
 
     finish();
+  }
+}
+
+void StageBreakScene::render() {
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
   }
 }
 

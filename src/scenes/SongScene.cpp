@@ -150,7 +150,7 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  if (engine->isTransitioning()) {
+  if (engine->isTransitioning() || init < 2) {
     unload();
     return;
   }
@@ -159,16 +159,6 @@ void SongScene::tick(u16 keys) {
     unload();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (init == 0) {
-    initializeBackground();
-    init++;
-    return;
-  } else if (init == 1) {
-    if (!initializeGame(keys))
-      return;
-    init++;
   }
 
   u32 songMsecs = PlaybackState.msecs;
@@ -221,6 +211,20 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (init == 0) {
+    initializeBackground();
+    init++;
+    return;
+  } else if (init == 1) {
+    u16 keys = ~REG_KEYS & KEY_ANY;
+    if (!initializeGame(keys))
+      return;
+    init++;
+  }
+
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 

@@ -150,28 +150,13 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || init < 2)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     player_stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (init == 0) {
-    init++;
-    return;
-  } else if (init == 1) {
-    if (isDouble()) {
-      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
-      VBlankIntrWait();
-    }
-
-    BACKGROUND_enable(true, true, true, false);
-    SPRITE_enable();
-    highlighter->initialize(selected);
-    init++;
   }
 
   processKeys(keys);
@@ -201,6 +186,23 @@ void SelectionScene::tick(u16 keys) {
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
                    HIGHLIGHTER_OPACITY);
   EFFECT_setBlendAlpha(blendAlpha);
+}
+
+void SelectionScene::render() {
+  if (init == 0) {
+    init++;
+    return;
+  } else if (init == 1) {
+    if (isDouble()) {
+      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
+      VBlankIntrWait();
+    }
+
+    BACKGROUND_enable(true, true, true, false);
+    SPRITE_enable();
+    highlighter->initialize(selected);
+    init++;
+  }
 }
 
 void SelectionScene::setUpSpritesPalette() {

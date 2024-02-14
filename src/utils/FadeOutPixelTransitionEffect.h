@@ -10,6 +10,8 @@
 const u32 FINAL_OPACITY = 15;
 const u32 FINAL_MOSAIC = 10;
 
+void SCENE_init();
+
 class FadeOutPixelTransitionEffect : public SceneEffect {
  public:
   FadeOutPixelTransitionEffect(){};
@@ -24,7 +26,7 @@ class FadeOutPixelTransitionEffect : public SceneEffect {
       mosaic++;
 
     if (isDone())
-      BACKGROUND_enable(false, false, false, false);
+      SCENE_init();
   }
 
   bool isDone() override { return mosaic >= FINAL_MOSAIC; }

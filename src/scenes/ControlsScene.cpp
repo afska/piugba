@@ -56,18 +56,13 @@ void ControlsScene::load() {
   setUpArrows();
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::Girl, INSTRUCTOR_X, INSTRUCTOR_Y)};
+
+  player_play(SOUND_ENTER);
 }
 
 void ControlsScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_play(SOUND_ENTER);
-  }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
@@ -79,6 +74,14 @@ void ControlsScene::tick(u16 keys) {
   buttons[RIGHT_CENTER]->tick();
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
     comboArrows[i]->tick();
+}
+
+void ControlsScene::render() {
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
+  }
 }
 
 void ControlsScene::setUpSpritesPalette() {

@@ -28,6 +28,7 @@ class StartScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  private:
   bool hasStarted = false;
