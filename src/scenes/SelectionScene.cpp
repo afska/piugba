@@ -109,6 +109,7 @@ void SelectionScene::load() {
     BSOD("This version is ARCADE only.");
 
   if (isMultiplayer()) {
+    syncer->resetSongState();
     syncer->clearTimeout();
     syncer->$resetFlag = false;
   }

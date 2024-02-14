@@ -90,7 +90,8 @@ void StageBreakScene::tick(u16 keys) {
   }
 
   if (isMultiplayer()) {
-    processMultiplayerUpdates();
+    if (!processMultiplayerUpdates())
+      return;
     if (!syncer->isPlaying())
       return;
   }
@@ -180,7 +181,7 @@ void StageBreakScene::finish() {
   }
 }
 
-void StageBreakScene::processMultiplayerUpdates() {
+bool StageBreakScene::processMultiplayerUpdates() {
   auto remoteId = syncer->getRemotePlayerId();
 
   while (syncer->isPlaying() && linkUniversal->canRead(remoteId)) {
@@ -193,7 +194,8 @@ void StageBreakScene::processMultiplayerUpdates() {
     }
 
     switch (event) {
-      case SYNC_EVENT_CONFIRM_SONG_END: {
+      case SYNC_EVENT_CONFIRM_SONG_END:
+      case SYNC_EVENT_ABORT: {
         finish();
 
         syncer->clearTimeout();
@@ -204,4 +206,13 @@ void StageBreakScene::processMultiplayerUpdates() {
       }
     }
   }
+
+  if (syncer->$resetFlag && !engine->isTransitioning()) {
+    syncer->send(SYNC_EVENT_ABORT, 0);
+    syncer->clearTimeout();
+    finish();
+    return false;
+  }
+
+  return true;
 }
