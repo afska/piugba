@@ -94,6 +94,8 @@ void ISR_reset() {
     syncer->$resetFlag = true;
     return;
   }
+  if (syncer->isPlaying())
+    return;
 
   SCENE_softReset();
 }
