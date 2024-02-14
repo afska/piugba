@@ -150,10 +150,8 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  if (engine->isTransitioning() || init < 2) {
-    unload();
+  if (engine->isTransitioning() || init < 2)
     return;
-  }
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     unload();
