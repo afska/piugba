@@ -49,6 +49,7 @@ LifeBar::LifeBar(u8 playerId) {
     SPRITE_reuseTiles(sprite.get());
 
   this->playerId = playerId;
+  sprite->flipVertically(playerId > 0);
 }
 
 void LifeBar::setLife(int life) {
@@ -75,9 +76,6 @@ void LifeBar::relocate() {
 
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
-
-  if (playerId > 0)
-    sprite->flipVertically(true);
 
   blinkWait++;
   if (blinkWait == 2) {
