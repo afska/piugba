@@ -221,6 +221,9 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::render() {
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
+    lifeBars[playerId]->tick(foregroundPalette.get());
+
   darkener->render();
 }
 
@@ -490,9 +493,6 @@ void SongScene::updateFakeHeads() {
 void SongScene::updateScoresAndLifebars() {
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId]->tick();
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    lifeBars[playerId]->tick(foregroundPalette.get());
-
   if ($isMultiplayer && $isVs)
     animateWinnerLifeBar();
 }
