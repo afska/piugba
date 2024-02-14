@@ -265,8 +265,10 @@ void player_forever(int (*onUpdate)(),
                     void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
+    // > main game loop
     int expectedAudioChunk = onUpdate();
 
+    // > multiplayer audio sync
     bool isSynchronized = expectedAudioChunk > 0;
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
@@ -278,6 +280,7 @@ void player_forever(int (*onUpdate)(),
       availableAudioChunks = AUDIO_SYNC_LIMIT;
     }
 
+    // > audio processing (back buffer)
     PLAYER_PRE_UPDATE(
         {
           if (isSynchronized) {
@@ -301,16 +304,21 @@ void player_forever(int (*onUpdate)(),
           }
         });
 
-    updateRate();
-
+    // > notify multiplayer audio sync cursor
     onAudioChunks(currentAudioChunk);
 
+    // > adjust position based on audio rate
+    updateRate();
+
+    // > calculate played milliseconds
     unsigned int msecs = src_pos - src;
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
 
+    // > wait for vertical blank
     VBlankIntrWait();
 
+    // > draw
     onRender();
   }
 }
