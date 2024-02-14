@@ -79,8 +79,11 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   if (playerId > 0)
     sprite->flipVertically(true);
 
-  if (wait == 0 || wait == 2)
+  blinkWait++;
+  if (blinkWait == 2) {
+    blinkWait = 0;
     animatedFlag = !animatedFlag;
+  }
 
   if (animatedOffset > -ANIMATION_OFFSET && wait == 0) {
     animatedOffset--;
