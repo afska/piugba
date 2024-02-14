@@ -95,7 +95,6 @@ void StageBreakScene::tick(u16 keys) {
       return;
   }
 
-  animate();
   pixelBlink->tick();
   instructor->get()->flipHorizontally(isFlippedX);
   instructor->get()->flipVertically(isFlippedY);
@@ -113,6 +112,11 @@ void StageBreakScene::tick(u16 keys) {
 }
 
 void StageBreakScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  animate();
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
