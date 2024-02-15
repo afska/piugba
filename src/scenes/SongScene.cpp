@@ -183,8 +183,6 @@ void SongScene::tick(u16 keys) {
       return;
   }
 
-  drawVideo();
-
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
   if (isNewBeat) {
     onNewBeat(KEY_ANY_PRESSED(keys));
@@ -222,6 +220,7 @@ void SongScene::render() {
   if (engine->isTransitioning())
     return;
 
+  drawVideo();
   darkener->render();
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
