@@ -181,10 +181,6 @@ CODE_EWRAM void player_init() {
   fs = find_first_gbfs_file(0);
   turnOnSound();
   init();
-
-  REG_DMA2SAD = (intptr_t)double_buffers[0];
-  REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
-  REG_DMA2CNT_L = 0x0004;
 }
 
 CODE_EWRAM void player_unload() {
