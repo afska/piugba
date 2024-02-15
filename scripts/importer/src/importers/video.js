@@ -26,12 +26,12 @@ const VIDEO_LIB_METADATA_SIZE = 1024;
 const VIDEO_LIB_HEADER_SIZE = 40;
 const VIDEO_LIB_ENTRY_SIZE = 8;
 
-module.exports = (id, filePath, videoLibFile, transparentColor) => {
+module.exports = async (id, filePath, videoLibFile, transparentColor) => {
   const tempPath = `${filePath}_tmp`;
 
-  utils.run(COMMAND_RM_RF(tempPath));
-  utils.run(COMMAND_MK_DIR(tempPath));
-  utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
+  await utils.run(COMMAND_RM_RF(tempPath));
+  await utils.run(COMMAND_MK_DIR(tempPath));
+  await utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
 
   const videoContentOffset = fs.statSync(videoLibFile).size;
 
@@ -48,7 +48,7 @@ module.exports = (id, filePath, videoLibFile, transparentColor) => {
 
     console.log(`  ⏳  (${id}) | frame ${++i} / ${frames.length}`);
 
-    utils.run(
+    await utils.run(
       COMMAND_BUILD_REMAP(
         frameFile,
         transparentColor,
@@ -56,10 +56,10 @@ module.exports = (id, filePath, videoLibFile, transparentColor) => {
         tempFiles[1]
       )
     );
-    utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: tempPath });
-    utils.run(COMMAND_PAD_PAL(`${baseFile}.pal.bin`));
-    utils.run(COMMAND_PAD(`${baseFile}.img.bin`));
-    utils.run(
+    await utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: tempPath });
+    await utils.run(COMMAND_PAD_PAL(`${baseFile}.pal.bin`));
+    await utils.run(COMMAND_PAD(`${baseFile}.img.bin`));
+    await utils.run(
       COMMAND_APPEND(
         `${baseFile}.pal.bin`,
         `${baseFile}.map.bin`,
@@ -69,7 +69,7 @@ module.exports = (id, filePath, videoLibFile, transparentColor) => {
     );
   }
 
-  utils.run(COMMAND_RM_RF(tempPath));
+  await utils.run(COMMAND_RM_RF(tempPath));
 
   const videoEntryOffset = VIDEO_LIB_HEADER_SIZE + VIDEO_LIB_ENTRY_SIZE * id;
   const videoEntry = Buffer.alloc(VIDEO_LIB_ENTRY_SIZE);

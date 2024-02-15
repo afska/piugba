@@ -1,4 +1,9 @@
+const util = require("util");
 const childProcess = require("child_process");
+const exec = util.promisify(childProcess.exec);
+const execSync = (...args) => {
+  return { stdout: childProcess.execSync(...args) };
+};
 const readlineSync = require("readline-sync");
 const {
   printTableAndGetConsoleOutput,
@@ -10,15 +15,16 @@ const _ = require("lodash");
 
 module.exports = {
   run: (command, options) =>
-    childProcess.execSync(command, {
+    (GLOBAL_OPTIONS.fast ? exec : execSync)(command, {
       stdio: "ignore",
       shell: true,
       ...options,
     }),
-  report(action, taskName) {
+  async report(action, taskName, omitIfAsync = false) {
+    const shouldOmit = GLOBAL_OPTIONS.fast && omitIfAsync;
     try {
-      const output = action();
-      console.log(`  ✔️  ${taskName}`.green);
+      const output = await action();
+      if (!shouldOmit) console.log(`  ✔️  ${taskName}`.green);
       return output;
     } catch (e) {
       console.log(`  ❌  ${taskName}\n`.red);

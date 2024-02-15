@@ -127,6 +127,7 @@ SONGS ?= src/data/content/songs
 VIDEOS ?= src/data/content/videos
 VIDEOLIB ?= src/data/content/videos.bin
 VIDEOENABLE ?= false
+FAST ?= false
 ENV ?= development
 BOSS ?= true
 ARCADE ?= false
@@ -224,7 +225,7 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videos="$(VIDEOS)" --videolib="$(VIDEOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --videoenable=$(VIDEOENABLE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videos="$(VIDEOS)" --videolib="$(VIDEOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)

@@ -90,6 +90,11 @@ const opt = getopt
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only (one of: *false*|true)"],
+    [
+      "f",
+      "fast=FAST",
+      "fast mode (uses async I/O, may disrupt stdout order) (one of: *false*|true)",
+    ],
     ["j", "json", "generate JSON debug files"],
   ])
   .bindHelp()
@@ -116,6 +121,7 @@ GLOBAL_OPTIONS.videolib = $path.resolve(
 GLOBAL_OPTIONS.videoenable = GLOBAL_OPTIONS.videoenable === "true";
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
+GLOBAL_OPTIONS.fast = GLOBAL_OPTIONS.fast === "true";
 
 const AUDIO_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "audio");
 const IMAGES_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "images");
@@ -162,410 +168,467 @@ const GET_SONG_FILES = ({ path, name }) => {
   };
 };
 
-// -------
-// CLEANUP
-// -------
+async function run() {
+  // -------
+  // CLEANUP
+  // -------
 
-mkdirp.sync(GLOBAL_OPTIONS.directory);
-let reuseRomId = null;
-try {
-  reuseRomId = fs
-    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
-    .readUInt32LE();
-  console.log(
-    `${"Reusing".bold.yellow} ${"rom id".yellow}: ${reuseRomId.toString().cyan}`
-  );
-  console.log(
-    "To stop reusing rom ids, remove ".yellow +
-      `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
-  );
-} catch (e) {}
-utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
-mkdirp.sync(GLOBAL_OPTIONS.output);
-if (GLOBAL_OPTIONS.videoenable) {
-  utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
-  utils.run(
-    `dd if=/dev/zero bs=1 count=${VIDEO_LIB_METADATA_SIZE} > ${GLOBAL_OPTIONS.videolib}`
-  );
-}
-
-// ------------
-// AUDIO ASSETS
-// ------------
-
-console.log(`${"Importing".bold} audio...`);
-fs.readdirSync(AUDIO_PATH).forEach((audioFile) => {
-  if (!FILE_AUDIO.test(audioFile)) return;
-
-  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
-  const path = $path.join(AUDIO_PATH, audioFile);
-
-  utils.report(
-    () => importers.audio(name, path, GLOBAL_OPTIONS.output),
-    audioFile
-  );
-});
-
-// ------------
-// IMAGE ASSETS
-// ------------
-
-console.log(`${"Importing".bold} images...`);
-fs.readdirSync(IMAGES_PATH).forEach((imageFile) => {
-  if (!FILE_BACKGROUND.test(imageFile)) return;
-
-  const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
-  const path = $path.join(IMAGES_PATH, imageFile);
-
-  utils.report(
-    () => importers.background(name, path, GLOBAL_OPTIONS.output),
-    imageFile
-  );
-});
-
-// --------------
-// SONG DETECTION
-// --------------
-
-const songs = _(
-  fs.readdirSync(GLOBAL_OPTIONS.directory, { withFileTypes: true })
-)
-  .sortBy()
-  .filter((it) => it.isDirectory())
-  .map("name")
-  .map((directory) => {
-    const name = directory;
-    const outputName = NORMALIZE_FILENAME(name);
-
-    return {
-      path: $path.join(GLOBAL_OPTIONS.directory, directory),
-      name,
-      outputName,
-    };
-  })
-  .sortBy("outputName")
-  .map((it, id) => ({ ...it, id }))
-  .value();
-
-// -----------
-// SONG IMPORT
-// -----------
-
-if (_.uniqBy(songs, "outputName").length !== songs.length)
-  throw new Error("repeated_song_names");
-if (_.isEmpty(songs)) throw new Error("no_songs_found");
-if (songs.length > MAX_SONGS)
-  throw new Error(
-    `song_limit_reached: found=${songs.length}, max=${MAX_SONGS}`
-  );
-(function () {
-  if (reuseRomId != null) {
-    const romIdBuffer = Buffer.alloc(4);
-    romIdBuffer.writeUInt32LE(reuseRomId);
-    if (songs.length !== romIdBuffer.readUInt8())
-      throw new Error(
-        `song_count_doesnt_match_rom_id: delete \`${ROM_ID_FILE_REUSE}\` or fix`
-      );
-  }
-})();
-
-const processedSongs = songs.map((song, i) => {
-  const { id, outputName } = song;
-  const { metadataFile, audioFile, backgroundFile, videoFile } = GET_SONG_FILES(
-    song
-  );
-
-  console.log(
-    `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
-      "Importing".bold
-    } ${song.name.cyan}...`
-  );
-
-  // metadata
-  const simfile = utils.report(
-    () =>
-      importers.metadata(outputName, metadataFile, GLOBAL_OPTIONS.output, id),
-    "charts"
-  );
-
-  // audio
-  utils.report(
-    () => importers.audio(outputName, audioFile, GLOBAL_OPTIONS.output),
-    "audio"
-  );
-
-  // background
-  utils.report(
-    () =>
-      importers.background(
-        outputName,
-        backgroundFile,
-        GLOBAL_OPTIONS.output,
-        BLACK_DOT_FILE
-      ),
-    "background"
-  );
-
-  // video
-  if (videoFile != null) {
-    utils.report(
-      () =>
-        importers.video(id, videoFile, GLOBAL_OPTIONS.videolib, BLACK_DOT_FILE),
-      "video"
+  mkdirp.sync(GLOBAL_OPTIONS.directory);
+  let reuseRomId = null;
+  try {
+    reuseRomId = fs
+      .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
+      .readUInt32LE();
+    console.log(
+      `${"Reusing".bold.yellow} ${"rom id".yellow}: ${
+        reuseRomId.toString().cyan
+      }`
+    );
+    console.log(
+      "To stop reusing rom ids, remove ".yellow +
+        `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
+    );
+  } catch (e) {}
+  await utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
+  mkdirp.sync(GLOBAL_OPTIONS.output);
+  if (GLOBAL_OPTIONS.videoenable) {
+    await utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
+    await utils.run(
+      `dd if=/dev/zero bs=1 count=${VIDEO_LIB_METADATA_SIZE} > ${GLOBAL_OPTIONS.videolib}`
     );
   }
 
-  return { song, simfile };
-});
+  // ------------
+  // AUDIO ASSETS
+  // ------------
 
-// ------------
-// SONG SORTING
-// ------------
+  console.log(`${"Importing".bold} audio...`);
+  for (let audioFile of fs.readdirSync(AUDIO_PATH)) {
+    if (!FILE_AUDIO.test(audioFile)) continue;
 
-const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
-  ? [_.last(CAMPAIGN_LEVELS)]
-  : CAMPAIGN_LEVELS
-).map((difficultyLevel) => {
-  const withIds = (songs) =>
-    songs.map((it, i) => ({ ...it, id: CREATE_ID(i) }));
+    const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(audioFile), "_aud_");
+    const path = $path.join(AUDIO_PATH, audioFile);
 
-  return {
-    difficultyLevel,
-    songs: withIds(
-      GLOBAL_OPTIONS.arcade
-        ? processedSongs
-        : _.orderBy(
-            processedSongs,
-            [
-              ({ simfile }) => {
-                const chart = simfile.getChartByDifficulty(difficultyLevel);
-                return chart.header.order;
-              },
-              ({ simfile }) => {
-                const chart = simfile.getChartByDifficulty(difficultyLevel);
-                return _.sumBy(chart.events, "complexity");
-              },
-            ],
-            ["ASC", "ASC"]
-          )
-    ),
+    await utils.report(
+      () => importers.audio(name, path, GLOBAL_OPTIONS.output),
+      audioFile
+    );
+  }
+
+  // ------------
+  // IMAGE ASSETS
+  // ------------
+
+  console.log(`${"Importing".bold} images...`);
+  for (let imageFile of fs.readdirSync(IMAGES_PATH)) {
+    if (!FILE_BACKGROUND.test(imageFile)) continue;
+
+    const name = NORMALIZE_FILENAME(REMOVE_EXTENSION(imageFile), "_img_");
+    const path = $path.join(IMAGES_PATH, imageFile);
+
+    await utils.report(
+      () => importers.background(name, path, GLOBAL_OPTIONS.output),
+      imageFile
+    );
+  }
+
+  // --------------
+  // SONG DETECTION
+  // --------------
+
+  const songs = _(
+    fs.readdirSync(GLOBAL_OPTIONS.directory, { withFileTypes: true })
+  )
+    .sortBy()
+    .filter((it) => it.isDirectory())
+    .map("name")
+    .map((directory) => {
+      const name = directory;
+      const outputName = NORMALIZE_FILENAME(name);
+
+      return {
+        path: $path.join(GLOBAL_OPTIONS.directory, directory),
+        name,
+        outputName,
+      };
+    })
+    .sortBy("outputName")
+    .map((it, id) => ({ ...it, id }))
+    .value();
+
+  // -----------
+  // SONG IMPORT
+  // -----------
+
+  if (_.uniqBy(songs, "outputName").length !== songs.length)
+    throw new Error("repeated_song_names");
+  if (_.isEmpty(songs)) throw new Error("no_songs_found");
+  if (songs.length > MAX_SONGS)
+    throw new Error(
+      `song_limit_reached: found=${songs.length}, max=${MAX_SONGS}`
+    );
+  (function () {
+    if (reuseRomId != null) {
+      const romIdBuffer = Buffer.alloc(4);
+      romIdBuffer.writeUInt32LE(reuseRomId);
+      if (songs.length !== romIdBuffer.readUInt8())
+        throw new Error(
+          `song_count_doesnt_match_rom_id: delete \`${ROM_ID_FILE_REUSE}\` or fix`
+        );
+    }
+  })();
+  const processSync = async (processSong) => {
+    const processedSongs = [];
+    for (let i = 0; i < songs.length; i++) {
+      const result = await processSong(songs[i], i);
+      processedSongs.push(result);
+    }
+    return processedSongs;
   };
-});
+  const processAsync = async (processSong) => {
+    return await Promise.all(songs.map((song, i) => processSong(song, i)));
+  };
+  const processSongs = GLOBAL_OPTIONS.fast ? processAsync : processSync;
 
-// -----------
-// BOSS LEVELS
-// -----------
+  console.log(`${"Importing".bold} songs...`);
+  const processedSongs = await processSongs(async (song, i) => {
+    const { id, outputName } = song;
+    const {
+      metadataFile,
+      audioFile,
+      backgroundFile,
+      videoFile,
+    } = GET_SONG_FILES(song);
 
-if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
-  console.log(`${"Adding".bold} bosses...`);
-
-  sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
-    songs.forEach(({ song, simfile }, i) => {
-      const chart = simfile.getChartByDifficulty(difficultyLevel);
-      const nextSong = songs[i + 1];
-      const nextChart = nextSong?.simfile?.getChartByDifficulty(
-        difficultyLevel
+    if (!GLOBAL_OPTIONS.fast) {
+      console.log(
+        `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
+          "Importing".bold
+        } ${song.name.cyan}...`
       );
+    }
 
-      let isFinalBoss = nextSong == null;
-      const isBoss =
-        isFinalBoss ||
-        (i >= 4 &&
-          nextChart != null &&
-          nextChart.header.order > chart.header.order);
-      if (isBoss && simfile._isFinalBoss) isFinalBoss = true;
+    // metadata
+    const simfile = await utils.report(
+      () =>
+        importers.metadata(outputName, metadataFile, GLOBAL_OPTIONS.output, id),
+      "charts",
+      true
+    );
 
-      if (simfile.boss == null) simfile.boss = {};
-      simfile.boss[difficultyLevel] = isBoss;
-      simfile._isFinalBoss = isFinalBoss;
-      const applyTo = `${+(simfile.boss.NORMAL || false)}${+(
-        simfile.boss.HARD || false
-      )}${+(simfile.boss.CRAZY || false)}`;
+    // audio
+    await utils.report(
+      () => importers.audio(outputName, audioFile, GLOBAL_OPTIONS.output),
+      "audio",
+      true
+    );
 
-      if (isBoss) {
-        const { id, outputName } = song;
-        const { metadataFile } = GET_SONG_FILES(song);
+    // background
+    await utils.report(
+      () =>
+        importers.background(
+          outputName,
+          backgroundFile,
+          GLOBAL_OPTIONS.output,
+          BLACK_DOT_FILE
+        ),
+      "background",
+      true
+    );
 
-        const prefix = isFinalBoss
-          ? `#PIUGBA:
+    // video
+    if (videoFile != null) {
+      await utils.report(
+        () =>
+          importers.video(
+            id,
+            videoFile,
+            GLOBAL_OPTIONS.videolib,
+            BLACK_DOT_FILE
+          ),
+        "video",
+        true
+      );
+    }
+
+    if (GLOBAL_OPTIONS.fast) {
+      console.log(
+        `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
+          "Imported".bold
+        } ${song.name.cyan}!`
+      );
+    }
+
+    return { song, simfile };
+  });
+
+  // ------------
+  // SONG SORTING
+  // ------------
+
+  const sortedSongsByLevel = (GLOBAL_OPTIONS.arcade
+    ? [_.last(CAMPAIGN_LEVELS)]
+    : CAMPAIGN_LEVELS
+  ).map((difficultyLevel) => {
+    const withIds = (songs) =>
+      songs.map((it, i) => ({ ...it, id: CREATE_ID(i) }));
+
+    return {
+      difficultyLevel,
+      songs: withIds(
+        GLOBAL_OPTIONS.arcade
+          ? processedSongs
+          : _.orderBy(
+              processedSongs,
+              [
+                ({ simfile }) => {
+                  const chart = simfile.getChartByDifficulty(difficultyLevel);
+                  return chart.header.order;
+                },
+                ({ simfile }) => {
+                  const chart = simfile.getChartByDifficulty(difficultyLevel);
+                  return _.sumBy(chart.events, "complexity");
+                },
+              ],
+              ["ASC", "ASC"]
+            )
+      ),
+    };
+  });
+
+  // -----------
+  // BOSS LEVELS
+  // -----------
+
+  if (!GLOBAL_OPTIONS.arcade && GLOBAL_OPTIONS.boss) {
+    console.log(`${"Adding".bold} bosses...`);
+
+    for (let { difficultyLevel, songs } of sortedSongsByLevel) {
+      for (let i = 0; i < songs.length; i++) {
+        const { song, simfile } = songs[i];
+
+        const chart = simfile.getChartByDifficulty(difficultyLevel);
+        const nextSong = songs[i + 1];
+        const nextChart = nextSong?.simfile?.getChartByDifficulty(
+          difficultyLevel
+        );
+
+        let isFinalBoss = nextSong == null;
+        const isBoss =
+          isFinalBoss ||
+          (i >= 4 &&
+            nextChart != null &&
+            nextChart.header.order > chart.header.order);
+        if (isBoss && simfile._isFinalBoss) isFinalBoss = true;
+
+        if (simfile.boss == null) simfile.boss = {};
+        simfile.boss[difficultyLevel] = isBoss;
+        simfile._isFinalBoss = isFinalBoss;
+        const applyTo = `${+(simfile.boss.NORMAL || false)}${+(
+          simfile.boss.HARD || false
+        )}${+(simfile.boss.CRAZY || false)}`;
+
+        if (isBoss) {
+          const { id, outputName } = song;
+          const { metadataFile } = GET_SONG_FILES(song);
+
+          const prefix = isFinalBoss
+            ? `#PIUGBA:
 APPLY_TO=${applyTo},,,
 IS_BOSS=TRUE,,,
 PIXELATE=BLINK_IN,,,
 JUMP=LINEAR,,,
 REDUCE=MICRO,,,
 BOUNCE=ALL;`
-          : isBoss
-          ? `#PIUGBA:
+            : isBoss
+            ? `#PIUGBA:
 APPLY_TO=${applyTo},,,
 IS_BOSS=TRUE,,,
 PIXELATE=LIFE,,,
 REDUCE=MICRO,,,
 BOUNCE=ALL;`
-          : null;
+            : null;
 
-        importers.metadata(
-          outputName,
-          metadataFile,
-          GLOBAL_OPTIONS.output,
-          id,
-          prefix
-        );
+          await importers.metadata(
+            outputName,
+            metadataFile,
+            GLOBAL_OPTIONS.output,
+            id,
+            prefix
+          );
+        }
       }
-    });
-  });
-}
-
-// ---------
-// SELECTORS
-// ---------
-
-sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
-  let lastSelectorBuilt = -1;
-
-  songs.forEach((___, i) => {
-    if (i === 0)
-      console.log(`${"Importing".bold} ${difficultyLevel.cyan} selectors...`);
-
-    let options = [];
-    if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
-      const from = lastSelectorBuilt + 1;
-      const to = i;
-      options = _.range(from, to + 1).map((j) => {
-        return {
-          song: songs[j].song,
-          files: GET_SONG_FILES(songs[j].song),
-        };
-      });
-
-      const name = SELECTOR_PREFIXES[difficultyLevel] + from;
-      const library =
-        options.map(({ song }) => song.outputName).join("\r\n") + "\0";
-      fs.writeFileSync(
-        $path.join(GLOBAL_OPTIONS.output, name + LIBRARY_SUFFIX),
-        library
-      );
-
-      lastSelectorBuilt = i;
-      utils.report(
-        () =>
-          importers.selector(name, options, GLOBAL_OPTIONS.output, IMAGES_PATH),
-        `[${from}-${to}]`
-      );
     }
-  });
-});
+  }
 
-// -------
-// ROM ID
-// -------
+  // ---------
+  // SELECTORS
+  // ---------
 
-const romIdBuffer = Buffer.alloc(4);
-if (reuseRomId !== null) romIdBuffer.writeUInt32LE(reuseRomId);
-else {
-  romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
-  romIdBuffer.writeUInt8(songs.length);
-}
-fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_ID_FILE), romIdBuffer);
-fs.writeFileSync(
-  $path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE),
-  romIdBuffer
-);
+  for (let { difficultyLevel, songs } of sortedSongsByLevel) {
+    let lastSelectorBuilt = -1;
 
-// --------
-// ROM NAME
-// --------
+    for (let i = 0; i < songs.length; i++) {
+      if (i === 0)
+        console.log(`${"Importing".bold} ${difficultyLevel.cyan} selectors...`);
 
-let name = "";
-try {
-  const romName = fs
-    .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_NAME_FILE_SOURCE))
-    .toString();
-  name = _.padEnd(romName.substring(0, 12), 13, "\0");
-} catch (e) {}
-fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_NAME_FILE), name);
+      let options = [];
+      if ((i + 1) % SELECTOR_OPTIONS === 0 || i === songs.length - 1) {
+        const from = lastSelectorBuilt + 1;
+        const to = i;
+        options = _.range(from, to + 1).map((j) => {
+          return {
+            song: songs[j].song,
+            files: GET_SONG_FILES(songs[j].song),
+          };
+        });
 
-// --------------
-// VIDEO METADATA
-// --------------
-
-if (GLOBAL_OPTIONS.videoenable) {
-  const header = Buffer.alloc(VIDEO_LIB_HEADER_SIZE);
-
-  const magic = "!!piuGBA-video-library!!";
-  for (let i = 0; i < 24; i++) header.writeUInt8(magic.charCodeAt(i), i);
-  header.writeUInt32LE(
-    fs
-      .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
-      .readUInt32LE(),
-    24
-  );
-
-  const lib = fs.openSync(GLOBAL_OPTIONS.videolib, "r+");
-  fs.writeSync(lib, header, 0, VIDEO_LIB_HEADER_SIZE);
-  fs.closeSync(lib);
-}
-
-// ----------
-// SONG LISTS
-// ----------
-
-sortedSongsByLevel.forEach(({ difficultyLevel, songs }) => {
-  console.log(`\n${"SONG LIST".bold} - ${difficultyLevel.cyan}:`);
-
-  utils.printTable(
-    songs.map(({ simfile: it, id }) => {
-      const normal = it.getChartByDifficulty("NORMAL");
-      const hard = it.getChartByDifficulty("HARD");
-      const crazy = it.getChartByDifficulty("CRAZY");
-
-      const print = (n, digits) => _.padStart(n, digits, 0);
-
-      const levelOf = (chart) => {
-        const level = chart.header.level;
-        const complexity = Math.round(
-          _.sumBy(chart.events, "complexity") * 100
+        const name = SELECTOR_PREFIXES[difficultyLevel] + from;
+        const library =
+          options.map(({ song }) => song.outputName).join("\r\n") + "\0";
+        fs.writeFileSync(
+          $path.join(GLOBAL_OPTIONS.output, name + LIBRARY_SUFFIX),
+          library
         );
-        return `${print(level, 2)} (Ω ${print(complexity, 4)})`;
-      };
 
-      const data = {
-        id,
-        title: it.metadata.title.substring(0, 25),
-        artist: it.metadata.artist.substring(0, 25),
-        channel: it.metadata.channel,
-      };
-
-      if (!GLOBAL_OPTIONS.arcade) {
-        data.normal = levelOf(normal);
-        data.hard = levelOf(hard);
-        data.crazy = levelOf(crazy);
+        lastSelectorBuilt = i;
+        await utils.report(
+          () =>
+            importers.selector(
+              name,
+              options,
+              GLOBAL_OPTIONS.output,
+              IMAGES_PATH
+            ),
+          `[${from}-${to}]`
+        );
       }
+    }
+  }
 
-      return data;
-    })
+  // -------
+  // ROM ID
+  // -------
+
+  const romIdBuffer = Buffer.alloc(4);
+  if (reuseRomId !== null) romIdBuffer.writeUInt32LE(reuseRomId);
+  else {
+    romIdBuffer.writeUInt32LE(Math.random() * 0xffffffff);
+    romIdBuffer.writeUInt8(songs.length);
+  }
+  fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_ID_FILE), romIdBuffer);
+  fs.writeFileSync(
+    $path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE),
+    romIdBuffer
   );
-});
 
-// -------
-// SUMMARY
-// -------
+  // --------
+  // ROM NAME
+  // --------
 
-console.log(`\n${"SUMMARY".bold}:\n`);
+  let name = "";
+  try {
+    const romName = fs
+      .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_NAME_FILE_SOURCE))
+      .toString();
+    name = _.padEnd(romName.substring(0, 12), 13, "\0");
+  } catch (e) {}
+  fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_NAME_FILE), name);
 
-_.forEach(Channels, (v, k) => {
-  const count = _.sumBy(processedSongs, ({ simfile: it }) =>
-    it.metadata.channel === k ? 1 : 0
-  );
-  console.log(`${k}: `.bold + count.toString().cyan);
-});
-console.log("TOTAL: ".bold + processedSongs.length.toString().cyan);
+  // --------------
+  // VIDEO METADATA
+  // --------------
 
-// --------------------
-// UNUSED OFFSETS CHECK
-// --------------------
+  if (GLOBAL_OPTIONS.videoenable) {
+    const header = Buffer.alloc(VIDEO_LIB_HEADER_SIZE);
 
-const unusedCorrections = getOffsetCorrections().filter((it) => !it.used);
-if (!_.isEmpty(unusedCorrections)) {
-  console.error(`\n⚠️  unused offset corrections:`.yellow);
-  console.error(JSON.stringify(unusedCorrections, null, 2).yellow);
+    const magic = "!!piuGBA-video-library!!";
+    for (let i = 0; i < 24; i++) header.writeUInt8(magic.charCodeAt(i), i);
+    header.writeUInt32LE(
+      fs
+        .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
+        .readUInt32LE(),
+      24
+    );
+
+    const lib = fs.openSync(GLOBAL_OPTIONS.videolib, "r+");
+    fs.writeSync(lib, header, 0, VIDEO_LIB_HEADER_SIZE);
+    fs.closeSync(lib);
+  }
+
+  // ----------
+  // SONG LISTS
+  // ----------
+
+  for (let { difficultyLevel, songs } of sortedSongsByLevel) {
+    console.log(`\n${"SONG LIST".bold} - ${difficultyLevel.cyan}:`);
+
+    utils.printTable(
+      songs.map(({ simfile: it, id }) => {
+        const normal = it.getChartByDifficulty("NORMAL");
+        const hard = it.getChartByDifficulty("HARD");
+        const crazy = it.getChartByDifficulty("CRAZY");
+
+        const print = (n, digits) => _.padStart(n, digits, 0);
+
+        const levelOf = (chart) => {
+          const level = chart.header.level;
+          const complexity = Math.round(
+            _.sumBy(chart.events, "complexity") * 100
+          );
+          return `${print(level, 2)} (Ω ${print(complexity, 4)})`;
+        };
+
+        const data = {
+          id,
+          title: it.metadata.title.substring(0, 25),
+          artist: it.metadata.artist.substring(0, 25),
+          channel: it.metadata.channel,
+        };
+
+        if (!GLOBAL_OPTIONS.arcade) {
+          data.normal = levelOf(normal);
+          data.hard = levelOf(hard);
+          data.crazy = levelOf(crazy);
+        }
+
+        return data;
+      })
+    );
+  }
+
+  // -------
+  // SUMMARY
+  // -------
+
+  console.log(`\n${"SUMMARY".bold}:\n`);
+
+  _.forEach(Channels, (v, k) => {
+    const count = _.sumBy(processedSongs, ({ simfile: it }) =>
+      it.metadata.channel === k ? 1 : 0
+    );
+    console.log(`${k}: `.bold + count.toString().cyan);
+  });
+  console.log("TOTAL: ".bold + processedSongs.length.toString().cyan);
+
+  // --------------------
+  // UNUSED OFFSETS CHECK
+  // --------------------
+
+  const unusedCorrections = getOffsetCorrections().filter((it) => !it.used);
+  if (!_.isEmpty(unusedCorrections)) {
+    console.error(`\n⚠️  unused offset corrections:`.yellow);
+    console.error(JSON.stringify(unusedCorrections, null, 2).yellow);
+  }
 }
+
+async function runWithErrorHandler() {
+  try {
+    await run();
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+}
+
+runWithErrorHandler();

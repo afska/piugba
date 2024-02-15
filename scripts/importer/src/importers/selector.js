@@ -14,7 +14,7 @@ const COMMAND_CLEANUP = (tmpDir, tmpFile) =>
   `rm -rf "${tmpDir}" && rm "${tmpFile}"`;
 const EXTENSION_TMP = "h";
 
-module.exports = (name, options, outputPath, selectorDir) => {
+module.exports = async (name, options, outputPath, selectorDir) => {
   const tempDir = $tmp.dirSync();
   const tempFile = $path.join(outputPath, `${name}.${EXTENSION_TMP}`);
 
@@ -41,9 +41,9 @@ module.exports = (name, options, outputPath, selectorDir) => {
   });
 
   const outputImage = $path.join(tempDir.name, `${name}.bmp`);
-  utils.run(COMMAND_BUILD, { cwd: tempDir.name });
+  await utils.run(COMMAND_BUILD, { cwd: tempDir.name });
   fs.renameSync($path.join(tempDir.name, SELECTOR_OUTPUT_PNG), outputImage);
-  utils.run(COMMAND_ENCODE(outputImage), { cwd: outputPath });
+  await utils.run(COMMAND_ENCODE(outputImage), { cwd: outputPath });
 
-  utils.run(COMMAND_CLEANUP(tempDir.name, tempFile));
+  await utils.run(COMMAND_CLEANUP(tempDir.name, tempFile));
 };

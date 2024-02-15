@@ -29,13 +29,18 @@ const FIX_FILE_PATH = (path) =>
 
 let hasOptimizedUniqueMap = false;
 
-module.exports = (name, filePath, outputPath, transparentColor = null) => {
+module.exports = async (
+  name,
+  filePath,
+  outputPath,
+  transparentColor = null
+) => {
   const tempFiles = EXTENSIONS_TMP.map((it) =>
     $path.join(outputPath, `${name}.${it}`)
   );
 
   try {
-    utils.run(
+    await utils.run(
       transparentColor !== null
         ? COMMAND_BUILD_REMAP(
             filePath,
@@ -48,16 +53,16 @@ module.exports = (name, filePath, outputPath, transparentColor = null) => {
   } catch (originalException) {
     try {
       console.log("  ⚠️  fixing background...");
-      utils.run(COMMAND_FIX(filePath));
+      await utils.run(COMMAND_FIX(filePath));
       const fixedFilePath = FIX_FILE_PATH(filePath);
-      utils.run(COMMAND_BUILD(fixedFilePath, tempFiles[1]));
+      await utils.run(COMMAND_BUILD(fixedFilePath, tempFiles[1]));
     } catch (e) {
       throw originalException;
     }
   }
 
-  utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: outputPath });
-  utils.run(COMMAND_CLEANUP(tempFiles[1], tempFiles[2]));
+  await utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: outputPath });
+  await utils.run(COMMAND_CLEANUP(tempFiles[1], tempFiles[2]));
 
   // optimization:
   // unique backgrounds tend to share the same map file (UNIQUE_MAP_MD5SUM)
@@ -65,15 +70,16 @@ module.exports = (name, filePath, outputPath, transparentColor = null) => {
   try {
     const mapFilePath = $path.join(outputPath, `${name}.map.bin`);
     const mapMd5Sum = _.trim(
-      utils
-        .run(COMMAND_MD5SUM(mapFilePath), {
+      (
+        await utils.run(COMMAND_MD5SUM(mapFilePath), {
           stdio: null,
         })
+      ).stdout
         .toString()
         .replace("\\", "")
     );
     if (mapMd5Sum === UNIQUE_MAP_MD5SUM) {
-      if (hasOptimizedUniqueMap) utils.run(COMMAND_RM(mapFilePath));
+      if (hasOptimizedUniqueMap) await utils.run(COMMAND_RM(mapFilePath));
       else {
         hasOptimizedUniqueMap = true;
         fs.renameSync(mapFilePath, $path.join(outputPath, UNIQUE_MAP_NAME));
