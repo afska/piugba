@@ -52,21 +52,6 @@ Charts are converted into a format created for this project called **PIUS**. The
 
 ## How to a build a ROM
 
-- Install everything (read the section below).
-- Create in `src/data/content/songs` one folder per song, including:
-  - one `.mp3` file with the song
-  - one `.png` file with the background
-  - one `.ssc` file with the charts
-- Run:
-
-```bash
-make import
-make assets
-make restart ENV=production
-```
-
-**Full guide:**
-
 **[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)**
 
 ## Install
@@ -146,9 +131,8 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 | `BOSS`        | false or **true**                             | Automatically adds _boss levels_ to the campaign modes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `ARCADE`      | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `SONGS`       | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `VIDEOS`      | _path to a directory_                         | Videos directory. Defaults to: `src/data/content/videos`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `VIDEOLIB`    | _path to a file_                              | Video library output file. Defaults to: `src/data/content/videos.bin`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `VIDEOENABLE` | **false** or true                             | Enables the creation of a video library file (`VIDEOLIB`) using the `VIDEOS` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `VIDEOENABLE` | **false** or true                             | Enables the creation of a video library file (`VIDEOLIB`) using the `${SONGS}/_videos` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `FAST`        | **false** or true                             | Uses async I/O to import songs faster. It may disrupt stdout order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Scripts

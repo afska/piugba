@@ -20,6 +20,7 @@ const ROM_ID_FILE = "_rom_id.u32";
 const ROM_ID_FILE_REUSE = "romid.u32";
 const ROM_NAME_FILE = "_rom_name.txt";
 const ROM_NAME_FILE_SOURCE = "romname.txt";
+const VIDEOS_FOLDER_NAME = "_videos";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
@@ -30,7 +31,6 @@ const CONTENT_PATH = $path.resolve(DATA_PATH, "content");
 const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
 const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
 const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
-const DEFAULT_VIDEOS_PATH = $path.resolve(CONTENT_PATH, "videos");
 const DEFAULT_VIDEOLIB_PATH = $path.resolve(CONTENT_PATH, "videos.bin");
 
 const ID_SIZE = 3;
@@ -55,6 +55,11 @@ const SELECTOR_PREFIXES = {
 const LIBRARY_SUFFIX = "_list.txt";
 const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
 
+const [major] = process.versions.node.split(".").map(Number);
+if (major != 14) {
+  throw new Error("invalid_node_version: expected 14 but found " + major);
+}
+
 // ------------
 // COMMAND LINE
 // ------------
@@ -78,11 +83,6 @@ const opt = getopt
     ],
     [
       "v",
-      "videos=VIDEOS",
-      "videos directory (defaults to: ../../../src/data/content/videos)",
-    ],
-    [
-      "w",
       "videolib=VIDEOLIB",
       "video library output file (defaults to: ../../../src/data/content/videos.bin)",
     ],
@@ -112,9 +112,6 @@ GLOBAL_OPTIONS.output = $path.resolve(
 GLOBAL_OPTIONS.assets = $path.resolve(
   GLOBAL_OPTIONS.assets || DEFAULT_ASSETS_PATH
 );
-GLOBAL_OPTIONS.videos = $path.resolve(
-  GLOBAL_OPTIONS.videos || DEFAULT_VIDEOS_PATH
-);
 GLOBAL_OPTIONS.videolib = $path.resolve(
   GLOBAL_OPTIONS.videolib || DEFAULT_VIDEOLIB_PATH
 );
@@ -133,16 +130,19 @@ if (!fs.existsSync(GLOBAL_OPTIONS.output))
   throw new Error("Output directory not found: " + GLOBAL_OPTIONS.output);
 if (!fs.existsSync(GLOBAL_OPTIONS.assets))
   throw new Error("Assets directory not found: " + GLOBAL_OPTIONS.assets);
-if (GLOBAL_OPTIONS.videoenable && !fs.existsSync(GLOBAL_OPTIONS.videos))
-  throw new Error("Videos directory not found: " + GLOBAL_OPTIONS.videos);
 
 const GET_SONG_FILES = ({ path, name }) => {
   const files = fs.readdirSync(path).map((it) => $path.join(path, it));
-  const videoFiles = GLOBAL_OPTIONS.videoenable
-    ? fs
-        .readdirSync(GLOBAL_OPTIONS.videos)
-        .map((it) => $path.join(GLOBAL_OPTIONS.videos, it))
-    : [];
+  let videoFiles = [];
+
+  if (GLOBAL_OPTIONS.videoenable) {
+    const videosPath = $path.join(GLOBAL_OPTIONS.directory, VIDEOS_FOLDER_NAME);
+    try {
+      videoFiles = fs
+        .readdirSync(videosPath)
+        .map((it) => $path.join(videosPath, it));
+    } catch (e) {}
+  }
 
   const metadataFile = _.find(files, (it) => FILE_METADATA.test(it));
   const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
@@ -242,6 +242,7 @@ async function run() {
     .sortBy()
     .filter((it) => it.isDirectory())
     .map("name")
+    .filter((it) => !it.startsWith("_"))
     .map((directory) => {
       const name = directory;
       const outputName = NORMALIZE_FILENAME(name);
