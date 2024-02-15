@@ -876,7 +876,7 @@ void SongScene::processModsLoad() {
 
   if (GameState.mods.pixelate == PixelateOpts::pFIXED ||
       GameState.mods.pixelate == PixelateOpts::pBLINK_OUT)
-    targetMosaic = 4;
+    targetMosaic = 3;
   else if (GameState.mods.pixelate == PixelateOpts::pBLINK_IN)
     targetMosaic = 0;
 

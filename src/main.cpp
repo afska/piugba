@@ -44,8 +44,7 @@ static const GBFS_FILE* fs = find_first_gbfs_file(0);
 int main() {
   linkUniversal->deactivate();
 
-  // REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
-  // TODO: RE-ENABLE
+  REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
   // u32 cursor = 0;
   // bi_init();
