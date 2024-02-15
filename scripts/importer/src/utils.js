@@ -13,6 +13,18 @@ const {
 } = require("console-table-printer/dist/src/internalTable/internal-table");
 const _ = require("lodash");
 
+const processSync = async (content, action) => {
+  const processedContent = [];
+  for (let i = 0; i < content.length; i++) {
+    const result = await action(content[i], i);
+    processedContent.push(result);
+  }
+  return processedContent;
+};
+const processAsync = async (content, action) => {
+  return await Promise.all(content.map((content, i) => action(content, i)));
+};
+
 module.exports = {
   run: (command, options) =>
     (GLOBAL_OPTIONS.fast ? exec : execSync)(command, {
@@ -30,6 +42,10 @@ module.exports = {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;
     }
+  },
+  async processContent(content, action) {
+    const func = GLOBAL_OPTIONS.fast ? processAsync : processSync;
+    return await func(content, action);
   },
   insistentChoice(text, options, textColor = "black") {
     const stringOptions = options.map((it) => `${it}`.toLowerCase());

@@ -132,7 +132,10 @@ if (!fs.existsSync(GLOBAL_OPTIONS.assets))
   throw new Error("Assets directory not found: " + GLOBAL_OPTIONS.assets);
 
 const GET_SONG_FILES = ({ path, name }) => {
-  const files = fs.readdirSync(path).map((it) => $path.join(path, it));
+  const files = fs
+    .readdirSync(path)
+    .sort()
+    .map((it) => $path.join(path, it));
   let videoFiles = [];
 
   if (GLOBAL_OPTIONS.videoenable) {
@@ -278,21 +281,9 @@ async function run() {
         );
     }
   })();
-  const processSync = async (processSong) => {
-    const processedSongs = [];
-    for (let i = 0; i < songs.length; i++) {
-      const result = await processSong(songs[i], i);
-      processedSongs.push(result);
-    }
-    return processedSongs;
-  };
-  const processAsync = async (processSong) => {
-    return await Promise.all(songs.map((song, i) => processSong(song, i)));
-  };
-  const processSongs = GLOBAL_OPTIONS.fast ? processAsync : processSync;
 
   console.log(`${"Importing".bold} songs...`);
-  const processedSongs = await processSongs(async (song, i) => {
+  const processedSongs = await utils.processContent(songs, async (song, i) => {
     const { id, outputName } = song;
     const {
       metadataFile,

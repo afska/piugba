@@ -1,20 +1,28 @@
 const utils = require("../utils");
 const $path = require("path");
 const fs = require("fs");
+const _ = require("lodash");
+
+const CONVERT_CONCURRENCY = 10;
 
 const COMMAND_RM_RF = (dirPath) => `rm -rf "${dirPath}"`;
 const COMMAND_MK_DIR = (dirPath) => `mkdir "${dirPath}"`;
 const COMMAND_GET_FRAMES = (input, output) =>
   `ffmpeg -y -i "${input}" -r 30 "${output}/output_%05d.png"`;
-
-const COMMAND_BUILD_REMAP = (input, firstColorPalette, tempPalette, output) =>
+const COMMAND_CONVERT = (
+  baseFile,
+  input,
+  firstColorPalette,
+  tempPalette,
+  output
+) =>
   `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -unique-colors "${tempPalette}" && ` +
   `magick "${firstColorPalette}" "${tempPalette}" +append "${tempPalette}" && ` +
   `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -remap "${tempPalette}" "${output}" && ` +
-  `rm "${tempPalette}"`;
-const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
-const COMMAND_PAD_PAL = (input) => `truncate -s 512 "${input}`;
-const COMMAND_PAD = (input) => `truncate -s 38912 "${input}`; // TODO: INCORRECT! FIX LATER - ADD SIZE HEADER
+  `rm "${tempPalette}" && ` +
+  `grit "${output}" -gt -gB8 -mRtf -mLs -ftb && ` +
+  `truncate -s 512 "${baseFile}.pal.bin" && ` +
+  `truncate -s 38912 "${baseFile}.img.bin"`; // TODO: FIX LATER - ADD SIZE HEADER
 const RESOLUTION = "240x160!";
 const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
@@ -31,34 +39,44 @@ module.exports = async (id, filePath, videoLibFile, transparentColor) => {
 
   await utils.run(COMMAND_RM_RF(tempPath));
   await utils.run(COMMAND_MK_DIR(tempPath));
-  await utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
 
+  console.log(`  ⏳  Extracting video frames (${id})...`);
+  await utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
+  const frames = fs.readdirSync(tempPath).sort();
   const videoContentOffset = fs.statSync(videoLibFile).size;
 
-  const frames = fs.readdirSync(tempPath);
-  let i = 0;
+  console.log(`  ⏳  Converting video frames (${id})...`);
+  let count = 0;
+  const chunks = _.chunk(frames, CONVERT_CONCURRENCY);
+  for (let chunk of chunks) {
+    await utils.processContent(chunk, async (frame) => {
+      const name = $path.parse(frame).name;
+      const baseFile = $path.join(tempPath, name);
+      const frameFile = $path.join(tempPath, frame);
+      const tempFiles = EXTENSIONS_TMP.map((it) =>
+        $path.join(tempPath, `${name}.${it}`)
+      );
+
+      await utils.run(
+        COMMAND_CONVERT(
+          baseFile,
+          frameFile,
+          transparentColor,
+          tempFiles[0],
+          tempFiles[1]
+        ),
+        { cwd: tempPath }
+      );
+      count++;
+      console.log(`  ⏳  (${id}) | converted ${count} / ${frames.length}`);
+    });
+  }
+
+  console.log(`  ⏳  Adding video frames ${id}...`);
   for (let frame of frames) {
     const name = $path.parse(frame).name;
-    const tempFiles = EXTENSIONS_TMP.map((it) =>
-      $path.join(tempPath, `${name}.${it}`)
-    );
-
     const baseFile = $path.join(tempPath, name);
-    const frameFile = $path.join(tempPath, frame);
 
-    console.log(`  ⏳  (${id}) | frame ${++i} / ${frames.length}`);
-
-    await utils.run(
-      COMMAND_BUILD_REMAP(
-        frameFile,
-        transparentColor,
-        tempFiles[0],
-        tempFiles[1]
-      )
-    );
-    await utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: tempPath });
-    await utils.run(COMMAND_PAD_PAL(`${baseFile}.pal.bin`));
-    await utils.run(COMMAND_PAD(`${baseFile}.img.bin`));
     await utils.run(
       COMMAND_APPEND(
         `${baseFile}.pal.bin`,
