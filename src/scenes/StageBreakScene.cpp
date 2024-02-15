@@ -75,8 +75,6 @@ void StageBreakScene::load() {
 
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
-
-  player_play(SOUND_STAGE_BREAK);
 }
 
 void StageBreakScene::tick(u16 keys) {
@@ -120,6 +118,7 @@ void StageBreakScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
+    player_play(SOUND_STAGE_BREAK);
     hasStarted = true;
   }
 }

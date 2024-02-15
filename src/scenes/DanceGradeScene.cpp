@@ -126,8 +126,6 @@ void DanceGradeScene::load() {
   } else
     grade = std::unique_ptr<Grade>{
         new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
-
-  playSound();
 }
 
 void DanceGradeScene::tick(u16 keys) {
@@ -162,6 +160,7 @@ void DanceGradeScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
+    playSound();
     hasStarted = true;
   }
 }

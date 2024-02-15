@@ -60,8 +60,6 @@ void ControlsScene::load() {
   setUpArrows();
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::Girl, INSTRUCTOR_X, INSTRUCTOR_Y)};
-
-  player_play(SOUND_ENTER);
 }
 
 void ControlsScene::tick(u16 keys) {
@@ -89,6 +87,7 @@ void ControlsScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
+    player_play(SOUND_ENTER);
     hasStarted = true;
   }
 }
