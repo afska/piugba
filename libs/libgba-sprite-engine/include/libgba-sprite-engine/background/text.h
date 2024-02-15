@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 28/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_TEXT_H
 #define GBA_SPRITE_ENGINE_TEXT_H
 

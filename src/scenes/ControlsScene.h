@@ -28,6 +28,7 @@ class ControlsScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  private:
   bool hasStarted = false;
@@ -40,6 +41,9 @@ class ControlsScene : public Scene {
   std::vector<std::unique_ptr<ArrowSelector>> buttons;
   std::vector<std::unique_ptr<ArrowTutorial>> comboArrows;
   u32 comboStep = 0;
+  int bounceDirectionX = 0;
+  int bounceDirectionY = 0;
+  u32 bounceStep = 0;
 
   void setUpSpritesPalette();
   void setUpBackground();

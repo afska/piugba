@@ -49,6 +49,7 @@ LifeBar::LifeBar(u8 playerId) {
     SPRITE_reuseTiles(sprite.get());
 
   this->playerId = playerId;
+  sprite->flipVertically(playerId > 0);
 }
 
 void LifeBar::setLife(int life) {
@@ -76,11 +77,11 @@ void LifeBar::relocate() {
 void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
   paint(foregroundPalette);
 
-  if (playerId > 0)
-    sprite->flipVertically(true);
-
-  if (wait == 0 || wait == 2)
+  blinkWait++;
+  if (blinkWait == 2) {
+    blinkWait = 0;
     animatedFlag = !animatedFlag;
+  }
 
   if (animatedOffset > -ANIMATION_OFFSET && wait == 0) {
     animatedOffset--;

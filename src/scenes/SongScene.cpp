@@ -158,25 +158,13 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-  if (engine->isTransitioning()) {
-    unload();
+  if (engine->isTransitioning() || init < 2)
     return;
-  }
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     unload();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (init == 0) {
-    initializeBackground();
-    init++;
-    return;
-  } else if (init == 1) {
-    if (!initializeGame(keys))
-      return;
-    init++;
   }
 
   u32 songMsecs = PlaybackState.msecs;
@@ -228,6 +216,27 @@ void SongScene::tick(u16 keys) {
     chartReaders[0]->logDebugInfo<CHART_DEBUG>();
   }
 #endif
+}
+
+void SongScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  darkener->render();
+
+  for (u32 playerId = 0; playerId < playerCount; playerId++)
+    lifeBars[playerId]->tick(foregroundPalette.get());
+
+  if (init == 0) {
+    initializeBackground();
+    init++;
+    return;
+  } else if (init == 1) {
+    u16 keys = ~REG_KEYS & KEY_ANY;
+    if (!initializeGame(keys))
+      return;
+    init++;
+  }
 }
 
 void SongScene::setUpPalettes() {
@@ -300,13 +309,17 @@ bool SongScene::initializeGame(u16 keys) {
   if (deathMix != NULL && deathMix->didStartScroll)
     goto initialized;
 
-  if (GameState.mods.autoMod)
+  if (GameState.mods.autoMod) {
     EFFECT_setMosaic(MAX_MOSAIC);
+    EFFECT_render();
+  }
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
   if (GameState.mods.autoMod)
-    backupPalettes(
-        [](u32 progress) { EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0)); });
+    backupPalettes([](u32 progress) {
+      EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0));
+      EFFECT_render();
+    });
 
 initialized:
   if (deathMix != NULL) {
@@ -502,9 +515,6 @@ void SongScene::updateFakeHeads() {
 void SongScene::updateScoresAndLifebars() {
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId]->tick();
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    lifeBars[playerId]->tick(foregroundPalette.get());
-
   if ($isMultiplayer && $isVs)
     animateWinnerLifeBar();
 }
@@ -515,7 +525,7 @@ void SongScene::updateGameX() {
 
   auto backgroundType = GameState.settings.backgroundType;
   if (backgroundType == BackgroundType::HALF_BGA_DARK)
-    REG_BG_OFS[DARKENER_ID].x = -GameState.positionX[0];
+    darkener->setX(-GameState.positionX[0]);
 }
 
 void SongScene::updateGameY() {
@@ -575,17 +585,17 @@ void SongScene::animateWinnerLifeBar() {
 }
 
 static bool videoinit = false;
-static bool render = true;
+static bool renderr = true;
 
 void SongScene::drawVideo() {
   // TODO: Test code
 
   // 30fps
-  if (!render) {
-    render = true;
+  if (!renderr) {
+    renderr = true;
     return;
   } else {
-    render = false;
+    renderr = false;
   }
 
   if (!videoinit) {
@@ -613,7 +623,7 @@ void SongScene::drawVideo() {
   background.useMapScreenBlock(BANK_BACKGROUND_MAP);
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
-  background.persist2([](void* dst, u32 size) {
+  background.persistNow([](void* dst, u32 size) {
     diskRead(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
     videoCursor += size;
   });

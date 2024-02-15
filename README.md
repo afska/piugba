@@ -184,7 +184,7 @@ cat rom.gba files.gbfs > rom.out.gba
 #### Build gba-sprite-engine
 
 ```bash
-rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
+rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../ ; rm -rf ../piugba/libs/libgba-sprite-engine/include/ ; cp -r ./engine/include ../piugba/libs/libgba-sprite-engine/
 ```
 
 #### Build importer.exe

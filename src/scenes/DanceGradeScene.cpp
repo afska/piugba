@@ -126,23 +126,18 @@ void DanceGradeScene::load() {
   } else
     grade = std::unique_ptr<Grade>{
         new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
+
+  playSound();
 }
 
 void DanceGradeScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     player_stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    playSound();
   }
 
   if (isMultiplayer()) {
@@ -160,6 +155,14 @@ void DanceGradeScene::tick(u16 keys) {
     }
 
     finish();
+  }
+}
+
+void DanceGradeScene::render() {
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
   }
 }
 
@@ -194,7 +197,7 @@ void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
   if (isVs()) {
-    TextStream::instance().scroll(0, -1);
+    TextStream::instance().scrollNow(0, -1);
 
     auto player1Evaluation = syncer->getLocalPlayerId() == 0
                                  ? evaluation.get()

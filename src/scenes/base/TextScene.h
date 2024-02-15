@@ -21,6 +21,7 @@ class TextScene : public Scene {
 
   virtual void load() override;
   virtual void tick(u16 keys) override;
+  void render() override;
 
  protected:
   bool hasStarted = false;

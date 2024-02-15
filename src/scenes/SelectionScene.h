@@ -43,6 +43,7 @@ class SelectionScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  private:
   u32 init = 0;

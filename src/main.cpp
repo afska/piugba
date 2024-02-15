@@ -92,6 +92,7 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
+        // (onUpdate)
         LINK_UNIVERSAL_ISR_VBLANK();
         syncer->update();
         engine->update();
@@ -103,7 +104,13 @@ int main() {
                    ? (int)syncer->$currentAudioChunk
                    : 0;  // (unsynchronized)
       },
+      []() {
+        // (onRender)
+        engine->render();
+        EFFECT_render();
+      },
       [](u32 current) {
+        // (onAudioChunk)
         if (syncer->$isPlayingSong) {
           if (syncer->isMaster()) {
             syncer->$currentAudioChunk = current;
@@ -127,6 +134,8 @@ void ISR_reset() {
     syncer->$resetFlag = true;
     return;
   }
+  if (syncer->isPlaying())
+    return;
 
   SCENE_softReset();
 }

@@ -93,14 +93,8 @@ void CalibrateScene::load() {
 }
 
 void CalibrateScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-  }
 
   processKeys(keys);
 
@@ -127,6 +121,14 @@ void CalibrateScene::tick(u16 keys) {
 
   if (isMeasuring && PlaybackState.hasFinished)
     finish();
+}
+
+void CalibrateScene::render() {
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
+  }
 }
 
 void CalibrateScene::setUpSpritesPalette() {

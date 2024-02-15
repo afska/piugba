@@ -262,18 +262,16 @@ CODE_EWRAM void updateRate() {
   }
 }
 
-void player_forever(int (*update)(),
+void player_forever(int (*onUpdate)(),
+                    void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
-    updateRate();
+    // > main game loop
+    int expectedAudioChunk = onUpdate();
 
-    unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, AS_MSECS);
-    PlaybackState.msecs = msecs;
-    int expectedAudioChunk = update();
+    // > multiplayer audio sync
     bool isSynchronized = expectedAudioChunk > 0;
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
-
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
       // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
@@ -283,6 +281,7 @@ void player_forever(int (*update)(),
       availableAudioChunks = AUDIO_SYNC_LIMIT;
     }
 
+    // > audio processing (back buffer)
     PLAYER_PRE_UPDATE(
         {
           if (isSynchronized) {
@@ -306,7 +305,21 @@ void player_forever(int (*update)(),
           }
         });
 
+    // > notify multiplayer audio sync cursor
     onAudioChunks(currentAudioChunk);
+
+    // > adjust position based on audio rate
+    updateRate();
+
+    // > calculate played milliseconds
+    unsigned int msecs = src_pos - src;
+    msecs = fracumul(msecs, AS_MSECS);
+    PlaybackState.msecs = msecs;
+
+    // > wait for vertical blank
     VBlankIntrWait();
+
+    // > draw
+    onRender();
   }
 }

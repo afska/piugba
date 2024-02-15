@@ -49,7 +49,7 @@ void ModsScene::loadBackground(u32 id) {
 }
 
 void ModsScene::printOptions() {
-  TextStream::instance().scroll(0, 2);
+  TextStream::instance().scrollNow(0, 2);
   SCENE_write(TITLE, 1);
 
   u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);

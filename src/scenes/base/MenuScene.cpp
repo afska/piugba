@@ -71,14 +71,8 @@ void MenuScene::load() {
 }
 
 void MenuScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-  }
 
   processKeys(keys);
   processSelection();
@@ -87,6 +81,14 @@ void MenuScene::tick(u16 keys) {
   selectButton->tick();
   backButton->tick();
   nextButton->tick();
+}
+
+void MenuScene::render() {
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
+  }
 }
 
 void MenuScene::printOption(u32 id,
