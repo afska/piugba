@@ -47,7 +47,7 @@ int main() {
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
   // u32 cursor = 0;
-  // bi_init();
+  // bi_init_sd_only();
   // diskInit();
   // u8 buff[512];
   // u8 resp;
@@ -81,7 +81,6 @@ int main() {
   //   BSOL(std::to_string(cursor));
   // }
   // diskPowerDown();
-  // bi_lock_regs();
 
   validateBuild();
   setUpInterrupts();

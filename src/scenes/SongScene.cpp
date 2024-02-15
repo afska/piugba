@@ -258,12 +258,6 @@ void SongScene::setUpBackground() {
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->usePriority(MAIN_BACKGROUND_PRIORITY);
   bg->setMosaic(true);
-
-  // TODO: Remove test code
-  bi_init();
-  diskInit();
-  videoCursor = 1024;
-  sdCursor = 2098048;
 }
 
 void SongScene::setUpArrows() {
@@ -598,7 +592,9 @@ void SongScene::drawVideo() {
   }
 
   if (!videoinit) {
-    bi_init();
+    videoCursor = 1024;
+    sdCursor = 2098048;
+    bi_init_sd_only();
     diskInit();
     videoinit = true;
   }

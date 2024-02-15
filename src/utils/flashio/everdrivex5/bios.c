@@ -47,6 +47,12 @@ u16 cart_cfg;
 u8 sd_cfg;
 u16 eep_size;
 
+void bi_init_sd_only() {
+  bi_reg_wr(REG_KEY, 0xA5);  // unlock everdrive registers (write only)
+  sd_cfg = 0;
+  bi_reg_wr(REG_SD_CFG, sd_cfg);
+}
+
 u8 bi_init() {
   bi_reg_wr(REG_KEY, 0xA5);  // unlock everdrive registers (write only)
   cart_cfg = CFG_REGS_ON | CFG_NROM_RAM |
