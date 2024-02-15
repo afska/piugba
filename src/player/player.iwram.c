@@ -26,8 +26,8 @@
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
-#define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0cc)
-#define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0ce)
+#define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0d0)
+#define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0d2)
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 #define INLINE static inline __attribute__((always_inline))
@@ -110,7 +110,7 @@ INLINE void unmute() {
 INLINE void turnOnSound() {
   SETSNDRES(1);
   SNDSTAT = SNDSTAT_ENABLE;
-  DSOUNDCTRL = 0b1111101100001110;
+  DSOUNDCTRL = 0b1111000000001100;
   mute();
 }
 
@@ -161,13 +161,11 @@ INLINE void disableAudioDMA() {
   // wait 4 more cycles
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
-  // ----------------------------------------------------
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
   // disable DMA2
-  // disableAudioDMA();
-  REG_DMA2CNT = 0;  // TODO: FIX
+  disableAudioDMA();
 
   // setup DMA2 for audio
   REG_DMA2SAD = (intptr_t)src;
