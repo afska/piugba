@@ -859,6 +859,7 @@ class LinkWireless {
   volatile bool isReadingMessages = false;
   volatile bool isAddingMessage = false;
   volatile bool isPendingClearActive = false;
+  volatile bool isHandlingInterrupt = false;
   Error lastError = NONE;
   volatile bool isEnabled = false;
 
