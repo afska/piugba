@@ -32,8 +32,8 @@ LinkUniversal* linkUniversal =
                       (LinkUniversal::WirelessOptions){
                           .retransmission = true,
                           .maxPlayers = 2,
-                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-                          .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
+                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                           .asyncACKTimerId = 2});

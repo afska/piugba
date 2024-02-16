@@ -578,13 +578,14 @@ class LinkWireless {
       return;
     }
 
-    if (!checkRemoteTimeouts()) {
-      isEnabled = false;  // [!]
-      reset();
-      lastError = REMOTE_TIMEOUT;
-      isEnabled = true;  // [!]
-      return;
-    }
+    // [!]
+    // if (!checkRemoteTimeouts()) {
+    //   isEnabled = false;  // [!]
+    //   reset();
+    //   lastError = REMOTE_TIMEOUT;
+    //   isEnabled = true;  // [!]
+    //   return;
+    // }
 
     sessionState.frameRecvCount = 0;
     sessionState.acceptCalled = false;
@@ -926,7 +927,7 @@ class LinkWireless {
         sessionState.shouldWaitForServer = false;
 #endif
 
-        trackRemoteTimeouts();
+        // trackRemoteTimeouts(); // [!]
         addIncomingMessagesFromData(asyncCommand.result);
 
 #ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
@@ -1207,21 +1208,23 @@ class LinkWireless {
     return __builtin_popcount(data) % 16;
   }
 
-  void trackRemoteTimeouts() {  // (irq only)
-    for (u32 i = 0; i < sessionState.playerCount; i++)
-      if (i != sessionState.currentPlayerId)
-        sessionState.timeouts[i]++;
-  }
+  // [!]
+  // void trackRemoteTimeouts() {  // (irq only)
+  //   for (u32 i = 0; i < sessionState.playerCount; i++)
+  //     if (i != sessionState.currentPlayerId)
+  //       sessionState.timeouts[i]++;
+  // }
 
-  bool checkRemoteTimeouts() {  // (irq only)
-    for (u32 i = 0; i < sessionState.playerCount; i++) {
-      if ((i == 0 || state == SERVING) &&
-          sessionState.timeouts[i] > config.remoteTimeout)
-        return false;
-    }
+  // [!]
+  // bool checkRemoteTimeouts() {  // (irq only)
+  //   for (u32 i = 0; i < sessionState.playerCount; i++) {
+  //     if ((i == 0 || state == SERVING) &&
+  //         sessionState.timeouts[i] > config.remoteTimeout)
+  //       return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   u32 getDeviceTransferLength() {  // (irq only)
     return state == SERVING ? LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
