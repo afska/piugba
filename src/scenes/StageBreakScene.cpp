@@ -113,14 +113,14 @@ void StageBreakScene::render() {
   if (engine->isTransitioning())
     return;
 
-  animate();
-
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
     player_play(SOUND_STAGE_BREAK);
     hasStarted = true;
   }
+
+  animate();
 }
 
 void StageBreakScene::setUpSpritesPalette() {
