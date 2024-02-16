@@ -169,10 +169,10 @@ void SongScene::tick(u16 keys) {
 
   u32 songMsecs = PlaybackState.msecs;
 
-  // if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
-  //   onStagePass();
-  //   return;
-  // }
+  if (PlaybackState.hasFinished || songMsecs >= song->lastMillisecond) {
+    onStagePass();
+    return;
+  }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
