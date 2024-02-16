@@ -10,6 +10,7 @@
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashcartio/fatfs/ff.h"
 #include "utils/flashcartio/flashcartio.h"
 }
 
@@ -46,6 +47,40 @@ int main() {
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
   flashcartio_activate();
+
+  FATFS fatfs;                          // File system object
+  FRESULT fr = f_mount(&fatfs, "", 1);  // Mount a logical drive
+  if (fr > 0)
+    BSOD("NO MOUNT");
+
+  DIR dir;
+  fr = f_opendir(&dir, "/");  // Open the root directory
+  if (fr > 0)
+    BSOD("NO OPENDIR");
+
+  FILINFO fno;
+  while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0] != 0) {
+    if (fno.fattrib & AM_DIR) {
+      // It's a directory
+      BSOL("DIR : " + std::string(fno.fname));
+    } else {
+      // It's a file
+      BSOL("FILE : " + std::string(fno.fname));
+    }
+
+    u16 keys;
+    do {
+      keys = ~REG_KEYS & KEY_ANY;
+    } while (!(keys & KEY_A));
+    do {
+      keys = ~REG_KEYS & KEY_ANY;
+    } while ((keys & KEY_A));
+  }
+  fr = f_closedir(&dir);
+  if (fr > 0)
+    BSOD("NO CLOSEDIR");
+  BSOD("END");
+
   // u32 cursor = 0;
   // u8 buff[512];
   // if (!flashcartSDCard->read(0, buff, 1)) {
