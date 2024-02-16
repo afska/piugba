@@ -73,6 +73,7 @@
 		"playbackstate.h": "c",
 		"gsmplayer.h": "c",
 		"player.h": "c",
-		"disk.h": "c"
+		"disk.h": "c",
+		"diskio.h": "c"
 	}
 }
