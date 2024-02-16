@@ -579,8 +579,10 @@ class LinkWireless {
     }
 
     if (!checkRemoteTimeouts()) {
+      isEnabled = false;  // [!]
       reset();
       lastError = REMOTE_TIMEOUT;
+      isEnabled = true;  // [!]
       return;
     }
 
