@@ -52,7 +52,7 @@ SRCDIRS		:= src \
 						 src/utils \
 						 src/utils/gbfs \
 						 src/utils/flashio \
-						 src/utils/flashio/everdrivex5 \
+						 src/utils/flashio/everdrivegbax5 \
 						 src/utils/pool \
 						 libs
 DATADIRS	:=

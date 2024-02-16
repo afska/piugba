@@ -15,11 +15,10 @@
 #include "scenes/ModsScene.h"
 #include "ui/Darkener.h"
 #include "utils/SceneUtils.h"
+#include "utils/flashio/FlashcartSDCard.h"
 
 extern "C" {
 #include "player/player.h"
-#include "utils/flashio/everdrivex5/bios.h"
-#include "utils/flashio/everdrivex5/disk.h"
 }
 
 #define DEBUG_OFFSET_CORRECTION 8
@@ -594,8 +593,6 @@ void SongScene::drawVideo() {
   if (!videoinit) {
     videoCursor = 1024;
     sdCursor = 2098048;
-    bi_init_sd_only();
-    diskInit();
     videoinit = true;
   }
 
@@ -604,7 +601,11 @@ void SongScene::drawVideo() {
 
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
-  diskRead(sdCursor + videoCursor / 512, (u8*)pal_bg_mem, 1);
+  if (!flashcartSDCard->read(sdCursor + videoCursor / 512, (u8*)pal_bg_mem,
+                             1)) {
+    BSOD("ERROR!");
+    return;
+  }
   videoCursor += 512;
   pal_bg_mem[254] = c1;
   pal_bg_mem[255] = c2;
@@ -619,7 +620,7 @@ void SongScene::drawVideo() {
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
   background.persistNow([](void* dst, u32 size) {
-    diskRead(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
+    flashcartSDCard->read(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
     videoCursor += size;
   });
 }

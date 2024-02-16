@@ -7,11 +7,10 @@
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
+#include "utils/flashio/FlashcartSDCard.h"
 
 extern "C" {
 #include "player/player.h"
-#include "utils/flashio/everdrivex5/bios.h"
-#include "utils/flashio/everdrivex5/disk.h"
 }
 
 // Emulators and flashcarts use this string to autodetect the save type
@@ -39,6 +38,7 @@ LinkUniversal* linkUniversal =
                           .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                           .asyncACKTimerId = 2});
 Syncer* syncer = new Syncer();
+FlashcartSDCard* flashcartSDCard = new FlashcartSDCard();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
@@ -46,20 +46,16 @@ int main() {
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
+  flashcartSDCard->activate();
   // u32 cursor = 0;
-  // bi_init_sd_only();
-  // diskInit();
   // u8 buff[512];
-  // u8 resp;
-  // resp = diskRead(0, buff, 1);
-  // if (resp) {
-  //   BSOD("resp = 1 (1)");
+  // if (!flashcartSDCard->read(0, buff, 1)) {
+  //   BSOD("error (1)");
   // } else {
   //   if (buff[0x52] != 'F') {
   //     u32 offset = buff[0x1c6] | (buff[0x1c7] << 8) | (buff[0x1c8] << 16) |
   //                  (buff[0x1c9] << 24);
-  //     resp = diskRead(offset, buff, 1);
-  //     if (resp)
+  //     if (!flashcartSDCard->read(offset, buff, 1))
   //       BSOD("resp = 1 (2)");
   //   }
 
@@ -73,14 +69,12 @@ int main() {
   //            buff[6] == 'B' && buff[8] == '-' && buff[7] == 'A')) {
   //     BSOL(std::to_string(cursor));
   //     cursor++;
-  //     resp = diskRead(cursor, buff, 1);
-  //     if (resp)
+  //     if (!flashcartSDCard->read(cursor, buff, 1))
   //       BSOD("resp = 1");
   //   }
-  //
+
   //   BSOL(std::to_string(cursor));
   // }
-  // diskPowerDown();
 
   validateBuild();
   setUpInterrupts();
