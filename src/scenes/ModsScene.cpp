@@ -25,9 +25,9 @@ const u32 TEXT_BLEND_ALPHA = 12;
 const int TEXT_OFFSET_Y = 1;
 
 const char* COLOR_FILTERS[] = {
-    "OFF",   "VIBRANT", "CONTRAST",  "POSTERIZE", "WARM",  "COLD",
-    "NIGHT", "WATER",   "GOLDEN",    "DREAMY",    "RETRO", "ALIEN",
-    "SPACE", "SEPIA",   "GRAYSCALE", "MONO",      "INVERT"};
+    "OFF",      "VIBRANT", "CONTRAST",  "POSTERIZE", "WARM",  "COLD",
+    "ETHEREAL", "WATER",   "GOLDEN",    "DREAMY",    "RETRO", "ALIEN",
+    "SPACE",    "SEPIA",   "GRAYSCALE", "MONO",      "INVERT"};
 
 ModsScene::ModsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}

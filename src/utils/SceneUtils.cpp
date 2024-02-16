@@ -37,10 +37,14 @@ COLOR SCENE_transformColor(COLOR color, ColorFilter filter) {
   } else if (filter == COLD) {
     u8 newB = std::min(31, b + 5);
     color = r | (g << 5) | (newB << 10);
-  } else if (filter == NIGHT) {
-    u8 newR = r / 3;
-    u8 newG = std::min(31, g + 10);
-    u8 newB = b / 3;
+  } else if (filter == ETHEREAL) {
+    u8 newR = std::min(31, r + 3);
+    u8 newG = std::max(0, g - 2);
+    u8 newB = std::min(31, b + 5);
+    u8 purpleTint = 4;
+    newR = std::min(31, newR + purpleTint);
+    newB = std::min(31, newB + purpleTint);
+
     color = newR | (newG << 5) | (newB << 10);
   } else if (filter == WATER) {
     u8 newR = r / 2;

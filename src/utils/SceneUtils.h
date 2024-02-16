@@ -27,7 +27,7 @@ enum ColorFilter {
   POSTERIZE,
   WARM,
   COLD,
-  NIGHT,
+  ETHEREAL,
   WATER,
   GOLDEN,
   DREAMY,
