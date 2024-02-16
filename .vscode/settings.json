@@ -74,6 +74,7 @@
 		"gsmplayer.h": "c",
 		"player.h": "c",
 		"disk.h": "c",
-		"diskio.h": "c"
+		"diskio.h": "c",
+		"flashcartio.h": "c"
 	}
 }

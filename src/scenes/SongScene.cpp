@@ -16,10 +16,10 @@
 #include "scenes/ModsScene.h"
 #include "ui/Darkener.h"
 #include "utils/SceneUtils.h"
-#include "utils/flashio/FlashcartSDCard.h"
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashcartio/flashcartio.h"
 }
 
 #define DEBUG_OFFSET_CORRECTION 8
@@ -605,8 +605,8 @@ void SongScene::drawVideo() {
 
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
-  if (!flashcartSDCard->read(sdCursor + videoCursor / 512, (u8*)pal_bg_mem,
-                             1)) {
+  if (!flashcartio_read_sector(sdCursor + videoCursor / 512, (u8*)pal_bg_mem,
+                               1)) {
     unload();
     engine->transitionIntoScene(
         new TalkScene(
@@ -637,7 +637,7 @@ void SongScene::drawVideo() {
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
   background.persistNow([](void* dst, u32 size) {
-    flashcartSDCard->read(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
+    flashcartio_read_sector(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
     videoCursor += size;
   });
 }

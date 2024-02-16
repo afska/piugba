@@ -7,10 +7,10 @@
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
-#include "utils/flashio/FlashcartSDCard.h"
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashcartio/flashcartio.h"
 }
 
 // Emulators and flashcarts use this string to autodetect the save type
@@ -38,7 +38,6 @@ LinkUniversal* linkUniversal =
                           .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                           .asyncACKTimerId = 2});
 Syncer* syncer = new Syncer();
-FlashcartSDCard* flashcartSDCard = new FlashcartSDCard();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
@@ -46,7 +45,7 @@ int main() {
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
-  flashcartSDCard->activate();
+  flashcartio_activate();
   // u32 cursor = 0;
   // u8 buff[512];
   // if (!flashcartSDCard->read(0, buff, 1)) {

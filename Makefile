@@ -51,9 +51,9 @@ SRCDIRS		:= src \
 						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gbfs \
-						 src/utils/flashio \
-						 src/utils/flashio/everdrivegbax5 \
-						 src/utils/flashio/fatfs \
+						 src/utils/flashcartio \
+						 src/utils/flashcartio/everdrivegbax5 \
+						 src/utils/flashcartio/fatfs \
 						 src/utils/pool \
 						 libs
 DATADIRS	:=
