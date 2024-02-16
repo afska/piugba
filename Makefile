@@ -84,10 +84,10 @@ CFLAGS		+= -Wall
 CFLAGS		+= $(INCLUDE)
 CFLAGS		+= -ffast-math -fno-strict-aliasing
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections
 
 ASFLAGS		:= $(ARCH) $(INCLUDE)
-LDFLAGS 	:= $(ARCH) -Wl,--print-memory-usage,-Map,$(PROJ).map
+LDFLAGS 	:= $(ARCH) -Wl,--print-memory-usage,-Map,$(PROJ).map,--gc-sections
 
 # --- switched additions ----------------------------------------------
 
