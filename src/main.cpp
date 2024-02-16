@@ -189,4 +189,5 @@ void synchronizeSongStart() {
     syncer->$currentAudioChunk = AUDIO_SYNC_LIMIT;
 
   syncer->$hasStartedAudio = true;
+  syncer->clearTimeout();
 }
