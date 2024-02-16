@@ -7,6 +7,7 @@
 #include "DanceGradeScene.h"
 #include "SelectionScene.h"
 #include "StageBreakScene.h"
+#include "TalkScene.h"
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
@@ -224,6 +225,9 @@ void SongScene::render() {
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
+
+  if (engine->isTransitioning())
+    return;
 
   if (init == 0) {
     initializeBackground();
@@ -603,7 +607,20 @@ void SongScene::drawVideo() {
   auto c2 = pal_bg_mem[255];
   if (!flashcartSDCard->read(sdCursor + videoCursor / 512, (u8*)pal_bg_mem,
                              1)) {
-    BSOD("ERROR!");
+    unload();
+    engine->transitionIntoScene(
+        new TalkScene(
+            engine, fs,
+            "Error reading SD card :(\r\n\r\nDisable Flashcart mode.",
+            [this](u16 keys) {
+              bool isPressed = SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A)
+                                                          : KEY_CENTER(keys);
+              if (isPressed)
+                engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                            new PixelTransitionEffect());
+            },
+            true),
+        new PixelTransitionEffect());
     return;
   }
   videoCursor += 512;
