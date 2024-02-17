@@ -2,8 +2,8 @@
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 
 #include "disk.h"
+
 #include "bios.h"
-#include "sys.h"
 
 #define CMD0 0x40   // software reset
 #define CMD1 0x41   // brings card out of idle state

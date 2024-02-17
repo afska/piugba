@@ -150,10 +150,10 @@ typedef struct {
   DWORD cdir; /* Current directory start cluster (0:root) */
 #if FF_FS_EXFAT
   DWORD
-      cdc_scl; /* Containing directory start cluster (invalid when cdir is 0) */
+  cdc_scl; /* Containing directory start cluster (invalid when cdir is 0) */
   DWORD cdc_size; /* b31-b8:Size of containing directory, b7-b0: Chain status */
   DWORD
-      cdc_ofs; /* Offset in the containing directory (invalid when cdir is 0) */
+  cdc_ofs; /* Offset in the containing directory (invalid when cdir is 0) */
 #endif
 #endif
   DWORD n_fatent; /* Number of FAT entries (number of clusters + 2) */

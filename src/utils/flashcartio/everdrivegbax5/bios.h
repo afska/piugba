@@ -10,7 +10,7 @@
 
 #pragma GCC system_header
 
-#include "sys.h"
+#include "../sys.h"
 
 #define BI_USB_BUFF 32767
 

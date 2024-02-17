@@ -53,6 +53,7 @@ SRCDIRS		:= src \
 						 src/utils/gbfs \
 						 src/utils/flashcartio \
 						 src/utils/flashcartio/everdrivegbax5 \
+						 src/utils/flashcartio/ezflashomega \
 						 src/utils/flashcartio/fatfs \
 						 src/utils/pool \
 						 libs

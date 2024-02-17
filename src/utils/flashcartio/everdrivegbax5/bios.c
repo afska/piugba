@@ -2,12 +2,9 @@
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 
 #include "bios.h"
-#include "sys.h"
 
 u16 bi_reg_rd(u16 reg);
 void bi_reg_wr(u16 reg, u16 data);
-u8 bi_dma_busy();
-u8 bi_sd_dat_val();
 u8 bi_sd_dma_to_rom(void* dst, int slen);
 void bi_set_ram_bank(u16 bank);
 u8 bi_eep_read_dw(u8* dst, u16 addr);

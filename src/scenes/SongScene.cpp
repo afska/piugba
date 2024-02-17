@@ -27,7 +27,7 @@ extern "C" {
 static u32 length;
 static u8* video = NULL;
 static u32 videoCursor = 0;
-static u32 sdCursor = 0;
+static FIL videoFile;
 
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
@@ -596,7 +596,8 @@ void SongScene::drawVideo() {
 
   if (!videoinit) {
     videoCursor = 1024;
-    sdCursor = 2098048;
+    f_open(&videoFile, "/video.bin", FA_READ);
+    f_lseek(&videoFile, videoCursor);
     videoinit = true;
   }
 
@@ -605,8 +606,8 @@ void SongScene::drawVideo() {
 
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
-  if (!flashcartio_read_sector(sdCursor + videoCursor / 512, (u8*)pal_bg_mem,
-                               1)) {
+  u32 readBytes;
+  if (f_read(&videoFile, (u8*)pal_bg_mem, 512, &readBytes) > 0) {
     unload();
     engine->transitionIntoScene(
         new TalkScene(
@@ -637,7 +638,8 @@ void SongScene::drawVideo() {
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
   background.persistNow([](void* dst, u32 size) {
-    flashcartio_read_sector(sdCursor + videoCursor / 512, (u8*)dst, size / 512);
+    u32 readBytes;
+    f_read(&videoFile, (u8*)dst, size, &readBytes);
     videoCursor += size;
   });
 }

@@ -12,7 +12,7 @@
 
 #pragma GCC system_header
 
-#include <tonc_core.h>
+#include "../sys.h"
 
 #define DISK_ERR_INIT 0xC0
 #define DISK_ERR_RD1 0xD2
