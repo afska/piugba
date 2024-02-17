@@ -67,6 +67,8 @@
     REG_DMA##channel##CNT = DMA_ENABLE | (mode); \
   }
 
+#define REG_IME *(vu16*)(REG_BASE_ + 0x0208)
+
 inline __attribute__((always_inline)) void dmaCopy(const void* source,
                                                    void* dest,
                                                    u32 size) {

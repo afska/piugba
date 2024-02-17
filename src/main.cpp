@@ -45,10 +45,10 @@ int main() {
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
-  flashcartio_activate();
-
-  FATFS fatfs;                          // File system object
-  FRESULT fr = f_mount(&fatfs, "", 1);  // Mount a logical drive
+  if (flashcartio_activate()) {
+    FATFS fatfs;                          // File system object
+    FRESULT fr = f_mount(&fatfs, "", 1);  // Mount a logical drive
+  }
 
   // u32 cursor = 0;
   // u8 buff[512];

@@ -21,7 +21,7 @@ DSTATUS disk_status(BYTE driveId) {
 /*-----------------------------------------------------------------------*/
 
 DSTATUS disk_initialize(BYTE driveId) {
-  return flashcartio_activate() ? 0 : STA_NOINIT;
+  return 0;
 }
 
 /*-----------------------------------------------------------------------*/

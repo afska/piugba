@@ -47,7 +47,7 @@
 #define IRQ_ACK_REG *(vu16*)0x4000202
 #define IRQ_GAME_PAK 0x2000
 
-void bi_init_sd_only();
+bool bi_init_sd_only();
 u8 bi_init();
 void bi_lock_regs();
 void bi_unlock_regs();

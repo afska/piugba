@@ -8,8 +8,7 @@ ActiveFlashcart active_flashcart = NO_FLASHCART;
 
 bool flashcartio_activate(void) {
   // Everdrive GBA X5
-  bi_init_sd_only();
-  if (diskInit() == 0) {
+  if (bi_init_sd_only() && diskInit() == 0) {
     active_flashcart = EVERDRIVE_GBA_X5;
     return true;
   }
