@@ -66,7 +66,7 @@ Charts are converted into a format created for this project called **PIUS**. The
       - `piugba`
 - Install the toolchain:
   - Dev
-    - [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA ROMs. It comes with:
+    - [devkitPro&gcc 13.2.0](https://www.mediafire.com/file/q2jk49r5tvaod0a/devkitPro-gcc-13.2.0.zip/file): The devkit for compiling GBA ROMs. It comes with:
       - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
       - _gbfs_: Used to create a package with all the game assets
     - [node.js 14.\*](https://nodejs.org/en): The JS runtime
