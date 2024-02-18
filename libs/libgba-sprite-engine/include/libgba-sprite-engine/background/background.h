@@ -4,7 +4,6 @@
 #pragma GCC system_header
 
 #include <libgba-sprite-engine/gba/tonc_types.h>
-#include <functional>  // TODO: REMOVE
 
 #define MAPLAYOUT_32X32 0
 #define MAPLAYOUT_32X64 1

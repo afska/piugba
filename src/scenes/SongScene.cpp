@@ -24,6 +24,8 @@ extern "C" {
 
 #define DEBUG_OFFSET_CORRECTION 8
 
+__attribute__((section(".ewram"))) DWORD clusterLinkMapTable[1024];
+
 static u32 length;
 static u8* video = NULL;
 static u32 videoCursor = 0;
@@ -220,11 +222,11 @@ void SongScene::render() {
   if (engine->isTransitioning())
     return;
 
-  drawVideo();
   darkener->render();
-
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
+
+  drawVideo();
 
   if (engine->isTransitioning())
     return;
@@ -597,6 +599,9 @@ void SongScene::drawVideo() {
   if (!videoinit) {
     videoCursor = 2;
     f_open(&videoFile, "/video.bin", FA_READ);
+    videoFile.cltbl = clusterLinkMapTable;
+    clusterLinkMapTable[0] = 1024;
+    f_lseek(&videoFile, CREATE_LINKMAP);
     f_lseek(&videoFile, videoCursor * 512);
     videoinit = true;
   }

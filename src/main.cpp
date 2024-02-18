@@ -50,7 +50,7 @@ int main() {
     // File system object
     f_mount(&fatfs, "", 1);  // Mount a logical drive
   } else {
-    BSOD("activate failed");
+    // BSOD("activate failed");
   }
 
   // u32 cursor = 0;
