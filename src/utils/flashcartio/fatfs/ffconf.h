@@ -30,7 +30,7 @@
 #define FF_USE_MKFS 0
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
-#define FF_USE_FASTSEEK 0
+#define FF_USE_FASTSEEK 1
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 #define FF_USE_EXPAND 0
@@ -104,7 +104,7 @@ functions.
 /     0 - Include all code pages above and configured by f_setcp()
 */
 
-#define FF_USE_LFN 1
+#define FF_USE_LFN 0
 #define FF_MAX_LFN 255
 /* The FF_USE_LFN switches the support for LFN (long file name).
 /
@@ -214,7 +214,7 @@ bytes. /  Instead of private sector buffer eliminated from the file object,
 common sector /  buffer in the filesystem object (FATFS) is used for the file
 data transfer. */
 
-#define FF_FS_EXFAT 1
+#define FF_FS_EXFAT 0
 /* This option switches support for exFAT filesystem. (0:Disable or 1:Enable)
 /  To enable exFAT, also LFN needs to be enabled. (FF_USE_LFN >= 1)
 /  Note that enabling exFAT discards ANSI C (C89) compatibility. */
