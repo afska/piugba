@@ -617,8 +617,7 @@ void SongScene::drawVideo() {
               bool isPressed = SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A)
                                                           : KEY_CENTER(keys);
               if (isPressed)
-                engine->transitionIntoScene(new SelectionScene(engine, fs),
-                                            new PixelTransitionEffect());
+                SCENE_softReset();
             },
             true),
         new PixelTransitionEffect());
