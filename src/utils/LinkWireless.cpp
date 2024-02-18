@@ -1,5 +1,8 @@
 #include "LinkWireless.hpp"
 
+#pragma GCC push_options
+#pragma GCC optimize("Os")
+
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 LINK_WIRELESS_CODE_IWRAM void LinkWireless::_onSerial() {
   // [!]
@@ -32,3 +35,5 @@ LINK_WIRELESS_CODE_IWRAM void LinkWireless::_onACKTimer() {
   isHandlingInterrupt = false;
 }
 #endif
+
+#pragma GCC pop_options
