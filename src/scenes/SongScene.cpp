@@ -595,9 +595,9 @@ void SongScene::drawVideo() {
   }
 
   if (!videoinit) {
-    videoCursor = 1024;
+    videoCursor = 2;
     f_open(&videoFile, "/video.bin", FA_READ);
-    f_lseek(&videoFile, videoCursor);
+    f_lseek(&videoFile, videoCursor * 512);
     videoinit = true;
   }
 
@@ -623,12 +623,12 @@ void SongScene::drawVideo() {
         new PixelTransitionEffect());
     return;
   }
-  videoCursor += 512;
+  videoCursor++;
   pal_bg_mem[254] = c1;
   pal_bg_mem[255] = c2;
 
-  u32 backgroundTilesLength = 38912;
-  u32 backgroundMapLength = 2048;
+  u32 backgroundTilesLength = 76;
+  u32 backgroundMapLength = 4;
 
   Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
                         backgroundMapLength);
@@ -638,7 +638,7 @@ void SongScene::drawVideo() {
   background.setMosaic(true);
   background.persistNow([](void* dst, u32 size) {
     u32 readBytes;
-    f_read(&videoFile, (u8*)dst, size, &readBytes);
+    f_read(&videoFile, (u8*)dst, size * 512, &readBytes);
     videoCursor += size;
   });
 }
