@@ -45,9 +45,12 @@ int main() {
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
+  FATFS fatfs;
   if (flashcartio_activate()) {
-    FATFS fatfs;                          // File system object
-    FRESULT fr = f_mount(&fatfs, "", 1);  // Mount a logical drive
+    // File system object
+    f_mount(&fatfs, "", 1);  // Mount a logical drive
+  } else {
+    BSOD("activate failed");
   }
 
   // u32 cursor = 0;
