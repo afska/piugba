@@ -55,9 +55,18 @@ const SELECTOR_PREFIXES = {
 const LIBRARY_SUFFIX = "_list.txt";
 const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
 
-const [major] = process.versions.node.split(".").map(Number);
-if (major != 14) {
-  throw new Error("invalid_node_version: expected 14 but found " + major);
+const expectedMajor = (() => {
+  try {
+    return fs.readFileSync(".nvmrc").toString().split(".")[0];
+  } catch (e) {
+    return null;
+  }
+})();
+const [major] = process.versions.node.split(".");
+if (expectedMajor != null && major != expectedMajor) {
+  throw new Error(
+    `invalid_node_version: expected ${expectedMajor} but found ${major}`
+  );
 }
 
 // ------------
