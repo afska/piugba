@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "fatfs/ff.h"
 
-typedef enum { NO_FLASHCART, EVERDRIVE_GBA_X5, EZ_FLASH_OMEGA } ActiveFlashcart;
+typedef enum { NO_FLASHCART, EVERDRIVE_GBA_X5 } ActiveFlashcart;
 
 extern ActiveFlashcart active_flashcart;
 
