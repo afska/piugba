@@ -69,4 +69,6 @@ Chart* SONG_findChartByNumericLevelIndex(Song* song,
                                          bool isDouble);
 void SONG_free(Song* song);
 
+u8* getSecondaryMemory(u32 requiredSize);
+
 #endif  // SONG_H

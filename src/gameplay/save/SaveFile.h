@@ -45,7 +45,7 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[6];
+  char padding2[4];
   u32 randomSeed;
   u8 beat;
 
@@ -102,6 +102,8 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
   SAVEFILE_write8(SRAM->adminSettings.offsetEditingEnabled, false);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
+  SAVEFILE_write8(SRAM->adminSettings.isInitializingVideos, false);
 
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
@@ -185,8 +187,12 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
   u8 offsetEditingEnabled =
       SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
+  u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+  u8 isInitializingVideos =
+      SAVEFILE_read8(SRAM->adminSettings.isInitializingVideos);
   if (arcadeCharts >= 2 || rumble >= 2 || ioBlink >= 3 || sramBlink >= 3 ||
-      navigationStyle >= 2 || offsetEditingEnabled >= 2) {
+      navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
+      backgroundVideos >= 2 || isInitializingVideos >= 2) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }

@@ -5,12 +5,12 @@
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "gameplay/video/VideoStore.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
-#include "utils/flashcartio/flashcartio.h"
 }
 
 // Emulators and flashcarts use this string to autodetect the save type
@@ -20,6 +20,7 @@ void validateBuild();
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+VideoStore* videoStore = new VideoStore();
 LinkUniversal* linkUniversal =
     new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
                       "piuGBA",
@@ -45,47 +46,13 @@ int main() {
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 
-  FATFS fatfs;
-  if (flashcartio_activate()) {
-    // File system object
-    f_mount(&fatfs, "", 1);  // Mount a logical drive
-  } else {
-    // BSOD("activate failed");
-  }
-
-  // u32 cursor = 0;
-  // u8 buff[512];
-  // if (!flashcartSDCard->read(0, buff, 1)) {
-  //   BSOD("error (1)");
-  // } else {
-  //   if (buff[0x52] != 'F') {
-  //     u32 offset = buff[0x1c6] | (buff[0x1c7] << 8) | (buff[0x1c8] << 16) |
-  //                  (buff[0x1c9] << 24);
-  //     if (!flashcartSDCard->read(offset, buff, 1))
-  //       BSOD("resp = 1 (2)");
-  //   }
-
-  //   // CUR = 2098048
-
-  //   // ALL GOOD!
-  //   cursor =
-  //       (1024 * 1024 * 1024) / 512;  // start looking past the first partit.
-  //   while (!(buff[0] == '!' && buff[2] == 'p' && buff[1] == '!' &&
-  //            buff[3] == 'i' && buff[5] == 'G' && buff[4] == 'u' &&
-  //            buff[6] == 'B' && buff[8] == '-' && buff[7] == 'A')) {
-  //     BSOL(std::to_string(cursor));
-  //     cursor++;
-  //     if (!flashcartSDCard->read(cursor, buff, 1))
-  //       BSOD("resp = 1");
-  //   }
-
-  //   BSOL(std::to_string(cursor));
-  // }
-
   validateBuild();
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
+
+  // TODO: CHECK AND DISABLE IF IT FAILED
+  videoStore->activate();  // TODO: ONLY ACTIVATE IF SETTING IS ENABLED
 
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(

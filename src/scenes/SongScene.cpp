@@ -12,6 +12,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/save/SaveFile.h"
+#include "gameplay/video/VideoStore.h"
 #include "player/PlaybackState.h"
 #include "scenes/ModsScene.h"
 #include "ui/Darkener.h"
@@ -23,13 +24,6 @@ extern "C" {
 }
 
 #define DEBUG_OFFSET_CORRECTION 8
-
-__attribute__((section(".ewram"))) DWORD clusterLinkMapTable[1024];
-
-static u32 length;
-static u8* video = NULL;
-static u32 videoCursor = 0;
-static FIL videoFile;
 
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
@@ -584,9 +578,9 @@ void SongScene::animateWinnerLifeBar() {
 
 static bool videoinit = false;
 static bool renderr = true;
-
 void SongScene::drawVideo() {
   // TODO: Test code
+  // TODO: ONLY CALL IF videoStore is active
 
   // 30fps
   if (!renderr) {
@@ -597,12 +591,8 @@ void SongScene::drawVideo() {
   }
 
   if (!videoinit) {
-    videoCursor = 2;
-    f_open(&videoFile, "/video.bin", FA_READ);
-    videoFile.cltbl = clusterLinkMapTable;
-    clusterLinkMapTable[0] = 1024;
-    f_lseek(&videoFile, CREATE_LINKMAP);
-    f_lseek(&videoFile, videoCursor * 512);
+    videoStore->load("/video.bin");  // TODO: GET FROM Song/SongFile
+    // TODO: ERROR CHECK
     videoinit = true;
   }
 
@@ -611,8 +601,7 @@ void SongScene::drawVideo() {
 
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
-  u32 readBytes;
-  if (f_read(&videoFile, (u8*)pal_bg_mem, 512, &readBytes) > 0) {
+  if (!videoStore->read((u8*)pal_bg_mem, 1)) {
     unload();
     engine->transitionIntoScene(
         new TalkScene(
@@ -628,11 +617,10 @@ void SongScene::drawVideo() {
         new PixelTransitionEffect());
     return;
   }
-  videoCursor++;
   pal_bg_mem[254] = c1;
   pal_bg_mem[255] = c2;
 
-  u32 backgroundTilesLength = 76;
+  u32 backgroundTilesLength = 76;  // TODO: This depends on frame size
   u32 backgroundMapLength = 4;
 
   Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
@@ -641,11 +629,8 @@ void SongScene::drawVideo() {
   background.useMapScreenBlock(BANK_BACKGROUND_MAP);
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
-  background.persistNow([](void* dst, u32 size) {
-    u32 readBytes;
-    f_read(&videoFile, (u8*)dst, size * 512, &readBytes);
-    videoCursor += size;
-  });
+  background.persistNow(
+      [](void* dst, u32 size) { videoStore->read((u8*)dst, size); });
 }
 
 void SongScene::processKeys(u16 keys) {

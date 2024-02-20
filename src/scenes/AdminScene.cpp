@@ -11,7 +11,7 @@
 #define SUBMENU_SURE_OFFSETS 2
 #define SUBMENU_SURE_ARCADE 3
 #define SUBMENU_SURE_ALL 4
-#define OPTIONS_COUNT_DEFAULT 6
+#define OPTIONS_COUNT_DEFAULT 7
 #define OPTIONS_COUNT_OFFSETS 3
 #define OPTIONS_COUNT_RESET 3
 #define OPTIONS_COUNT_ARE_YOU_SURE 2
@@ -20,8 +20,9 @@
 #define OPTION_RUMBLE 1
 #define OPTION_IO_BLINK 2
 #define OPTION_SRAM_BLINK 3
-#define OPTION_CUSTOM_OFFSETS 4
-#define OPTION_RESET_SAVE_FILE 5
+#define OPTION_BACKGROUND_VIDEOS 4
+#define OPTION_CUSTOM_OFFSETS 5
+#define OPTION_RESET_SAVE_FILE 6
 
 AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
                        const GBFS_FILE* fs,
@@ -98,7 +99,9 @@ void AdminScene::printOptions() {
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
-  printOption(OPTION_RUMBLE, "Rumble", rumble ? "ON" : "OFF", 6);
+
+  TextStream::instance().setText(" * Hardware integrations *", 6, -2);
+  printOption(OPTION_RUMBLE, "Rumble", rumble ? "ON" : "OFF", 7);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 1   ? "ON BEAT"
               : ioBlink == 2 ? "ON KEY"
@@ -108,7 +111,9 @@ void AdminScene::printOptions() {
               sramBlink == 1   ? "ON BEAT"
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
-              10);
+              9);
+  printOption(OPTION_BACKGROUND_VIDEOS, "Background videos", "OFF", 10);
+
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
 }
