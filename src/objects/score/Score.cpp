@@ -1,6 +1,7 @@
 #include "Score.h"
 
 #include <libgba-sprite-engine/gba/tonc_math.h>
+
 #include "gameplay/save/State.h"
 
 const int LIFE_DIFFS[] = {1, 1, 0, -6, -12};

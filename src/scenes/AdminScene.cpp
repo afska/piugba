@@ -1,7 +1,9 @@
 #include "AdminScene.h"
 
 #include "assets.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/save/SaveFile.h"
+#include "gameplay/video/VideoStore.h"
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
@@ -96,6 +98,7 @@ void AdminScene::printOptions() {
   u8 rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
   u8 ioBlink = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
+  u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
@@ -112,7 +115,8 @@ void AdminScene::printOptions() {
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
               9);
-  printOption(OPTION_BACKGROUND_VIDEOS, "Background videos", "OFF", 10);
+  printOption(OPTION_BACKGROUND_VIDEOS, "Background videos",
+              backgroundVideos == 1 ? "ON" : "OFF", 10);
 
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
@@ -228,6 +232,22 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
       SAVEFILE_write8(SRAM->adminSettings.sramBlink,
                       change(value, 3, direction));
+      return true;
+    }
+    case OPTION_BACKGROUND_VIDEOS: {
+      u8 backgroundVideos =
+          SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+
+      if (backgroundVideos > 0) {
+        SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
+      } else {
+        player_stop();
+        videoStore->enable();
+        engine->transitionIntoScene(SEQUENCE_activateVideo(true),
+                                    new PixelTransitionEffect());
+        return false;
+      }
+
       return true;
     }
     case OPTION_CUSTOM_OFFSETS: {

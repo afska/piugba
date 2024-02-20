@@ -2,6 +2,7 @@
 #define VIDEO_STORE_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include <string>
 
 class VideoStore {

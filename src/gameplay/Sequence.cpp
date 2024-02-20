@@ -26,12 +26,6 @@ static void goTo(Scene* scene) {
   _engine->transitionIntoScene(scene, new PixelTransitionEffect());
 }
 
-Scene* hang(std::string error) {
-  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
-  scene->withButton = false;
-  return scene;
-}
-
 void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
                          const GBFS_FILE* fs) {
   _engine = engine;
@@ -42,33 +36,21 @@ Scene* SEQUENCE_getInitialScene() {
   u32 fixes = SAVEFILE_initialize(_fs);
 
   if (!SAVEFILE_isWorking(_fs))
-    return hang(SRAM_TEST_FAILED);
+    return SEQUENCE_halt(SRAM_TEST_FAILED);
 
   if (fixes > 0)
-    return hang(SAVE_FILE_FIXED_1 + std::to_string(fixes) + SAVE_FILE_FIXED_2);
+    return SEQUENCE_halt(SAVE_FILE_FIXED_1 + std::to_string(fixes) +
+                         SAVE_FILE_FIXED_2);
 
   if (videoStore->isActivating()) {
     videoStore->disable();
-    return hang(VIDEO_ACTIVATION_FAILED_CRASH);
+    return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_CRASH);
   }
 
   if (videoStore->isEnabled()) {
-    auto videoState = videoStore->activate();
-    switch (videoState) {
-      case VideoStore::NO_SUPPORTED_FLASHCART: {
-        videoStore->disable();
-        return hang(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
-        break;
-      }
-      case VideoStore::MOUNT_ERROR: {
-        videoStore->disable();
-        return hang(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
-        break;
-      }
-      case VideoStore::ACTIVE:
-      default: {
-      }
-    }
+    auto nextScene = SEQUENCE_activateVideo(false);
+    if (nextScene != NULL)
+      return nextScene;
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
@@ -278,4 +260,29 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
 
 bool SEQUENCE_isMultiplayerSessionDead() {
   return isMultiplayer() && !syncer->isPlaying();
+}
+
+Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
+  auto videoState = videoStore->activate();
+  switch (videoState) {
+    case VideoStore::NO_SUPPORTED_FLASHCART: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
+      break;
+    }
+    case VideoStore::MOUNT_ERROR: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
+      break;
+    }
+    case VideoStore::ACTIVE:
+    default: {
+      return showSuccessMessage ? SEQUENCE_halt(VIDEO_ACTIVATION_SUCCESS)
+                                : NULL;
+    }
+  }
+}
+
+Scene* SEQUENCE_halt(std::string error) {
+  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
+  scene->withButton = false;
+  return scene;
 }

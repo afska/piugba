@@ -1,4 +1,5 @@
 #include "VideoStore.h"
+
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
@@ -41,13 +42,17 @@ VideoStore::State VideoStore::activate() {
   state = OFF;
   SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, true);
 
-  if (!flashcartio_activate())
-    state = NO_SUPPORTED_FLASHCART;
-  else if (f_mount(&fatfs, "", 1) > 0)
-    state = MOUNT_ERROR;
-  else
-    state = ACTIVE;
+  if (!flashcartio_activate()) {
+    disable();
+    return (state = NO_SUPPORTED_FLASHCART);
+  }
 
+  if (f_mount(&fatfs, "", 1) > 0) {
+    disable();
+    return (state = MOUNT_ERROR);
+  }
+
+  state = ACTIVE;
   SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
   return state;
 }

@@ -3,6 +3,8 @@
 
 #include <libgba-sprite-engine/gba_engine.h>
 
+#include <string>
+
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
 
@@ -16,6 +18,7 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 Scene* SEQUENCE_getInitialScene();
 Scene* SEQUENCE_getCalibrateOrMainScene();
 Scene* SEQUENCE_getMainScene();
+Scene* SEQUENCE_activateVideo(bool showSuccessMessage);
 void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode);
 void SEQUENCE_goToMessageOrSong(Song* song,
@@ -23,5 +26,6 @@ void SEQUENCE_goToMessageOrSong(Song* song,
                                 Chart* remoteChart = NULL);
 void SEQUENCE_goToWinOrSelection(bool isLastSong);
 bool SEQUENCE_isMultiplayerSessionDead();
+Scene* SEQUENCE_halt(std::string error);
 
 #endif  // SEQUENCE_H

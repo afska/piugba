@@ -2,6 +2,7 @@
 #define MODS_H
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
+
 #include "utils/SceneUtils.h"
 
 enum StageBreakOpts : u8 { sON, sOFF, sSUDDEN_DEATH };
