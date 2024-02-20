@@ -11,6 +11,7 @@
 #include "gameplay/DeathMix.h"
 #include "gameplay/Judge.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "gameplay/video/VideoStore.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
@@ -63,7 +64,7 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> bInput;
   std::unique_ptr<DeathMix> deathMix;
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
-      $isVsDifferentLevels;
+      $isVsDifferentLevels, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
   int rate = 0;
@@ -88,6 +89,7 @@ class SongScene : public Scene {
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
+    usesVideo = videoStore->isEnabled() && videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
     localBaseIndex = isMultiplayer()
@@ -125,6 +127,7 @@ class SongScene : public Scene {
   void updateGameY();
   void updateRumble();
   void animateWinnerLifeBar();
+  void prepareVideo();
   void drawVideo();
   void processKeys(u16 keys);
 

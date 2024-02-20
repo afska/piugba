@@ -10,6 +10,7 @@
 #define BACKGROUND_TILES_EXTENSION ".img.bin"
 #define BACKGROUND_PALETTE_EXTENSION ".pal.bin"
 #define BACKGROUND_MAP_EXTENSION ".map.bin"
+#define VIDEO_EXTENSION ".vid.bin"
 
 typedef struct SongFile {
   u32 index;
@@ -29,6 +30,7 @@ typedef struct SongFile {
     return name + BACKGROUND_PALETTE_EXTENSION;
   }
   std::string getBackgroundMapFile() { return name + BACKGROUND_MAP_EXTENSION; }
+  std::string getVideoFile() { return name + VIDEO_EXTENSION; }
 } SongFile;
 
 #endif  // SONG_FILE_H

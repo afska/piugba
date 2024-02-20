@@ -11,8 +11,8 @@
 #include "data/content/_compiled_sprites/palette_song.h"
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
+#include "gameplay/SequenceMessages.h"
 #include "gameplay/save/SaveFile.h"
-#include "gameplay/video/VideoStore.h"
 #include "player/PlaybackState.h"
 #include "scenes/ModsScene.h"
 #include "ui/Darkener.h"
@@ -51,8 +51,8 @@ static std::unique_ptr<Darkener> darkener{
 
 DATA_EWRAM static COLOR paletteBackups[TOTAL_COLOR_FILTERS]
                                       [PALETTE_MAX_SIZE * 2];
-void backupPalettes(void (*onProgress)(u32 progress));
-void reapplyFilter(ColorFilter colorFilter);
+void backupPalettes(bool usesVideo, void (*onProgress)(u32 progress));
+void reapplyFilter(bool usesVideo, ColorFilter colorFilter);
 
 SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      const GBFS_FILE* fs,
@@ -72,6 +72,8 @@ std::vector<Background*> SongScene::backgrounds() {
 #ifdef SENV_DEBUG
   return {};
 #endif
+  if (usesVideo)
+    return {};
 
   return {bg.get()};
 }
@@ -122,6 +124,7 @@ void SongScene::load() {
 
   SCENE_init();
 
+  prepareVideo();
   setUpPalettes();
   setUpBackground();
   setUpArrows();
@@ -241,14 +244,17 @@ void SongScene::setUpPalettes() {
   foregroundPalette = std::unique_ptr<ForegroundPaletteManager>{
       new ForegroundPaletteManager(palette_songPal, sizeof(palette_songPal))};
 
-  backgroundPalette =
-      BACKGROUND_loadPaletteFile(fs, song->backgroundPalettePath.c_str());
+  if (!usesVideo)
+    backgroundPalette =
+        BACKGROUND_loadPaletteFile(fs, song->backgroundPalettePath.c_str());
 }
 
 void SongScene::setUpBackground() {
 #ifdef SENV_DEBUG
   return;
 #endif
+  if (usesVideo)
+    return;
 
   bg = BACKGROUND_loadBackgroundFiles(fs, song->backgroundTilesPath.c_str(),
                                       song->backgroundMapPath.c_str(),
@@ -288,7 +294,9 @@ void SongScene::initializeBackground() {
   updateGameX();
 
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
-    SCENE_applyColorFilter(backgroundPalette.get(), GameState.mods.colorFilter);
+    if (!usesVideo)
+      SCENE_applyColorFilter(backgroundPalette.get(),
+                             GameState.mods.colorFilter);
     SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);
   }
 
@@ -308,7 +316,7 @@ bool SongScene::initializeGame(u16 keys) {
   BACKGROUND_enable(true, !ENV_DEBUG, false, false);
   SPRITE_enable();
   if (GameState.mods.autoMod)
-    backupPalettes([](u32 progress) {
+    backupPalettes(usesVideo, [](u32 progress) {
       EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0));
       EFFECT_render();
     });
@@ -576,42 +584,25 @@ void SongScene::animateWinnerLifeBar() {
                                  BOUNCE_STEPS[blinkFrame * isWinning1] / 2);
 }
 
-static bool videoinit = false;
-static bool renderr = true;
-void SongScene::drawVideo() {
-  // TODO: Test code
-  // TODO: ONLY CALL IF videoStore is active
-
-  // 30fps
-  if (!renderr) {
-    renderr = true;
+void SongScene::prepareVideo() {
+  if (!usesVideo)
     return;
-  } else {
-    renderr = false;
-  }
 
-  if (!videoinit) {
-    videoStore->load("/video.bin");  // TODO: GET FROM Song/SongFile
-    // TODO: ERROR CHECK
-    videoinit = true;
-  }
+  if (!videoStore->load(song->videoPath))
+    usesVideo = false;
+}
+
+void SongScene::drawVideo() {
+  if (!usesVideo)
+    return;
 
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
-  if (!videoStore->read((u8*)pal_bg_mem, 1)) {
+  if (!videoStore->endRead((u8*)pal_bg_mem, 1, 0)) {
+    videoStore->disable();
     unload();
-    engine->transitionIntoScene(
-        new TalkScene(
-            engine, fs,
-            "Error reading SD card :(\r\n\r\nDisable Flashcart mode.",
-            [this](u16 keys) {
-              bool isPressed = SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A)
-                                                          : KEY_CENTER(keys);
-              if (isPressed)
-                SCENE_softReset();
-            },
-            true),
-        new PixelTransitionEffect());
+    engine->transitionIntoScene(SEQUENCE_halt(VIDEO_READING_FAILED),
+                                new PixelTransitionEffect());
     return;
   }
   pal_bg_mem[254] = c1;
@@ -627,7 +618,7 @@ void SongScene::drawVideo() {
   background.usePriority(MAIN_BACKGROUND_PRIORITY);
   background.setMosaic(true);
   background.persistNow(
-      [](void* dst, u32 size) { videoStore->read((u8*)dst, size); });
+      [](void* dst, u32 size) { videoStore->endRead((u8*)dst, size, 0); });
 }
 
 void SongScene::processKeys(u16 keys) {
@@ -922,7 +913,7 @@ void SongScene::processModsBeat() {
       updateGameY();
 
       if (GameState.mods.colorFilter != previousColorFilter)
-        reapplyFilter(GameState.mods.colorFilter);
+        reapplyFilter(usesVideo, GameState.mods.colorFilter);
     }
   }
 
@@ -1206,19 +1197,19 @@ SongScene::~SongScene() {
   SONG_free(song);
 }
 
-inline void backupPalettes(void (*onProgress)(u32 progress)) {
+inline void backupPalettes(bool usesVideo, void (*onProgress)(u32 progress)) {
   for (u32 filter = 0; filter < TOTAL_COLOR_FILTERS; filter++) {
     auto colorFilter = static_cast<ColorFilter>(filter);
 
     COLOR* src = (COLOR*)MEM_PAL;
-    for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+    for (u32 i = usesVideo * PALETTE_MAX_SIZE; i < PALETTE_MAX_SIZE * 2; i++)
       paletteBackups[filter][i] = SCENE_transformColor(src[i], colorFilter);
     onProgress(filter);
   }
 }
 
-inline void reapplyFilter(ColorFilter colorFilter) {
+inline void reapplyFilter(bool usesVideo, ColorFilter colorFilter) {
   COLOR* dest = (COLOR*)MEM_PAL;
-  for (u32 i = 0; i < PALETTE_MAX_SIZE * 2; i++)
+  for (u32 i = usesVideo * PALETTE_MAX_SIZE; i < PALETTE_MAX_SIZE * 2; i++)
     dest[i] = paletteBackups[colorFilter][i];
 }

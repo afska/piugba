@@ -2,7 +2,6 @@
 
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "utils/flashcartio/flashcartio.h"
@@ -30,7 +29,6 @@ bool VideoStore::isActivating() {
 
 void VideoStore::enable() {
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, true);
-  SCENE_softReset();
 }
 
 void VideoStore::disable() {
@@ -64,8 +62,9 @@ bool VideoStore::load(std::string videoPath) {
   if (memory == NULL)
     return false;
 
+  frameLatch = false;
   cursor = 2;  // TODO: PARSE HEADER
-  if (f_open(&file, videoPath.c_str(), FA_READ) > 0)
+  if (f_open(&file, (VIDEOS_FOLDER_NAME + videoPath).c_str(), FA_READ) > 0)
     return false;
   file.cltbl = (DWORD*)memory;
   file.cltbl[0] = CLMT_ENTRIES;
@@ -77,7 +76,12 @@ bool VideoStore::load(std::string videoPath) {
   return true;
 }
 
-bool VideoStore::read(u8* buffer, u32 sectors) {
+bool VideoStore::preRead() {
+  // TODO: IMPLEMENT THIS, read(...), use frameCursor, isPreRead, frameLatch
+  return true;
+}
+
+bool VideoStore::endRead(u8* buffer, u32 sectors, u32 frameCursor) {
   u32 readBytes;
   bool success = f_read(&file, buffer, sectors * SECTOR, &readBytes) == 0;
   cursor += sectors;

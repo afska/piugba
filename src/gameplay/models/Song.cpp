@@ -106,8 +106,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     song->totalSize += sizeof(Event) * chart->eventCount;
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);
-    usedSpace[slot] =
-        (chart->rythmEventCount + chart->eventCount) * sizeof(Event);
+    usedSpace[slot] = song->totalSize;
     slot++;
   }
 
@@ -116,6 +115,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->backgroundTilesPath = file->getBackgroundTilesFile();
   song->backgroundPalettePath = file->getBackgroundPaletteFile();
   song->backgroundMapPath = file->getBackgroundMapFile();
+  song->videoPath = file->getVideoFile();
 
   return song;
 }

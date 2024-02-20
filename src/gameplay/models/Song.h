@@ -47,6 +47,7 @@ typedef struct {
   std::string backgroundTilesPath;
   std::string backgroundPalettePath;
   std::string backgroundMapPath;
+  std::string videoPath;
   u32 totalSize;
 } Song;
 
