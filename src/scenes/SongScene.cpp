@@ -596,29 +596,48 @@ void SongScene::drawVideo() {
   if (!usesVideo)
     return;
 
-  auto c1 = pal_bg_mem[254];
-  auto c2 = pal_bg_mem[255];
-  if (!videoStore->endRead((u8*)pal_bg_mem, 1, 0)) {
-    videoStore->disable();
-    unload();
-    engine->transitionIntoScene(SEQUENCE_halt(VIDEO_READING_FAILED),
-                                new PixelTransitionEffect());
-    return;
+  if (videoStore->isPreRead()) {
+    if (!videoStore->preRead()) {
+      throwVideoError();
+      return;
+    } else
+      videoStore->advanceFrame();
+  } else {
+    auto c1 = pal_bg_mem[254];
+    auto c2 = pal_bg_mem[255];
+    if (!videoStore->endRead((u8*)pal_bg_mem, 1)) {
+      throwVideoError();
+      return;
+    }
+    pal_bg_mem[254] = c1;
+    pal_bg_mem[255] = c2;
+
+    u32 backgroundTilesLength =
+        VIDEO_SIZE_TILES / VIDEO_SECTOR;  // TODO: This depends on frame size
+    u32 backgroundMapLength = VIDEO_SIZE_MAP / VIDEO_SECTOR;
+    Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
+                          backgroundMapLength);
+    background.useCharBlock(BANK_BACKGROUND_TILES);
+    background.useMapScreenBlock(BANK_BACKGROUND_MAP);
+    background.usePriority(MAIN_BACKGROUND_PRIORITY);
+    background.setMosaic(true);
+    bool success = true;
+    background.persistNow([&success](void* dst, u32 size) {
+      success = success && videoStore->endRead((u8*)dst, size);
+    });
+
+    if (success)
+      videoStore->advanceFrame();
+    else
+      throwVideoError();
   }
-  pal_bg_mem[254] = c1;
-  pal_bg_mem[255] = c2;
+}
 
-  u32 backgroundTilesLength = 76;  // TODO: This depends on frame size
-  u32 backgroundMapLength = 4;
-
-  Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
-                        backgroundMapLength);
-  background.useCharBlock(BANK_BACKGROUND_TILES);
-  background.useMapScreenBlock(BANK_BACKGROUND_MAP);
-  background.usePriority(MAIN_BACKGROUND_PRIORITY);
-  background.setMosaic(true);
-  background.persistNow(
-      [](void* dst, u32 size) { videoStore->endRead((u8*)dst, size, 0); });
+void SongScene::throwVideoError() {
+  videoStore->disable();
+  unload();
+  engine->transitionIntoScene(SEQUENCE_halt(VIDEO_READING_FAILED),
+                              new PixelTransitionEffect());
 }
 
 void SongScene::processKeys(u16 keys) {
