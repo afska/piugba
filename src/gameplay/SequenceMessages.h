@@ -80,4 +80,23 @@
   "   You are an absolute\r\n" \
   "  legend. Amazing work!"
 
+#define SAVE_FILE_FIXED_1 "Save file fixed!\r\n -> code: "
+#define SAVE_FILE_FIXED_2 "\r\n\r\n=> Press A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_CRASH                              \
+  "Video activation failed!\r\n -> it crashed :/\r\n\r\n=> Press " \
+  "A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_NO_FLASHCART                            \
+  "Video activation failed!\r\n -> no EverDrive found\r\n\r\n=> Press " \
+  "A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_MOUNT_FAILED                         \
+  "Video activation failed!\r\n -> FAT mount error\r\n\r\n=> Press " \
+  "A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_SUCCESS          \
+  "Video activated!\r\n\r\n\r\n=> Press " \
+  "A+B+START+SELECT"
+
 #endif  // SEQUENCE_MESSAGES_H

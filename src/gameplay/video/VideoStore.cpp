@@ -1,6 +1,7 @@
 #include "VideoStore.h"
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
+#include "utils/SceneUtils.h"
 
 extern "C" {
 #include "utils/flashcartio/flashcartio.h"
@@ -18,25 +19,36 @@ extern "C" {
 static FATFS fatfs;
 static FIL file;
 
+bool VideoStore::isEnabled() {
+  return SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+}
+
 bool VideoStore::isActivating() {
-  return SAVEFILE_read8(SRAM->adminSettings.isInitializingVideos);
+  return SAVEFILE_read8(SRAM->adminSettings.isActivatingVideos);
+}
+
+void VideoStore::enable() {
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, true);
+  SCENE_softReset();
+}
+
+void VideoStore::disable() {
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
+  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
 }
 
 VideoStore::State VideoStore::activate() {
   state = OFF;
-  SAVEFILE_write8(SRAM->adminSettings.isInitializingVideos, true);
+  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, true);
 
-  if (!flashcartio_activate()) {
+  if (!flashcartio_activate())
     state = NO_SUPPORTED_FLASHCART;
-    return state;
-  }
-
-  if (f_mount(&fatfs, "", 1) > 0) {
+  else if (f_mount(&fatfs, "", 1) > 0)
     state = MOUNT_ERROR;
-    return state;
-  }
+  else
+    state = ACTIVE;
 
-  state = ACTIVE;
+  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
   return state;
 }
 
@@ -48,12 +60,14 @@ bool VideoStore::load(std::string videoPath) {
     return false;
 
   cursor = 2;  // TODO: PARSE HEADER
-  f_open(&file, videoPath.c_str(), FA_READ);
+  if (f_open(&file, videoPath.c_str(), FA_READ) > 0)
+    return false;
   file.cltbl = (DWORD*)memory;
   file.cltbl[0] = CLMT_ENTRIES;
-  f_lseek(&file, CREATE_LINKMAP);
-  f_lseek(&file, cursor * SECTOR);
-  // TODO: ERROR CHECK
+  if (f_lseek(&file, CREATE_LINKMAP) > 0)
+    return false;
+  if (f_lseek(&file, cursor * SECTOR) > 0)
+    return false;
 
   return true;
 }

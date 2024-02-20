@@ -51,9 +51,6 @@ int main() {
   player_init();
   SEQUENCE_initialize(engine, fs);
 
-  // TODO: CHECK AND DISABLE IF IT FAILED
-  videoStore->activate();  // TODO: ONLY ACTIVATE IF SETTING IS ENABLED
-
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {

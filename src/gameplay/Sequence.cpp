@@ -8,6 +8,7 @@
 #include "Key.h"
 #include "SequenceMessages.h"
 #include "gameplay/Library.h"
+#include "gameplay/video/VideoStore.h"
 #include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
@@ -25,6 +26,12 @@ static void goTo(Scene* scene) {
   _engine->transitionIntoScene(scene, new PixelTransitionEffect());
 }
 
+Scene* hang(std::string error) {
+  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
+  scene->withButton = false;
+  return scene;
+}
+
 void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
                          const GBFS_FILE* fs) {
   _engine = engine;
@@ -34,20 +41,34 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 Scene* SEQUENCE_getInitialScene() {
   u32 fixes = SAVEFILE_initialize(_fs);
 
-  if (!SAVEFILE_isWorking(_fs)) {
-    auto scene = new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
-    scene->withButton = false;
-    return scene;
+  if (!SAVEFILE_isWorking(_fs))
+    return hang(SRAM_TEST_FAILED);
+
+  if (fixes > 0)
+    return hang(SAVE_FILE_FIXED_1 + std::to_string(fixes) + SAVE_FILE_FIXED_2);
+
+  if (videoStore->isActivating()) {
+    videoStore->disable();
+    return hang(VIDEO_ACTIVATION_FAILED_CRASH);
   }
 
-  if (fixes > 0) {
-    auto scene =
-        new TalkScene(_engine, _fs,
-                      "Save file fixed!\r\n -> code: " + std::to_string(fixes) +
-                          "\r\n\r\n=> Press A+B+START+SELECT",
-                      [](u16 keys) {});
-    scene->withButton = false;
-    return scene;
+  if (videoStore->isEnabled()) {
+    auto videoState = videoStore->activate();
+    switch (videoState) {
+      case VideoStore::NO_SUPPORTED_FLASHCART: {
+        videoStore->disable();
+        return hang(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
+        break;
+      }
+      case VideoStore::MOUNT_ERROR: {
+        videoStore->disable();
+        return hang(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
+        break;
+      }
+      case VideoStore::ACTIVE:
+      default: {
+      }
+    }
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);

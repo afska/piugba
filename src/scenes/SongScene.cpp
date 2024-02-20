@@ -596,9 +596,6 @@ void SongScene::drawVideo() {
     videoinit = true;
   }
 
-  u8 buff[512];
-  u8 resp;
-
   auto c1 = pal_bg_mem[254];
   auto c2 = pal_bg_mem[255];
   if (!videoStore->read((u8*)pal_bg_mem, 1)) {

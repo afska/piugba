@@ -20,7 +20,7 @@ typedef struct __attribute__((__packed__)) {
   NavigationStyleOpts navigationStyle;
   bool offsetEditingEnabled;
   bool backgroundVideos;
-  bool isInitializingVideos;
+  bool isActivatingVideos;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

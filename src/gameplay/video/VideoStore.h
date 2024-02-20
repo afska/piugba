@@ -8,6 +8,9 @@ class VideoStore {
  public:
   enum State { OFF, NO_SUPPORTED_FLASHCART, MOUNT_ERROR, ACTIVE };
 
+  bool isEnabled();
+  void enable();
+  void disable();
   bool isActivating();
   State activate();
   bool load(std::string videoPath);
