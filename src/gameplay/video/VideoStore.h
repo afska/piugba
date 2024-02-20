@@ -20,6 +20,7 @@ class VideoStore {
   bool isActivating();
   State activate();
   bool load(std::string videoPath);
+  void unload();
 
   bool preRead();
   bool endRead(u8* buffer, u32 sectors, u32 frameCursor);
@@ -28,6 +29,7 @@ class VideoStore {
   State state = OFF;
   u8* memory = NULL;
   u32 cursor = 0;
+  bool isPlaying = false;
   bool frameLatch = false;
 };
 

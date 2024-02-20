@@ -1184,6 +1184,7 @@ bool SongScene::setRate(int rate) {
 void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
+  videoStore->unload();
 
   if ($isMultiplayer)
     syncer->resetSongState();

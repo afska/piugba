@@ -62,18 +62,34 @@ bool VideoStore::load(std::string videoPath) {
   if (memory == NULL)
     return false;
 
-  frameLatch = false;
-  cursor = 2;  // TODO: PARSE HEADER
   if (f_open(&file, (VIDEOS_FOLDER_NAME + videoPath).c_str(), FA_READ) > 0)
     return false;
+
+  isPlaying = true;
+  frameLatch = false;
+  cursor = 2;  // TODO: PARSE HEADER
+
   file.cltbl = (DWORD*)memory;
   file.cltbl[0] = CLMT_ENTRIES;
-  if (f_lseek(&file, CREATE_LINKMAP) > 0)
+  if (f_lseek(&file, CREATE_LINKMAP) > 0) {
+    unload();
     return false;
-  if (f_lseek(&file, cursor * SECTOR) > 0)
+  }
+
+  if (f_lseek(&file, cursor * SECTOR) > 0) {
+    unload();
     return false;
+  }
 
   return true;
+}
+
+void VideoStore::unload() {
+  if (!isPlaying)
+    return;
+
+  f_close(&file);
+  isPlaying = false;
 }
 
 bool VideoStore::preRead() {
