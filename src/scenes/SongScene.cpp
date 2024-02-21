@@ -588,8 +588,11 @@ void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
 
+  BACKGROUND_enable(true, true, false, false);
+  SCENE_write("Loading...", 9);
   if (!videoStore->load(song->videoPath))
     usesVideo = false;
+  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
 }
 
 void SongScene::drawVideo() {
