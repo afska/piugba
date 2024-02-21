@@ -354,11 +354,12 @@ initialized:
   }
 
   player_play(song->audioPath.c_str());
-  if (deathMix != NULL)
+  if (deathMix != NULL) {
     player_seek(song->sampleStart);
-  if (usesVideo && !videoStore->seek(song->sampleStart)) {
-    throwVideoError();
-    return false;
+    if (usesVideo && !videoStore->seek(song->sampleStart)) {
+      throwVideoError();
+      return false;
+    }
   }
   processModsLoad();
 
