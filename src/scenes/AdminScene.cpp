@@ -3,7 +3,6 @@
 #include "assets.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/save/SaveFile.h"
-#include "gameplay/video/VideoStore.h"
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
@@ -13,7 +12,7 @@
 #define SUBMENU_SURE_OFFSETS 2
 #define SUBMENU_SURE_ARCADE 3
 #define SUBMENU_SURE_ALL 4
-#define OPTION_COUNT_DEFAULT 7
+#define OPTION_COUNT_DEFAULT 8
 #define OPTION_COUNT_OFFSETS 3
 #define OPTION_COUNT_RESET 3
 #define OPTION_COUNT_ARE_YOU_SURE 2
@@ -23,8 +22,9 @@
 #define OPTION_IO_BLINK 2
 #define OPTION_SRAM_BLINK 3
 #define OPTION_BACKGROUND_VIDEOS 4
-#define OPTION_CUSTOM_OFFSETS 5
-#define OPTION_RESET_SAVE_FILE 6
+#define OPTION_EWRAM_OVERCLOCK 5
+#define OPTION_CUSTOM_OFFSETS 6
+#define OPTION_RESET_SAVE_FILE 7
 
 AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
                        const GBFS_FILE* fs,
@@ -99,6 +99,7 @@ void AdminScene::printOptions() {
   u8 ioBlink = SAVEFILE_read8(SRAM->adminSettings.ioBlink);
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
   u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+  u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
@@ -116,7 +117,10 @@ void AdminScene::printOptions() {
                                : "OFF",
               9);
   printOption(OPTION_BACKGROUND_VIDEOS, "Background videos",
-              backgroundVideos == 1 ? "ON" : "OFF", 10);
+              backgroundVideos > 0 ? "ON" : "OFF", 10);
+  printOption(
+      OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
+      ewramOverclock == 1 ? (backgroundVideos > 0 ? "---" : "ON") : "OFF", 11);
 
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
@@ -238,17 +242,35 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       u8 backgroundVideos =
           SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
 
-      if (backgroundVideos > 0) {
-        SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
+      player_stop();
+      engine->transitionIntoScene(backgroundVideos > 0
+                                      ? SEQUENCE_deactivateVideo()
+                                      : SEQUENCE_activateVideo(true),
+                                  new PixelTransitionEffect());
+
+      return false;
+    }
+    case OPTION_EWRAM_OVERCLOCK: {
+      u8 backgroundVideos =
+          SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+      u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
+
+      if (ewramOverclock > 0) {
+        if (backgroundVideos > 0)
+          return true;
+
+        player_stop();
+        engine->transitionIntoScene(SEQUENCE_deactivateEWRAMOverclock(),
+                                    new PixelTransitionEffect());
+
+        return false;
       } else {
         player_stop();
-        videoStore->enable();
-        engine->transitionIntoScene(SEQUENCE_activateVideo(true),
+        engine->transitionIntoScene(SEQUENCE_activateEWRAMOverclock(),
                                     new PixelTransitionEffect());
+
         return false;
       }
-
-      return true;
     }
     case OPTION_CUSTOM_OFFSETS: {
       if (direction != 0)

@@ -89,7 +89,7 @@ class SongScene : public Scene {
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
-    usesVideo = videoStore->isEnabled() && videoStore->isActive();
+    usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
     localBaseIndex = isMultiplayer()

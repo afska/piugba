@@ -111,9 +111,27 @@
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
+#define VIDEO_DEACTIVATION_SUCCESS \
+  "Videos are now disabled!\r\n"   \
+  "\r\n"                           \
+  "\r\n"                           \
+  "=> Press A+B+START+SELECT"
+
 #define VIDEO_READING_FAILED     \
   "Error reading SD card :(\r\n" \
   "Videos are now disabled.\r\n" \
+  "\r\n"                         \
+  "=> Press A+B+START+SELECT"
+
+#define EWRAM_OVERCLOCK_ENABLED \
+  "EWRAM overclock ON!\r\n"     \
+  "\r\n"                        \
+  "\r\n"                        \
+  "=> Press A+B+START+SELECT"
+
+#define EWRAM_OVERCLOCK_DISABLED \
+  "EWRAM overclock OFF!\r\n"     \
+  "\r\n"                         \
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 

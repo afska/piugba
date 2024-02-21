@@ -11,6 +11,7 @@ enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_ON_HIT
 };
 enum NavigationStyleOpts : u8 { PIU, GBA };
+enum BackgroundVideosOpts { dOFF, dACTIVATING, dACTIVE };
 
 typedef struct __attribute__((__packed__)) {
   ArcadeChartsOpts arcadeCharts;
@@ -19,8 +20,8 @@ typedef struct __attribute__((__packed__)) {
   SRAMBlinkOpts sramBlink;
   NavigationStyleOpts navigationStyle;
   bool offsetEditingEnabled;
-  bool backgroundVideos;
-  bool isActivatingVideos;
+  BackgroundVideosOpts backgroundVideos;
+  bool ewramOverclock;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

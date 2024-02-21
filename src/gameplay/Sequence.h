@@ -19,6 +19,9 @@ Scene* SEQUENCE_getInitialScene();
 Scene* SEQUENCE_getCalibrateOrMainScene();
 Scene* SEQUENCE_getMainScene();
 Scene* SEQUENCE_activateVideo(bool showSuccessMessage);
+Scene* SEQUENCE_deactivateVideo();
+Scene* SEQUENCE_activateEWRAMOverclock();
+Scene* SEQUENCE_deactivateEWRAMOverclock();
 void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode);
 void SEQUENCE_goToMessageOrSong(Song* song,

@@ -1,5 +1,7 @@
 #include "SceneUtils.h"
 
+u32 temp = 0;
+
 COLOR SCENE_transformColor(COLOR color, ColorFilter filter) {
   u8 r = color & 0b11111;
   u8 g = (color & 0b1111100000) >> 5;

@@ -102,8 +102,9 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
   SAVEFILE_write8(SRAM->adminSettings.offsetEditingEnabled, false);
-  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
-  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                  BackgroundVideosOpts::dOFF);
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
 
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
@@ -188,11 +189,10 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 offsetEditingEnabled =
       SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
   u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
-  u8 isActivatingVideos =
-      SAVEFILE_read8(SRAM->adminSettings.isActivatingVideos);
+  u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
   if (arcadeCharts >= 2 || rumble >= 2 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
-      backgroundVideos >= 2 || isActivatingVideos >= 2) {
+      backgroundVideos >= 3 || ewramOverclock >= 2) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }

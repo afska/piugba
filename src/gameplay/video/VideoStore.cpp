@@ -25,21 +25,19 @@ bool VideoStore::isEnabled() {
 }
 
 bool VideoStore::isActivating() {
-  return SAVEFILE_read8(SRAM->adminSettings.isActivatingVideos);
-}
-
-void VideoStore::enable() {
-  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, true);
+  return static_cast<BackgroundVideosOpts>(SAVEFILE_read8(
+             SRAM->adminSettings.backgroundVideos)) == dACTIVATING;
 }
 
 void VideoStore::disable() {
-  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos, false);
-  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                  BackgroundVideosOpts::dOFF);
 }
 
 VideoStore::State VideoStore::activate() {
   state = OFF;
-  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, true);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                  BackgroundVideosOpts::dACTIVATING);
 
   if (!flashcartio_activate()) {
     disable();
@@ -52,7 +50,8 @@ VideoStore::State VideoStore::activate() {
   }
 
   state = ACTIVE;
-  SAVEFILE_write8(SRAM->adminSettings.isActivatingVideos, false);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                  BackgroundVideosOpts::dACTIVE);
   return state;
 }
 

@@ -42,6 +42,10 @@ Scene* SEQUENCE_getInitialScene() {
     return SEQUENCE_halt(SAVE_FILE_FIXED_1 + std::to_string(fixes) +
                          SAVE_FILE_FIXED_2);
 
+  bool ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
+  if (ewramOverclock)
+    SCENE_overclockEWRAM();
+
   if (videoStore->isActivating()) {
     videoStore->disable();
     return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_CRASH);
@@ -263,6 +267,7 @@ bool SEQUENCE_isMultiplayerSessionDead() {
 }
 
 Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
   auto videoState = videoStore->activate();
   switch (videoState) {
     case VideoStore::NO_SUPPORTED_FLASHCART: {
@@ -279,6 +284,21 @@ Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
                                 : NULL;
     }
   }
+}
+
+Scene* SEQUENCE_deactivateVideo() {
+  videoStore->disable();
+  return SEQUENCE_halt(VIDEO_DEACTIVATION_SUCCESS);
+}
+
+Scene* SEQUENCE_activateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_ENABLED);
+}
+
+Scene* SEQUENCE_deactivateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_DISABLED);
 }
 
 Scene* SEQUENCE_halt(std::string error) {

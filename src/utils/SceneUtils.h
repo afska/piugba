@@ -75,6 +75,25 @@ inline void SCENE_wait(u32 verticalLines) {
   };
 }
 
+__attribute__((section(".ewram"))) extern u32 temp;
+inline void SCENE_overclockEWRAM() {
+  // tries to overclock EWRAM
+  // but rollbacks is a GB Micro is detected to prevent crashes
+
+  *((u32*)0x4000800) = (0x0E << 24) | (1 << 5);
+
+  for (int index = 8; index >= 0; --index) {
+    vu32* volatileTemp = (vu32*)&temp;
+    u32 testValue = qran();
+    *volatileTemp = testValue;
+
+    if (*volatileTemp != testValue) {
+      *((u32*)0x4000800) = (0x0D << 24) | (1 << 5);
+      return;
+    }
+  }
+}
+
 inline void SCENE_softReset() {
   REG_IME = 0;
   player_stop();

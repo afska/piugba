@@ -21,7 +21,6 @@ class VideoStore {
 
   // TODO: seek(...) const u32 FRACUMUL_DIV_BY_33 = 130150524;
   bool isEnabled();
-  void enable();
   void disable();
   bool isActivating();
   State activate();
