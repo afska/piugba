@@ -3911,7 +3911,7 @@ FRESULT f_open (
 /* Read File                                                             */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_read (
+__attribute__((section(".iwram"), target("arm"), noinline)) FRESULT f_read (
 	FIL* fp, 	/* Open file to be read */
 	void* buff,	/* Data buffer to store the read data */
 	UINT btr,	/* Number of bytes to read */

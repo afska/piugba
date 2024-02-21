@@ -45,6 +45,8 @@ int main() {
   linkUniversal->deactivate();
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  *((u32*)0x4000800) = (0x0E << 24) | (1 << 5);  // (overclock EWRAM)
+  // TODO: Build an option for EWRAM OC
 
   validateBuild();
   setUpInterrupts();

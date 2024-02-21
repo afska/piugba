@@ -177,7 +177,9 @@ u8 bi_sd_dma_to_rom(void* dst, int slen) {
   return 0;
 }
 
-u8 bi_sd_dma_rd(void* dst, int slen) {
+__attribute__((section(".iwram"), target("arm"), noinline)) u8 bi_sd_dma_rd(
+    void* dst,
+    int slen) {
   if (((u32)dst & 0xE000000) == 0x8000000)
     return bi_sd_dma_to_rom(dst, slen);
 

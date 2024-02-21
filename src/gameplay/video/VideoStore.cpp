@@ -4,6 +4,7 @@
 
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
+#include "objects/ArrowInfo.h"
 
 extern "C" {
 #include "utils/flashcartio/flashcartio.h"
@@ -93,7 +94,7 @@ void VideoStore::unload() {
   isPlaying = false;
 }
 
-bool VideoStore::preRead() {
+CODE_IWRAM bool VideoStore::preRead() {
   u32 readBytes;
   bool success =
       f_read(&file, memory + SIZE_CLMT, SIZE_HALF_FRAME, &readBytes) == 0;
@@ -102,7 +103,7 @@ bool VideoStore::preRead() {
   return success;
 }
 
-bool VideoStore::endRead(u8* buffer, u32 sectors) {
+CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
   u32 readFromMemory = 0;
 
   while (sectors > 0) {

@@ -486,7 +486,7 @@ void SongScene::updateBlink() {
   }
 }
 
-void SongScene::updateFakeHeads() {
+CODE_IWRAM void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     auto direction = getDirectionFromIndex(i);
     u8 playerId = getPlayerIdFromIndex(i);

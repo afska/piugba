@@ -90,7 +90,7 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
     wait--;
 }
 
-void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
+CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
   bool isBorder = false;
 
   for (u32 i = 0; i < LIFEBAR_COLORS; i++) {
