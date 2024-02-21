@@ -113,8 +113,8 @@
 
 #define VIDEO_READING_FAILED     \
   "Error reading SD card :(\r\n" \
+  "Videos are now disabled.\r\n" \
   "\r\n"                         \
-  "\r\n"                         \
-  "Videos are now disabled."
+  "=> Press A+B+START+SELECT"
 
 #endif  // SEQUENCE_MESSAGES_H

@@ -635,6 +635,8 @@ void SongScene::drawVideo() {
 
 void SongScene::throwVideoError() {
   videoStore->disable();
+  if ($isMultiplayer)
+    syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
   unload();
   engine->transitionIntoScene(SEQUENCE_halt(VIDEO_READING_FAILED),
                               new PixelTransitionEffect());
