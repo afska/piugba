@@ -13,10 +13,10 @@
 #define SUBMENU_SURE_OFFSETS 2
 #define SUBMENU_SURE_ARCADE 3
 #define SUBMENU_SURE_ALL 4
-#define OPTIONS_COUNT_DEFAULT 7
-#define OPTIONS_COUNT_OFFSETS 3
-#define OPTIONS_COUNT_RESET 3
-#define OPTIONS_COUNT_ARE_YOU_SURE 2
+#define OPTION_COUNT_DEFAULT 7
+#define OPTION_COUNT_OFFSETS 3
+#define OPTION_COUNT_RESET 3
+#define OPTION_COUNT_ARE_YOU_SURE 2
 
 #define OPTION_NAVIGATION_STYLE 0
 #define OPTION_RUMBLE 1
@@ -37,11 +37,11 @@ u16 AdminScene::getCloseKey() {
   return KEY_START | KEY_SELECT;
 }
 
-u32 AdminScene::getOptionsCount() {
-  return submenu >= SUBMENU_SURE_OFFSETS ? OPTIONS_COUNT_ARE_YOU_SURE
-         : submenu == SUBMENU_RESET      ? OPTIONS_COUNT_RESET
-         : submenu == SUBMENU_OFFSETS    ? OPTIONS_COUNT_OFFSETS
-                                         : OPTIONS_COUNT_DEFAULT;
+u32 AdminScene::getOptionCount() {
+  return submenu >= SUBMENU_SURE_OFFSETS ? OPTION_COUNT_ARE_YOU_SURE
+         : submenu == SUBMENU_RESET      ? OPTION_COUNT_RESET
+         : submenu == SUBMENU_OFFSETS    ? OPTION_COUNT_OFFSETS
+                                         : OPTION_COUNT_DEFAULT;
 }
 
 void AdminScene::loadBackground(u32 id) {

@@ -6,7 +6,7 @@
 #include "utils/SceneUtils.h"
 
 #define TITLE "MODS"
-#define OPTIONS_COUNT 13
+#define OPTION_COUNT 13
 #define OPTION_MULTIPLIER 0
 #define OPTION_STAGE_BREAK 1
 #define OPTION_PIXELATE 2
@@ -36,8 +36,8 @@ u16 ModsScene::getCloseKey() {
   return KEY_START | KEY_SELECT;
 }
 
-u32 ModsScene::getOptionsCount() {
-  return OPTIONS_COUNT;
+u32 ModsScene::getOptionCount() {
+  return OPTION_COUNT;
 }
 
 void ModsScene::loadBackground(u32 id) {

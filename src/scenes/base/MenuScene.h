@@ -33,7 +33,7 @@ class MenuScene : public Scene {
   u32 selected = 0;
 
   virtual u16 getCloseKey() = 0;
-  virtual u32 getOptionsCount() = 0;
+  virtual u32 getOptionCount() = 0;
   virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;
   virtual bool selectOption(u32 selected, int direction) = 0;

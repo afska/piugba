@@ -193,7 +193,7 @@ void MenuScene::printMenu() {
 }
 
 void MenuScene::move(int direction) {
-  u32 maxOption = getOptionsCount() - 1;
+  u32 maxOption = getOptionCount() - 1;
   if (selected == maxOption && direction > 0)
     selected = 0;
   else if (selected == 0 && direction < 0)

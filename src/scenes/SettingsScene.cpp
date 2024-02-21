@@ -10,7 +10,7 @@
 #include "utils/SceneUtils.h"
 
 #define TITLE "SETTINGS"
-#define OPTIONS_COUNT 6
+#define OPTION_COUNT 6
 #define OPTION_AUDIO_LAG 0
 #define OPTION_GAME_POSITION 1
 #define OPTION_BACKGROUND_TYPE 2
@@ -26,8 +26,8 @@ u16 SettingsScene::getCloseKey() {
   return KEY_START | KEY_SELECT;
 }
 
-u32 SettingsScene::getOptionsCount() {
-  return OPTIONS_COUNT;
+u32 SettingsScene::getOptionCount() {
+  return OPTION_COUNT;
 }
 
 void SettingsScene::loadBackground(u32 id) {
