@@ -5,6 +5,7 @@
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
 #include "objects/ArrowInfo.h"
+#include "utils/MathUtils.h"
 
 extern "C" {
 #include "utils/flashcartio/flashcartio.h"
@@ -16,6 +17,8 @@ extern "C" {
 #define SIZE_HALF_FRAME \
   (VIDEO_SIZE_PALETTE + VIDEO_SIZE_MAP + VIDEO_SIZE_TILES / 2)
 #define REQUIRED_MEMORY (SIZE_CLMT + SIZE_HALF_FRAME)
+
+const u32 FRACUMUL_DIV_BY_33 = 130150524;
 
 static FATFS fatfs;
 static FIL file;
@@ -66,9 +69,6 @@ bool VideoStore::load(std::string videoPath) {
     return false;
 
   isPlaying = true;
-  frameLatch = false;
-  cursor = 2;  // TODO: PARSE HEADER
-  memoryCursor = 0;
 
   file.cltbl = (DWORD*)memory;
   file.cltbl[0] = CLMT_ENTRIES;
@@ -77,10 +77,8 @@ bool VideoStore::load(std::string videoPath) {
     return false;
   }
 
-  if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
-    unload();
+  if (!seek(0))
     return false;
-  }
 
   return true;
 }
@@ -91,6 +89,20 @@ void VideoStore::unload() {
 
   f_close(&file);
   isPlaying = false;
+}
+
+bool VideoStore::seek(u32 msecs) {
+  u32 frame = MATH_fracumul(msecs, FRACUMUL_DIV_BY_33);
+  frameLatch = false;
+  cursor = 2 /* TODO: PARSE HEADER */ + frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR;
+  memoryCursor = 0;
+
+  if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
+    unload();
+    return false;
+  }
+
+  return true;
 }
 
 CODE_IWRAM bool VideoStore::preRead() {

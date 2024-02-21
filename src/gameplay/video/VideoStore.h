@@ -10,6 +10,8 @@
 #define VIDEO_SIZE_MAP 2048
 #define VIDEO_SIZE_TILES 38912
 #define VIDEO_SECTOR 512
+#define VIDEO_SIZE_FRAME \
+  (VIDEO_SIZE_PALETTE + VIDEO_SIZE_MAP + VIDEO_SIZE_TILES)
 
 class VideoStore {
  public:
@@ -19,7 +21,6 @@ class VideoStore {
   bool isPreRead() { return !frameLatch; }
   void advanceFrame() { frameLatch = !frameLatch; }
 
-  // TODO: seek(...) const u32 FRACUMUL_DIV_BY_33 = 130150524;
   bool isEnabled();
   void disable();
   bool isActivating();
@@ -27,6 +28,7 @@ class VideoStore {
   bool load(std::string videoPath);
   void unload();
 
+  bool seek(u32 msecs);
   bool preRead();
   bool endRead(u8* buffer, u32 sectors);
 

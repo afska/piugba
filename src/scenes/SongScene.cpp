@@ -223,11 +223,6 @@ void SongScene::render() {
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 
-  drawVideo();
-
-  if (engine->isTransitioning())
-    return;
-
   if (init == 0) {
     initializeBackground();
     init++;
@@ -238,6 +233,8 @@ void SongScene::render() {
       return;
     init++;
   }
+
+  drawVideo();
 }
 
 void SongScene::setUpPalettes() {
@@ -359,6 +356,10 @@ initialized:
   player_play(song->audioPath.c_str());
   if (deathMix != NULL)
     player_seek(song->sampleStart);
+  if (usesVideo && !videoStore->seek(song->sampleStart)) {
+    throwVideoError();
+    return false;
+  }
   processModsLoad();
 
   if (IS_ARCADE(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
@@ -629,9 +630,11 @@ void SongScene::drawVideo() {
       success = success && videoStore->endRead((u8*)dst, size);
     });
 
-    if (success)
+    if (success) {
       videoStore->advanceFrame();
-    else
+      if (hasChangedRate && !videoStore->seek(PlaybackState.msecs))
+        throwVideoError();
+    } else
       throwVideoError();
   }
 }
@@ -1200,6 +1203,7 @@ bool SongScene::setRate(int rate) {
   if (this->rate == oldRate)
     return false;
 
+  hasChangedRate = true;
   player_setRate(rate);
   chartReaders[0]->syncRate(RATE_LEVELS, rate);
   return true;
