@@ -632,7 +632,8 @@ void SongScene::drawVideo() {
 
     if (success) {
       videoStore->advanceFrame();
-      if (hasChangedRate && !videoStore->seek(PlaybackState.msecs))
+      if ((hasChangedRate || $isMultiplayer) &&
+          !videoStore->seek(PlaybackState.msecs))
         throwVideoError();
     } else
       throwVideoError();
