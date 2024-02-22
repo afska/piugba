@@ -175,6 +175,7 @@ rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmak
 #### Build importer.exe
 
 ```bash
+cd scripts/importer
 npm install -g pkg
 pkg --targets node14-win --config package.json -o importer.exe --public --public-packages "*" --no-bytecode --compress GZip src/importer.js
 ```
