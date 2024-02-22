@@ -1,11 +1,12 @@
 const utils = require("../utils");
 const $path = require("path");
 const fs = require("fs");
-const fsAsync = require("fs/promises");
 const _ = require("lodash");
 
 const CONVERT_CONCURRENCY = 10;
 const EXTENSION = "vid.bin";
+const SIZE_PALETTE = 512;
+const SIZE_TILES = 38912;
 
 const COMMAND_RM_RF = (dirPath) => `rm -rf "${dirPath}"`;
 const COMMAND_MK_DIR = (dirPath) => `mkdir "${dirPath}"`;
@@ -26,15 +27,9 @@ const COMMAND_CONVERT = (
   // encode the frame for mode 0 rendering
   `grit "${output}" -gt -gB8 -mRtf -mLs -ftb && ` +
   // ensure the palette is 512 bytes
-  `truncate -s 512 "${baseFile}.pal.bin" &&` +
-  // ensure the tileset is... well...
-  `bash -c 'fileSize=$(stat -c "%s" "${baseFile}.img.bin"); ` +
-  `if [ $fileSize -gt 38912 ]; then ` + // if it's greater than 38912, truncate down
-  `newSize=38912; ` +
-  `else ` + // if it's smaller, pad to the next 512-byte boundary
-  `newSize=$(( ($fileSize + 511) / 512 * 512 )); ` +
-  `fi; ` +
-  `truncate -s $newSize "${baseFile}.img.bin"'`;
+  `truncate -s ${SIZE_PALETTE} "${baseFile}.pal.bin" &&` +
+  // ensure the tileset is 38912 bytes
+  `truncate -s ${SIZE_TILES} "${baseFile}.img.bin"`;
 const RESOLUTION = "240x160!";
 const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
@@ -75,17 +70,6 @@ module.exports = async (outputName, filePath, outputPath, transparentColor) => {
         ),
         { cwd: tempPath }
       );
-
-      // add tileset size (in sectors) to last byte of palette
-      const palFile = `${baseFile}.pal.bin`;
-      const imgFile = `${baseFile}.img.bin`;
-      const stats = await fsAsync.stat(imgFile);
-      const fileSize = stats.size;
-      const sectors = Math.floor(fileSize / 512);
-      const sectorByte = Buffer.from([sectors]);
-      const fd = await fsAsync.open(palFile, "r+");
-      await fd.write(sectorByte, 0, sectorByte.length, 511);
-      await fd.close();
 
       count++;
       console.log(
