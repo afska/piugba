@@ -52,7 +52,7 @@ module.exports = async (
     );
   } catch (originalException) {
     try {
-      console.log("  ⚠️  fixing background...");
+      console.log("  📢  fixing background...");
       await utils.run(COMMAND_FIX(filePath));
       const fixedFilePath = FIX_FILE_PATH(filePath);
       await utils.run(COMMAND_BUILD(fixedFilePath, tempFiles[1]));
@@ -86,7 +86,7 @@ module.exports = async (
       }
     }
   } catch (e) {
-    console.log("  ⚠️  map optimization failed");
+    console.log("  ⚠️  map optimization failed".yellow);
   }
 };
 

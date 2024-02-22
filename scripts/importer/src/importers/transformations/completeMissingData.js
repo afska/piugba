@@ -222,9 +222,9 @@ const checkLevelOrder = (charts) => {
     level(hard) > level(crazy)
   ) {
     console.error(
-      `  ⚠️  sorting difficulties... (${level(normal)}, ${level(hard)}, ${level(
+      `  📢  sorting difficulties... (${level(normal)}, ${level(hard)}, ${level(
         crazy
-      )})`.yellow
+      )})`
     );
 
     const charts = _.orderBy([normal, hard, crazy], level);

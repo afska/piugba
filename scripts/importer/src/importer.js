@@ -341,6 +341,9 @@ async function run() {
         "video",
         true
       );
+    } else if (GLOBAL_OPTIONS.videoenable) {
+      const name = $path.parse(audioFile).name;
+      console.log(`  ⚠️  video not found (${name})\n`.yellow);
     }
 
     if (GLOBAL_OPTIONS.fast) {

@@ -111,7 +111,7 @@ module.exports = class Chart {
 
     if (suspiciousMultiplayerArrows > MAX_SUSPICIOUS_MULTIPLAYER_ARROWS) {
       console.log(
-        `  ⚠️  converting suspicious double chart to multiplayer (${this.header.levelStr}) -> ${suspiciousMultiplayerArrows}`
+        `  📢  converting suspicious double chart to multiplayer (${this.header.levelStr}) -> ${suspiciousMultiplayerArrows}`
       );
       this._convertToMultiplayer();
     }
