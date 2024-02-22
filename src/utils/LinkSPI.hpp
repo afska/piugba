@@ -52,6 +52,7 @@
 #define LINK_SPI_BIT_IRQ 14
 #define LINK_SPI_BIT_GENERAL_PURPOSE_LOW 14
 #define LINK_SPI_BIT_GENERAL_PURPOSE_HIGH 15
+#define LINK_SPI_BIT_GENERAL_PURPOSE_SC 4  // [!]
 #define LINK_SPI_BIT_GENERAL_PURPOSE_SD 5  // [!]
 
 static volatile char LINK_SPI_VERSION[] = "LinkSPI/v6.0.3";
@@ -89,8 +90,9 @@ class LinkSPI {
   void deactivate() {
     isEnabled = false;
     setGeneralPurposeMode();
+    REG_RCNT |= 1 << LINK_SPI_BIT_GENERAL_PURPOSE_SC;  // [!]
     REG_RCNT |= 1 << LINK_SPI_BIT_GENERAL_PURPOSE_SD;  // [!]
-    REG_RCNT &= 0b1111111111111101;                    // [!]
+    REG_RCNT &= 0b1111111111111100;                    // [!]
 
     mode = SLAVE;
     waitMode = false;

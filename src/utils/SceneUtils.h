@@ -100,6 +100,7 @@ inline void SCENE_softReset() {
   player_unload();
 
   RUMBLE_stop();
+  IOPORT_scLow();
   IOPORT_sdLow();
   RegisterRamReset(RESET_VRAM | RESET_PALETTE | RESET_OAM | RESET_REG_SIO |
                    RESET_REG_SOUND | RESET_REG);

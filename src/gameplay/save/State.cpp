@@ -20,7 +20,8 @@ void STATE_setup(Song* song, Chart* chart) {
           : static_cast<BackgroundType>(
                 SAVEFILE_read8(SRAM->settings.backgroundType));
   GameState.settings.bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
-  GameState.adminSettings.rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
+  GameState.adminSettings.rumble =
+      static_cast<RumbleOpts>(SAVEFILE_read8(SRAM->adminSettings.rumble));
   GameState.adminSettings.ioBlink =
       static_cast<IOBlinkOpts>(SAVEFILE_read8(SRAM->adminSettings.ioBlink));
   GameState.adminSettings.sramBlink =

@@ -23,7 +23,21 @@ extern "C" {
 #include "utils/flashcartio/flashcartio.h"
 }
 
-#define DEBUG_OFFSET_CORRECTION 8
+#define START_RUMBLE()                                         \
+  do {                                                         \
+    if (GameState.adminSettings.rumble == RumbleOpts::rSC_PIN) \
+      IOPORT_scHigh();                                         \
+    else                                                       \
+      RUMBLE_start();                                          \
+  } while (0)
+
+#define STOP_RUMBLE() \
+  do {                \
+    RUMBLE_stop();    \
+    IOPORT_scLow();   \
+  } while (0)
+
+#define CUSTOM_OFFSET_CORRECTION 8
 
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
@@ -538,7 +552,8 @@ void SongScene::updateGameY() {
 }
 
 void SongScene::updateRumble() {
-  if (!GameState.adminSettings.rumble)
+  if (GameState.adminSettings.rumble == RumbleOpts::rNO_RUMBLE ||
+      ($isMultiplayer && GameState.adminSettings.rumble == RumbleOpts::rSC_PIN))
     return;
 
   auto localChartReader = chartReaders[localPlayerId].get();
@@ -548,7 +563,7 @@ void SongScene::updateRumble() {
           localChartReader->beatDurationFrames - RUMBLE_PRELOAD_FRAMES) {
     rumbleIdleFrame = 0;
     rumbleBeatFrame = 0;
-    RUMBLE_start();
+    START_RUMBLE();
   }
 
   if (rumbleBeatFrame > -1) {
@@ -556,15 +571,15 @@ void SongScene::updateRumble() {
 
     if (rumbleBeatFrame == RUMBLE_FRAMES) {
       rumbleBeatFrame = -1;
-      RUMBLE_stop();
+      STOP_RUMBLE();
     }
   } else {
     rumbleIdleFrame++;
 
     if (rumbleIdleFrame == 1)
-      RUMBLE_stop();
+      STOP_RUMBLE();
     else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
-      RUMBLE_start();
+      START_RUMBLE();
       rumbleIdleFrame = 0;
     }
   }
@@ -714,7 +729,7 @@ void SongScene::processKeys(u16 keys) {
 
   if (startInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReaders[0]->customOffset -= DEBUG_OFFSET_CORRECTION;
+      chartReaders[0]->customOffset -= CUSTOM_OFFSET_CORRECTION;
       if (chartReaders[0]->customOffset == 0)
         scores[0]->log(0);
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
@@ -730,7 +745,7 @@ void SongScene::processKeys(u16 keys) {
 
   if (selectInput->hasBeenPressedNow()) {
     if (KEY_CENTER(keys) && ENV_DEVELOPMENT) {
-      chartReaders[0]->customOffset += DEBUG_OFFSET_CORRECTION;
+      chartReaders[0]->customOffset += CUSTOM_OFFSET_CORRECTION;
       if (chartReaders[0]->customOffset == 0)
         scores[0]->log(0);
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
@@ -1065,7 +1080,7 @@ void SongScene::processTrainingModeMod() {
 
     judge->disable();
     player_seek(PlaybackState.msecs + 100);
-    RUMBLE_stop();
+    STOP_RUMBLE();
   } else
     judge->enable();
 
@@ -1217,8 +1232,10 @@ void SongScene::unload() {
 
   if ($isMultiplayer)
     syncer->resetSongState();
-  else
+  else {
+    IOPORT_scLow();
     IOPORT_sdLow();
+  }
 }
 
 SongScene::~SongScene() {

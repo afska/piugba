@@ -104,8 +104,12 @@ void AdminScene::printOptions() {
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
 
-  TextStream::instance().setText(" * Hardware integrations *", 6, -2);
-  printOption(OPTION_RUMBLE, "Rumble", rumble ? "ON" : "OFF", 7);
+  SCENE_write("* Hardware *", 6);
+  printOption(OPTION_RUMBLE, "Rumble",
+              rumble == 0   ? "OFF"
+              : rumble == 2 ? "I/O SC"
+                            : "CARTRIDGE",
+              7);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 1   ? "ON BEAT"
               : ioBlink == 2 ? "ON KEY"
@@ -224,7 +228,7 @@ bool AdminScene::selectOption(u32 selected, int direction) {
     }
     case OPTION_RUMBLE: {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.rumble);
-      SAVEFILE_write8(SRAM->adminSettings.rumble, change(value, 2, direction));
+      SAVEFILE_write8(SRAM->adminSettings.rumble, change(value, 3, direction));
       return true;
     }
     case OPTION_IO_BLINK: {
