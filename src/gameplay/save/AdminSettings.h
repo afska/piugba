@@ -4,7 +4,11 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 enum ArcadeChartsOpts : u8 { SINGLE, DOUBLE };
-enum RumbleOpts : u8 { rCARTRIDGE, rSC_PIN, rNO_RUMBLE };
+enum RumbleOpts : u8 {
+  rNO_RUMBLE,
+  rCARTRIDGE,
+  rSC_PIN,
+};
 enum IOBlinkOpts : u8 { IO_BLINK_OFF, IO_BLINK_ON_BEAT, IO_BLINK_ON_KEY };
 enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_OFF,
