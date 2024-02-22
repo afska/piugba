@@ -57,6 +57,7 @@ const u32 LOADING_INDICATORS_X[] = {
     193,
 };
 const u32 LOADING_INDICATORS_Y[] = {GBA_SCREEN_HEIGHT - 16 - 4, 18};
+const std::string SOUND_MOD_STR = SOUND_MOD;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -202,6 +203,16 @@ void SelectionScene::render() {
     SPRITE_enable();
     highlighter->initialize(selected);
     init++;
+  }
+
+  if (pendingAudio != "") {
+    player_play(pendingAudio.c_str());
+    pendingAudio = "";
+  }
+
+  if (pendingSeek > 0) {
+    player_seek(pendingSeek);
+    pendingSeek = 0;
   }
 }
 
@@ -646,8 +657,8 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   printNumericLevel(chart);
   loadSelectedSongGrade();
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
-    player_play(song->audioPath.c_str());
-    player_seek(song->sampleStart);
+    pendingAudio = song->audioPath;
+    pendingSeek = song->sampleStart;
   }
 
   SONG_free(song);
@@ -657,7 +668,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   highlighter->select(selected);
 
   if (initialLevel != InitialLevel::KEEP_LEVEL) {
-    player_play(SOUND_MOD);
+    pendingAudio = SOUND_MOD_STR;
     initialLevel = InitialLevel::KEEP_LEVEL;
   }
 }

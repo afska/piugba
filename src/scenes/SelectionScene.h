@@ -51,6 +51,8 @@ class SelectionScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
   InitialLevel initialLevel;
+  std::string pendingAudio = "";
+  u32 pendingSeek = 0;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
