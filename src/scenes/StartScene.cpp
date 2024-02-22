@@ -101,8 +101,6 @@ void StartScene::load() {
   setUpGameAnimation();
 
   TextStream::instance().scrollNow(0, TEXT_OFFSET_Y);
-
-  player_loop(SOUND_LOOP);
 }
 
 void StartScene::tick(u16 keys) {
@@ -135,6 +133,7 @@ void StartScene::render() {
     printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
+    player_loop(SOUND_LOOP);
     hasStarted = true;
   }
 }
