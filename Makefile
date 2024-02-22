@@ -230,7 +230,7 @@ import: check-env
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)
-	./scripts/package.sh
+	./scripts/package.sh "piugba.gba" "src/data/content/files.gbfs"
 
 start: check-env package
 	start "$(TARGET).out.gba"
