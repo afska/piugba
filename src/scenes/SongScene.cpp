@@ -1233,8 +1233,7 @@ void SongScene::unload() {
   if ($isMultiplayer)
     syncer->resetSongState();
   else {
-    IOPORT_scLow();
-    IOPORT_sdLow();
+    IOPORT_low();
   }
 }
 

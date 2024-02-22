@@ -19,4 +19,8 @@ inline void IOPORT_sdLow() {
   REG_RCNT &= 0b1111111111111101;
 }
 
+inline void IOPORT_low() {
+  REG_RCNT &= 0b1111111111111100;
+}
+
 #endif  // IOPORT_H
