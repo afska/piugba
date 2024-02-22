@@ -1,10 +1,6 @@
 const Channels = require("./parser/Channels");
 const importers = require("./importers");
 const {
-  VIDEO_LIB_METADATA_SIZE,
-  VIDEO_LIB_HEADER_SIZE,
-} = require("./importers/video");
-const {
   getOffsetCorrections,
 } = require("./importers/transformations/applyOffsets");
 const fs = require("fs");
@@ -31,7 +27,7 @@ const CONTENT_PATH = $path.resolve(DATA_PATH, "content");
 const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
 const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
 const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
-const DEFAULT_VIDEOLIB_PATH = $path.resolve(CONTENT_PATH, "videos.bin");
+const DEFAULT_VIDEOLIB_PATH = $path.resolve(CONTENT_PATH, "piuGBA_videos");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -93,7 +89,7 @@ const opt = getopt
     [
       "v",
       "videolib=VIDEOLIB",
-      "video library output file (defaults to: ../../../src/data/content/videos.bin)",
+      "video library output directory (defaults to: ../../../src/data/content/piuGBA_videos)",
     ],
     ["x", "videoenable=VIDEOENABLE", "enable video (one of: *false*|true)"],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
@@ -203,12 +199,7 @@ async function run() {
   } catch (e) {}
   await utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
   mkdirp.sync(GLOBAL_OPTIONS.output);
-  if (GLOBAL_OPTIONS.videoenable) {
-    await utils.run(`rm -f ${GLOBAL_OPTIONS.videolib}`);
-    await utils.run(
-      `dd if=/dev/zero bs=1 count=${VIDEO_LIB_METADATA_SIZE} > ${GLOBAL_OPTIONS.videolib}`
-    );
-  }
+  if (GLOBAL_OPTIONS.videoenable) mkdirp.sync(GLOBAL_OPTIONS.videolib);
 
   // ------------
   // AUDIO ASSETS
@@ -342,7 +333,7 @@ async function run() {
       await utils.report(
         () =>
           importers.video(
-            id,
+            outputName,
             videoFile,
             GLOBAL_OPTIONS.videolib,
             BLACK_DOT_FILE
@@ -535,27 +526,6 @@ BOUNCE=ALL;`
     name = _.padEnd(romName.substring(0, 12), 13, "\0");
   } catch (e) {}
   fs.writeFileSync($path.join(GLOBAL_OPTIONS.output, ROM_NAME_FILE), name);
-
-  // --------------
-  // VIDEO METADATA
-  // --------------
-
-  if (GLOBAL_OPTIONS.videoenable) {
-    const header = Buffer.alloc(VIDEO_LIB_HEADER_SIZE);
-
-    const magic = "!!piuGBA-video-library!!";
-    for (let i = 0; i < 24; i++) header.writeUInt8(magic.charCodeAt(i), i);
-    header.writeUInt32LE(
-      fs
-        .readFileSync($path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE))
-        .readUInt32LE(),
-      24
-    );
-
-    const lib = fs.openSync(GLOBAL_OPTIONS.videolib, "r+");
-    fs.writeSync(lib, header, 0, VIDEO_LIB_HEADER_SIZE);
-    fs.closeSync(lib);
-  }
 
   // ----------
   // SONG LISTS
