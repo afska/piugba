@@ -72,7 +72,9 @@ sources.forEach(({ name, path, variant }) => {
   const shortName = fs.readFileSync($path.join(path, ROMNAME)).toString();
   log(`⌚  IMPORTING: ${name} <<${shortName}>>`);
 
-  run(`make import SONGS="${path}" ${ARCADE_FLAG(variant)}`, { cwd: ROOT_DIR });
+  run(`make import SONGS="${path}" ${ARCADE_FLAG(variant)} FAST=true`, {
+    cwd: ROOT_DIR,
+  });
 
   ENVIRONMENTS.forEach((environment) => {
     fs.copyFileSync(
