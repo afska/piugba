@@ -8,6 +8,7 @@ const EXTENSION = "vid.bin";
 const SIZE_PALETTE = 512;
 const SIZE_TILES = 38912;
 
+const COMMAND_RM_F = (path) => `rm -f "${path}"`;
 const COMMAND_RM_RF = (dirPath) => `rm -rf "${dirPath}"`;
 const COMMAND_MK_DIR = (dirPath) => `mkdir "${dirPath}"`;
 const COMMAND_GET_FRAMES = (input, output) =>
@@ -79,6 +80,8 @@ module.exports = async (outputName, filePath, outputPath, transparentColor) => {
   }
 
   console.log(`  ⏳  Adding video frames ${outputName}...`);
+  const outputFilePath = $path.join(outputPath, `${outputName}.${EXTENSION}`);
+  await utils.run(COMMAND_RM_F(outputFilePath));
   for (let frame of frames) {
     const name = $path.parse(frame).name;
     const baseFile = $path.join(tempPath, name);
@@ -88,7 +91,7 @@ module.exports = async (outputName, filePath, outputPath, transparentColor) => {
         `${baseFile}.pal.bin`,
         `${baseFile}.map.bin`,
         `${baseFile}.img.bin`,
-        $path.join(outputPath, `${outputName}.${EXTENSION}`)
+        outputFilePath
       )
     );
   }
