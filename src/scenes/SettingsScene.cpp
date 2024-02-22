@@ -6,6 +6,7 @@
 #include "SelectionScene.h"
 #include "StartScene.h"
 #include "assets.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
@@ -127,8 +128,7 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
         return true;
 
       player_stop();
-      engine->transitionIntoScene(new AdminScene(engine, fs),
-                                  new PixelTransitionEffect());
+      SEQUENCE_goToAdminMenuHint();
       return false;
     }
     case OPTION_QUIT: {

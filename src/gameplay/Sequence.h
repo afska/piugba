@@ -22,13 +22,14 @@ Scene* SEQUENCE_activateVideo(bool showSuccessMessage);
 Scene* SEQUENCE_deactivateVideo();
 Scene* SEQUENCE_activateEWRAMOverclock();
 Scene* SEQUENCE_deactivateEWRAMOverclock();
+Scene* SEQUENCE_halt(std::string error);
 void SEQUENCE_goToGameMode(GameMode gameMode);
 void SEQUENCE_goToMultiplayerGameMode(GameMode gameMode);
 void SEQUENCE_goToMessageOrSong(Song* song,
                                 Chart* chart,
                                 Chart* remoteChart = NULL);
 void SEQUENCE_goToWinOrSelection(bool isLastSong);
+void SEQUENCE_goToAdminMenuHint();
 bool SEQUENCE_isMultiplayerSessionDead();
-Scene* SEQUENCE_halt(std::string error);
 
 #endif  // SEQUENCE_H

@@ -135,4 +135,9 @@
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
+#define OPEN_ADMIN_MENU_HINT    \
+  "To open the ADMIN MENU:\r\n" \
+  "- Go to the MAIN MENU\r\n"   \
+  "- Press L+R+START+SELECT"
+
 #endif  // SEQUENCE_MESSAGES_H

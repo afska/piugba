@@ -98,6 +98,47 @@ Scene* SEQUENCE_getMainScene() {
   return new StartScene(_engine, _fs);
 }
 
+Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
+  auto videoState = videoStore->activate();
+  switch (videoState) {
+    case VideoStore::NO_SUPPORTED_FLASHCART: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
+      break;
+    }
+    case VideoStore::MOUNT_ERROR: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
+      break;
+    }
+    case VideoStore::ACTIVE:
+    default: {
+      return showSuccessMessage ? SEQUENCE_halt(VIDEO_ACTIVATION_SUCCESS)
+                                : NULL;
+    }
+  }
+}
+
+Scene* SEQUENCE_deactivateVideo() {
+  videoStore->disable();
+  return SEQUENCE_halt(VIDEO_DEACTIVATION_SUCCESS);
+}
+
+Scene* SEQUENCE_activateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_ENABLED);
+}
+
+Scene* SEQUENCE_deactivateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_DISABLED);
+}
+
+Scene* SEQUENCE_halt(std::string error) {
+  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
+  scene->withButton = false;
+  return scene;
+}
+
 void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
@@ -262,47 +303,15 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
     goTo(new SelectionScene(_engine, _fs));
 }
 
+void SEQUENCE_goToAdminMenuHint() {
+  goTo(new TalkScene(_engine, _fs, OPEN_ADMIN_MENU_HINT, [](u16 keys) {
+    bool isPressed =
+        SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+    if (isPressed)
+      goTo(SEQUENCE_getMainScene());
+  }));
+}
+
 bool SEQUENCE_isMultiplayerSessionDead() {
   return isMultiplayer() && !syncer->isPlaying();
-}
-
-Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
-  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
-  auto videoState = videoStore->activate();
-  switch (videoState) {
-    case VideoStore::NO_SUPPORTED_FLASHCART: {
-      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
-      break;
-    }
-    case VideoStore::MOUNT_ERROR: {
-      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
-      break;
-    }
-    case VideoStore::ACTIVE:
-    default: {
-      return showSuccessMessage ? SEQUENCE_halt(VIDEO_ACTIVATION_SUCCESS)
-                                : NULL;
-    }
-  }
-}
-
-Scene* SEQUENCE_deactivateVideo() {
-  videoStore->disable();
-  return SEQUENCE_halt(VIDEO_DEACTIVATION_SUCCESS);
-}
-
-Scene* SEQUENCE_activateEWRAMOverclock() {
-  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
-  return SEQUENCE_halt(EWRAM_OVERCLOCK_ENABLED);
-}
-
-Scene* SEQUENCE_deactivateEWRAMOverclock() {
-  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
-  return SEQUENCE_halt(EWRAM_OVERCLOCK_DISABLED);
-}
-
-Scene* SEQUENCE_halt(std::string error) {
-  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
-  scene->withButton = false;
-  return scene;
 }
