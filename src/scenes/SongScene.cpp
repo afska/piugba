@@ -617,8 +617,7 @@ void SongScene::drawVideo() {
     pal_bg_mem[254] = c1;
     pal_bg_mem[255] = c2;
 
-    u32 backgroundTilesLength =
-        VIDEO_SIZE_TILES / VIDEO_SECTOR;  // TODO: This depends on frame size
+    u32 backgroundTilesLength = VIDEO_SIZE_TILES / VIDEO_SECTOR;
     u32 backgroundMapLength = VIDEO_SIZE_MAP / VIDEO_SECTOR;
     Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
                           backgroundMapLength);

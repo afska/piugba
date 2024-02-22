@@ -94,7 +94,7 @@ void VideoStore::unload() {
 bool VideoStore::seek(u32 msecs) {
   u32 frame = MATH_fracumul(msecs, FRACUMUL_DIV_BY_33);
   frameLatch = false;
-  cursor = 2 /* TODO: PARSE HEADER */ + frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR;
+  cursor = frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR;
   memoryCursor = 0;
 
   if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
@@ -123,8 +123,7 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
 
     if (availableMemory > 0) {
       u32 readableBytes = min(availableMemory, pendingBytes);
-      dma_cpy(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes / 4, 3,
-              DMA_CPY32);  // TODO: DMA3Copy?
+      dma3_cpy(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes);
       memoryCursor += readableBytes;
       readFromMemory += readableBytes;
       sectors -= readableBytes / VIDEO_SECTOR;
