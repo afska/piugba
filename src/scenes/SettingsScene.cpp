@@ -1,5 +1,6 @@
 #include "SettingsScene.h"
 
+#include "AdminScene.h"
 #include "CalibrateScene.h"
 #include "DeathMixScene.h"
 #include "SelectionScene.h"
@@ -10,13 +11,14 @@
 #include "utils/SceneUtils.h"
 
 #define TITLE "SETTINGS"
-#define OPTION_COUNT 6
+#define OPTION_COUNT 7
 #define OPTION_AUDIO_LAG 0
 #define OPTION_GAME_POSITION 1
 #define OPTION_BACKGROUND_TYPE 2
 #define OPTION_BGA_DARK_BLINK 3
 #define OPTION_RESET 4
-#define OPTION_QUIT 5
+#define OPTION_ADMIN 5
+#define OPTION_QUIT 6
 
 SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs)
@@ -70,6 +72,7 @@ void SettingsScene::printOptions() {
   }
 
   printOption(OPTION_RESET, "[RESET OPTIONS]", "", 13);
+  printOption(OPTION_ADMIN, "[QUIT TO ADMIN MENU]", "", 14);
   printOption(OPTION_QUIT, "[QUIT TO MAIN MENU]", "", 15);
 }
 
@@ -118,6 +121,15 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
 
       SAVEFILE_resetSettings();
       return true;
+    }
+    case OPTION_ADMIN: {
+      if (direction != 0)
+        return true;
+
+      player_stop();
+      engine->transitionIntoScene(new AdminScene(engine, fs),
+                                  new PixelTransitionEffect());
+      return false;
     }
     case OPTION_QUIT: {
       if (direction != 0)
