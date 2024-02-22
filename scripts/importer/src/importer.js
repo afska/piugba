@@ -127,6 +127,10 @@ GLOBAL_OPTIONS.fast = GLOBAL_OPTIONS.fast === "true";
 
 const AUDIO_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "audio");
 const IMAGES_PATH = $path.resolve(GLOBAL_OPTIONS.assets, "images");
+const UNIQUE_MAP_PATH = $path.resolve(
+  GLOBAL_OPTIONS.assets,
+  "_unique_map.map.bin"
+);
 const BLACK_DOT_FILE = $path.resolve(IMAGES_PATH, "black.bmp");
 
 if (!fs.existsSync(GLOBAL_OPTIONS.directory))
@@ -234,6 +238,11 @@ async function run() {
       imageFile
     );
   }
+  await utils.report(
+    async () =>
+      await utils.run(`cp ${UNIQUE_MAP_PATH} ${GLOBAL_OPTIONS.output}`),
+    "_unique_map.map.bin"
+  );
 
   // --------------
   // SONG DETECTION

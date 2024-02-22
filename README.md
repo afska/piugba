@@ -75,7 +75,7 @@ Charts are converted into a format created for this project called **PIUS**. The
     - [ImageMagick 7.0.10.3](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
     - [ffmpeg _(with libgsm)_ 3.3.3](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
       - To avoid using the `ffmpeg.exe` binary included with _ImageMagick_, add it to `PATH` first!
-      - Check this running `where ffmpeg`
+      - Check this by running `where ffmpeg`
     - [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
   - Other
     - [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`

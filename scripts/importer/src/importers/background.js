@@ -1,6 +1,5 @@
 const utils = require("../utils");
 const $path = require("path");
-const fs = require("fs");
 const _ = require("lodash");
 
 const COMMAND_BUILD = (input, output) =>
@@ -21,13 +20,10 @@ const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
 const EXTENSION_FIXED = "-fixed.png";
 const UNIQUE_MAP_MD5SUM = "f4eda4328302c379fd68847b35e9d8a8";
-const UNIQUE_MAP_NAME = "_unique_map.map.bin";
 
 const FIX_FILE_PATH = (path) =>
   (_.endsWith(path, ".png") ? path.slice(0, -4) : path) + EXTENSION_FIXED;
 //                  ^ not a mistake, it needs to be case-sensitive because of pngfix
-
-let hasOptimizedUniqueMap = false;
 
 module.exports = async (
   name,
@@ -78,13 +74,8 @@ module.exports = async (
         .toString()
         .replace("\\", "")
     );
-    if (mapMd5Sum === UNIQUE_MAP_MD5SUM) {
-      if (hasOptimizedUniqueMap) await utils.run(COMMAND_RM(mapFilePath));
-      else {
-        hasOptimizedUniqueMap = true;
-        fs.renameSync(mapFilePath, $path.join(outputPath, UNIQUE_MAP_NAME));
-      }
-    }
+    if (mapMd5Sum === UNIQUE_MAP_MD5SUM)
+      await utils.run(COMMAND_RM(mapFilePath));
   } catch (e) {
     console.log("  ⚠️  map optimization failed".yellow);
   }
