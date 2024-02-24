@@ -621,7 +621,7 @@ void SongScene::drawVideo() {
       throwVideoError();
       return;
     } else
-      videoStore->advanceFrame();
+      videoStore->advance();
   } else {
     auto c1 = pal_bg_mem[254];
     auto c2 = pal_bg_mem[255];
@@ -646,7 +646,7 @@ void SongScene::drawVideo() {
     });
 
     if (success) {
-      videoStore->advanceFrame();
+      videoStore->advance();
       if ((hasChangedRate || $isMultiplayer) &&
           !videoStore->seek(PlaybackState.msecs))
         throwVideoError();

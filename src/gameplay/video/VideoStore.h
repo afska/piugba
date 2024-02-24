@@ -19,7 +19,7 @@ class VideoStore {
 
   bool isActive() { return state == ACTIVE; }
   bool isPreRead() { return !frameLatch; }
-  void advanceFrame() { frameLatch = !frameLatch; }
+  void advance() { frameLatch = !frameLatch; }
 
   bool isEnabled();
   void disable();
