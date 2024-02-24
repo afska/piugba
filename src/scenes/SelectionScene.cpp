@@ -190,6 +190,9 @@ void SelectionScene::tick(u16 keys) {
 }
 
 void SelectionScene::render() {
+  if (engine->isTransitioning())
+    return;
+
   if (init == 0) {
     init++;
     return;

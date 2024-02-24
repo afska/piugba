@@ -84,6 +84,9 @@ void ControlsScene::tick(u16 keys) {
 }
 
 void ControlsScene::render() {
+  if (engine->isTransitioning())
+    return;
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();

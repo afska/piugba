@@ -157,6 +157,9 @@ void DanceGradeScene::tick(u16 keys) {
 }
 
 void DanceGradeScene::render() {
+  if (engine->isTransitioning())
+    return;
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();

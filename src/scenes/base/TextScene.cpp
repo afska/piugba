@@ -51,6 +51,9 @@ void TextScene::tick(u16 keys) {
 }
 
 void TextScene::render() {
+  if (engine->isTransitioning())
+    return;
+
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();

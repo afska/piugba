@@ -128,6 +128,9 @@ void StartScene::tick(u16 keys) {
 }
 
 void StartScene::render() {
+  if (engine->isTransitioning())
+    return;
+
   if (!hasStarted) {
     darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
     printTitle();
