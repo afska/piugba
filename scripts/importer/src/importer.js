@@ -53,7 +53,10 @@ const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
 
 const expectedMajor = (() => {
   try {
-    return fs.readFileSync(".nvmrc").toString().split(".")[0];
+    return fs
+      .readFileSync($path.join(__dirname, "../.nvmrc"))
+      .toString()
+      .split(".")[0];
   } catch (e) {
     return null;
   }
