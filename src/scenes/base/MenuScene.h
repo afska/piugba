@@ -54,9 +54,9 @@ class MenuScene : public Scene {
   std::unique_ptr<ArrowSelector> selectButton;
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
+  std::unique_ptr<ArrowSelector> changeLeftButton;
+  std::unique_ptr<ArrowSelector> changeRightButton;
   std::unique_ptr<InputHandler> closeInput;
-  std::unique_ptr<InputHandler> incrementInput;
-  std::unique_ptr<InputHandler> decrementInput;
   bool isUsingGBAStyle = false;
   bool blockButtons = false;
 

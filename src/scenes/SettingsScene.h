@@ -14,6 +14,9 @@ class SettingsScene : public MenuScene {
   void printOptions() override;
   bool selectOption(u32 selected, int direction) override;
   void close() override;
+
+ private:
+  bool quitToAdminMenu = false;
 };
 
 #endif  // SETTINGS_SCENE_H

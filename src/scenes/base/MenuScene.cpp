@@ -38,6 +38,8 @@ std::vector<Sprite*> MenuScene::sprites() {
   sprites.push_back(selectButton->get());
   sprites.push_back(backButton->get());
   sprites.push_back(nextButton->get());
+  sprites.push_back(changeLeftButton->get());
+  sprites.push_back(changeRightButton->get());
 
   return sprites;
 }
@@ -56,9 +58,11 @@ void MenuScene::load() {
       new ArrowSelector(ArrowDirection::DOWNLEFT, true, true, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::DOWNRIGHT, true, true, true, true)};
+  changeLeftButton = std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::UPLEFT, true, true, true, true)};
+  changeRightButton = std::unique_ptr<ArrowSelector>{
+      new ArrowSelector(ArrowDirection::UPRIGHT, true, true, true, true)};
   closeInput = std::unique_ptr<InputHandler>{new InputHandler()};
-  incrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
-  decrementInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
   selectButton->get()->moveTo(SELECT_BUTTON_X,
                               GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
@@ -66,6 +70,9 @@ void MenuScene::load() {
                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
   nextButton->get()->moveTo(GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN,
                             GBA_SCREEN_HEIGHT - ARROW_SIZE - BUTTON_MARGIN);
+  changeLeftButton->get()->moveTo(BUTTON_MARGIN, BUTTON_MARGIN);
+  changeRightButton->get()->moveTo(
+      GBA_SCREEN_WIDTH - ARROW_SIZE - BUTTON_MARGIN, BUTTON_MARGIN);
 
   printMenu();
 }
@@ -81,6 +88,8 @@ void MenuScene::tick(u16 keys) {
   selectButton->tick();
   backButton->tick();
   nextButton->tick();
+  changeLeftButton->tick();
+  changeRightButton->tick();
 }
 
 void MenuScene::render() {
@@ -151,17 +160,19 @@ void MenuScene::processKeys(u16 keys) {
     selectButton->setIsPressed(!blockButtons && (keys & KEY_A));
     backButton->setIsPressed(!blockButtons && (keys & KEY_UP));
     nextButton->setIsPressed(!blockButtons && (keys & KEY_DOWN));
+    changeLeftButton->setIsPressed(!blockButtons &&
+                                   (keys & (KEY_L | KEY_LEFT)));
+    changeRightButton->setIsPressed(!blockButtons &&
+                                    (keys & (KEY_R | KEY_RIGHT)));
     closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
-    incrementInput->setIsPressed(!blockButtons && (keys & (KEY_R | KEY_RIGHT)));
-    decrementInput->setIsPressed(!blockButtons && (keys & (KEY_L | KEY_LEFT)));
   } else {
     isUsingGBAStyle = false;
     selectButton->setIsPressed(!blockButtons && (KEY_CENTER(keys)));
     backButton->setIsPressed(!blockButtons && (KEY_DOWNLEFT(keys)));
     nextButton->setIsPressed(!blockButtons && (KEY_DOWNRIGHT(keys)));
+    changeLeftButton->setIsPressed(!blockButtons && (KEY_UPLEFT(keys)));
+    changeRightButton->setIsPressed(!blockButtons && (KEY_UPRIGHT(keys)));
     closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
-    incrementInput->setIsPressed(!blockButtons && (KEY_UPRIGHT(keys)));
-    decrementInput->setIsPressed(!blockButtons && (KEY_UPLEFT(keys)));
   }
 
   if (closeInput->hasBeenPressedNow())
@@ -175,10 +186,10 @@ void MenuScene::processSelection() {
   if (engine->isTransitioning())
     return;
 
-  if (incrementInput->hasBeenPressedNow())
+  if (changeRightButton->hasBeenPressedNow())
     select(1);
 
-  if (decrementInput->hasBeenPressedNow())
+  if (changeLeftButton->hasBeenPressedNow())
     select(-1);
 
   if (nextButton->hasBeenPressedNow())
