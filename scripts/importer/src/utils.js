@@ -13,6 +13,8 @@ const {
 } = require("console-table-printer/dist/src/internalTable/internal-table");
 const _ = require("lodash");
 
+const PROCESS_ASYNC_CONCURRENCY = 10;
+
 const processSync = async (content, action) => {
   const processedContent = [];
   for (let i = 0; i < content.length; i++) {
@@ -23,6 +25,13 @@ const processSync = async (content, action) => {
 };
 const processAsync = async (content, action) => {
   return await Promise.all(content.map((content, i) => action(content, i)));
+};
+const chunkedProcessAsync = async (content, action) => {
+  const results = [];
+  const chunkedContent = _.chunk(content, PROCESS_ASYNC_CONCURRENCY);
+  for (let chunk of chunkedContent)
+    results.push(await processAsync(chunk, action));
+  return results;
 };
 
 module.exports = {
@@ -44,7 +53,7 @@ module.exports = {
     }
   },
   async processContent(content, action) {
-    const func = GLOBAL_OPTIONS.fast ? processAsync : processSync;
+    const func = GLOBAL_OPTIONS.fast ? chunkedProcessAsync : processSync;
     return await func(content, action);
   },
   insistentChoice(text, options, textColor = "black") {

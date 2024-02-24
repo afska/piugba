@@ -1,9 +1,7 @@
 const utils = require("../utils");
 const $path = require("path");
 const fs = require("fs");
-const _ = require("lodash");
 
-const CONVERT_CONCURRENCY = 10;
 const EXTENSION = "vid.bin";
 const SIZE_PALETTE = 512;
 const SIZE_TILES = 38912;
@@ -39,20 +37,21 @@ const COMMAND_APPEND = (input1, input2, input3, output) =>
   `cat "${input1}" "${input2}" "${input3}" >> "${output}"`;
 
 module.exports = async (outputName, filePath, outputPath, transparentColor) => {
-  const tempPath = `${filePath}_tmp`;
+  let fastSetting = GLOBAL_OPTIONS.fast;
+  try {
+    GLOBAL_OPTIONS.fast = true;
+    const tempPath = `${filePath}_tmp`;
 
-  await utils.run(COMMAND_RM_RF(tempPath));
-  await utils.run(COMMAND_MK_DIR(tempPath));
+    await utils.run(COMMAND_RM_RF(tempPath));
+    await utils.run(COMMAND_MK_DIR(tempPath));
 
-  console.log(`  ⏳  Extracting video frames (${outputName})...`);
-  await utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
-  const frames = fs.readdirSync(tempPath).sort();
+    console.log(`  ⏳  Extracting video frames (${outputName})...`);
+    await utils.run(COMMAND_GET_FRAMES(filePath, tempPath));
+    const frames = fs.readdirSync(tempPath).sort();
 
-  console.log(`  ⏳  Converting video frames (${outputName})...`);
-  let count = 0;
-  const chunks = _.chunk(frames, CONVERT_CONCURRENCY);
-  for (let chunk of chunks) {
-    await utils.processContent(chunk, async (frame) => {
+    console.log(`  ⏳  Converting video frames (${outputName})...`);
+    let count = 0;
+    await utils.processContent(frames, async (frame) => {
       const name = $path.parse(frame).name;
       const baseFile = $path.join(tempPath, name);
       const frameFile = $path.join(tempPath, frame);
@@ -77,24 +76,26 @@ module.exports = async (outputName, filePath, outputPath, transparentColor) => {
         `  ⏳  (${outputName}) | converted ${count} / ${frames.length}`
       );
     });
+
+    console.log(`  ⏳  Adding video frames ${outputName}...`);
+    const outputFilePath = $path.join(outputPath, `${outputName}.${EXTENSION}`);
+    await utils.run(COMMAND_RM_F(outputFilePath));
+    for (let frame of frames) {
+      const name = $path.parse(frame).name;
+      const baseFile = $path.join(tempPath, name);
+
+      await utils.run(
+        COMMAND_APPEND(
+          `${baseFile}.pal.bin`,
+          `${baseFile}.map.bin`,
+          `${baseFile}.img.bin`,
+          outputFilePath
+        )
+      );
+    }
+
+    await utils.run(COMMAND_RM_RF(tempPath));
+  } finally {
+    GLOBAL_OPTIONS.fast = fastSetting;
   }
-
-  console.log(`  ⏳  Adding video frames ${outputName}...`);
-  const outputFilePath = $path.join(outputPath, `${outputName}.${EXTENSION}`);
-  await utils.run(COMMAND_RM_F(outputFilePath));
-  for (let frame of frames) {
-    const name = $path.parse(frame).name;
-    const baseFile = $path.join(tempPath, name);
-
-    await utils.run(
-      COMMAND_APPEND(
-        `${baseFile}.pal.bin`,
-        `${baseFile}.map.bin`,
-        `${baseFile}.img.bin`,
-        outputFilePath
-      )
-    );
-  }
-
-  await utils.run(COMMAND_RM_RF(tempPath));
 };
