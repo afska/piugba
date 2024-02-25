@@ -27,6 +27,7 @@
 #include "utils/PixelBlink.h"
 
 extern "C" {
+#include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
 
@@ -75,6 +76,12 @@ class SelectionScene : public Scene {
   bool confirmed = false;
   bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
+
+  inline void playNow(const char* name) {
+    player_play(name);
+    pendingAudio = "";
+    pendingSeek = 0;
+  }
 
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }

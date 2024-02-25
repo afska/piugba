@@ -14,11 +14,6 @@
 #include "gameplay/models/Song.h"
 #include "utils/SceneUtils.h"
 
-extern "C" {
-#include "player/player.h"
-#include "utils/gbfs/gbfs.h"
-}
-
 #define CONFIRM_MESSAGE "Press    to start!"
 
 const u32 ID_HIGHLIGHTER = 1;
@@ -488,7 +483,7 @@ void SelectionScene::processMenuEvents() {
 
   if (multiplier->hasBeenPressedNow()) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
-      player_play(SOUND_MOD);
+      playNow(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     } else if (!isCustomOffsetAdjustmentEnabled()) {
       player_stop();
@@ -525,7 +520,10 @@ bool SelectionScene::onCustomOffsetChange(ArrowDirection selector, int offset) {
       updateCustomOffset(offset);
       unconfirm();
       updateSelection();
-      player_play(SOUND_MOD);
+
+      pendingAudio = "";
+      pendingSeek = 0;
+      playNow(SOUND_MOD);
     }
 
     return true;
@@ -541,7 +539,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
 
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    player_play(SOUND_STEP);
+    playNow(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -591,7 +589,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     }
 
     unconfirm();
-    player_play(SOUND_STEP);
+    playNow(SOUND_STEP);
 
     syncNumericLevelChanged(newValue);
     setNumericLevel(newValue);
@@ -613,7 +611,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       bool withSound = arrowSelectors[selector]->hasBeenPressedNow();
 
       if (withSound)
-        player_play(SOUND_STEP);
+        playNow(SOUND_STEP);
 
       if (isMultiplayer() && syncer->isMaster())
         syncer->send(SYNC_EVENT_SONG_CORNER, withSound);
@@ -723,7 +721,7 @@ void SelectionScene::confirm() {
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
   }
 
-  player_play(SOUND_STEP);
+  playNow(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
   TextStream::instance().scrollNow(0, TEXT_SCROLL_CONFIRMED);
@@ -889,7 +887,7 @@ void SelectionScene::processMultiplayerUpdates() {
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
         unconfirm();
-        player_play(SOUND_STEP);
+        playNow(SOUND_STEP);
 
         if (syncer->isMaster()) {
           setNumericLevel(getSelectedNumericLevelIndex());
@@ -905,7 +903,7 @@ void SelectionScene::processMultiplayerUpdates() {
       case SYNC_EVENT_SONG_CORNER: {
         unconfirm();
         if (payload)
-          player_play(SOUND_STEP);
+          playNow(SOUND_STEP);
 
         syncer->clearTimeout();
         break;
