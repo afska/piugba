@@ -30,7 +30,7 @@ const chunkedProcessAsync = async (content, action) => {
   const results = [];
   const chunkedContent = _.chunk(content, PROCESS_ASYNC_CONCURRENCY);
   for (let chunk of chunkedContent)
-    results.push(await processAsync(chunk, action));
+    results.push(...(await processAsync(chunk, action)));
   return results;
 };
 
