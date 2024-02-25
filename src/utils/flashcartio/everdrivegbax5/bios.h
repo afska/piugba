@@ -48,7 +48,7 @@
 #define IRQ_GAME_PAK 0x2000
 
 bool bi_init_sd_only();
-u8 bi_init();
+void bi_init();
 void bi_lock_regs();
 void bi_unlock_regs();
 void bi_dma_mem(void* src, void* dst, int len);
