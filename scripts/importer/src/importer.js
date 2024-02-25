@@ -38,7 +38,7 @@ const FILE_AUDIO = /\.(mp3|flac|ogg)$/i;
 const FILE_BACKGROUND = /\.png$/i;
 const FILE_VIDEO = (name) =>
   new RegExp(
-    `${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(mp4|mpg|mpeg)$`,
+    `^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(mp4|mpg|mpeg)$`,
     "i"
   );
 const MODE_OPTIONS = ["auto", "manual"];
@@ -167,7 +167,10 @@ const GET_SONG_FILES = ({ path, name }) => {
   if (GLOBAL_OPTIONS.videoenable && audioFile != null) {
     const audioFileName = $path.parse(audioFile).name;
     videoFile =
-      _.find(videoFiles, (it) => FILE_VIDEO(audioFileName).test(it)) || null;
+      _.find(videoFiles, (it) => {
+        const videoFileFullName = $path.parse(it).base;
+        return FILE_VIDEO(audioFileName).test(videoFileFullName);
+      }) || null;
   }
 
   if (!metadataFile) throw new Error("Metadata (.SSC) file not found: " + name);
