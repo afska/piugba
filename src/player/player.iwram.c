@@ -39,7 +39,6 @@ static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
 static int rate = 0;
 static u32 rateCounter = 0;
 static u32 currentAudioChunk = 0;
-static bool isReady[2] = {false, false};
 
 /* GSM Player ----------------------------------------- */
 #define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)           \
@@ -77,7 +76,6 @@ static bool isReady[2] = {false, false};
       *dst_pos++ = cur_sample >> 8;                   \
       last_sample = cur_sample;                       \
     }                                                 \
-    isReady[cur_buffer] = true;                       \
   } else if (src_pos != NULL) {                       \
     ON_STOP;                                          \
   }
@@ -125,22 +123,18 @@ INLINE void init() {
   mute();
 }
 
-INLINE void stop() {
-  isReady[0] = false;
-  isReady[1] = false;
-  mute();
-
-  src_pos = NULL;
-  src_end = NULL;
-}
-
 INLINE void play(const char* name) {
-  stop();
-
   gsmInit(&decoder);
   src = gbfs_get_obj(fs, name, &src_len);
   src_pos = src;
   src_end = src + src_len;
+  mute();
+}
+
+INLINE void stop() {
+  src_pos = NULL;
+  src_end = NULL;
+  mute();
 }
 
 INLINE void disableAudioDMA() {
@@ -169,7 +163,10 @@ INLINE void disableAudioDMA() {
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 }
 
-INLINE void startAudioDMACopy(const void* src) {
+INLINE void dsoundSwitchBuffers(const void* src) {
+  // disable DMA2
+  disableAudioDMA();
+
   // setup DMA2 for audio
   REG_DMA2SAD = (intptr_t)src;
   REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
@@ -241,17 +238,12 @@ CODE_EWRAM bool player_isPlaying() {
 }
 
 void player_onVBlank() {
-  disableAudioDMA();
-  mute();
+  dsoundSwitchBuffers(double_buffers[cur_buffer]);
 
-  if (isReady[cur_buffer]) {
-    startAudioDMACopy(double_buffers[cur_buffer]);
-    if (src_pos != NULL)
-      unmute();
-  }
+  if (src_pos != NULL)
+    unmute();
 
   cur_buffer = !cur_buffer;
-  isReady[cur_buffer] = false;
 }
 
 CODE_EWRAM void updateRate() {
