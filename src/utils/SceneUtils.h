@@ -95,6 +95,7 @@ inline void SCENE_overclockEWRAM() {
 }
 
 inline void SCENE_softReset() {
+  VBlankIntrWait();
   REG_IME = 0;
   player_stop();
   player_unload();

@@ -607,9 +607,10 @@ void SongScene::prepareVideo() {
 
   BACKGROUND_enable(true, true, false, false);
   SCENE_write("Loading...", 9);
-  if (!videoStore->load(song->videoPath))
+  if (!videoStore->load(song->videoPath)) {
+    VBlankIntrWait();
     usesVideo = false;
-  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
+  }
 }
 
 void SongScene::drawVideo() {
