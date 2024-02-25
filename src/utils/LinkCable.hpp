@@ -58,6 +58,8 @@
 #define LINK_CABLE_BIT_START 7
 #define LINK_CABLE_BIT_MULTIPLAYER 13
 #define LINK_CABLE_BIT_IRQ 14
+#define LINK_CABLE_BIT_GENERAL_PURPOSE_SC 4  // [!]
+#define LINK_CABLE_BIT_GENERAL_PURPOSE_SD 5  // [!]
 #define LINK_CABLE_BIT_GENERAL_PURPOSE_LOW 14
 #define LINK_CABLE_BIT_GENERAL_PURPOSE_HIGH 15
 #define LINK_CABLE_BARRIER asm volatile("" ::: "memory")
@@ -384,6 +386,10 @@ class LinkCable {
   void stop() {
     stopTimer();
     setGeneralPurposeMode();
+
+    REG_RCNT |= 1 << LINK_CABLE_BIT_GENERAL_PURPOSE_SC;  // [!]
+    REG_RCNT |= 1 << LINK_CABLE_BIT_GENERAL_PURPOSE_SD;  // [!]
+    REG_RCNT &= 0b1111111111111100;                      // [!]
   }
 
   void start() {
@@ -436,17 +442,16 @@ class LinkCable {
   void setInterruptsOn() { setBitHigh(LINK_CABLE_BIT_IRQ); }
 
   void setMultiPlayMode() {
-    REG_RCNT = REG_RCNT & ~(1 << LINK_CABLE_BIT_GENERAL_PURPOSE_HIGH) &
-               0b1111111000000000;  // [!] CLEAR GPIO
+    REG_RCNT = REG_RCNT & ~(1 << LINK_CABLE_BIT_GENERAL_PURPOSE_HIGH);
     REG_SIOCNT = (1 << LINK_CABLE_BIT_MULTIPLAYER);
     REG_SIOCNT |= config.baudRate;
     REG_SIOMLT_SEND = 0;
   }
 
   void setGeneralPurposeMode() {
-    REG_RCNT = (REG_RCNT & ~(1 << LINK_CABLE_BIT_GENERAL_PURPOSE_LOW) &
-                0b1111111100000000) |
-               0b00110000;  // [!] SC/SD OUTPUT
+    // [!]
+    REG_RCNT = (1 << 15) | 0b110000;
+    REG_SIOCNT = 0;
   }
 
   bool isBitHigh(u8 bit) { return (REG_SIOCNT >> bit) & 1; }

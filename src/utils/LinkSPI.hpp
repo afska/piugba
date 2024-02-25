@@ -52,6 +52,8 @@
 #define LINK_SPI_BIT_IRQ 14
 #define LINK_SPI_BIT_GENERAL_PURPOSE_LOW 14
 #define LINK_SPI_BIT_GENERAL_PURPOSE_HIGH 15
+#define LINK_SPI_BIT_GENERAL_PURPOSE_SC 4  // [!]
+#define LINK_SPI_BIT_GENERAL_PURPOSE_SD 5  // [!]
 
 static volatile char LINK_SPI_VERSION[] = "LinkSPI/v6.0.3";
 
@@ -192,15 +194,14 @@ class LinkSPI {
   volatile bool isEnabled = false;
 
   void setNormalMode32Bit() {
-    REG_RCNT = REG_RCNT & ~(1 << LINK_SPI_BIT_GENERAL_PURPOSE_HIGH) &
-               0b1111111000000000;  // [!] CLEAR GPIO
+    REG_RCNT = REG_RCNT & ~(1 << LINK_SPI_BIT_GENERAL_PURPOSE_HIGH);
     REG_SIOCNT = 1 << LINK_SPI_BIT_LENGTH;
   }
 
   void setGeneralPurposeMode() {
-    REG_RCNT = (REG_RCNT & ~(1 << LINK_SPI_BIT_GENERAL_PURPOSE_LOW) &
-                0b1111111100000000) |
-               0b00110000;  // [!] SC/SD OUTPUT
+    // [!]
+    REG_RCNT = (1 << 15) | 0b110000;
+    REG_SIOCNT = 0;
   }
 
   void setData(u32 data) { REG_SIODATA32 = data; }
