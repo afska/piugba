@@ -11,7 +11,7 @@
 #include "utils/LinkUniversal.hpp"
 
 // Max invalid messages
-#define SYNC_TIMEOUT 30
+#define SYNC_TIMEOUT 50
 
 // Max frames without a serial IRQ
 #define SYNC_IRQ_TIMEOUT 8
