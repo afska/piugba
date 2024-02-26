@@ -11,6 +11,9 @@ extern "C" {
 #include "utils/flashcartio/flashcartio.h"
 }
 
+const u32 SONG_START_OFFSET = 561;
+// (this was calibrated manually)
+
 #define VIDEO_SECTOR 512
 #define CLMT_ENTRIES 1024
 #define SIZE_CLMT (CLMT_ENTRIES * sizeof(u32))
@@ -92,7 +95,7 @@ void VideoStore::unload() {
 }
 
 bool VideoStore::seek(u32 msecs) {
-  u32 frame = MATH_fracumul(msecs, FRACUMUL_DIV_BY_33);
+  u32 frame = MATH_fracumul(SONG_START_OFFSET + msecs, FRACUMUL_DIV_BY_33);
   frameLatch = false;
   cursor = frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR;
   memoryCursor = 0;
