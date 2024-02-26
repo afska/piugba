@@ -41,10 +41,11 @@ enum ColorFilter {
 };
 
 inline void SCENE_init() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
+  EFFECT_render();
   TextStream::instance().scrollNow(0, 0);
   TextStream::instance().setMosaic(false);
 }

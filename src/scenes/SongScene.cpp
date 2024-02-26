@@ -249,6 +249,7 @@ void SongScene::render() {
   }
 
   drawVideo();
+  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
 }
 
 void SongScene::setUpPalettes() {
@@ -324,7 +325,7 @@ bool SongScene::initializeGame(u16 keys) {
     EFFECT_setMosaic(MAX_MOSAIC);
     EFFECT_render();
   }
-  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
+  BACKGROUND_enable(true, !ENV_DEBUG && !usesVideo, false, false);
   SPRITE_enable();
   if (GameState.mods.autoMod)
     backupPalettes(usesVideo, [](u32 progress) {
@@ -605,14 +606,8 @@ void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
 
-  BACKGROUND_enable(true, true, false, false);
-  SCENE_write("Loading...", 9);
-  if (!videoStore->load(song->videoPath)) {
-    SCENE_write("          ", 9);
+  if (!videoStore->load(song->videoPath))
     usesVideo = false;
-  }
-  VBlankIntrWait();
-  BACKGROUND_enable(false, false, false, false);
 }
 
 void SongScene::drawVideo() {
