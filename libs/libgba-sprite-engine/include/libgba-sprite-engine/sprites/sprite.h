@@ -85,6 +85,7 @@ class Sprite {
   inline bool isAnimating() { return animating; };
 
   friend class SpriteManager;
+  OBJ_ATTR oam;
 
  protected:
   const void* data;
@@ -103,8 +104,6 @@ class Sprite {
   inline void setAttributesBasedOnSize(SpriteSize size);
 
  private:
-  OBJ_ATTR oam;
-
   inline void updateAnimation();
   inline void syncPosition();
 };

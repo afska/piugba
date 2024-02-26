@@ -7,7 +7,6 @@
 
 #include "BackgroundUtils.h"
 #include "EffectUtils.h"
-#include "FadeOutPixelTransitionEffect.h"
 #include "PixelTransitionEffect.h"
 #include "SpriteUtils.h"
 #include "utils/IOPort.h"

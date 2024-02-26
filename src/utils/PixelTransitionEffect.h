@@ -13,7 +13,7 @@ void SCENE_init();
 
 class PixelTransitionEffect : public SceneEffect {
  public:
-  PixelTransitionEffect(){};
+  PixelTransitionEffect(u32 target = TARGET_MOSAIC) { this->target = target; };
 
   void render() override {
     EFFECT_setMosaic(value);
@@ -24,10 +24,11 @@ class PixelTransitionEffect : public SceneEffect {
       SCENE_init();
   }
 
-  bool isDone() override { return value >= TARGET_MOSAIC; }
+  bool isDone() override { return value >= target; }
 
  private:
   u32 value = 0;
+  u32 target = TARGET_MOSAIC;
 };
 
 #endif  // PIXEL_TRANSITION_EFFECT_H

@@ -877,6 +877,7 @@ void SongScene::continueDeathMix() {
     deathMix->longNotes = scores[0]->getLongNotes();
 
     scores[0]->getCombo()->setValue(deathMix->getCurrentSongNumber());
+    scores[0]->getCombo()->disableMosaic();
     scores[0]->getCombo()->show();
     SPRITE_hide(scores[0]->getFeedback()->get());
     SPRITE_hide(scores[0]->getCombo()->getTitle()->get());
@@ -892,7 +893,7 @@ void SongScene::continueDeathMix() {
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
                       std::move(deathMix)),
-        new FadeOutPixelTransitionEffect());
+        new PixelTransitionEffect(MAX_MOSAIC));
   } else {
     auto evaluation = scores[localPlayerId]->evaluate();
     auto grade = evaluation->getGrade();

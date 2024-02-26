@@ -66,6 +66,12 @@ void Combo::relocate() {
         GameState.scorePositionY + DIGITS_POSITION_Y, i);
 }
 
+void Combo::disableMosaic() {
+  for (u32 i = 0; i < DIGITS; i++)
+    digits[i]->get()->oam.attr0 =
+        digits[i]->get()->oam.attr0 & 0b1110111111111111;
+}
+
 void Combo::tick() {
   title->tick();
 

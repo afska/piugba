@@ -17,6 +17,7 @@ class Combo {
   void show();
   void hide();
   void relocate();
+  void disableMosaic();
 
   void tick();
 
