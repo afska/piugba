@@ -14,6 +14,7 @@
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashcartio/flashcartio.h"
 }
 
 const u32 TEXT_MIDDLE_COL = 12;
@@ -94,6 +95,9 @@ inline void SCENE_overclockEWRAM() {
 }
 
 inline void SCENE_softReset() {
+  if (IS_FLASHCART_UNLOCKED)
+    flashcartio_lock();
+
   VBlankIntrWait();
   REG_IME = 0;
   player_stop();
