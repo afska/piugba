@@ -1083,6 +1083,7 @@ void SongScene::processTrainingModeMod() {
     startInput->setHandledFlag(true);
 
     judge->disable();
+    hasChangedRate = true;
     player_seek(PlaybackState.msecs + 100);
     STOP_RUMBLE();
   } else
