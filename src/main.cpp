@@ -104,9 +104,9 @@ void ISR_reset() {
 
 void validateBuild() {
   if (fs == NULL)
-    BSOD("GBFS file not found.");
+    BSOD("This is an empty ROM.              Import songs or use a pack!");
   if (!ENV_ARCADE && gbfs_get_obj(fs, "_snm_0_list.txt", NULL) == NULL)
-    BSOD("This is not an ARCADE build.");
+    BSOD("*Error* (Wrong build)             Mixed FULL rom + ARCADE lib!");
 }
 
 void setUpInterrupts() {

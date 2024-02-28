@@ -6,7 +6,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
 
 > <img alt="rlabs" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116227197-400d2380-a72a-11eb-9e7b-389aae76f13e.png" /> Created by [[r]labs](https://r-labs.io).
 
-> <img alt="discord" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116226650-a180c280-a729-11eb-8ae2-be2745d40481.png" /> Join our [Discord server](https://discord.com/invite/JE33cc2) to find pre-built ROMs and user-created content!
+> <img alt="discord" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116226650-a180c280-a729-11eb-8ae2-be2745d40481.png" /> Join our [Discord server](https://discord.com/invite/JE33cc2) to find **pre-built ROMs** and user-created content!
 
 ## Key features
 

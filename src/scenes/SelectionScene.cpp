@@ -102,7 +102,7 @@ std::vector<Sprite*> SelectionScene::sprites() {
 
 void SelectionScene::load() {
   if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
-    BSOD("This version is ARCADE only.");
+    BSOD("*Error* (Check your save file)       There's no campaign mode!");
 
   if (isMultiplayer()) {
     syncer->clearTimeout();
