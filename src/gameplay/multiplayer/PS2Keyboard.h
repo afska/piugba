@@ -80,6 +80,7 @@ class PS2Keyboard {
   u32 frameCounter = 0;
   bool isRelease = false;
   bool isSpecial = false;
+  u8 parityBit = 0;
 
   bool process(u8 scanCode) {
     switch (scanCode) {
@@ -170,6 +171,7 @@ class PS2Keyboard {
     frameCounter = 0;
     isRelease = false;
     isSpecial = false;
+    parityBit = 0;
   }
 };
 
