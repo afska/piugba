@@ -200,7 +200,7 @@ class LinkSPI {
 
   void setGeneralPurposeMode() {
     // [!]
-    REG_RCNT = (1 << 15) | 0b110000;
+    REG_RCNT = (1 << 15) | 0b100110000;
     REG_SIOCNT = 0;
   }
 

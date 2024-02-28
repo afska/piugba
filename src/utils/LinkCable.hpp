@@ -58,8 +58,6 @@
 #define LINK_CABLE_BIT_START 7
 #define LINK_CABLE_BIT_MULTIPLAYER 13
 #define LINK_CABLE_BIT_IRQ 14
-#define LINK_CABLE_BIT_GENERAL_PURPOSE_SC 4  // [!]
-#define LINK_CABLE_BIT_GENERAL_PURPOSE_SD 5  // [!]
 #define LINK_CABLE_BIT_GENERAL_PURPOSE_LOW 14
 #define LINK_CABLE_BIT_GENERAL_PURPOSE_HIGH 15
 #define LINK_CABLE_BARRIER asm volatile("" ::: "memory")
@@ -387,9 +385,9 @@ class LinkCable {
     stopTimer();
     setGeneralPurposeMode();
 
-    REG_RCNT |= 1 << LINK_CABLE_BIT_GENERAL_PURPOSE_SC;  // [!]
-    REG_RCNT |= 1 << LINK_CABLE_BIT_GENERAL_PURPOSE_SD;  // [!]
-    REG_RCNT &= 0b1111111111111100;                      // [!]
+    // [!]
+    REG_RCNT = (1 << 15) | 0b100110000;
+    REG_SIOCNT = 0;
   }
 
   void start() {
