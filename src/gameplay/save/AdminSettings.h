@@ -27,6 +27,7 @@ typedef struct __attribute__((__packed__)) {
   bool offsetEditingEnabled;
   BackgroundVideosOpts backgroundVideos;
   bool ewramOverclock;
+  bool ps2Input;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

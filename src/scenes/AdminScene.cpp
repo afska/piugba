@@ -12,7 +12,7 @@
 #define SUBMENU_SURE_OFFSETS 2
 #define SUBMENU_SURE_ARCADE 3
 #define SUBMENU_SURE_ALL 4
-#define OPTION_COUNT_DEFAULT 8
+#define OPTION_COUNT_DEFAULT 9
 #define OPTION_COUNT_OFFSETS 3
 #define OPTION_COUNT_RESET 3
 #define OPTION_COUNT_ARE_YOU_SURE 2
@@ -23,8 +23,9 @@
 #define OPTION_SRAM_BLINK 3
 #define OPTION_BACKGROUND_VIDEOS 4
 #define OPTION_EWRAM_OVERCLOCK 5
-#define OPTION_CUSTOM_OFFSETS 6
-#define OPTION_RESET_SAVE_FILE 7
+#define OPTION_PS2_INPUT 6
+#define OPTION_CUSTOM_OFFSETS 7
+#define OPTION_RESET_SAVE_FILE 8
 
 AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
                        const GBFS_FILE* fs,
@@ -100,31 +101,32 @@ void AdminScene::printOptions() {
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
   u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
   u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
+  u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
 
-  SCENE_write("* Hardware *", 6);
   printOption(OPTION_RUMBLE, "Rumble",
               rumble == 0   ? "OFF"
               : rumble == 2 ? "I/O SC"
                             : "CARTRIDGE",
-              7);
+              6);
   printOption(OPTION_IO_BLINK, "I/O SD blink",
               ioBlink == 1   ? "ON BEAT"
               : ioBlink == 2 ? "ON KEY"
                              : "OFF",
-              8);
+              7);
   printOption(OPTION_SRAM_BLINK, "SRAM LED blink",
               sramBlink == 1   ? "ON BEAT"
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
-              9);
+              8);
   printOption(OPTION_BACKGROUND_VIDEOS, "Background videos",
-              backgroundVideos > 0 ? "ON" : "OFF", 10);
+              backgroundVideos > 0 ? "ON" : "OFF", 9);
   printOption(
       OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
-      ewramOverclock == 1 ? (backgroundVideos > 0 ? "---" : "ON") : "OFF", 11);
+      ewramOverclock == 1 ? (backgroundVideos > 0 ? "---" : "ON") : "OFF", 10);
+  printOption(OPTION_PS2_INPUT, "PS/2 input", ps2Input == 1 ? "ON" : "OFF", 11);
 
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
@@ -275,6 +277,12 @@ bool AdminScene::selectOption(u32 selected, int direction) {
 
         return false;
       }
+    }
+    case OPTION_PS2_INPUT: {
+      u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+      SAVEFILE_write8(SRAM->adminSettings.ps2Input,
+                      change(value, 2, direction));
+      return true;
     }
     case OPTION_CUSTOM_OFFSETS: {
       if (direction != 0)
