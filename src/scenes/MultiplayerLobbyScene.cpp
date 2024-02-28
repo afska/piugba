@@ -47,7 +47,7 @@ void MultiplayerLobbyScene::tick(u16 keys) {
     return;
   }
 
-  if (keys & KEY_SEL(keys)) {
+  if (KEY_SEL(keys)) {
     goBack();
     return;
   }
