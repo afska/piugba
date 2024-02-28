@@ -1129,7 +1129,7 @@ void SongScene::processTrainingModeMod() {
 
   // Reset handled flag
   if (startInput->hasBeenPressedNow() && !aInput->getIsPressed() &&
-      !bInput->getIsPressed())
+      !bInput->getIsPressed() && !PS2_LEFT() && !PS2_RIGHT() && !PS2_UP())
     startInput->setHandledFlag(false);
 }
 
