@@ -27,6 +27,10 @@ inline bool KEY_DOWNRIGHT(u16 keys) {
   return (keys & KEY_A) || ps2Keyboard->arrows[4] || ps2Keyboard->arrows[9];
 }
 
+inline bool KEY_ANYKEY(u16 keys) {
+  return (keys & KEY_ANY) || ps2Keyboard->any();
+}
+
 // TODO: IMPROVE INTEGRATION
 
 inline bool KEY_ANY_PRESSED(u16 keys) {

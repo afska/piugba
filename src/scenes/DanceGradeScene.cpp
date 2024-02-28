@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
 #include "data/content/_compiled_sprites/palette_grade_multi.h"
+#include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
@@ -144,7 +145,7 @@ void DanceGradeScene::tick(u16 keys) {
       return;
   }
 
-  if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
+  if (PlaybackState.hasFinished && KEY_ANYKEY(keys)) {
     if (isMultiplayer()) {
       if (syncer->isMaster())
         syncer->send(SYNC_EVENT_CONFIRM_SONG_END, 0);

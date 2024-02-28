@@ -43,6 +43,13 @@ class PS2Keyboard {
   bool start1, start2, select1, select2, left, right, up;
   bool softReset = false;
 
+  bool any() {
+    for (u32 i = 0; i < 10; i++)
+      if (arrows[i])
+        return true;
+    return start1 || start2 || select1 || select2 || left || right || up;
+  }
+
   bool isActive() { return isEnabled; }
 
   void activate() {
