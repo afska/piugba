@@ -32,7 +32,6 @@ class MenuScene : public Scene {
   const GBFS_FILE* fs;
   u32 selected = 0;
 
-  virtual u16 getCloseKey() = 0;
   virtual u32 getOptionCount() = 0;
   virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;

@@ -326,17 +326,10 @@ void StartScene::printTitle() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  if (SAVEFILE_isUsingGBAStyle()) {
-    inputs[INPUT_LEFT]->setIsPressed(keys & KEY_LEFT);
-    inputs[INPUT_RIGHT]->setIsPressed(keys & KEY_RIGHT);
-    inputs[INPUT_SELECT]->setIsPressed(keys & KEY_A);
-    inputs[INPUT_SELECT_ALT]->setIsPressed(false);
-  } else {
-    inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-    inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-    inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
-    inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
-  }
+  inputs[INPUT_LEFT]->setIsPressed(KEY_GOLEFT(keys));
+  inputs[INPUT_RIGHT]->setIsPressed(KEY_GORIGHT(keys));
+  inputs[INPUT_SELECT]->setIsPressed(KEY_CONFIRM(keys));
+  inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CONFIRM(keys));
 }
 
 void StartScene::processSelectionChange() {

@@ -24,10 +24,6 @@ SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
 
-u16 SettingsScene::getCloseKey() {
-  return KEY_START | KEY_SELECT;
-}
-
 u32 SettingsScene::getOptionCount() {
   return OPTION_COUNT;
 }

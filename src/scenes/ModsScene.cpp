@@ -32,10 +32,6 @@ const char* COLOR_FILTERS[] = {
 ModsScene::ModsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
 
-u16 ModsScene::getCloseKey() {
-  return KEY_START | KEY_SELECT;
-}
-
 u32 ModsScene::getOptionCount() {
   return OPTION_COUNT;
 }

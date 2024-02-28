@@ -35,10 +35,6 @@ AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
   this->withSound = withSound;
 }
 
-u16 AdminScene::getCloseKey() {
-  return KEY_START | KEY_SELECT;
-}
-
 u32 AdminScene::getOptionCount() {
   return submenu >= SUBMENU_SURE_OFFSETS ? OPTION_COUNT_ARE_YOU_SURE
          : submenu == SUBMENU_RESET      ? OPTION_COUNT_RESET

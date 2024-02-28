@@ -35,10 +35,7 @@ void TalkScene::tick(u16 keys) {
   if (!KEY_ANYKEY(keys))
     canTriggerInput = true;
 
-  if (SAVEFILE_isUsingGBAStyle())
-    confirmButton->setIsPressed(keys & KEY_A);
-  else
-    confirmButton->setIsPressed(KEY_CENTER(keys));
+  confirmButton->setIsPressed(KEY_CONFIRM(keys));
   if (canTriggerInput && KEY_ANYKEY(keys) && (hasFinished() || skippable))
     onKeyPress(keys);
 

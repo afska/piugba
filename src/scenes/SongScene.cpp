@@ -198,7 +198,7 @@ void SongScene::tick(u16 keys) {
 
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
   if (isNewBeat) {
-    onNewBeat(KEY_ANY_PRESSED(keys));
+    onNewBeat(KEY_ANY_ARROW(keys));
     if (deathMix != NULL &&
         PlaybackState.msecs >= song->sampleStart + song->sampleLength) {
       finishAndGoToEvaluation();
@@ -714,7 +714,7 @@ void SongScene::processKeys(u16 keys) {
 
   if (!$isMultiplayer &&
       GameState.adminSettings.ioBlink == IOBlinkOpts::IO_BLINK_ON_KEY) {
-    if (KEY_ANY_PRESSED(keys))
+    if (KEY_ANY_ARROW(keys))
       IOPORT_sdHigh();
     else
       IOPORT_sdLow();

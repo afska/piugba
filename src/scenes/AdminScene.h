@@ -10,7 +10,6 @@ class AdminScene : public MenuScene {
              bool withSound = false);
 
  protected:
-  u16 getCloseKey() override;
   u32 getOptionCount() override;
   void loadBackground(u32 id) override;
   void printOptions() override;

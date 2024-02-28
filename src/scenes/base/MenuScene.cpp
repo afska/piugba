@@ -155,25 +155,13 @@ void MenuScene::processKeys(u16 keys) {
   if (blockButtons && !(keys & KEY_ANY))
     blockButtons = false;
 
-  if (SAVEFILE_isUsingGBAStyle()) {
-    isUsingGBAStyle = true;
-    selectButton->setIsPressed(!blockButtons && (keys & KEY_A));
-    backButton->setIsPressed(!blockButtons && (keys & KEY_UP));
-    nextButton->setIsPressed(!blockButtons && (keys & KEY_DOWN));
-    changeLeftButton->setIsPressed(!blockButtons &&
-                                   (keys & (KEY_L | KEY_LEFT)));
-    changeRightButton->setIsPressed(!blockButtons &&
-                                    (keys & (KEY_R | KEY_RIGHT)));
-    closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
-  } else {
-    isUsingGBAStyle = false;
-    selectButton->setIsPressed(!blockButtons && (KEY_CENTER(keys)));
-    backButton->setIsPressed(!blockButtons && (KEY_DOWNLEFT(keys)));
-    nextButton->setIsPressed(!blockButtons && (KEY_DOWNRIGHT(keys)));
-    changeLeftButton->setIsPressed(!blockButtons && (KEY_UPLEFT(keys)));
-    changeRightButton->setIsPressed(!blockButtons && (KEY_UPRIGHT(keys)));
-    closeInput->setIsPressed(!blockButtons && (keys & getCloseKey()));
-  }
+  isUsingGBAStyle = SAVEFILE_isUsingGBAStyle();
+  selectButton->setIsPressed(!blockButtons && KEY_CONFIRM(keys));
+  backButton->setIsPressed(!blockButtons && KEY_GOUP(keys));
+  nextButton->setIsPressed(!blockButtons && KEY_GODOWN(keys));
+  changeLeftButton->setIsPressed(!blockButtons && KEY_PREVLEFT(keys));
+  changeRightButton->setIsPressed(!blockButtons && KEY_NEXTRIGHT(keys));
+  closeInput->setIsPressed(!blockButtons && KEY_STASEL(keys));
 
   if (closeInput->hasBeenPressedNow())
     close();

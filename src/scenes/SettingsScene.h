@@ -8,7 +8,6 @@ class SettingsScene : public MenuScene {
   SettingsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
 
  protected:
-  u16 getCloseKey() override;
   u32 getOptionCount() override;
   void loadBackground(u32 id) override;
   void printOptions() override;
