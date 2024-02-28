@@ -31,6 +31,7 @@
 #define PS2_KEY_RIGHT 116         // Right
 #define PS2_KEY_UP 117            // Up
 #define PS2_KEY_ESC 118           // ESC
+#define PS2_KEY_SUPR 113          // Supr
 
 #define PS2_KEY_RELEASE 240
 #define PS2_KEY_SPECIAL 224
@@ -128,6 +129,13 @@ class PS2Keyboard {
       case PS2_KEY_ESC: {
         softReset = true;
         return true;
+      }
+      case PS2_KEY_SUPR: {
+        if (isSpecial) {
+          softReset = true;
+          return true;
+        } else
+          break;
       }
       case PS2_KEY_RELEASE: {
         isRelease = true;

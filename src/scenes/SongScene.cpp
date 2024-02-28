@@ -673,11 +673,25 @@ void SongScene::processKeys(u16 keys) {
     arrowHolders[localBaseIndex + 1]->setIsPressed(false);
   if (KEY_CENTER(keys) && centerKeys != lastCenterKeys)
     arrowHolders[localBaseIndex + 2]->setIsPressed(false);
-  arrowHolders[localBaseIndex + 0]->setIsPressed(KEY_DOWNLEFT(keys));
-  arrowHolders[localBaseIndex + 1]->setIsPressed(KEY_UPLEFT(keys));
-  arrowHolders[localBaseIndex + 2]->setIsPressed(KEY_CENTER(keys));
-  arrowHolders[localBaseIndex + 3]->setIsPressed(KEY_UPRIGHT(keys));
-  arrowHolders[localBaseIndex + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
+
+  if ($isSinglePlayerDouble && $ps2Input) {
+    arrowHolders[localBaseIndex + 0]->setIsPressed(GBA_DOWNLEFT(keys) ||
+                                                   PS2_P1_DOWNLEFT());
+    arrowHolders[localBaseIndex + 1]->setIsPressed(GBA_UPLEFT(keys) ||
+                                                   PS2_P1_UPLEFT());
+    arrowHolders[localBaseIndex + 2]->setIsPressed(GBA_CENTER(keys) ||
+                                                   PS2_P1_CENTER());
+    arrowHolders[localBaseIndex + 3]->setIsPressed(GBA_UPRIGHT(keys) ||
+                                                   PS2_P1_UPRIGHT());
+    arrowHolders[localBaseIndex + 4]->setIsPressed(GBA_DOWNRIGHT(keys) ||
+                                                   PS2_P1_DOWNRIGHT());
+  } else {
+    arrowHolders[localBaseIndex + 0]->setIsPressed(KEY_DOWNLEFT(keys));
+    arrowHolders[localBaseIndex + 1]->setIsPressed(KEY_UPLEFT(keys));
+    arrowHolders[localBaseIndex + 2]->setIsPressed(KEY_CENTER(keys));
+    arrowHolders[localBaseIndex + 3]->setIsPressed(KEY_UPRIGHT(keys));
+    arrowHolders[localBaseIndex + 4]->setIsPressed(KEY_DOWNRIGHT(keys));
+  }
 
   if ($isSinglePlayerDouble) {
     if (KEY_DOWNLEFT(keys) && downLeftKeys != lastDownLeftKeys)
@@ -686,11 +700,20 @@ void SongScene::processKeys(u16 keys) {
       arrowHolders[localBaseIndex + 6]->setIsPressed(false);
     if (KEY_CENTER(keys) && centerKeys != lastCenterKeys)
       arrowHolders[localBaseIndex + 7]->setIsPressed(false);
-    arrowHolders[localBaseIndex + 5]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowHolders[localBaseIndex + 6]->setIsPressed(KEY_UPLEFT(keys));
-    arrowHolders[localBaseIndex + 7]->setIsPressed(KEY_CENTER(keys));
-    arrowHolders[localBaseIndex + 8]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowHolders[localBaseIndex + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
+
+    if ($ps2Input) {
+      arrowHolders[localBaseIndex + 5]->setIsPressed(PS2_P2_DOWNLEFT());
+      arrowHolders[localBaseIndex + 6]->setIsPressed(PS2_P2_UPLEFT());
+      arrowHolders[localBaseIndex + 7]->setIsPressed(PS2_P2_CENTER());
+      arrowHolders[localBaseIndex + 8]->setIsPressed(PS2_P2_UPRIGHT());
+      arrowHolders[localBaseIndex + 9]->setIsPressed(PS2_P2_DOWNRIGHT());
+    } else {
+      arrowHolders[localBaseIndex + 5]->setIsPressed(KEY_DOWNLEFT(keys));
+      arrowHolders[localBaseIndex + 6]->setIsPressed(KEY_UPLEFT(keys));
+      arrowHolders[localBaseIndex + 7]->setIsPressed(KEY_CENTER(keys));
+      arrowHolders[localBaseIndex + 8]->setIsPressed(KEY_UPRIGHT(keys));
+      arrowHolders[localBaseIndex + 9]->setIsPressed(KEY_DOWNRIGHT(keys));
+    }
   }
 
   lastDownLeftKeys = downLeftKeys;

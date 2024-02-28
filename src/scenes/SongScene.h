@@ -64,7 +64,7 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> bInput;
   std::unique_ptr<DeathMix> deathMix;
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
-      $isVsDifferentLevels, usesVideo;
+      $isVsDifferentLevels, $ps2Input, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
   int rate = 0;
@@ -90,6 +90,7 @@ class SongScene : public Scene {
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
+    $ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
     usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
