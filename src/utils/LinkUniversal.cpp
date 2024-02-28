@@ -1,10 +1,14 @@
 #include "LinkUniversal.hpp"
+#include "gameplay/multiplayer/PS2Keyboard.h"  // [!]
 
 #pragma GCC push_options
 #pragma GCC optimize("Os")
 
 LINK_WIRELESS_CODE_IWRAM void LINK_UNIVERSAL_ISR_SERIAL() {
-  linkUniversal->_onSerial();
+  if (linkUniversal->isActive())
+    linkUniversal->_onSerial();
+  else if (ps2Keyboard->isActive())
+    ps2Keyboard->_onSerial();
 }
 
 LINK_WIRELESS_CODE_IWRAM void LINK_UNIVERSAL_ISR_TIMER() {

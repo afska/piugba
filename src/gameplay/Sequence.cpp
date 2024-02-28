@@ -9,6 +9,7 @@
 #include "SequenceMessages.h"
 #include "gameplay/Library.h"
 #include "gameplay/video/VideoStore.h"
+#include "multiplayer/PS2Keyboard.h"
 #include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
@@ -45,6 +46,10 @@ Scene* SEQUENCE_getInitialScene() {
   bool ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
   if (ewramOverclock)
     SCENE_overclockEWRAM();
+
+  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  if (ps2Input)
+    ps2Keyboard->activate();
 
   if (videoStore->isActivating()) {
     videoStore->disable();

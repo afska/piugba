@@ -2,6 +2,7 @@
 
 #include "assets.h"
 #include "gameplay/Sequence.h"
+#include "gameplay/multiplayer/PS2Keyboard.h"
 #include "gameplay/save/SaveFile.h"
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
@@ -282,6 +283,11 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
       SAVEFILE_write8(SRAM->adminSettings.ps2Input,
                       change(value, 2, direction));
+      if (value)
+        ps2Keyboard->activate();
+      else
+        ps2Keyboard->deactivate();
+
       return true;
     }
     case OPTION_CUSTOM_OFFSETS: {

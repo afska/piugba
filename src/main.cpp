@@ -4,6 +4,7 @@
 #include "../libs/interrupt.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
+#include "gameplay/multiplayer/PS2Keyboard.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/video/VideoStore.h"
 #include "player/PlaybackState.h"
@@ -21,6 +22,7 @@ void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
 VideoStore* videoStore = new VideoStore();
+PS2Keyboard* ps2Keyboard = new PS2Keyboard();
 LinkUniversal* linkUniversal =
     new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
                       "piuGBA",
@@ -56,6 +58,8 @@ int main() {
       []() {
         // (onUpdate)
         LINK_UNIVERSAL_ISR_VBLANK();
+        PS2_ISR_VBLANK();
+
         syncer->update();
         engine->update();
 
