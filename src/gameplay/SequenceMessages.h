@@ -68,6 +68,12 @@
   "2) Grab a Link Cable.\r\n" \
   "3) Use Multi COOP."
 
+#define DOUBLE_PS2_INPUT_HINT  \
+  "PS/2 input is enabled!\r\n" \
+  "- Connect a keyboard\r\n"   \
+  "- P1: Use ZQSEC\r\n"        \
+  "- P2: Use Numpad 17593"
+
 #define WIN                      \
   "  *YOU'VE WON THE GAME*\r\n"  \
   "\r\n"                         \

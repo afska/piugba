@@ -282,6 +282,19 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     return;
   }
 
+  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() && ps2Input) {
+    goTo(new TalkScene(
+        _engine, _fs, DOUBLE_PS2_INPUT_HINT,
+        [song, chart](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
+    return;
+  }
+
   goTo(new SongScene(_engine, _fs, song, chart, remoteChart));
 }
 
