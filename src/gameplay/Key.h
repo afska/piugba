@@ -73,6 +73,18 @@ inline bool PS2_SELECT() {
   return ps2Keyboard->select1 || ps2Keyboard->select2;
 }
 
+inline bool PS2_LEFT() {
+  return ps2Keyboard->left;
+}
+
+inline bool PS2_RIGHT() {
+  return ps2Keyboard->right;
+}
+
+inline bool PS2_UP() {
+  return ps2Keyboard->up;
+}
+
 inline bool GBA_DOWNLEFT(u16 keys) {
   return (keys & KEY_DOWN) | (keys & KEY_LEFT);
 }

@@ -81,13 +81,13 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 
   if (!isAudioLagCalibrated) {
     auto scene = new TalkScene(_engine, _fs, CALIBRATE_AUDIO_LAG, [](u16 keys) {
-      if (keys & KEY_START) {
+      if (KEY_STA(keys)) {
         SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 1);
         goTo(new CalibrateScene(_engine, _fs,
                                 []() { goTo(SEQUENCE_getMainScene()); }));
       }
 
-      if (keys & KEY_SELECT) {
+      if (KEY_SEL(keys)) {
         SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 1);
         goTo(SEQUENCE_getMainScene());
       }
@@ -196,7 +196,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   if (IS_MULTIPLAYER(gameMode)) {
     u16 keys = ~REG_KEYS & KEY_ANY;
-    linkUniversal->setProtocol((keys & KEY_START)
+    linkUniversal->setProtocol(KEY_STA(keys)
                                    ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 

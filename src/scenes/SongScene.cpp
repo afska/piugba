@@ -378,8 +378,7 @@ initialized:
   }
   processModsLoad();
 
-  if (IS_ARCADE(SAVEFILE_getGameMode()) && (keys & KEY_START) &&
-      (keys & KEY_SELECT)) {
+  if (IS_ARCADE(SAVEFILE_getGameMode()) && KEY_STA(keys) && KEY_SEL(keys)) {
     // (if START and SELECT are pressed on start, the chart will be marked as
     // defective and return to the selection scene)
     SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
@@ -720,8 +719,8 @@ void SongScene::processKeys(u16 keys) {
   lastUpLeftKeys = upLeftKeys;
   lastCenterKeys = centerKeys;
 
-  startInput->setIsPressed(keys & KEY_START);
-  selectInput->setIsPressed(keys & KEY_SELECT);
+  startInput->setIsPressed(KEY_STA(keys));
+  selectInput->setIsPressed(KEY_SEL(keys));
   aInput->setIsPressed(keys & KEY_A);
   bInput->setIsPressed(keys & KEY_B);
 
@@ -1080,7 +1079,8 @@ u8 SongScene::processPixelateMod() {
 void SongScene::processTrainingModeMod() {
   // Rate down
   if ((bInput->hasBeenPressedNow() && selectInput->getIsPressed()) ||
-      (bInput->getIsPressed() && selectInput->hasBeenPressedNow())) {
+      (bInput->getIsPressed() && selectInput->hasBeenPressedNow()) ||
+      ($ps2Input && PS2_LEFT())) {
     selectInput->setHandledFlag(true);
 
     if (setRate(rate - 1))
@@ -1089,7 +1089,8 @@ void SongScene::processTrainingModeMod() {
 
   // Rate up
   if ((bInput->hasBeenPressedNow() && startInput->getIsPressed()) ||
-      (bInput->getIsPressed() && startInput->hasBeenPressedNow())) {
+      (bInput->getIsPressed() && startInput->hasBeenPressedNow()) ||
+      ($ps2Input && PS2_RIGHT())) {
     startInput->setHandledFlag(true);
 
     if (setRate(rate + 1))
@@ -1097,7 +1098,8 @@ void SongScene::processTrainingModeMod() {
   }
 
   // Fast forward
-  if (aInput->getIsPressed() && startInput->getIsPressed()) {
+  if ((aInput->getIsPressed() && startInput->getIsPressed()) ||
+      ($ps2Input && PS2_UP())) {
     startInput->setHandledFlag(true);
 
     judge->disable();
