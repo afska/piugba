@@ -146,4 +146,10 @@
   "- Go to the MAIN MENU\r\n"   \
   "- Press L+R+START+SELECT"
 
+#define MULTIPLAYER_UNAVAILABLE_PS2_ON \
+  "       UNAVAILABLE\r\n"             \
+  "To use the multiplayer\r\n"         \
+  "modes, disable PS/2 input\r\n"      \
+  "in the ADMIN MENU."
+
 #endif  // SEQUENCE_MESSAGES_H

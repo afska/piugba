@@ -172,6 +172,18 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
+  if (IS_MULTIPLAYER(gameMode) && ps2Keyboard->isActive()) {
+    goTo(new TalkScene(
+        _engine, _fs, MULTIPLAYER_UNAVAILABLE_PS2_ON,
+        [](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(new StartScene(_engine, _fs));
+        },
+        true));
+    return;
+  }
+
   auto lastGameMode = SAVEFILE_getGameMode();
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||

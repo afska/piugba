@@ -247,12 +247,16 @@ class LinkWireless {
     LINK_WIRELESS_BARRIER;
 
     isEnabled = true;
+    wasActivated = true;  // [!]
     return success;
   }
 
   bool deactivate() {
-    activate();
-    bool success = sendCommand(LINK_WIRELESS_COMMAND_BYE).success;
+    bool success = true;
+    if (wasActivated) {  // [!]
+      activate();
+      success = sendCommand(LINK_WIRELESS_COMMAND_BYE).success;
+    }
 
     lastError = NONE;
     isEnabled = false;
@@ -862,6 +866,7 @@ class LinkWireless {
   volatile bool isHandlingInterrupt = false;
   Error lastError = NONE;
   volatile bool isEnabled = false;
+  bool wasActivated = false;  // [!]
 
   // [!]
   // void forwardMessageIfNeeded(Message& message) {
