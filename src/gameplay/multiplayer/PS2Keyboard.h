@@ -127,11 +127,14 @@ class PS2Keyboard {
         else
           break;
       case PS2_KEY_ESC: {
-        softReset = true;
-        return true;
+        if (isRelease) {
+          softReset = true;
+          return true;
+        } else
+          break;
       }
       case PS2_KEY_SUPR: {
-        if (isSpecial) {
+        if (isSpecial && isRelease) {
           softReset = true;
           return true;
         } else
