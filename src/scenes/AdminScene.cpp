@@ -287,9 +287,10 @@ bool AdminScene::selectOption(u32 selected, int direction) {
         return true;
 
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
-      SAVEFILE_write8(SRAM->adminSettings.ps2Input,
-                      change(value, 2, direction));
-      if (value)
+      u8 newValue = change(value, 2, direction);
+      SAVEFILE_write8(SRAM->adminSettings.ps2Input, newValue);
+
+      if (newValue)
         ps2Keyboard->activate();
       else
         ps2Keyboard->deactivate();
