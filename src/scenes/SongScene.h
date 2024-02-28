@@ -62,6 +62,8 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> selectInput;
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
+  std::unique_ptr<InputHandler> rateDownPs2Input;
+  std::unique_ptr<InputHandler> rateUpPs2Input;
   std::unique_ptr<DeathMix> deathMix;
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
       $isVsDifferentLevels, $ps2Input, usesVideo;

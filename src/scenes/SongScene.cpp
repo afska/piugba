@@ -168,6 +168,8 @@ void SongScene::load() {
   selectInput = std::unique_ptr<InputHandler>{new InputHandler()};
   aInput = std::unique_ptr<InputHandler>{new InputHandler()};
   bInput = std::unique_ptr<InputHandler>{new InputHandler()};
+  rateDownPs2Input = std::unique_ptr<InputHandler>{new InputHandler()};
+  rateUpPs2Input = std::unique_ptr<InputHandler>{new InputHandler()};
 }
 
 void SongScene::tick(u16 keys) {
@@ -723,6 +725,8 @@ void SongScene::processKeys(u16 keys) {
   selectInput->setIsPressed(KEY_SEL(keys));
   aInput->setIsPressed(keys & KEY_A);
   bInput->setIsPressed(keys & KEY_B);
+  rateDownPs2Input->setIsPressed(PS2_LEFT());
+  rateUpPs2Input->setIsPressed(PS2_RIGHT());
 
   IFSTRESSTEST {
     for (auto& arrowHolder : arrowHolders)
@@ -1079,27 +1083,32 @@ u8 SongScene::processPixelateMod() {
 void SongScene::processTrainingModeMod() {
   // Rate down
   if ((bInput->hasBeenPressedNow() && selectInput->getIsPressed()) ||
-      (bInput->getIsPressed() && selectInput->hasBeenPressedNow()) ||
-      ($ps2Input && PS2_LEFT())) {
+      (bInput->getIsPressed() && selectInput->hasBeenPressedNow())) {
     selectInput->setHandledFlag(true);
 
+    if (setRate(rate - 1))
+      pixelBlink->blink();
+  }
+  if (rateDownPs2Input->hasBeenPressedNow()) {
     if (setRate(rate - 1))
       pixelBlink->blink();
   }
 
   // Rate up
   if ((bInput->hasBeenPressedNow() && startInput->getIsPressed()) ||
-      (bInput->getIsPressed() && startInput->hasBeenPressedNow()) ||
-      ($ps2Input && PS2_RIGHT())) {
+      (bInput->getIsPressed() && startInput->hasBeenPressedNow())) {
     startInput->setHandledFlag(true);
 
     if (setRate(rate + 1))
       pixelBlink->blink();
   }
+  if (rateUpPs2Input->hasBeenPressedNow()) {
+    if (setRate(rate + 1))
+      pixelBlink->blink();
+  }
 
   // Fast forward
-  if ((aInput->getIsPressed() && startInput->getIsPressed()) ||
-      ($ps2Input && PS2_UP())) {
+  if ((aInput->getIsPressed() && startInput->getIsPressed()) || PS2_UP()) {
     startInput->setHandledFlag(true);
 
     judge->disable();
@@ -1129,7 +1138,7 @@ void SongScene::processTrainingModeMod() {
 
   // Reset handled flag
   if (startInput->hasBeenPressedNow() && !aInput->getIsPressed() &&
-      !bInput->getIsPressed() && !PS2_LEFT() && !PS2_RIGHT() && !PS2_UP())
+      !bInput->getIsPressed())
     startInput->setHandledFlag(false);
 }
 
