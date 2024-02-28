@@ -72,6 +72,9 @@ int main() {
       },
       []() {
         // (onRender)
+        if (ps2Keyboard->softReset)
+          SCENE_softReset();
+
         engine->render();
         EFFECT_render();
       },

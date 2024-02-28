@@ -12,8 +12,6 @@
 // |GND ---> GND|
 
 #include <tonc_core.h>
-#include "objects/ArrowInfo.h"
-#include "utils/SceneUtils.h"
 
 #define PS2_KEY_P1_DOWNLEFT 26    // Z
 #define PS2_KEY_P1_UPLEFT 21      // Q
@@ -21,10 +19,10 @@
 #define PS2_KEY_P1_UPRIGHT 36     // E
 #define PS2_KEY_P1_DOWNRIGHT 33   // C
 #define PS2_KEY_P2_DOWNLEFT 105   // Numpad 1
-#define PS2_KEY_P2_UPLEFT 122     // Numpad 7
+#define PS2_KEY_P2_UPLEFT 108     // Numpad 7
 #define PS2_KEY_P2_CENTER 115     // Numpad 5
-#define PS2_KEY_P2_UPRIGHT 108    // Numpad 9
-#define PS2_KEY_P2_DOWNRIGHT 125  // Numpad 3
+#define PS2_KEY_P2_UPRIGHT 125    // Numpad 9
+#define PS2_KEY_P2_DOWNRIGHT 122  // Numpad 3
 #define PS2_KEY_START_1 90        // Enter
 #define PS2_KEY_START_2 121       // Numpad +
 #define PS2_KEY_SELECT_1 102      // Backspace
@@ -41,8 +39,9 @@
 
 class PS2Keyboard {
  public:
-  bool arrows[ARROWS_TOTAL * 2];
+  bool arrows[10];
   bool start1, start2, select1, select2, left, right, up;
+  bool softReset = false;
 
   bool isActive() { return isEnabled; }
 
@@ -120,7 +119,7 @@ class PS2Keyboard {
         else
           break;
       case PS2_KEY_ESC: {
-        SCENE_softReset();
+        softReset = true;
         return true;
       }
       case PS2_KEY_RELEASE: {
@@ -147,7 +146,7 @@ class PS2Keyboard {
   }
 
   void reset() {
-    for (u32 i = 0; i < ARROWS_TOTAL * 2; i++)
+    for (u32 i = 0; i < 10; i++)
       arrows[i] = false;
     start1 = start2 = select1 = select2 = left = right = up = false;
 

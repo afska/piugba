@@ -123,11 +123,12 @@ void AdminScene::printOptions() {
                                : "OFF",
               8);
   printOption(OPTION_BACKGROUND_VIDEOS, "Background videos",
-              backgroundVideos > 0 ? "ON" : "OFF", 9);
+              ps2Input > 0 ? "---" : (backgroundVideos > 0 ? "ON" : "OFF"), 9);
   printOption(
       OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
-      ewramOverclock == 1 ? (backgroundVideos > 0 ? "---" : "ON") : "OFF", 10);
-  printOption(OPTION_PS2_INPUT, "PS/2 input", ps2Input == 1 ? "ON" : "OFF", 11);
+      ewramOverclock == 1 ? (backgroundVideos > 0 ? "*!*" : "ON") : "OFF", 10);
+  printOption(OPTION_PS2_INPUT, "PS/2 input",
+              backgroundVideos > 0 ? "---" : (ps2Input > 0 ? "ON" : "OFF"), 11);
 
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
@@ -246,6 +247,10 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_BACKGROUND_VIDEOS: {
+      u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+      if (ps2Input > 0)
+        return true;
+
       u8 backgroundVideos =
           SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
 
@@ -280,6 +285,11 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       }
     }
     case OPTION_PS2_INPUT: {
+      u8 backgroundVideos =
+          SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+      if (backgroundVideos > 0)
+        return true;
+
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
       SAVEFILE_write8(SRAM->adminSettings.ps2Input,
                       change(value, 2, direction));
