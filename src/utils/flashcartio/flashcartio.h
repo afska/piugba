@@ -6,7 +6,7 @@
 
 typedef enum { NO_FLASHCART, EVERDRIVE_GBA_X5 } ActiveFlashcart;
 
-extern bool IS_FLASHCART_UNLOCKED;  // [!]
+extern volatile bool IS_FLASHCART_UNLOCKED;  // [!]
 
 extern ActiveFlashcart active_flashcart;
 

@@ -3,7 +3,7 @@
 #include "everdrivegbax5/bios.h"
 #include "everdrivegbax5/disk.h"
 
-bool IS_FLASHCART_UNLOCKED = false;
+volatile bool IS_FLASHCART_UNLOCKED = false;
 
 ActiveFlashcart active_flashcart = NO_FLASHCART;
 
