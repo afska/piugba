@@ -22,6 +22,7 @@ Darkener::Darkener(u8 id, u8 priority) {
 
 void Darkener::initialize(BackgroundType type) {
   initialize(type, COLOR_INDEX);
+  this->x = 0;
 }
 
 void Darkener::initialize(BackgroundType type, u8 colorIndex) {
