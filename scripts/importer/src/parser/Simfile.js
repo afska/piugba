@@ -252,7 +252,7 @@ module.exports = class Simfile {
       "i"
     );
     const matches = (bgChanges || "").match(regExp);
-    if (matches[0] == null) return 0;
+    if (matches == null || matches[0] == null) return 0;
     const offsetBeats = parseFloat(matches[0]);
     if (!_.isFinite(offsetBeats)) return 0;
 
