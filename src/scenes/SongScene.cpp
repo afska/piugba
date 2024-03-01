@@ -648,9 +648,7 @@ void SongScene::drawVideo() {
     });
 
     if (success) {
-      videoStore->advance(true);
-      if ((hasChangedRate || $isMultiplayer) &&
-          !videoStore->seek(PlaybackState.msecs))
+      if (!videoStore->seek(PlaybackState.msecs))
         throwVideoError();
     } else
       throwVideoError();
@@ -1115,7 +1113,6 @@ void SongScene::processTrainingModeMod() {
     startInput->setHandledFlag(true);
 
     judge->disable();
-    hasChangedRate = true;
     player_seek(PlaybackState.msecs + 100);
     STOP_RUMBLE();
   } else

@@ -74,7 +74,6 @@ class SongScene : public Scene {
   u8 targetMosaic = 0;
   u8 mosaic = 0;
   bool waitMosaic = true;
-  bool hasChangedRate = false;
   int jumpDirection = 1;
   int reduceDirection = 1;
   int bounceDirection = -1;
