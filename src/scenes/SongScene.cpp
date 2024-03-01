@@ -353,13 +353,11 @@ initialized:
       arrowPool->turnOff();
       chartReaders[0]->turnOffObjectPools();
 
-      GameState.mods.speedHack = SpeedHackOpts::hAUTO_VELOCITY;
       chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
       for (u32 t = 0; t < song->sampleStart;
            t += FRAME_MS * DEATH_MIX_SEEK_SPEED_FRAMES)
         chartReaders[0]->update(t);
       chartReaders[0]->update(song->sampleStart);
-      GameState.mods.speedHack = SpeedHackOpts::hOFF;
 
       deathMix->didStartScroll = true;
       return false;
