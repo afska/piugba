@@ -18,7 +18,7 @@ extern "C" {
   (VIDEO_SIZE_PALETTE + VIDEO_SIZE_MAP + VIDEO_SIZE_TILES / 2)
 #define REQUIRED_MEMORY (SIZE_CLMT + SIZE_HALF_FRAME)
 
-const u32 FRACUMUL_DIV_BY_33 = 130150524;
+const u32 FRACUMUL_MS_TO_FRAME_AT_30FPS = 128849018;
 
 static FATFS fatfs;
 static FIL file;
@@ -94,9 +94,9 @@ void VideoStore::unload() {
 }
 
 bool VideoStore::seek(u32 msecs) {
-  frame =
-      MATH_fracumul(msecs, FRACUMUL_DIV_BY_33) -
-      SGN(videoOffset) * MATH_fracumul(ABS(videoOffset), FRACUMUL_DIV_BY_33);
+  frame = MATH_fracumul(msecs, FRACUMUL_MS_TO_FRAME_AT_30FPS) -
+          SGN(videoOffset) *
+              MATH_fracumul(ABS(videoOffset), FRACUMUL_MS_TO_FRAME_AT_30FPS);
   frameLatch = false;
   cursor = frame > 0 ? frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR : 0;
   memoryCursor = 0;
