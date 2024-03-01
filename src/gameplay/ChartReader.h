@@ -194,9 +194,14 @@ class ChartReader : public TimingProvider {
     syncArrowTime();
   }
   inline void syncScrollSpeed() {
-    if (GameState.mods.speedHack == SpeedHackOpts::hAUTO_VELOCITY) {
+    bool isAutoVelocity =
+        GameState.mods.speedHack == SpeedHackOpts::hAUTO_VELOCITY;
+    bool isFixedVelocity =
+        GameState.mods.speedHack == SpeedHackOpts::hFIXED_VELOCITY;
+
+    if (isAutoVelocity || isFixedVelocity) {
       u32 userScrollBpm = AUTOVELOCITY_VALUES[multiplier - 1];
-      if (autoVelocityFactor != 1)
+      if (isAutoVelocity && autoVelocityFactor != 1)
         userScrollBpm = MATH_fracumul(userScrollBpm, autoVelocityFactor);
       targetArrowTime =
           min(MATH_div(MINUTE * ARROW_SCROLL_LENGTH_BEATS, userScrollBpm),

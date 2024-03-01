@@ -132,7 +132,7 @@ void STATE_setup(Song* song, Chart* chart) {
                                     : StageBreakOpts::sOFF;
 #endif
 
-    GameState.mods.speedHack = SpeedHackOpts::hAUTO_VELOCITY;
+    GameState.mods.speedHack = SpeedHackOpts::hFIXED_VELOCITY;
   }
 
   GameState.positionX[0] =

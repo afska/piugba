@@ -61,8 +61,12 @@ void ModsScene::printOptions() {
   u8 autoMod = SAVEFILE_read8(SRAM->mods.autoMod);
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
 
-  if (speedHack == 2)
+  if (speedHack == 3)
     printOption(OPTION_MULTIPLIER, "Multiplier", "---", 3, true, "---");
+  else if (speedHack == 2)
+    printOption(OPTION_MULTIPLIER, "FixedVelocity",
+                "FV" + std::to_string(AUTOVELOCITY_VALUES[multiplier - 1]), 3,
+                true, "AV700");
   else if (speedHack == 1)
     printOption(OPTION_MULTIPLIER, "AutoVelocity",
                 "AV" + std::to_string(AUTOVELOCITY_VALUES[multiplier - 1]), 3,
@@ -126,7 +130,8 @@ void ModsScene::printOptions() {
   }
   printOption(OPTION_SPEED_HACK, "Speed hack",
               speedHack == 1   ? "AV"
-              : speedHack == 2 ? "RANDOM"
+              : speedHack == 2 ? "FV"
+              : speedHack == 3 ? "RANDOM"
                                : "OFF",
               10, true, "OFF");
   printOption(OPTION_MIRROR_STEPS, "Mirror steps", mirrorSteps ? "ON" : "OFF",
@@ -147,7 +152,7 @@ void ModsScene::printOptions() {
                                   : "SILENT",
               14, true, "OFF");
 
-  if (stageBreak == 1 || trainingMode > 0)
+  if (stageBreak == 1 || speedHack == 2 || trainingMode > 0)
     SCENE_write("! Grade saving OFF !", 15);
 
   printOption(OPTION_RESET, "        [RESET ALL]", "", 16);
@@ -159,7 +164,7 @@ bool ModsScene::selectOption(u32 selected, int direction) {
 
   switch (selected) {
     case OPTION_MULTIPLIER: {
-      if (speedHack == 2)
+      if (speedHack == 3)
         return true;
 
       u8 multiplier = SAVEFILE_read8(SRAM->mods.multiplier);
@@ -216,7 +221,7 @@ bool ModsScene::selectOption(u32 selected, int direction) {
     }
     case OPTION_SPEED_HACK: {
       u8 speedHack = SAVEFILE_read8(SRAM->mods.speedHack);
-      SAVEFILE_write8(SRAM->mods.speedHack, change(speedHack, 3, direction));
+      SAVEFILE_write8(SRAM->mods.speedHack, change(speedHack, 4, direction));
       return true;
     }
     case OPTION_MIRROR_STEPS: {

@@ -214,7 +214,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
   if (multiplier < 1 || multiplier > 6 || stageBreak >= 3 || pixelate >= 6 ||
       jump >= 3 || reduce >= 5 || bounce >= 3 || colorFilter >= 17 ||
-      speedHack >= 3 || mirrorSteps >= 2 || randomSteps >= 2 || autoMod >= 3 ||
+      speedHack >= 4 || mirrorSteps >= 2 || randomSteps >= 2 || autoMod >= 3 ||
       trainingMode >= 3) {
     SAVEFILE_resetMods();
     fixes |= 0b1000000;
@@ -429,8 +429,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
       return false;
     }
 
-    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
-        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+    if (GameState.mods.isGradeSavingDisabled())
       return false;
 
     if (grade < currentGrade)
@@ -478,8 +477,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
           return false;
         }
 
-        if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
-            GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+        if (GameState.mods.isGradeSavingDisabled())
           return false;
 
         if (grade < currentGrade)
