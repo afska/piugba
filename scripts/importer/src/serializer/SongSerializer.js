@@ -29,6 +29,7 @@ module.exports = class SongSerializer {
       .UInt32LE(metadata.lastMillisecond)
       .UInt32LE(metadata.sampleStart)
       .UInt32LE(metadata.sampleLength)
+      .Int32LE(metadata.videoOffset)
       .Config(metadata.config)
       .ChartArray(charts).result;
   }

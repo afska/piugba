@@ -10,10 +10,17 @@ const _ = require("lodash");
 const EXTENSION = "pius";
 const JSON_EXTENSION = "json";
 
-module.exports = (name, filePath, outputPath, id, prefix = null) => {
+module.exports = (
+  name,
+  filePath,
+  outputPath,
+  id,
+  prefix = null,
+  videoFileRegExpCode = null
+) => {
   let content = fs.readFileSync(filePath).toString();
   if (prefix != null) content = prefix + "\r\n" + content;
-  let { metadata, charts } = new Simfile(content);
+  let { metadata, charts } = new Simfile(content, videoFileRegExpCode);
 
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);

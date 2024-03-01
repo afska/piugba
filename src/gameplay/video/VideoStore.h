@@ -18,14 +18,18 @@ class VideoStore {
   enum State { OFF, NO_SUPPORTED_FLASHCART, MOUNT_ERROR, ACTIVE };
 
   bool isActive() { return state == ACTIVE; }
+  bool canRead() { return frame >= 0; }
   bool isPreRead() { return !frameLatch; }
-  void advance() { frameLatch = !frameLatch; }
+  void advance(bool newFrame = false) {
+    frameLatch = !frameLatch;
+    frame += newFrame;
+  }
 
   bool isEnabled();
   void disable();
   bool isActivating();
   State activate();
-  bool load(std::string videoPath);
+  bool load(std::string videoPath, int videoOffset);
   void unload();
 
   bool seek(u32 msecs);
@@ -39,6 +43,8 @@ class VideoStore {
   u32 memoryCursor = 0;
   bool isPlaying = false;
   bool frameLatch = false;
+  int frame = 0;
+  int videoOffset = 0;
 };
 
 extern VideoStore* videoStore;

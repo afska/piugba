@@ -58,7 +58,7 @@ VideoStore::State VideoStore::activate() {
   return state;
 }
 
-bool VideoStore::load(std::string videoPath) {
+bool VideoStore::load(std::string videoPath, int videoOffset) {
   if (state != ACTIVE)
     return false;
   memory = getSecondaryMemory(REQUIRED_MEMORY);
@@ -69,6 +69,8 @@ bool VideoStore::load(std::string videoPath) {
     return false;
 
   isPlaying = true;
+  frame = 0;
+  this->videoOffset = videoOffset;
 
   file.cltbl = (DWORD*)memory;
   file.cltbl[0] = CLMT_ENTRIES;
@@ -92,9 +94,11 @@ void VideoStore::unload() {
 }
 
 bool VideoStore::seek(u32 msecs) {
-  u32 frame = MATH_fracumul(msecs, FRACUMUL_DIV_BY_33);
+  frame =
+      MATH_fracumul(msecs, FRACUMUL_DIV_BY_33) -
+      SGN(videoOffset) * MATH_fracumul(ABS(videoOffset), FRACUMUL_DIV_BY_33);
   frameLatch = false;
-  cursor = frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR;
+  cursor = frame > 0 ? frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR : 0;
   memoryCursor = 0;
 
   if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {

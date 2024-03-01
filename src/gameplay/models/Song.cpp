@@ -51,6 +51,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->lastMillisecond = parse_u32le(data, &cursor);
   song->sampleStart = parse_u32le(data, &cursor);
   song->sampleLength = parse_u32le(data, &cursor);
+  song->videoOffset = (int)parse_u32le(data, &cursor);
 
   song->applyTo[DifficultyLevel::NORMAL] = parse_u8(data, &cursor);
   song->applyTo[DifficultyLevel::HARD] = parse_u8(data, &cursor);

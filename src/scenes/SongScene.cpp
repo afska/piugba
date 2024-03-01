@@ -605,7 +605,7 @@ void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
 
-  if (!videoStore->load(song->videoPath))
+  if (!videoStore->load(song->videoPath, song->videoOffset))
     usesVideo = false;
 }
 
@@ -614,12 +614,17 @@ void SongScene::drawVideo() {
     return;
 
   if (videoStore->isPreRead()) {
-    if (!videoStore->preRead()) {
+    if (videoStore->canRead() && !videoStore->preRead()) {
       throwVideoError();
       return;
     } else
       videoStore->advance();
   } else {
+    if (!videoStore->canRead()) {
+      videoStore->advance(true);
+      return;
+    }
+
     auto c1 = pal_bg_mem[254];
     auto c2 = pal_bg_mem[255];
     if (!videoStore->endRead((u8*)pal_bg_mem, 1)) {
@@ -643,7 +648,7 @@ void SongScene::drawVideo() {
     });
 
     if (success) {
-      videoStore->advance();
+      videoStore->advance(true);
       if ((hasChangedRate || $isMultiplayer) &&
           !videoStore->seek(PlaybackState.msecs))
         throwVideoError();

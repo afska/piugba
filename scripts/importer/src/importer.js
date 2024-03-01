@@ -21,6 +21,7 @@ const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
 const REMOVE_EXTENSION = (it) => it.replace(/\.[^/.]+$/, "");
+const REGEXP_ESCAPE = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const DATA_PATH = $path.resolve(__dirname, "../../../src/data");
 const CONTENT_PATH = $path.resolve(DATA_PATH, "content");
@@ -36,11 +37,11 @@ const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc$/i;
 const FILE_AUDIO = /\.(mp3|flac|ogg)$/i;
 const FILE_BACKGROUND = /\.png$/i;
+const FILE_VIDEO_EXTENSIONS = "mp4|mpg|mpeg";
 const FILE_VIDEO = (name) =>
-  new RegExp(
-    `^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(mp4|mpg|mpeg)$`,
-    "i"
-  );
+  new RegExp(`^${REGEXP_ESCAPE(name)}\\.(${FILE_VIDEO_EXTENSIONS})$`, "i");
+const FILE_VIDEO_REGEXP_CODE = (name) =>
+  `${REGEXP_ESCAPE(name)}\\.(${FILE_VIDEO_EXTENSIONS})`;
 const MODE_OPTIONS = ["auto", "manual"];
 const MODE_DEFAULT = "auto";
 const SELECTOR_PREFIXES = {
@@ -163,26 +164,30 @@ const GET_SONG_FILES = ({ path, name }) => {
   const audioFile = _.find(files, (it) => FILE_AUDIO.test(it));
   const backgroundFile = _.find(files, (it) => FILE_BACKGROUND.test(it));
 
-  let videoFile = null;
-  if (GLOBAL_OPTIONS.videoenable && audioFile != null) {
-    const audioFileName = $path.parse(audioFile).name;
-    videoFile =
-      _.find(videoFiles, (it) => {
-        const videoFileFullName = $path.parse(it).base;
-        return FILE_VIDEO(audioFileName).test(videoFileFullName);
-      }) || null;
-  }
-
   if (!metadataFile) throw new Error("Metadata (.SSC) file not found: " + name);
   if (!audioFile) throw new Error("Audio (.MP3) file not found: " + name);
   if (!backgroundFile)
     throw new Error("Background (.PNG) file not found: " + name);
+
+  const audioFileName = $path.parse(audioFile).name;
+  const videoFileRegExp = FILE_VIDEO(audioFileName);
+  const videoFileRegExpCode = FILE_VIDEO_REGEXP_CODE(audioFileName);
+
+  let videoFile = null;
+  if (GLOBAL_OPTIONS.videoenable && audioFile != null) {
+    videoFile =
+      _.find(videoFiles, (it) => {
+        const videoFileFullName = $path.parse(it).base;
+        return videoFileRegExp.test(videoFileFullName);
+      }) || null;
+  }
 
   return {
     metadataFile,
     audioFile,
     backgroundFile,
     videoFile,
+    videoFileRegExpCode,
   };
 };
 
@@ -305,6 +310,7 @@ async function run() {
       audioFile,
       backgroundFile,
       videoFile,
+      videoFileRegExpCode,
     } = GET_SONG_FILES(song);
 
     if (!GLOBAL_OPTIONS.fast) {
@@ -318,7 +324,14 @@ async function run() {
     // metadata
     const simfile = await utils.report(
       () =>
-        importers.metadata(outputName, metadataFile, GLOBAL_OPTIONS.output, id),
+        importers.metadata(
+          outputName,
+          metadataFile,
+          GLOBAL_OPTIONS.output,
+          id,
+          null,
+          videoFileRegExpCode
+        ),
       "charts",
       true
     );
