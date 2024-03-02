@@ -1253,7 +1253,6 @@ bool SongScene::setRate(int rate) {
   if (this->rate == oldRate)
     return false;
 
-  hasChangedRate = true;
   player_setRate(rate);
   chartReaders[0]->syncRate(RATE_LEVELS, rate);
   return true;
