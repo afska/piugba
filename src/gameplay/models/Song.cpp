@@ -137,8 +137,8 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   if (gameMode != GameMode::CAMPAIGN)
     return channel;
 
-  cursor +=
-      4 /* lastMillisecond */ + 4 /* sampleStart */ + 4 /* sampleLength */;
+  cursor += 4 /* lastMillisecond */ + 4 /* sampleStart */ +
+            4 /* sampleLength */ + 4 /* videoOffset */;
 
   bool applyToNormal = parse_u8(data, &cursor);
   if (difficultyLevel == DifficultyLevel::NORMAL && !applyToNormal)
