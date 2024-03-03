@@ -259,7 +259,7 @@ module.exports = class Simfile {
     const beatLength = MINUTE / firstBpm;
     const offsetMilliseconds = offsetBeats * beatLength - globalOffset * SECOND;
 
-    return offsetMilliseconds;
+    return Math.round(offsetMilliseconds);
   }
 
   _unescape(string) {
