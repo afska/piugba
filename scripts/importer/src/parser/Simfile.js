@@ -256,8 +256,6 @@ module.exports = class Simfile {
     const offsetBeats = parseFloat(matches[0]);
     if (!_.isFinite(offsetBeats)) return 0;
 
-    if (offsetBeats >= 0) return 0; // (not sure, seems to work though)
-
     const beatLength = MINUTE / firstBpm;
     const offsetMilliseconds = offsetBeats * beatLength - globalOffset * SECOND;
 
