@@ -1112,8 +1112,11 @@ void SongScene::processTrainingModeMod() {
   if ((aInput->getIsPressed() && startInput->getIsPressed()) || PS2_UP()) {
     startInput->setHandledFlag(true);
 
+    u32 msecs = PlaybackState.msecs + 100;
     judge->disable();
-    player_seek(PlaybackState.msecs + 100);
+    player_seek(msecs);
+    if (usesVideo && !videoStore->canRead())
+      videoStore->seek(msecs);
     STOP_RUMBLE();
   } else
     judge->enable();
