@@ -429,6 +429,7 @@ async function run() {
     for (let { difficultyLevel, songs } of sortedSongsByLevel) {
       for (let i = 0; i < songs.length; i++) {
         const { song, simfile } = songs[i];
+        const { videoFileRegExpCode } = GET_SONG_FILES(song);
 
         const chart = simfile.getChartByDifficulty(difficultyLevel);
         const nextSong = songs[i + 1];
@@ -477,7 +478,8 @@ BOUNCE=ALL;`
             metadataFile,
             GLOBAL_OPTIONS.output,
             id,
-            prefix
+            prefix,
+            videoFileRegExpCode
           );
         }
       }
