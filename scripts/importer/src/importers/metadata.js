@@ -7,8 +7,27 @@ const fs = require("fs");
 const $path = require("path");
 const _ = require("lodash");
 
+const GLOBAL_OFFSET_FILE = "global-offset.pofs";
 const EXTENSION = "pius";
 const JSON_EXTENSION = "json";
+
+const getGlobalOffset = _.memoize(() => {
+  let offsetFile;
+  try {
+    offsetFile = fs
+      .readFileSync($path.join(GLOBAL_OPTIONS.directory, GLOBAL_OFFSET_FILE))
+      .toString();
+  } catch (e) {
+    return 0;
+  }
+
+  const parsedOffset = parseInt(offsetFile);
+  if (!_.isFinite(parsedOffset)) return 0;
+
+  console.log(`  📢  using global offset: ${parsedOffset}`);
+
+  return parsedOffset;
+});
 
 module.exports = (
   name,
@@ -20,7 +39,11 @@ module.exports = (
 ) => {
   let content = fs.readFileSync(filePath).toString();
   if (prefix != null) content = prefix + "\r\n" + content;
-  let { metadata, charts } = new Simfile(content, videoFileRegExpCode);
+  let { metadata, charts } = new Simfile(
+    content,
+    getGlobalOffset(),
+    videoFileRegExpCode
+  );
 
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);

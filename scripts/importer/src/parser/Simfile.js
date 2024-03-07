@@ -10,8 +10,9 @@ const _ = require("lodash");
 // (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
-  constructor(content, videoFileRegExpCode) {
+  constructor(content, libraryGlobalOffset, videoFileRegExpCode) {
     this.content = content;
+    this.libraryGlobalOffset = libraryGlobalOffset;
     this.videoFileRegExpCode = videoFileRegExpCode;
   }
 
@@ -111,7 +112,7 @@ module.exports = class Simfile {
             rawChart
           );
           if (!_.isFinite(chartOffset)) chartOffset = 0;
-          const offset = -chartOffset * SECOND; // [!] offsets in PIUS are negative
+          const offset = -chartOffset * SECOND - this.libraryGlobalOffset; // [!] offsets in PIUS are negative
 
           const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
           if (_.isEmpty(bpms)) throw new Error("no_bpm_info");

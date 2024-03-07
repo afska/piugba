@@ -4,7 +4,7 @@ const $path = require("path");
 const _ = require("lodash");
 require("colors");
 
-// This script takes a song library and a save file with corrected custom offsets, and dumps the offsets using the `offset.pofs` format.
+// This script takes a song library and a save file with corrected custom offsets, and dumps the offsets using the `offsets.pofs` format.
 
 const OFFSET_TABLE_START_BYTE = 0x29b1;
 const ARCADE_MAX_LEVELS = 100;
