@@ -35,7 +35,8 @@ module.exports = (
   outputPath,
   id,
   prefix = null,
-  videoFileRegExpCode = null
+  videoFileRegExpCode = null,
+  isBonus = false
 ) => {
   let content = fs.readFileSync(filePath).toString();
   if (prefix != null) content = prefix + "\r\n" + content;
@@ -48,7 +49,7 @@ module.exports = (
   checkIntegrity(metadata, charts, filePath);
   applyOffsets(metadata, charts);
   charts = charts.filter((it) => !it.isDeleted);
-  const simfile = completeMissingData(metadata, charts);
+  const simfile = completeMissingData(metadata, charts, isBonus);
   simfile.id = id;
 
   if (GLOBAL_OPTIONS.json) {

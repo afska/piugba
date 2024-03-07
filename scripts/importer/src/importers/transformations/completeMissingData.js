@@ -13,7 +13,7 @@ const HEURISTICS = {
 };
 const TAGS = ["pro", "new", "ucs", "hidden", "train", "sp", "quest", "another"];
 
-module.exports = (metadata, charts) => {
+module.exports = (metadata, charts, isBonus) => {
   // channel
   if (metadata.channel === "UNKNOWN") {
     if (GLOBAL_OPTIONS.mode === "auto") metadata.channel = "ORIGINAL";
@@ -36,13 +36,14 @@ module.exports = (metadata, charts) => {
     if (
       GLOBAL_OPTIONS.mode === "manual" ||
       it.header.isDouble ||
-      GLOBAL_OPTIONS.arcade
+      GLOBAL_OPTIONS.arcade ||
+      isBonus
     )
       it.header.mode = "NUMERIC";
   });
 
   // difficulty
-  if (!GLOBAL_OPTIONS.arcade) {
+  if (!GLOBAL_OPTIONS.arcade && !isBonus) {
     const singleCharts = charts.filter((it) => !it.header.isDouble);
     NON_NUMERIC_LEVELS.forEach((difficulty) => {
       if (

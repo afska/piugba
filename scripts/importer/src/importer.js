@@ -17,6 +17,7 @@ const ROM_ID_FILE_REUSE = "romid.u32";
 const ROM_NAME_FILE = "_rom_name.txt";
 const ROM_NAME_FILE_SOURCE = "romname.txt";
 const VIDEOS_FOLDER_NAME = "_videos";
+const BONUS_FOLDER_NAME = "_bonus";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
   prefix +
   it.replace(/[^0-9a-z -]/gi, "").substring(0, MAX_FILE_LENGTH - prefix.length);
@@ -48,9 +49,10 @@ const SELECTOR_PREFIXES = {
   NORMAL: "_snm_",
   HARD: "_shd_",
   CRAZY: "_scz_",
+  BONUS: "_bns_",
 };
 const LIBRARY_SUFFIX = "_list.txt";
-const CAMPAIGN_LEVELS = _.keys(SELECTOR_PREFIXES);
+const CAMPAIGN_LEVELS = ["NORMAL", "HARD", "CRAZY"];
 
 const expectedMajor = (() => {
   try {
@@ -136,6 +138,7 @@ const UNIQUE_MAP_PATH = $path.resolve(
   "_unique_map.map.bin"
 );
 const BLACK_DOT_FILE = $path.resolve(IMAGES_PATH, "black.bmp");
+const BONUS_DIRECTORY = $path.join(GLOBAL_OPTIONS.directory, BONUS_FOLDER_NAME);
 
 if (!fs.existsSync(GLOBAL_OPTIONS.directory))
   throw new Error("Songs directory not found: " + GLOBAL_OPTIONS.directory);
@@ -259,37 +262,43 @@ async function run() {
   // SONG DETECTION
   // --------------
 
-  const songs = _(
-    fs.readdirSync(GLOBAL_OPTIONS.directory, { withFileTypes: true })
-  )
-    .sortBy()
-    .filter((it) => it.isDirectory())
-    .map("name")
-    .filter((it) => !it.startsWith("_"))
-    .map((directory) => {
-      const name = directory;
-      const outputName = NORMALIZE_FILENAME(name);
+  function getSongsFrom(songLibraryDirectory) {
+    return _(fs.readdirSync(songLibraryDirectory, { withFileTypes: true }))
+      .sortBy()
+      .filter((it) => it.isDirectory())
+      .map("name")
+      .filter((it) => !it.startsWith("_"))
+      .map((directory) => {
+        const name = directory;
+        const outputName = NORMALIZE_FILENAME(name);
 
-      return {
-        path: $path.join(GLOBAL_OPTIONS.directory, directory),
-        name,
-        outputName,
-      };
-    })
-    .sortBy("outputName")
-    .map((it, id) => ({ ...it, id }))
-    .value();
+        return {
+          path: $path.join(songLibraryDirectory, directory),
+          name,
+          outputName,
+        };
+      })
+      .sortBy("outputName")
+      .map((it, id) => ({ ...it, id }))
+      .value();
+  }
 
-  // -----------
-  // SONG IMPORT
-  // -----------
+  const songs = getSongsFrom(GLOBAL_OPTIONS.directory);
+  const bonusSongs = getSongsFrom(BONUS_DIRECTORY).map((it) => {
+    return { ...it, id: songs.length + it.id, isBonus: true };
+  });
+  const allSongs = songs.concat(bonusSongs);
 
-  if (_.uniqBy(songs, "outputName").length !== songs.length)
+  // -------------
+  // SANITY CHECKS
+  // -------------
+
+  if (_.uniqBy(allSongs, "outputName").length !== allSongs.length)
     throw new Error("repeated_song_names");
   if (_.isEmpty(songs)) throw new Error("no_songs_found");
-  if (songs.length > MAX_SONGS)
+  if (songs.length + bonusSongs.length > MAX_SONGS)
     throw new Error(
-      `song_limit_reached: found=${songs.length}, max=${MAX_SONGS}`
+      `song_limit_reached: found=${songs.length}, bonus=${bonusSongs.length}, max=${MAX_SONGS}`
     );
   (function () {
     if (reuseRomId != null) {
@@ -302,88 +311,103 @@ async function run() {
     }
   })();
 
-  console.log(`${"Importing".bold} songs...`);
-  const processedSongs = await utils.processContent(songs, async (song, i) => {
-    const { id, outputName } = song;
-    const {
-      metadataFile,
-      audioFile,
-      backgroundFile,
-      videoFile,
-      videoFileRegExpCode,
-    } = GET_SONG_FILES(song);
+  // -----------
+  // SONG IMPORT
+  // -----------
 
-    if (!GLOBAL_OPTIONS.fast) {
-      console.log(
-        `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
-          "Importing".bold
-        } ${song.name.cyan}...`
-      );
-    }
+  async function importSongs(songsToImport) {
+    return await utils.processContent(songsToImport, async (song, i) => {
+      const { id, outputName, isBonus } = song;
+      const {
+        metadataFile,
+        audioFile,
+        backgroundFile,
+        videoFile,
+        videoFileRegExpCode,
+      } = GET_SONG_FILES(song);
 
-    // metadata
-    const simfile = await utils.report(
-      () =>
-        importers.metadata(
-          outputName,
-          metadataFile,
-          GLOBAL_OPTIONS.output,
-          id,
-          null,
-          videoFileRegExpCode
-        ),
-      "charts",
-      true
-    );
+      if (!GLOBAL_OPTIONS.fast) {
+        console.log(
+          `(${(i + 1).toString().red}${"/".red}${
+            songs.length.toString().red
+          }) ${"Importing".bold} ${song.name.cyan}...`
+        );
+      }
 
-    // audio
-    await utils.report(
-      () => importers.audio(outputName, audioFile, GLOBAL_OPTIONS.output),
-      "audio",
-      true
-    );
-
-    // background
-    await utils.report(
-      () =>
-        importers.background(
-          outputName,
-          backgroundFile,
-          GLOBAL_OPTIONS.output,
-          BLACK_DOT_FILE
-        ),
-      "background",
-      true
-    );
-
-    // video
-    if (videoFile != null) {
-      await utils.report(
+      // metadata
+      const simfile = await utils.report(
         () =>
-          importers.video(
+          importers.metadata(
             outputName,
-            videoFile,
-            GLOBAL_OPTIONS.videolib,
-            BLACK_DOT_FILE
+            metadataFile,
+            GLOBAL_OPTIONS.output,
+            id,
+            null,
+            videoFileRegExpCode,
+            isBonus
           ),
-        "video",
+        "charts",
         true
       );
-    } else if (GLOBAL_OPTIONS.videoenable) {
-      const name = $path.parse(audioFile).name;
-      console.log(`  ⚠️  video not found (${name})\n`.yellow);
-    }
 
-    if (GLOBAL_OPTIONS.fast) {
-      console.log(
-        `(${(i + 1).toString().red}${"/".red}${songs.length.toString().red}) ${
-          "Imported".bold
-        } ${song.name.cyan}!`
+      // audio
+      await utils.report(
+        () => importers.audio(outputName, audioFile, GLOBAL_OPTIONS.output),
+        "audio",
+        true
       );
-    }
 
-    return { song, simfile };
-  });
+      // background
+      await utils.report(
+        () =>
+          importers.background(
+            outputName,
+            backgroundFile,
+            GLOBAL_OPTIONS.output,
+            BLACK_DOT_FILE
+          ),
+        "background",
+        true
+      );
+
+      // video
+      if (videoFile != null) {
+        await utils.report(
+          () =>
+            importers.video(
+              outputName,
+              videoFile,
+              GLOBAL_OPTIONS.videolib,
+              BLACK_DOT_FILE
+            ),
+          "video",
+          true
+        );
+      } else if (GLOBAL_OPTIONS.videoenable) {
+        const name = $path.parse(audioFile).name;
+        console.log(`  ⚠️  video not found (${name})\n`.yellow);
+      }
+
+      if (GLOBAL_OPTIONS.fast) {
+        console.log(
+          `(${(i + 1).toString().red}${"/".red}${
+            songs.length.toString().red
+          }) ${"Imported".bold} ${song.name.cyan}!`
+        );
+      }
+
+      return { song, simfile };
+    });
+  }
+
+  console.log(`${"Importing".bold} songs...`);
+  const processedSongs = await importSongs(songs);
+
+  let processedBonusSongs = [];
+  if (!_.isEmpty(bonusSongs)) {
+    console.log(`${"Importing".bold} bonus songs...`);
+    processedBonusSongs = await importSongs(bonusSongs);
+  }
 
   // ------------
   // SONG SORTING
@@ -419,6 +443,13 @@ async function run() {
     };
   });
 
+  if (!_.isEmpty(bonusSongs)) {
+    sortedSongsByLevel.push({
+      difficultyLevel: "BONUS",
+      songs: processedBonusSongs,
+    });
+  }
+
   // -----------
   // BOSS LEVELS
   // -----------
@@ -427,6 +458,8 @@ async function run() {
     console.log(`${"Adding".bold} bosses...`);
 
     for (let { difficultyLevel, songs } of sortedSongsByLevel) {
+      if (difficultyLevel === "BONUS") continue;
+
       for (let i = 0; i < songs.length; i++) {
         const { song, simfile } = songs[i];
 
@@ -564,6 +597,8 @@ BOUNCE=ALL;`
   // ----------
 
   for (let { difficultyLevel, songs } of sortedSongsByLevel) {
+    if (difficultyLevel === "BONUS") continue;
+
     console.log(`\n${"SONG LIST".bold} - ${difficultyLevel.cyan}:`);
 
     utils.printTable(
