@@ -166,7 +166,7 @@ module.exports = class Simfile {
           );
           if (rythmEvents.length + normalEvents.length > MAX_EVENTS)
             throw new Error(
-              `too_big: (${rythmEvents.length} rythm + ${normalEvents} normal) events`
+              `too_big: (${rythmEvents.length} rythm + ${normalEvents.length} normal) events`
             );
 
           return chart;
