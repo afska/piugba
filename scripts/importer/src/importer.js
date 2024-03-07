@@ -429,7 +429,6 @@ async function run() {
     for (let { difficultyLevel, songs } of sortedSongsByLevel) {
       for (let i = 0; i < songs.length; i++) {
         const { song, simfile } = songs[i];
-        const { videoFileRegExpCode } = GET_SONG_FILES(song);
 
         const chart = simfile.getChartByDifficulty(difficultyLevel);
         const nextSong = songs[i + 1];
@@ -454,7 +453,7 @@ async function run() {
 
         if (isBoss) {
           const { id, outputName } = song;
-          const { metadataFile } = GET_SONG_FILES(song);
+          const { metadataFile, videoFileRegExpCode } = GET_SONG_FILES(song);
 
           const prefix = isFinalBoss
             ? `#PIUGBA:
