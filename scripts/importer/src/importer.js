@@ -265,24 +265,29 @@ async function run() {
   // --------------
 
   function getSongsFrom(songLibraryDirectory) {
-    return _(fs.readdirSync(songLibraryDirectory, { withFileTypes: true }))
-      .sortBy()
-      .filter((it) => it.isDirectory())
-      .map("name")
-      .filter((it) => !it.startsWith("_"))
-      .map((directory) => {
-        const name = directory;
-        const outputName = NORMALIZE_FILENAME(name);
+    try {
+      return _(fs.readdirSync(songLibraryDirectory, { withFileTypes: true }))
+        .sortBy()
+        .filter((it) => it.isDirectory())
+        .map("name")
+        .filter((it) => !it.startsWith("_"))
+        .map((directory) => {
+          const name = directory;
+          const outputName = NORMALIZE_FILENAME(name);
 
-        return {
-          path: $path.join(songLibraryDirectory, directory),
-          name,
-          outputName,
-        };
-      })
-      .sortBy("outputName")
-      .map((it, id) => ({ ...it, id }))
-      .value();
+          return {
+            path: $path.join(songLibraryDirectory, directory),
+            name,
+            outputName,
+          };
+        })
+        .sortBy("outputName")
+        .map((it, id) => ({ ...it, id }))
+        .value();
+    } catch (e) {
+      if (e.code === "ENOENT") return [];
+      throw e;
+    }
   }
 
   const songs = getSongsFrom(GLOBAL_OPTIONS.directory);

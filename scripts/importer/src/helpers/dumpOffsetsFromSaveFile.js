@@ -39,6 +39,7 @@ function read(packPath) {
     .sortBy()
     .filter((it) => it.isDirectory())
     .map("name")
+    .filter((it) => !it.startsWith("_"))
     .map((directory) => {
       const name = directory;
 

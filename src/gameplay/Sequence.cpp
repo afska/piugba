@@ -324,15 +324,17 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
   if ((IS_STORY(gameMode) || gameMode == GameMode::DEATH_MIX) && isLastSong)
-    goTo(new TalkScene(_engine, _fs,
-                       gameMode == GameMode::DEATH_MIX  ? WIN_DEATHMIX
-                       : gameMode == GameMode::CAMPAIGN ? WIN
-                                                        : WIN_IMPOSSIBLE,
-                       [](u16 keys) {
-                         bool isPressed = KEY_CONFIRM(keys);
-                         if (isPressed)
-                           goTo(SEQUENCE_getMainScene());
-                       }));
+    goTo(new TalkScene(
+        _engine, _fs,
+        gameMode == GameMode::DEATH_MIX
+            ? (SAVEFILE_bonusCount(_fs) > 0 ? WIN_DEATHMIX : WIN_IMPOSSIBLE)
+        : gameMode == GameMode::CAMPAIGN ? WIN
+                                         : WIN_IMPOSSIBLE,
+        [](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(SEQUENCE_getMainScene());
+        }));
   else
     goTo(new SelectionScene(_engine, _fs));
 }
