@@ -92,6 +92,12 @@
   "   You are an absolute\r\n" \
   "  legend. Amazing work!"
 
+#define WIN_DEATHMIX            \
+  " WOAH, congratulations!\r\n" \
+  "  Ok, here's a secret:\r\n"  \
+  "Try holding START when\r\n"  \
+  "opening the ARCADE MODE!"
+
 #define SAVE_FILE_FIXED_1 \
   "Save file fixed!\r\n"  \
   " -> code: "
