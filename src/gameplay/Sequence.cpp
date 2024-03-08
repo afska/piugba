@@ -184,17 +184,24 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
+  u16 keys = ~REG_KEYS & KEY_ANY;
+  bool isHoldingStart = KEY_STA(keys);
+  bool wasBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
+  bool isBonusMode = SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
   auto lastGameMode = SAVEFILE_getGameMode();
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
       (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
-  if (lastGameMode != gameMode &&
-      !isTransitioningBetweenCampaignAndChallenges) {
+  if ((lastGameMode != gameMode &&
+       !isTransitioningBetweenCampaignAndChallenges) ||
+      (gameMode == GameMode::ARCADE && lastGameMode == GameMode::ARCADE &&
+       wasBonusMode != isBonusMode)) {
     bool shouldResetCursor =
         !(IS_STORY(lastGameMode) && gameMode == GameMode::ARCADE &&
           SAVEFILE_getMaxLibraryType() ==
               static_cast<DifficultyLevel>(
-                  SAVEFILE_read8(SRAM->memory.difficultyLevel)));
+                  SAVEFILE_read8(SRAM->memory.difficultyLevel)) &&
+          !isBonusMode);
 
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
@@ -208,8 +215,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   SAVEFILE_write8(SRAM->isBonusMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
-    u16 keys = ~REG_KEYS & KEY_ANY;
-    linkUniversal->setProtocol(KEY_STA(keys)
+    linkUniversal->setProtocol(isHoldingStart
                                    ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 
@@ -217,13 +223,11 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   } else if (gameMode == GameMode::DEATH_MIX) {
     goTo(new DeathMixScene(_engine, _fs));
   } else {
-    u16 keys = ~REG_KEYS & KEY_ANY;
-    bool isBonus = SAVEFILE_bonusCount(_fs) > 0 && KEY_STA(keys);
-    SAVEFILE_write8(SRAM->isBonusMode, isBonus);
+    SAVEFILE_write8(SRAM->isBonusMode, isBonusMode);
 
     auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
                    : gameMode == GameMode::ARCADE
-                       ? (isBonus ? MODE_ARCADE_BONUS : MODE_ARCADE)
+                       ? (isBonusMode ? MODE_ARCADE_BONUS : MODE_ARCADE)
                        : MODE_IMPOSSIBLE;
     goTo(new TalkScene(
         _engine, _fs, message,
