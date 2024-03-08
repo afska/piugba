@@ -19,7 +19,7 @@
   u32 index = (SONG_ID * ARCADE_MAX_LEVELS + INDEX) / 2;          \
   u32 part = (SONG_ID * ARCADE_MAX_LEVELS + INDEX) % 2;           \
   u8 n = SAVEFILE_read8(ARRAY[index]);                            \
-  u8 value = grade == GradeType::UNPLAYED ? 0 : grade + 1;        \
+  u8 value = GRADE == GradeType::UNPLAYED ? 0 : GRADE + 1;        \
   u8 updatedN = part == 0 ? (n & ~REGISTER_PART0) | value         \
                           : (n & ~REGISTER_PART1) | (value << 3); \
   SAVEFILE_write8(ARRAY[index], updatedN);
