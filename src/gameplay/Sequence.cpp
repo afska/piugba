@@ -206,6 +206,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
+  SAVEFILE_write8(SRAM->isBonusMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
     u16 keys = ~REG_KEYS & KEY_ANY;
     linkUniversal->setProtocol(KEY_STA(keys)
@@ -216,9 +217,14 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   } else if (gameMode == GameMode::DEATH_MIX) {
     goTo(new DeathMixScene(_engine, _fs));
   } else {
+    u16 keys = ~REG_KEYS & KEY_ANY;
+    bool isBonus = SAVEFILE_bonusCount(_fs) > 0 && KEY_STA(keys);
+    SAVEFILE_write8(SRAM->isBonusMode, isBonus);
+
     auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
-                   : gameMode == GameMode::ARCADE ? MODE_ARCADE
-                                                  : MODE_IMPOSSIBLE;
+                   : gameMode == GameMode::ARCADE
+                       ? (isBonus ? MODE_ARCADE_BONUS : MODE_ARCADE)
+                       : MODE_IMPOSSIBLE;
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {

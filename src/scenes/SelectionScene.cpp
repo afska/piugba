@@ -103,6 +103,8 @@ std::vector<Sprite*> SelectionScene::sprites() {
 void SelectionScene::load() {
   if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
     BSOD("*Error* (Check your save file)       There's no campaign mode!");
+  if (isBonusMode() && SAVEFILE_bonusCount(fs) == 0)
+    BSOD("*Error* (Check your save file)          There's no bonus data!");
 
   if (isMultiplayer()) {
     syncer->clearTimeout();
@@ -306,7 +308,7 @@ void SelectionScene::setUpLocks() {
 }
 
 void SelectionScene::setUpPager() {
-  count = SAVEFILE_getLibrarySize();
+  count = isBonusMode() ? SAVEFILE_bonusCount(fs) : SAVEFILE_getLibrarySize();
 
   scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
            SAVEFILE_read8(SRAM->memory.songIndex));

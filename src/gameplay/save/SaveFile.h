@@ -45,7 +45,9 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[3];
+  char padding2[2];
+
+  bool isBonusMode;
   u32 randomSeed;
   u8 beat;
 
@@ -244,6 +246,10 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
     fixes |= 0b1000000000;
   }
 
+  u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
+  if (isBonusMode >= 2)
+    SAVEFILE_write8(SRAM->isBonusMode, false);
+
   return fixes;
 }
 
@@ -302,6 +308,11 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
 inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   return SAVEFILE_read32(SRAM->romId) == romId;
+}
+
+inline u32 SAVEFILE_bonusCount(const GBFS_FILE* fs) {
+  auto count = (u8*)gbfs_get_obj(fs, BONUS_COUNT_FILE, NULL);
+  return count != NULL ? as_le(count) : 0;
 }
 
 inline bool SAVEFILE_isUsingGBAStyle() {

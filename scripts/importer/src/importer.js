@@ -16,6 +16,7 @@ const ROM_ID_FILE = "_rom_id.u32";
 const ROM_ID_FILE_REUSE = "romid.u32";
 const ROM_NAME_FILE = "_rom_name.txt";
 const ROM_NAME_FILE_SOURCE = "romname.txt";
+const BONUS_COUNT_FILE = "_bonus.u32";
 const VIDEOS_FOLDER_NAME = "_videos";
 const BONUS_FOLDER_NAME = "_bonus";
 const NORMALIZE_FILENAME = (it, prefix = "") =>
@@ -51,6 +52,7 @@ const SELECTOR_PREFIXES = {
   CRAZY: "_scz_",
   BONUS: "_bns_",
 };
+const BONUS = "BONUS";
 const LIBRARY_SUFFIX = "_list.txt";
 const CAMPAIGN_LEVELS = ["NORMAL", "HARD", "CRAZY"];
 
@@ -409,6 +411,19 @@ async function run() {
     processedBonusSongs = await importSongs(bonusSongs);
   }
 
+  // -----------
+  // BONUS COUNT
+  // -----------
+
+  if (!_.isEmpty(bonusSongs)) {
+    const bonusCountBuffer = Buffer.alloc(4);
+    bonusCountBuffer.writeUInt32LE(bonusSongs.length);
+    fs.writeFileSync(
+      $path.join(GLOBAL_OPTIONS.output, BONUS_COUNT_FILE),
+      bonusCountBuffer
+    );
+  }
+
   // ------------
   // SONG SORTING
   // ------------
@@ -445,7 +460,7 @@ async function run() {
 
   if (!_.isEmpty(bonusSongs)) {
     sortedSongsByLevel.push({
-      difficultyLevel: "BONUS",
+      difficultyLevel: BONUS,
       songs: processedBonusSongs,
     });
   }
@@ -458,7 +473,7 @@ async function run() {
     console.log(`${"Adding".bold} bosses...`);
 
     for (let { difficultyLevel, songs } of sortedSongsByLevel) {
-      if (difficultyLevel === "BONUS") continue;
+      if (difficultyLevel === BONUS) continue;
 
       for (let i = 0; i < songs.length; i++) {
         const { song, simfile } = songs[i];
@@ -555,7 +570,8 @@ BOUNCE=ALL;`
               name,
               options,
               GLOBAL_OPTIONS.output,
-              IMAGES_PATH
+              IMAGES_PATH,
+              difficultyLevel === BONUS
             ),
           `[${from}-${to}]`
         );
@@ -597,7 +613,7 @@ BOUNCE=ALL;`
   // ----------
 
   for (let { difficultyLevel, songs } of sortedSongsByLevel) {
-    if (difficultyLevel === "BONUS") continue;
+    if (difficultyLevel === BONUS) continue;
 
     console.log(`\n${"SONG LIST".bold} - ${difficultyLevel.cyan}:`);
 

@@ -7,6 +7,7 @@ const fs = require("fs");
 
 const SELECTOR_MSL = "selector.msl";
 const SELECTOR_BMP = "selector.bmp";
+const SELECTOR_BNS_BMP = "selector_bns.bmp";
 const SELECTOR_OUTPUT_PNG = "output.bmp";
 const COMMAND_BUILD = "magick conjure msl:selector.msl || echo Done!";
 const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
@@ -14,16 +15,17 @@ const COMMAND_CLEANUP = (tmpDir, tmpFile) =>
   `rm -rf "${tmpDir}" && rm "${tmpFile}"`;
 const EXTENSION_TMP = "h";
 
-module.exports = async (name, options, outputPath, selectorDir) => {
+module.exports = async (name, options, outputPath, selectorDir, isBonus) => {
   const tempDir = $tmp.dirSync();
   const tempFile = $path.join(outputPath, `${name}.${EXTENSION_TMP}`);
+  const bmp = isBonus ? SELECTOR_BNS_BMP : SELECTOR_BMP;
 
   fs.writeFileSync(
     $path.join(tempDir.name, SELECTOR_MSL),
     buildSelector(options.length)
   );
   fs.copyFileSync(
-    $path.join(selectorDir, SELECTOR_BMP),
+    $path.join(selectorDir, bmp),
     $path.join(tempDir.name, SELECTOR_BMP)
   );
   options.forEach(({ files }, i) => {

@@ -38,6 +38,12 @@
   "any difficulty level.\r\n"     \
   "Use SELECT to add mods!"
 
+#define MODE_ARCADE_BONUS      \
+  "Huh... What's this?\r\n"    \
+  "You've hit REMIX MODE.\r\n" \
+  "Bonus tracks await.\r\n"    \
+  "Enjoy!"
+
 #define MODE_IMPOSSIBLE         \
   "In IMPOSSIBLE MODE:\r\n"     \
   "- Songs run FASTER\r\n"      \
