@@ -100,21 +100,12 @@ void StartScene::load() {
   setUpButtons();
   setUpGameAnimation();
 
-  TextStream::instance().scroll(0, TEXT_OFFSET_Y);
+  TextStream::instance().scrollNow(0, TEXT_OFFSET_Y);
 }
 
 void StartScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
-    printTitle();
-    BACKGROUND_enable(true, true, true, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_loop(SOUND_LOOP);
-  }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
@@ -134,6 +125,20 @@ void StartScene::tick(u16 keys) {
   navigateToAdminMenuIfNeeded(keys);
 
   pixelBlink->tick();
+}
+
+void StartScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
+    printTitle();
+    BACKGROUND_enable(true, true, true, false);
+    SPRITE_enable();
+    player_loop(SOUND_LOOP);
+    hasStarted = true;
+  }
 }
 
 void StartScene::setUpSpritesPalette() {
@@ -321,17 +326,10 @@ void StartScene::printTitle() {
 }
 
 void StartScene::processKeys(u16 keys) {
-  if (SAVEFILE_isUsingGBAStyle()) {
-    inputs[INPUT_LEFT]->setIsPressed(keys & KEY_LEFT);
-    inputs[INPUT_RIGHT]->setIsPressed(keys & KEY_RIGHT);
-    inputs[INPUT_SELECT]->setIsPressed(keys & KEY_A);
-    inputs[INPUT_SELECT_ALT]->setIsPressed(false);
-  } else {
-    inputs[INPUT_LEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-    inputs[INPUT_RIGHT]->setIsPressed(KEY_DOWNRIGHT(keys));
-    inputs[INPUT_SELECT]->setIsPressed(KEY_CENTER(keys));
-    inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CENTER(keys));
-  }
+  inputs[INPUT_LEFT]->setIsPressed(KEY_GOLEFT(keys));
+  inputs[INPUT_RIGHT]->setIsPressed(KEY_GORIGHT(keys));
+  inputs[INPUT_SELECT]->setIsPressed(KEY_CONFIRM(keys));
+  inputs[INPUT_SELECT_ALT]->setIsPressed(KEY_CONFIRM(keys));
 }
 
 void StartScene::processSelectionChange() {

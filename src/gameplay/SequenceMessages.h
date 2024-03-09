@@ -38,6 +38,12 @@
   "any difficulty level.\r\n"     \
   "Use SELECT to add mods!"
 
+#define MODE_ARCADE_BONUS      \
+  "Huh... What's this?\r\n"    \
+  "You've hit REMIX MODE.\r\n" \
+  "Bonus tracks await.\r\n"    \
+  "Enjoy!"
+
 #define MODE_IMPOSSIBLE         \
   "In IMPOSSIBLE MODE:\r\n"     \
   "- Songs run FASTER\r\n"      \
@@ -68,6 +74,12 @@
   "2) Grab a Link Cable.\r\n" \
   "3) Use Multi COOP."
 
+#define DOUBLE_PS2_INPUT_HINT  \
+  "PS/2 input is enabled!\r\n" \
+  "- Connect a keyboard\r\n"   \
+  "- P1: Use ZQSEC\r\n"        \
+  "- P2: Use Numpad 17593"
+
 #define WIN                      \
   "  *YOU'VE WON THE GAME*\r\n"  \
   "\r\n"                         \
@@ -79,5 +91,77 @@
   "\r\n"                       \
   "   You are an absolute\r\n" \
   "  legend. Amazing work!"
+
+#define WIN_DEATHMIX            \
+  " WOAH, congratulations!\r\n" \
+  "  Ok, here's a secret:\r\n"  \
+  "Try holding START when\r\n"  \
+  "opening the ARCADE MODE!"
+
+#define SAVE_FILE_FIXED_1 \
+  "Save file fixed!\r\n"  \
+  " -> code: "
+#define SAVE_FILE_FIXED_2 \
+  "\r\n\r\n"              \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_CRASH \
+  "Video activation failed!\r\n"      \
+  " -> it crashed :/\r\n"             \
+  "\r\n"                              \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_NO_FLASHCART \
+  "Video activation failed!\r\n"             \
+  " -> no EverDrive found\r\n"               \
+  "\r\n"                                     \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_FAILED_MOUNT_FAILED \
+  "Video activation failed!\r\n"             \
+  " -> FAT mount error\r\n"                  \
+  "\r\n"                                     \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_ACTIVATION_SUCCESS \
+  "Videos are now enabled!\r\n"  \
+  "\r\n"                         \
+  "\r\n"                         \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_DEACTIVATION_SUCCESS \
+  "Videos are now disabled!\r\n"   \
+  "\r\n"                           \
+  "\r\n"                           \
+  "=> Press A+B+START+SELECT"
+
+#define VIDEO_READING_FAILED     \
+  "Error reading SD card :(\r\n" \
+  "Videos are now disabled.\r\n" \
+  "\r\n"                         \
+  "=> Press A+B+START+SELECT"
+
+#define EWRAM_OVERCLOCK_ENABLED \
+  "EWRAM overclock ON!\r\n"     \
+  "\r\n"                        \
+  "\r\n"                        \
+  "=> Press A+B+START+SELECT"
+
+#define EWRAM_OVERCLOCK_DISABLED \
+  "EWRAM overclock OFF!\r\n"     \
+  "\r\n"                         \
+  "\r\n"                         \
+  "=> Press A+B+START+SELECT"
+
+#define OPEN_ADMIN_MENU_HINT    \
+  "To open the ADMIN MENU:\r\n" \
+  "- Go to the MAIN MENU\r\n"   \
+  "- Press L+R+START+SELECT"
+
+#define MULTIPLAYER_UNAVAILABLE_PS2_ON \
+  "       UNAVAILABLE\r\n"             \
+  "To use the multiplayer\r\n"         \
+  "modes, disable PS/2 input\r\n"      \
+  "in the ADMIN MENU."
 
 #endif  // SEQUENCE_MESSAGES_H

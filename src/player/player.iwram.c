@@ -26,8 +26,8 @@
 #define FRACUMUL_PRECISION 0xFFFFFFFF
 #define AS_MSECS (1146880 * 1000)
 #define AS_CURSOR 3201039125
-#define REG_DMA1CNT_L *(vu16*)(REG_BASE + 0x0c4)
-#define REG_DMA1CNT_H *(vu16*)(REG_BASE + 0x0c6)
+#define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0d0)
+#define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0d2)
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 #define INLINE static inline __attribute__((always_inline))
@@ -100,52 +100,55 @@ INLINE void gsmInit(gsm r) {
 }
 
 INLINE void mute() {
-  DSOUNDCTRL = DSOUNDCTRL & CHANNEL_A_MUTE;
+  DSOUNDCTRL = DSOUNDCTRL & CHANNEL_B_MUTE;
 }
 
 INLINE void unmute() {
-  DSOUNDCTRL = DSOUNDCTRL | CHANNEL_A_UNMUTE;
+  DSOUNDCTRL = DSOUNDCTRL | CHANNEL_B_UNMUTE;
 }
 
 INLINE void turnOnSound() {
   SETSNDRES(1);
   SNDSTAT = SNDSTAT_ENABLE;
-  DSOUNDCTRL = 0b1111101100001110;
+  DSOUNDCTRL = 0b1111000000001100;
   mute();
 }
 
 INLINE void init() {
   /* TMxCNT_L is count; TMxCNT_H is control */
-  REG_TM0CNT_H = 0;
-  REG_TM0CNT_L = 0x10000 - (924 / 2);
-  REG_TM0CNT_H = TIMER_16MHZ | TIMER_START;
+  REG_TM1CNT_H = 0;
+  REG_TM1CNT_L = 0x10000 - (924 / 2);
+  REG_TM1CNT_H = TIMER_16MHZ | TIMER_START;
 
-  mute();
-}
-
-INLINE void play(const char* name) {
-  gsmInit(&decoder);
-  src = gbfs_get_obj(fs, name, &src_len);
-  src_pos = src;
-  src_end = src + src_len;
   mute();
 }
 
 INLINE void stop() {
+  mute();
   src_pos = NULL;
   src_end = NULL;
-  mute();
+  decode_pos = 160;
+  cur_buffer = 0;
+  last_sample = 0;
+}
+
+INLINE void play(const char* name) {
+  stop();
+  gsmInit(&decoder);
+  src = gbfs_get_obj(fs, name, &src_len);
+  src_pos = src;
+  src_end = src + src_len;
 }
 
 INLINE void disableAudioDMA() {
   // ----------------------------------------------------
   // This convoluted process was taken from the official manual.
-  // It's supposed to disable DMA1 in a "safe" way, avoiding DMA lockups.
+  // It's supposed to disable DMA2 in a "safe" way, avoiding DMA lockups.
   //
   // 32-bit write
   // enabled = 1; start timing = immediately; transfer type = 32 bits;
   // repeat = off; destination = fixed; other bits = no change
-  REG_DMA1CNT = (REG_DMA1CNT & 0b00000000000000001100110111111111) |
+  REG_DMA2CNT = (REG_DMA2CNT & 0b00000000000000001100110111111111) |
                 (0x0004 << 16) | DMA_ENABLE | DMA32 | DMA_DST_FIXED;
   //
   // wait 4 cycles
@@ -155,23 +158,22 @@ INLINE void disableAudioDMA() {
   // 16-bit write
   // enabled = 0; start timing = immediately; transfer type = 32 bits;
   // repeat = off; destination = fixed; other bits = no change
-  REG_DMA1CNT_H = (REG_DMA1CNT_H & 0b0100110111111111) |
+  REG_DMA2CNT_H = (REG_DMA2CNT_H & 0b0100110111111111) |
                   0b0000010100000000;  // DMA32 | DMA_DST_FIXED
   //
   // wait 4 more cycles
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
-  // ----------------------------------------------------
 }
 
 INLINE void dsoundSwitchBuffers(const void* src) {
-  // disable DMA1
+  // disable DMA2
   disableAudioDMA();
 
-  // setup DMA1 for audio
-  REG_DMA1SAD = (intptr_t)src;
-  REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
-  REG_DMA1CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
+  // setup DMA2 for audio
+  REG_DMA2SAD = (intptr_t)src;
+  REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
+  REG_DMA2CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
                 DMA_ENABLE | 1;
 }
 /* ---------------------------------------------------- */
@@ -180,10 +182,6 @@ CODE_EWRAM void player_init() {
   fs = find_first_gbfs_file(0);
   turnOnSound();
   init();
-
-  REG_DMA1SAD = (intptr_t)double_buffers[0];
-  REG_DMA1DAD = (intptr_t)FIFO_ADDR_A;
-  REG_DMA1CNT_L = 0x0004;
 }
 
 CODE_EWRAM void player_unload() {
@@ -261,18 +259,16 @@ CODE_EWRAM void updateRate() {
   }
 }
 
-void player_forever(int (*update)(),
+void player_forever(int (*onUpdate)(),
+                    void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
-    updateRate();
+    // > main game loop
+    int expectedAudioChunk = onUpdate();
 
-    unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, AS_MSECS);
-    PlaybackState.msecs = msecs;
-    int expectedAudioChunk = update();
+    // > multiplayer audio sync
     bool isSynchronized = expectedAudioChunk > 0;
     int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
-
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
       // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
@@ -282,6 +278,7 @@ void player_forever(int (*update)(),
       availableAudioChunks = AUDIO_SYNC_LIMIT;
     }
 
+    // > audio processing (back buffer)
     PLAYER_PRE_UPDATE(
         {
           if (isSynchronized) {
@@ -305,7 +302,21 @@ void player_forever(int (*update)(),
           }
         });
 
+    // > notify multiplayer audio sync cursor
     onAudioChunks(currentAudioChunk);
+
+    // > adjust position based on audio rate
+    updateRate();
+
+    // > calculate played milliseconds
+    unsigned int msecs = src_pos - src;
+    msecs = fracumul(msecs, AS_MSECS);
+    PlaybackState.msecs = msecs;
+
+    // > wait for vertical blank
     VBlankIntrWait();
+
+    // > draw
+    onRender();
   }
 }

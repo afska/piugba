@@ -1,9 +1,16 @@
 #!/bin/bash
 
-FILE_INPUT="piugba.gba"
+FILE_INPUT="$1"
 FILE_TMP="piugba.tmp.gba"
 FILE_OUTPUT="piugba.out.gba"
-DATA="src/data/content/files.gbfs"
+DATA="$2"
+
+if [ -z "$FILE_INPUT" ] || [ -z "$DATA" ] ; then
+    echo ""
+    echo "Usage: ./package.sh path/to/piugba.gba path/to/files.gbfs"
+    echo ""
+    exit 1
+fi
 
 if [ ! -f "$DATA" ]; then
     echo ""
@@ -13,7 +20,7 @@ if [ ! -f "$DATA" ]; then
 fi
 
 KB=$((1024))
-MAX_ROM_SIZE_KB=$((32 * $KB - 1))
+MAX_ROM_SIZE_KB=$((32 * $KB - 256 - 1))
 INITIAL_REQUIRED_SIZE_KB=1024
 
 ROM_SIZE=$(wc -c < $FILE_INPUT)

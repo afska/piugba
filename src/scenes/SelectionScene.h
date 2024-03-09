@@ -27,6 +27,7 @@
 #include "utils/PixelBlink.h"
 
 extern "C" {
+#include "player/player.h"
 #include "utils/gbfs/gbfs.h"
 }
 
@@ -43,6 +44,7 @@ class SelectionScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  private:
   u32 init = 0;
@@ -50,6 +52,8 @@ class SelectionScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
   InitialLevel initialLevel;
+  std::string pendingAudio = "";
+  u32 pendingSeek = 0;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
@@ -73,6 +77,12 @@ class SelectionScene : public Scene {
   bool isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
+  inline void playNow(const char* name) {
+    player_play(name);
+    pendingAudio = "";
+    pendingSeek = 0;
+  }
+
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
   inline u32 getSelectedSongIndex() { return getPageStart() + selected; }
   inline u32 getPageStart() { return page * PAGE_SIZE; }
@@ -87,17 +97,19 @@ class SelectionScene : public Scene {
       return SAVEFILE_getLibrarySize();
 #endif
 
-    u32 count;
+    u32 completed;
     if (ENV_ARCADE)
-      count = SAVEFILE_getLibrarySize();
+      completed =
+          isBonusMode() ? SAVEFILE_bonusCount(fs) : SAVEFILE_getLibrarySize();
     else if (isMultiplayer())
-      count = syncer->$completedSongs;
+      completed = syncer->$completedSongs;
     else
-      count = SAVEFILE_getGameMode() == GameMode::ARCADE
-                  ? SAVEFILE_getMaxCompletedSongs()
-                  : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
+      completed = SAVEFILE_getGameMode() == GameMode::ARCADE
+                      ? isBonusMode() ? SAVEFILE_bonusCount(fs)
+                                      : SAVEFILE_getMaxCompletedSongs()
+                      : SAVEFILE_getCompletedSongsOf(difficulty->getValue());
 
-    return min(count, SAVEFILE_getLibrarySize());
+    return min(completed, SAVEFILE_getLibrarySize());
   }
 
   inline u8 getSelectedNumericLevel() {
@@ -143,7 +155,7 @@ class SelectionScene : public Scene {
 
   inline DifficultyLevel getLibraryType() {
     if (ENV_ARCADE)
-      return DifficultyLevel::CRAZY;
+      return isBonusMode() ? DifficultyLevel::NUMERIC : DifficultyLevel::CRAZY;
 
     if (isMultiplayer())
       return static_cast<DifficultyLevel>(syncer->$libraryType);
@@ -151,8 +163,11 @@ class SelectionScene : public Scene {
     if (IS_STORY(SAVEFILE_getGameMode()))
       return difficulty->getValue();
 
-    return SAVEFILE_getMaxLibraryType();
+    return isBonusMode() ? DifficultyLevel::NUMERIC
+                         : SAVEFILE_getMaxLibraryType();
   }
+
+  inline bool isBonusMode() { return SAVEFILE_read8(SRAM->isBonusMode); }
 
   inline bool isCustomOffsetAdjustmentEnabled() {
     bool isOffsetEditingEnabled =

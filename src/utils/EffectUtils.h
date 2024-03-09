@@ -11,27 +11,35 @@ const u8 BLD_BG[] = {BLD_BG0, BLD_BG1, BLD_BG2, BLD_BG3};
 const u8 BLD_MODE_OFF = 0;
 const u8 BLD_MODE_NORMAL = 1;
 
+extern u16 regBldCnt, regBldAlpha, regMosaic;
+
+inline void EFFECT_render() {
+  REG_BLDCNT = regBldCnt;
+  REG_BLDALPHA = regBldAlpha;
+  REG_MOSAIC = regMosaic;
+}
+
 // Top and bottom values: BLD_BG[0~3], BLD_OBJ, BLD_ALL
 inline void EFFECT_setUpBlend(u8 top, u8 bottom) {
-  REG_BLDCNT = BLD_BUILD(top, bottom, BLD_MODE_NORMAL);
+  regBldCnt = BLD_BUILD(top, bottom, BLD_MODE_NORMAL);
 }
 
 // Opacity is in [MIN_OPACITY, MAX_OPACITY]
 inline void EFFECT_setBlendAlpha(u8 topOpacity) {
-  REG_BLDALPHA = BLDA_BUILD(topOpacity, MAX_OPACITY - topOpacity);
+  regBldAlpha = BLDA_BUILD(topOpacity, MAX_OPACITY - topOpacity);
 }
 
 inline void EFFECT_turnOffBlend() {
-  REG_BLDCNT = BLD_BUILD(0, 0, BLD_MODE_OFF);
+  regBldCnt = BLD_BUILD(0, 0, BLD_MODE_OFF);
 }
 
 // Value is in [0, MAX_MOSAIC]
 inline void EFFECT_setMosaic(u8 value) {
-  REG_MOSAIC = MOS_BUILD(value, value, value, value);
+  regMosaic = MOS_BUILD(value, value, value, value);
 }
 
 inline void EFFECT_turnOffMosaic() {
-  REG_MOSAIC = MOS_BUILD(0, 0, 0, 0);
+  regMosaic = MOS_BUILD(0, 0, 0, 0);
 }
 
 #endif  // EFFECT_UTILS_H

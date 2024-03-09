@@ -1,4 +1,9 @@
+const util = require("util");
 const childProcess = require("child_process");
+const exec = util.promisify(childProcess.exec);
+const execSync = (...args) => {
+  return { stdout: childProcess.execSync(...args) };
+};
 const readlineSync = require("readline-sync");
 const {
   printTableAndGetConsoleOutput,
@@ -8,22 +13,48 @@ const {
 } = require("console-table-printer/dist/src/internalTable/internal-table");
 const _ = require("lodash");
 
+const PROCESS_ASYNC_CONCURRENCY = 10;
+
+const processSync = async (content, action) => {
+  const processedContent = [];
+  for (let i = 0; i < content.length; i++) {
+    const result = await action(content[i], i);
+    processedContent.push(result);
+  }
+  return processedContent;
+};
+const processAsync = async (content, action) => {
+  return await Promise.all(content.map((content, i) => action(content, i)));
+};
+const chunkedProcessAsync = async (content, action) => {
+  const results = [];
+  const chunkedContent = _.chunk(content, PROCESS_ASYNC_CONCURRENCY);
+  for (let chunk of chunkedContent)
+    results.push(...(await processAsync(chunk, action)));
+  return results;
+};
+
 module.exports = {
   run: (command, options) =>
-    childProcess.execSync(command, {
+    (GLOBAL_OPTIONS.fast ? exec : execSync)(command, {
       stdio: "ignore",
       shell: true,
       ...options,
     }),
-  report(action, taskName) {
+  async report(action, taskName, omitIfAsync = false) {
+    const shouldOmit = GLOBAL_OPTIONS.fast && omitIfAsync;
     try {
-      const output = action();
-      console.log(`  ✔️  ${taskName}`.green);
+      const output = await action();
+      if (!shouldOmit) console.log(`  ✔️  ${taskName}`.green);
       return output;
     } catch (e) {
       console.log(`  ❌  ${taskName}\n`.red);
       throw e;
     }
+  },
+  async processContent(content, action) {
+    const func = GLOBAL_OPTIONS.fast ? chunkedProcessAsync : processSync;
+    return await func(content, action);
   },
   insistentChoice(text, options, textColor = "black") {
     const stringOptions = options.map((it) => `${it}`.toLowerCase());

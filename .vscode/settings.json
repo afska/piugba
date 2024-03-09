@@ -72,6 +72,9 @@
 		"gba_input.h": "c",
 		"playbackstate.h": "c",
 		"gsmplayer.h": "c",
-		"player.h": "c"
+		"player.h": "c",
+		"disk.h": "c",
+		"diskio.h": "c",
+		"flashcartio.h": "c"
 	}
 }

@@ -1,16 +1,18 @@
 #include "SettingsScene.h"
 
+#include "AdminScene.h"
 #include "CalibrateScene.h"
 #include "DeathMixScene.h"
 #include "SelectionScene.h"
 #include "StartScene.h"
 #include "assets.h"
+#include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 
 #define TITLE "SETTINGS"
-#define OPTIONS_COUNT 6
+#define OPTION_COUNT 6
 #define OPTION_AUDIO_LAG 0
 #define OPTION_GAME_POSITION 1
 #define OPTION_BACKGROUND_TYPE 2
@@ -22,12 +24,8 @@ SettingsScene::SettingsScene(std::shared_ptr<GBAEngine> engine,
                              const GBFS_FILE* fs)
     : MenuScene(engine, fs) {}
 
-u16 SettingsScene::getCloseKey() {
-  return KEY_START | KEY_SELECT;
-}
-
-u32 SettingsScene::getOptionsCount() {
-  return OPTIONS_COUNT;
+u32 SettingsScene::getOptionCount() {
+  return OPTION_COUNT;
 }
 
 void SettingsScene::loadBackground(u32 id) {
@@ -36,7 +34,7 @@ void SettingsScene::loadBackground(u32 id) {
 }
 
 void SettingsScene::printOptions() {
-  TextStream::instance().scroll(0, -2);
+  TextStream::instance().scrollNow(0, -2);
   SCENE_write(TITLE, 1);
 
   int audioLag = (int)SAVEFILE_read32(SRAM->settings.audioLag);
@@ -70,7 +68,10 @@ void SettingsScene::printOptions() {
   }
 
   printOption(OPTION_RESET, "[RESET OPTIONS]", "", 13);
-  printOption(OPTION_QUIT, "[QUIT TO MAIN MENU]", "", 15);
+  printOption(
+      OPTION_QUIT,
+      quitToAdminMenu ? "[QUIT TO <ADMIN MENU>]" : "[QUIT TO <MAIN MENU>]", "",
+      15);
 }
 
 bool SettingsScene::selectOption(u32 selected, int direction) {
@@ -120,12 +121,17 @@ bool SettingsScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_QUIT: {
-      if (direction != 0)
+      if (direction != 0) {
+        quitToAdminMenu = !quitToAdminMenu;
         return true;
+      }
 
       player_stop();
-      engine->transitionIntoScene(new StartScene(engine, fs),
-                                  new PixelTransitionEffect());
+      if (quitToAdminMenu)
+        SEQUENCE_goToAdminMenuHint();
+      else
+        engine->transitionIntoScene(new StartScene(engine, fs),
+                                    new PixelTransitionEffect());
       return false;
     }
   }

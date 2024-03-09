@@ -45,7 +45,9 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[6];
+  char padding2[2];
+
+  bool isBonusMode;
   u32 randomSeed;
   u8 beat;
 
@@ -96,12 +98,16 @@ inline void SAVEFILE_resetMods() {
 
 inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
-  SAVEFILE_write8(SRAM->adminSettings.rumble, false);
+  SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::rCARTRIDGE);
   SAVEFILE_write8(SRAM->adminSettings.ioBlink, IOBlinkOpts::IO_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.sramBlink, SRAMBlinkOpts::SRAM_BLINK_OFF);
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
   SAVEFILE_write8(SRAM->adminSettings.offsetEditingEnabled, false);
+  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                  BackgroundVideosOpts::dOFF);
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
+  SAVEFILE_write8(SRAM->adminSettings.ps2Input, false);
 
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
@@ -185,8 +191,12 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
   u8 offsetEditingEnabled =
       SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
-  if (arcadeCharts >= 2 || rumble >= 2 || ioBlink >= 3 || sramBlink >= 3 ||
-      navigationStyle >= 2 || offsetEditingEnabled >= 2) {
+  u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+  u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
+  u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
+      navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
+      backgroundVideos >= 3 || ewramOverclock >= 2 || ps2Input >= 2) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
@@ -206,7 +216,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 trainingMode = SAVEFILE_read8(SRAM->mods.trainingMode);
   if (multiplier < 1 || multiplier > 6 || stageBreak >= 3 || pixelate >= 6 ||
       jump >= 3 || reduce >= 5 || bounce >= 3 || colorFilter >= 17 ||
-      speedHack >= 3 || mirrorSteps >= 2 || randomSteps >= 2 || autoMod >= 3 ||
+      speedHack >= 4 || mirrorSteps >= 2 || randomSteps >= 2 || autoMod >= 3 ||
       trainingMode >= 3) {
     SAVEFILE_resetMods();
     fixes |= 0b1000000;
@@ -235,6 +245,10 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
         SRAM->deathMixProgress.completedSongs[DifficultyLevel::CRAZY], 0);
     fixes |= 0b1000000000;
   }
+
+  u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
+  if (isBonusMode >= 2)
+    SAVEFILE_write8(SRAM->isBonusMode, false);
 
   return fixes;
 }
@@ -294,6 +308,11 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
 inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
   u32 romId = as_le((u8*)gbfs_get_obj(fs, ROM_ID_FILE, NULL));
   return SAVEFILE_read32(SRAM->romId) == romId;
+}
+
+inline u32 SAVEFILE_bonusCount(const GBFS_FILE* fs) {
+  auto count = (u8*)gbfs_get_obj(fs, BONUS_COUNT_FILE, NULL);
+  return count != NULL ? as_le(count) : 0;
 }
 
 inline bool SAVEFILE_isUsingGBAStyle() {
@@ -421,8 +440,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
       return false;
     }
 
-    if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
-        GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+    if (GameState.mods.isGradeSavingDisabled())
       return false;
 
     if (grade < currentGrade)
@@ -470,8 +488,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
           return false;
         }
 
-        if (GameState.mods.stageBreak == StageBreakOpts::sOFF ||
-            GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+        if (GameState.mods.isGradeSavingDisabled())
           return false;
 
         if (grade < currentGrade)

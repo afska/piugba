@@ -7,7 +7,6 @@
 
 #include "BackgroundUtils.h"
 #include "EffectUtils.h"
-#include "FadeOutPixelTransitionEffect.h"
 #include "PixelTransitionEffect.h"
 #include "SpriteUtils.h"
 #include "utils/IOPort.h"
@@ -15,6 +14,7 @@
 
 extern "C" {
 #include "player/player.h"
+#include "utils/flashcartio/flashcartio.h"
 }
 
 const u32 TEXT_MIDDLE_COL = 12;
@@ -27,7 +27,7 @@ enum ColorFilter {
   POSTERIZE,
   WARM,
   COLD,
-  NIGHT,
+  ETHEREAL,
   WATER,
   GOLDEN,
   DREAMY,
@@ -41,12 +41,12 @@ enum ColorFilter {
 };
 
 inline void SCENE_init() {
-  EFFECT_turnOffBlend();
-  EFFECT_turnOffMosaic();
   BACKGROUND_enable(false, false, false, false);
   SPRITE_disable();
-  TextStream::instance().clear();
-  TextStream::instance().scroll(0, 0);
+  EFFECT_turnOffBlend();
+  EFFECT_turnOffMosaic();
+  EFFECT_render();
+  TextStream::instance().scrollNow(0, 0);
   TextStream::instance().setMosaic(false);
 }
 
@@ -76,13 +76,38 @@ inline void SCENE_wait(u32 verticalLines) {
   };
 }
 
+__attribute__((section(".ewram"))) extern u32 temp;
+inline void SCENE_overclockEWRAM() {
+  // tries to overclock EWRAM
+  // but rollbacks if a GB Micro is detected to prevent crashes
+
+  *((u32*)0x4000800) = (0x0E << 24) | (1 << 5);
+
+  for (int index = 8; index >= 0; --index) {
+    vu32* volatileTemp = (vu32*)&temp;
+    u32 testValue = qran();
+    *volatileTemp = testValue;
+
+    if (*volatileTemp != testValue) {
+      *((u32*)0x4000800) = (0x0D << 24) | (1 << 5);
+      return;
+    }
+  }
+}
+
 inline void SCENE_softReset() {
+  if (IS_FLASHCART_UNLOCKED)
+    flashcartio_lock();
+
+  VBlankIntrWait();
+  REG_IME = 0;
   player_stop();
   player_unload();
 
   RUMBLE_stop();
-  IOPORT_sdLow();
-  RegisterRamReset(RESET_REG | RESET_VRAM);
+  IOPORT_low();
+  RegisterRamReset(RESET_VRAM | RESET_PALETTE | RESET_OAM | RESET_REG_SOUND |
+                   RESET_REG);
   SoftReset();
 }
 

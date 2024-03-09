@@ -25,14 +25,14 @@ class MenuScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
  protected:
   std::unique_ptr<Background> bg;
   const GBFS_FILE* fs;
   u32 selected = 0;
 
-  virtual u16 getCloseKey() = 0;
-  virtual u32 getOptionsCount() = 0;
+  virtual u32 getOptionCount() = 0;
   virtual void loadBackground(u32 id) = 0;
   virtual void printOptions() = 0;
   virtual bool selectOption(u32 selected, int direction) = 0;
@@ -53,9 +53,9 @@ class MenuScene : public Scene {
   std::unique_ptr<ArrowSelector> selectButton;
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
+  std::unique_ptr<ArrowSelector> changeLeftButton;
+  std::unique_ptr<ArrowSelector> changeRightButton;
   std::unique_ptr<InputHandler> closeInput;
-  std::unique_ptr<InputHandler> incrementInput;
-  std::unique_ptr<InputHandler> decrementInput;
   bool isUsingGBAStyle = false;
   bool blockButtons = false;
 

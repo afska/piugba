@@ -10,8 +10,10 @@ const _ = require("lodash");
 // (Charts must end with the "NOTES" tag)
 
 module.exports = class Simfile {
-  constructor(content) {
+  constructor(content, libraryGlobalOffset, videoFileRegExpCode) {
     this.content = content;
+    this.libraryGlobalOffset = libraryGlobalOffset;
+    this.videoFileRegExpCode = videoFileRegExpCode;
   }
 
   get metadata() {
@@ -19,6 +21,8 @@ module.exports = class Simfile {
     const subtitle = this._getSingleMatch(REGEXPS.metadata.subtitle);
     const artist = this._getSingleMatch(REGEXPS.metadata.artist);
     const custom = this._getSingleMatch(REGEXPS.metadata.custom);
+    const globalOffset = this._getSingleMatch(REGEXPS.chart.offset);
+    const globalBpms = this._getSingleMatch(REGEXPS.chart.bpms);
 
     const config = {
       ..._.mapValues(Mods, (v, k) =>
@@ -47,6 +51,11 @@ module.exports = class Simfile {
       ),
       sampleLength: this._toMilliseconds(
         this._getSingleMatch(REGEXPS.metadata.sampleLength)
+      ),
+      videoOffset: this._toVideoOffset(
+        this._getSingleMatch(REGEXPS.metadata.bgChanges),
+        globalOffset,
+        globalBpms
       ),
       config,
     };
@@ -103,7 +112,7 @@ module.exports = class Simfile {
             rawChart
           );
           if (!_.isFinite(chartOffset)) chartOffset = 0;
-          const offset = -chartOffset * SECOND; // [!] offsets in PIUS are negative
+          const offset = -chartOffset * SECOND - this.libraryGlobalOffset; // [!] offsets in PIUS are negative
 
           const bpms = this._getSingleMatch(REGEXPS.chart.bpms, rawChart);
           if (_.isEmpty(bpms)) throw new Error("no_bpm_info");
@@ -158,7 +167,7 @@ module.exports = class Simfile {
           );
           if (rythmEvents.length + normalEvents.length > MAX_EVENTS)
             throw new Error(
-              `too_big: (${rythmEvents.length} rythm + ${normalEvents} normal) events`
+              `too_big: (${rythmEvents.length} rythm + ${normalEvents.length} normal) events`
             );
 
           return chart;
@@ -229,6 +238,31 @@ module.exports = class Simfile {
     return Math.round(float * 1000);
   }
 
+  _toVideoOffset(bgChanges, globalOffset, globalBpms) {
+    if (
+      this.videoFileRegExpCode == null ||
+      globalOffset == null ||
+      _.isEmpty(globalBpms)
+    )
+      return 0;
+    const firstBpm = globalBpms[0]?.value;
+    if (!_.isFinite(firstBpm) || firstBpm === 0) return 0;
+
+    const regExp = new RegExp(
+      `(-?\\d?\\d?\\d\\.\\d\\d\\d)=${this.videoFileRegExpCode}`,
+      "i"
+    );
+    const matches = (bgChanges || "").match(regExp);
+    if (matches == null || matches[0] == null) return 0;
+    const offsetBeats = parseFloat(matches[0]);
+    if (!_.isFinite(offsetBeats)) return 0;
+
+    const beatLength = MINUTE / firstBpm;
+    const offsetMilliseconds = offsetBeats * beatLength - globalOffset * SECOND;
+
+    return Math.round(offsetMilliseconds);
+  }
+
   _unescape(string) {
     return string.replace(/\\:/g, ":").replace(/\\=/g, "=").replace(/&/g, "/");
   }
@@ -289,6 +323,7 @@ const REGEXPS = {
     lastSecondHint: PROPERTY_FLOAT("LASTSECONDHINT"),
     sampleStart: PROPERTY_FLOAT("SAMPLESTART"),
     sampleLength: PROPERTY_FLOAT("SAMPLELENGTH"),
+    bgChanges: PROPERTY("BGCHANGES"),
     custom: OBJECT("PIUGBA"),
   },
   chart: {
@@ -312,3 +347,4 @@ const REGEXPS = {
 
 const MAX_EVENTS = 3250;
 const SECOND = 1000;
+const MINUTE = 60 * SECOND;

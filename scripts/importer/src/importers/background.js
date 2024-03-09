@@ -1,6 +1,5 @@
 const utils = require("../utils");
 const $path = require("path");
-const fs = require("fs");
 const _ = require("lodash");
 
 const COMMAND_BUILD = (input, output) =>
@@ -18,24 +17,26 @@ const COMMAND_RM = (file) => `rm "${file}"`;
 const COMMAND_FIX = (input) => `pngfix -f "${input}`;
 const RESOLUTION = "240x160!";
 const COLORS = "253";
-const EXTENSIONS_TMP = ["pal.bpm", "bmp", "h"];
+const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
 const EXTENSION_FIXED = "-fixed.png";
 const UNIQUE_MAP_MD5SUM = "f4eda4328302c379fd68847b35e9d8a8";
-const UNIQUE_MAP_NAME = "_unique_map.map.bin";
 
 const FIX_FILE_PATH = (path) =>
   (_.endsWith(path, ".png") ? path.slice(0, -4) : path) + EXTENSION_FIXED;
 //                  ^ not a mistake, it needs to be case-sensitive because of pngfix
 
-let hasOptimizedUniqueMap = false;
-
-module.exports = (name, filePath, outputPath, transparentColor = null) => {
+module.exports = async (
+  name,
+  filePath,
+  outputPath,
+  transparentColor = null
+) => {
   const tempFiles = EXTENSIONS_TMP.map((it) =>
     $path.join(outputPath, `${name}.${it}`)
   );
 
   try {
-    utils.run(
+    await utils.run(
       transparentColor !== null
         ? COMMAND_BUILD_REMAP(
             filePath,
@@ -47,17 +48,17 @@ module.exports = (name, filePath, outputPath, transparentColor = null) => {
     );
   } catch (originalException) {
     try {
-      console.log("  ⚠️  fixing background...");
-      utils.run(COMMAND_FIX(filePath));
+      console.log("  📢  fixing background...");
+      await utils.run(COMMAND_FIX(filePath));
       const fixedFilePath = FIX_FILE_PATH(filePath);
-      utils.run(COMMAND_BUILD(fixedFilePath, tempFiles[1]));
+      await utils.run(COMMAND_BUILD(fixedFilePath, tempFiles[1]));
     } catch (e) {
       throw originalException;
     }
   }
 
-  utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: outputPath });
-  utils.run(COMMAND_CLEANUP(tempFiles[1], tempFiles[2]));
+  await utils.run(COMMAND_ENCODE(tempFiles[1]), { cwd: outputPath });
+  await utils.run(COMMAND_CLEANUP(tempFiles[1], tempFiles[2]));
 
   // optimization:
   // unique backgrounds tend to share the same map file (UNIQUE_MAP_MD5SUM)
@@ -65,22 +66,18 @@ module.exports = (name, filePath, outputPath, transparentColor = null) => {
   try {
     const mapFilePath = $path.join(outputPath, `${name}.map.bin`);
     const mapMd5Sum = _.trim(
-      utils
-        .run(COMMAND_MD5SUM(mapFilePath), {
+      (
+        await utils.run(COMMAND_MD5SUM(mapFilePath), {
           stdio: null,
         })
+      ).stdout
         .toString()
         .replace("\\", "")
     );
-    if (mapMd5Sum === UNIQUE_MAP_MD5SUM) {
-      if (hasOptimizedUniqueMap) utils.run(COMMAND_RM(mapFilePath));
-      else {
-        hasOptimizedUniqueMap = true;
-        fs.renameSync(mapFilePath, $path.join(outputPath, UNIQUE_MAP_NAME));
-      }
-    }
+    if (mapMd5Sum === UNIQUE_MAP_MD5SUM)
+      await utils.run(COMMAND_RM(mapFilePath));
   } catch (e) {
-    console.log("  ⚠️  map optimization failed");
+    console.log("  ⚠️  map optimization failed".yellow);
   }
 };
 

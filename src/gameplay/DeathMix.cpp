@@ -1,6 +1,7 @@
 #include "DeathMix.h"
 
 #include <libgba-sprite-engine/gba/tonc_bios.h>
+
 #include "save/SaveFile.h"
 
 DeathMix::DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel) {

@@ -93,14 +93,8 @@ void CalibrateScene::load() {
 }
 
 void CalibrateScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-  }
 
   processKeys(keys);
 
@@ -129,6 +123,17 @@ void CalibrateScene::tick(u16 keys) {
     finish();
 }
 
+void CalibrateScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    hasStarted = true;
+  }
+}
+
 void CalibrateScene::setUpSpritesPalette() {
   foregroundPalette =
       std::unique_ptr<ForegroundPaletteManager>{new ForegroundPaletteManager(
@@ -145,15 +150,9 @@ void CalibrateScene::setUpBackground() {
 }
 
 void CalibrateScene::processKeys(u16 keys) {
-  if (SAVEFILE_isUsingGBAStyle()) {
-    calibrateButton->setIsPressed(keys & KEY_A);
-    resetButton->setIsPressed(keys & KEY_L);
-    saveButton->setIsPressed(keys & KEY_R);
-  } else {
-    calibrateButton->setIsPressed(KEY_CENTER(keys));
-    resetButton->setIsPressed(KEY_UPLEFT(keys));
-    saveButton->setIsPressed(KEY_UPRIGHT(keys));
-  }
+  calibrateButton->setIsPressed(KEY_CONFIRM(keys));
+  resetButton->setIsPressed(KEY_PREV(keys));
+  saveButton->setIsPressed(KEY_NEXT(keys));
 }
 
 void CalibrateScene::printTitle() {

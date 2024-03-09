@@ -31,7 +31,7 @@ module.exports = {
     POSTERIZE: 3,
     WARM: 4,
     COLD: 5,
-    NIGHT: 6,
+    ETHEREAL: 6,
     WATER: 7,
     GOLDEN: 8,
     DREAMY: 9,
@@ -46,6 +46,7 @@ module.exports = {
   SPEED_HACK: {
     OFF: 0,
     AV: 1,
-    RANDOM: 2,
+    FV: 2,
+    RANDOM: 3,
   },
 };

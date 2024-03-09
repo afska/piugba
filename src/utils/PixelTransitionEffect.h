@@ -9,23 +9,26 @@
 
 const u32 TARGET_MOSAIC = 10;
 
+void SCENE_init();
+
 class PixelTransitionEffect : public SceneEffect {
  public:
-  PixelTransitionEffect(){};
+  PixelTransitionEffect(u32 target = TARGET_MOSAIC) { this->target = target; };
 
-  void update() override {
+  void render() override {
     EFFECT_setMosaic(value);
 
     value++;
 
     if (isDone())
-      BACKGROUND_enable(false, false, false, false);
+      SCENE_init();
   }
 
-  bool isDone() override { return value >= TARGET_MOSAIC; }
+  bool isDone() override { return value >= target; }
 
  private:
   u32 value = 0;
+  u32 target = TARGET_MOSAIC;
 };
 
 #endif  // PIXEL_TRANSITION_EFFECT_H

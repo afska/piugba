@@ -8,11 +8,17 @@ const u32 TITLE_LEN = 31;
 const u32 ARTIST_LEN = 27;
 const u32 MESSAGE_LEN = 107;
 
-typedef struct {
-  Event events[3250];
-} ChartAllocation;  // (78000 bytes) -> (3250)*24
+#define DATA_EWRAM __attribute__((section(".ewram")))
+#define MAX_EVENTS 3250
+#define ALLOCATION_SIZE (MAX_EVENTS * sizeof(Event))
+// (78000 bytes) -> (3250)*24
 
-__attribute__((section(".ewram"))) ChartAllocation chartAllocations[2];
+typedef struct {
+  Event events[MAX_EVENTS];
+} ChartAllocation;
+
+DATA_EWRAM ChartAllocation chartAllocations[GAME_MAX_PLAYERS];
+DATA_EWRAM u32 usedSpace[GAME_MAX_PLAYERS];
 
 void parseEvents(Event* events,
                  u32 count,
@@ -23,6 +29,9 @@ void parseEvents(Event* events,
 Song* SONG_parse(const GBFS_FILE* fs,
                  SongFile* file,
                  std::vector<u8> chartIndexes) {
+  for (u32 i = 0; i < GAME_MAX_PLAYERS; i++)
+    usedSpace[i] = 0;
+
   u32 length;
   auto data = (u8*)gbfs_get_obj(fs, file->getMetadataFile().c_str(), &length);
 
@@ -42,6 +51,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->lastMillisecond = parse_u32le(data, &cursor);
   song->sampleStart = parse_u32le(data, &cursor);
   song->sampleLength = parse_u32le(data, &cursor);
+  song->videoOffset = (int)parse_u32le(data, &cursor);
 
   song->applyTo[DifficultyLevel::NORMAL] = parse_u8(data, &cursor);
   song->applyTo[DifficultyLevel::HARD] = parse_u8(data, &cursor);
@@ -97,6 +107,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
     song->totalSize += sizeof(Event) * chart->eventCount;
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);
+    usedSpace[slot] = song->totalSize;
     slot++;
   }
 
@@ -105,6 +116,7 @@ Song* SONG_parse(const GBFS_FILE* fs,
   song->backgroundTilesPath = file->getBackgroundTilesFile();
   song->backgroundPalettePath = file->getBackgroundPaletteFile();
   song->backgroundMapPath = file->getBackgroundMapFile();
+  song->videoPath = file->getVideoFile();
 
   return song;
 }
@@ -125,8 +137,8 @@ Channel SONG_getChannel(const GBFS_FILE* fs,
   if (gameMode != GameMode::CAMPAIGN)
     return channel;
 
-  cursor +=
-      4 /* lastMillisecond */ + 4 /* sampleStart */ + 4 /* sampleLength */;
+  cursor += 4 /* lastMillisecond */ + 4 /* sampleStart */ +
+            4 /* sampleLength */ + 4 /* videoOffset */;
 
   bool applyToNormal = parse_u8(data, &cursor);
   if (difficultyLevel == DifficultyLevel::NORMAL && !applyToNormal)
@@ -227,4 +239,13 @@ void parseEvents(Event* events,
     event->handled[0] = false;
     event->handled[1] = false;
   }
+}
+
+// this allows *misusing* chart-reserved EWRAM for other things
+u8* getSecondaryMemory(u32 requiredSize) {
+  for (u32 i = 0; i < GAME_MAX_PLAYERS; i++)
+    if (ALLOCATION_SIZE - usedSpace[i] >= requiredSize)
+      return ((u8*)(&chartAllocations[i])) + usedSpace[i];
+
+  return NULL;
 }

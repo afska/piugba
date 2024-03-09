@@ -16,6 +16,10 @@ const u32 RIGHT_CENTER = 5;
 const u32 INSTRUCTOR_X = 86;
 const u32 INSTRUCTOR_Y = 49;
 const u32 START_COMBO_TOTAL = 5;
+const u32 BOUNCE_STEPS[] = {0, 1, 2, 4, 5, 8, 7, 5, 3, 0};
+const u32 BOUNCE_STEPS_TOTAL = 10;
+const int BOUNCE_DIRX[] = {-1, -1, 0, 1, 1};
+const int BOUNCE_DIRY[] = {1, -1, 0, -1, 1};
 const ArrowDirection START_COMBO[] = {
     ArrowDirection::UPLEFT, ArrowDirection::UPRIGHT, ArrowDirection::DOWNLEFT,
     ArrowDirection::DOWNRIGHT, ArrowDirection::CENTER};
@@ -59,15 +63,8 @@ void ControlsScene::load() {
 }
 
 void ControlsScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
-
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_play(SOUND_ENTER);
-  }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
   processKeys(keys);
@@ -79,6 +76,23 @@ void ControlsScene::tick(u16 keys) {
   buttons[RIGHT_CENTER]->tick();
   for (u32 i = 0; i < START_COMBO_TOTAL; i++)
     comboArrows[i]->tick();
+
+  bounceStep = max(bounceStep - 1, 0);
+  instructor->get()->moveTo(
+      INSTRUCTOR_X + BOUNCE_STEPS[bounceStep] * bounceDirectionX,
+      INSTRUCTOR_Y + BOUNCE_STEPS[bounceStep] * bounceDirectionY);
+}
+
+void ControlsScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    player_play(SOUND_ENTER);
+    hasStarted = true;
+  }
 }
 
 void ControlsScene::setUpSpritesPalette() {
@@ -138,6 +152,9 @@ void ControlsScene::processCombo() {
     auto direction = static_cast<ArrowDirection>(i);
 
     if (buttons[direction]->hasBeenPressedNow()) {
+      bounceDirectionX = BOUNCE_DIRX[direction];
+      bounceDirectionY = BOUNCE_DIRY[direction];
+      bounceStep = BOUNCE_STEPS_TOTAL - 1;
       if (START_COMBO[comboStep] == direction)
         advanceCombo();
       else

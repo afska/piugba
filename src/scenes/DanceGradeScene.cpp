@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_grade.h"
 #include "data/content/_compiled_sprites/palette_grade_multi.h"
+#include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
@@ -129,7 +130,7 @@ void DanceGradeScene::load() {
 }
 
 void DanceGradeScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
@@ -138,20 +139,13 @@ void DanceGradeScene::tick(u16 keys) {
     return;
   }
 
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    playSound();
-  }
-
   if (isMultiplayer()) {
     processMultiplayerUpdates();
     if (!syncer->isPlaying())
       return;
   }
 
-  if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
+  if (PlaybackState.hasFinished && KEY_ANYKEY(keys)) {
     if (isMultiplayer()) {
       if (syncer->isMaster())
         syncer->send(SYNC_EVENT_CONFIRM_SONG_END, 0);
@@ -160,6 +154,18 @@ void DanceGradeScene::tick(u16 keys) {
     }
 
     finish();
+  }
+}
+
+void DanceGradeScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    playSound();
+    hasStarted = true;
   }
 }
 
@@ -194,7 +200,7 @@ void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
 
   if (isVs()) {
-    TextStream::instance().scroll(0, -1);
+    TextStream::instance().scrollNow(0, -1);
 
     auto player1Evaluation = syncer->getLocalPlayerId() == 0
                                  ? evaluation.get()

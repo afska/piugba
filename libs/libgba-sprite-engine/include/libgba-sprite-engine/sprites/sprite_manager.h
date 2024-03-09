@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 26/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_SPRITE_MANAGER_H
 #define GBA_SPRITE_ENGINE_SPRITE_MANAGER_H
 
@@ -14,15 +10,6 @@
 #include "sprite.h"
 
 class SpriteManager {
- private:
-  bool initialized;
-  std::vector<Sprite*> sprites;
-
-  void copyOverSpriteOAMToVRAM();
-
-  void copyOverImageDataToVRAM(Sprite* s);
-  void copyOverImageDataToVRAM();
-
  public:
   int getSpriteSize() { return sprites.size(); }
 
@@ -38,6 +25,15 @@ class SpriteManager {
     // of instructions as minimal as possible in here!
     copyOverSpriteOAMToVRAM();
   }
+
+ private:
+  bool initialized;
+  std::vector<Sprite*> sprites;
+
+  void copyOverSpriteOAMToVRAM();
+
+  void copyOverImageDataToVRAM(Sprite* s);
+  void copyOverImageDataToVRAM();
 };
 
 #endif  // GBA_SPRITE_ENGINE_SPRITE_MANAGER_H

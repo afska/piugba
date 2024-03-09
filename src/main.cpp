@@ -4,7 +4,9 @@
 #include "../libs/interrupt.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/debug/DebugTools.h"
+#include "gameplay/multiplayer/PS2Keyboard.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "gameplay/video/VideoStore.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 
@@ -19,6 +21,8 @@ void validateBuild();
 void setUpInterrupts();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+VideoStore* videoStore = new VideoStore();
+PS2Keyboard* ps2Keyboard = new PS2Keyboard();
 LinkUniversal* linkUniversal =
     new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
                       "piuGBA",
@@ -31,8 +35,8 @@ LinkUniversal* linkUniversal =
                       (LinkUniversal::WirelessOptions){
                           .retransmission = true,
                           .maxPlayers = 2,
-                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-                          .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
+                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                           .asyncACKTimerId = 2});
@@ -52,7 +56,10 @@ int main() {
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
       []() {
+        // (onUpdate)
         LINK_UNIVERSAL_ISR_VBLANK();
+        PS2_ISR_VBLANK();
+
         syncer->update();
         engine->update();
 
@@ -63,7 +70,16 @@ int main() {
                    ? (int)syncer->$currentAudioChunk
                    : 0;  // (unsynchronized)
       },
+      []() {
+        // (onRender)
+        if (ps2Keyboard->softReset)
+          SCENE_softReset();
+
+        engine->render();
+        EFFECT_render();
+      },
       [](u32 current) {
+        // (onAudioChunk)
         if (syncer->$isPlayingSong) {
           if (syncer->isMaster()) {
             syncer->$currentAudioChunk = current;
@@ -87,15 +103,17 @@ void ISR_reset() {
     syncer->$resetFlag = true;
     return;
   }
+  if (syncer->isPlaying())
+    return;
 
   SCENE_softReset();
 }
 
 void validateBuild() {
   if (fs == NULL)
-    BSOD("GBFS file not found.");
+    BSOD("This is an empty ROM.              Import songs or use a pack!");
   if (!ENV_ARCADE && gbfs_get_obj(fs, "_snm_0_list.txt", NULL) == NULL)
-    BSOD("This is not an ARCADE build.");
+    BSOD("*Error* (Wrong build)             Mixed FULL rom + ARCADE lib!");
 }
 
 void setUpInterrupts() {
@@ -148,4 +166,5 @@ void synchronizeSongStart() {
     syncer->$currentAudioChunk = AUDIO_SYNC_LIMIT;
 
   syncer->$hasStartedAudio = true;
+  syncer->clearTimeout();
 }

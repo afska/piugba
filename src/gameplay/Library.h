@@ -18,6 +18,7 @@ extern "C" {
 #define PREFIX_NORMAL "_snm_"
 #define PREFIX_HARD "_shd_"
 #define PREFIX_CRAZY "_scz_"
+#define PREFIX_BONUS "_bns_"
 #define SUFFIX_LIST "_list.txt"
 
 const u32 PAGE_SIZE = 4;
@@ -36,6 +37,8 @@ class Library {
         return PREFIX_NORMAL;
       case DifficultyLevel::HARD:
         return PREFIX_HARD;
+      case DifficultyLevel::NUMERIC:
+        return PREFIX_BONUS;
       default:
         return PREFIX_CRAZY;
     }

@@ -167,11 +167,6 @@ class Arrow : public IPoolable {
   void animatePress();
   bool isNearEndOrClose(int newY);
   bool isNearEnd(int newY);
-
-  inline void refresh() {
-    sprite->update();
-    oam_mem[index] = sprite->oam;
-  }
 };
 
 #endif  // ARROW_H

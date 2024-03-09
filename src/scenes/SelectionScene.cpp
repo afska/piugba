@@ -14,11 +14,6 @@
 #include "gameplay/models/Song.h"
 #include "utils/SceneUtils.h"
 
-extern "C" {
-#include "player/player.h"
-#include "utils/gbfs/gbfs.h"
-}
-
 #define CONFIRM_MESSAGE "Press    to start!"
 
 const u32 ID_HIGHLIGHTER = 1;
@@ -57,6 +52,7 @@ const u32 LOADING_INDICATORS_X[] = {
     193,
 };
 const u32 LOADING_INDICATORS_Y[] = {GBA_SCREEN_HEIGHT - 16 - 4, 18};
+const std::string SOUND_MOD_STR = SOUND_MOD;
 
 static std::unique_ptr<Highlighter> highlighter{
     new Highlighter(ID_HIGHLIGHTER)};
@@ -106,7 +102,9 @@ std::vector<Sprite*> SelectionScene::sprites() {
 
 void SelectionScene::load() {
   if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
-    BSOD("This version is ARCADE only.");
+    BSOD("*Error* (Check your save file)       There's no campaign mode!");
+  if (isBonusMode() && SAVEFILE_bonusCount(fs) == 0)
+    BSOD("*Error* (Check your save file)          There's no bonus data!");
 
   if (isMultiplayer()) {
     syncer->clearTimeout();
@@ -116,7 +114,7 @@ void SelectionScene::load() {
   SAVEFILE_write8(SRAM->state.isPlaying, false);
   SCENE_init();
 
-  TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
+  TextStream::instance().scrollNow(0, TEXT_SCROLL_NORMAL);
   TextStream::instance().setMosaic(true);
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
@@ -150,28 +148,13 @@ void SelectionScene::load() {
 }
 
 void SelectionScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || init < 2)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
     player_stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
-  }
-
-  if (init == 0) {
-    init++;
-    return;
-  } else if (init == 1) {
-    if (isDouble()) {
-      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
-      VBlankIntrWait();
-    }
-
-    BACKGROUND_enable(true, true, true, false);
-    SPRITE_enable();
-    highlighter->initialize(selected);
-    init++;
   }
 
   processKeys(keys);
@@ -201,6 +184,36 @@ void SelectionScene::tick(u16 keys) {
   blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
                    HIGHLIGHTER_OPACITY);
   EFFECT_setBlendAlpha(blendAlpha);
+}
+
+void SelectionScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (init == 0) {
+    init++;
+    return;
+  } else if (init == 1) {
+    if (isDouble()) {
+      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
+      VBlankIntrWait();
+    }
+
+    BACKGROUND_enable(true, true, true, false);
+    SPRITE_enable();
+    highlighter->initialize(selected);
+    init++;
+  }
+
+  if (pendingAudio != "") {
+    player_play(pendingAudio.c_str());
+    pendingAudio = "";
+  }
+
+  if (pendingSeek > 0) {
+    player_seek(pendingSeek);
+    pendingSeek = 0;
+  }
 }
 
 void SelectionScene::setUpSpritesPalette() {
@@ -295,7 +308,7 @@ void SelectionScene::setUpLocks() {
 }
 
 void SelectionScene::setUpPager() {
-  count = SAVEFILE_getLibrarySize();
+  count = isBonusMode() ? SAVEFILE_bonusCount(fs) : SAVEFILE_getLibrarySize();
 
   scrollTo(SAVEFILE_read8(SRAM->memory.pageIndex),
            SAVEFILE_read8(SRAM->memory.songIndex));
@@ -373,24 +386,13 @@ void SelectionScene::goToSong() {
 }
 
 void SelectionScene::processKeys(u16 keys) {
-  if (SAVEFILE_isUsingGBAStyle()) {
-    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(keys & KEY_LEFT);
-    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(keys & KEY_L);
-    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(keys & KEY_A);
-    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(keys & KEY_R);
-    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(keys & KEY_RIGHT);
-    multiplier->setIsPressed(keys & KEY_SELECT);
-    settingsMenuInput->setIsPressed(keys & KEY_START);
-  } else {
-    arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_DOWNLEFT(keys));
-    arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_UPLEFT(keys));
-    arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CENTER(keys));
-    arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_UPRIGHT(keys));
-    arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(
-        KEY_DOWNRIGHT(keys));
-    multiplier->setIsPressed(keys & KEY_SELECT);
-    settingsMenuInput->setIsPressed(keys & KEY_START);
-  }
+  arrowSelectors[ArrowDirection::DOWNLEFT]->setIsPressed(KEY_GOLEFT(keys));
+  arrowSelectors[ArrowDirection::UPLEFT]->setIsPressed(KEY_PREV(keys));
+  arrowSelectors[ArrowDirection::CENTER]->setIsPressed(KEY_CONFIRM(keys));
+  arrowSelectors[ArrowDirection::UPRIGHT]->setIsPressed(KEY_NEXT(keys));
+  arrowSelectors[ArrowDirection::DOWNRIGHT]->setIsPressed(KEY_GORIGHT(keys));
+  multiplier->setIsPressed(KEY_SEL(keys));
+  settingsMenuInput->setIsPressed(KEY_STA(keys));
 }
 
 void SelectionScene::processDifficultyChangeEvents() {
@@ -472,7 +474,7 @@ void SelectionScene::processMenuEvents() {
 
   if (multiplier->hasBeenPressedNow()) {
     if (IS_STORY(SAVEFILE_getGameMode())) {
-      player_play(SOUND_MOD);
+      playNow(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     } else if (!isCustomOffsetAdjustmentEnabled()) {
       player_stop();
@@ -509,7 +511,10 @@ bool SelectionScene::onCustomOffsetChange(ArrowDirection selector, int offset) {
       updateCustomOffset(offset);
       unconfirm();
       updateSelection();
-      player_play(SOUND_MOD);
+
+      pendingAudio = "";
+      pendingSeek = 0;
+      playNow(SOUND_MOD);
     }
 
     return true;
@@ -525,7 +530,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
 
   if (arrowSelectors[selector]->hasBeenPressedNow()) {
     unconfirm();
-    player_play(SOUND_STEP);
+    playNow(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -575,7 +580,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
     }
 
     unconfirm();
-    player_play(SOUND_STEP);
+    playNow(SOUND_STEP);
 
     syncNumericLevelChanged(newValue);
     setNumericLevel(newValue);
@@ -597,7 +602,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       bool withSound = arrowSelectors[selector]->hasBeenPressedNow();
 
       if (withSound)
-        player_play(SOUND_STEP);
+        playNow(SOUND_STEP);
 
       if (isMultiplayer() && syncer->isMaster())
         syncer->send(SYNC_EVENT_SONG_CORNER, withSound);
@@ -644,8 +649,8 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   printNumericLevel(chart);
   loadSelectedSongGrade();
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
-    player_play(song->audioPath.c_str());
-    player_seek(song->sampleStart);
+    pendingAudio = song->audioPath;
+    pendingSeek = song->sampleStart;
   }
 
   SONG_free(song);
@@ -655,7 +660,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   highlighter->select(selected);
 
   if (initialLevel != InitialLevel::KEEP_LEVEL) {
-    player_play(SOUND_MOD);
+    pendingAudio = SOUND_MOD_STR;
     initialLevel = InitialLevel::KEEP_LEVEL;
   }
 }
@@ -707,10 +712,10 @@ void SelectionScene::confirm() {
         NUMERIC_LEVEL_BADGE_Y + NUMERIC_LEVEL_BADGE_OFFSET_Y);
   }
 
-  player_play(SOUND_STEP);
+  playNow(SOUND_STEP);
   confirmed = true;
   arrowSelectors[ArrowDirection::CENTER]->get()->moveTo(CENTER_X, CENTER_Y);
-  TextStream::instance().scroll(0, TEXT_SCROLL_CONFIRMED);
+  TextStream::instance().scrollNow(0, TEXT_SCROLL_CONFIRMED);
   TextStream::instance().clear();
   printNumericLevel(NULL, NUMERIC_LEVEL_BADGE_OFFSET_ROW);
   SCENE_write(CONFIRM_MESSAGE, TEXT_ROW);
@@ -723,7 +728,7 @@ void SelectionScene::unconfirm() {
                                        NUMERIC_LEVEL_BADGE_Y);
 
     SPRITE_hide(arrowSelectors[ArrowDirection::CENTER]->get());
-    TextStream::instance().scroll(0, TEXT_SCROLL_NORMAL);
+    TextStream::instance().scrollNow(0, TEXT_SCROLL_NORMAL);
     updateSelection();
   }
   confirmed = false;
@@ -873,7 +878,7 @@ void SelectionScene::processMultiplayerUpdates() {
       }
       case SYNC_EVENT_LEVEL_CHANGED: {
         unconfirm();
-        player_play(SOUND_STEP);
+        playNow(SOUND_STEP);
 
         if (syncer->isMaster()) {
           setNumericLevel(getSelectedNumericLevelIndex());
@@ -889,7 +894,7 @@ void SelectionScene::processMultiplayerUpdates() {
       case SYNC_EVENT_SONG_CORNER: {
         unconfirm();
         if (payload)
-          player_play(SOUND_STEP);
+          playNow(SOUND_STEP);
 
         syncer->clearTimeout();
         break;

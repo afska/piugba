@@ -2,11 +2,11 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo1](https://i.imgur.com/8YB5wcF.gif)![demo2](https://i.imgur.com/z5rg1ck.gif)![demo3](https://i.imgur.com/FJzNbrp.gif)![demo4](https://i.imgur.com/yFCJ6uO.gif)![demo5](https://i.imgur.com/EXxgXyX.gif)![demo6](https://i.imgur.com/Yr2hom2.gif)![demo7](https://i.imgur.com/0mmCddv.gif)![demo8](https://i.imgur.com/EmIJdG3.gif)![demo9](https://i.imgur.com/xHmFWqn.gif)![demo10](https://i.imgur.com/9a9kB6E.gif)![demo11](https://i.imgur.com/m4D0HYn.gif)![demo12](https://i.imgur.com/o8DS4Xb.gif)
+![demo1](https://i.imgur.com/Lo1Mxdd.gif)![demo2](https://i.imgur.com/z5rg1ck.gif)![demo3](https://i.imgur.com/FJzNbrp.gif)![demo4](https://i.imgur.com/yFCJ6uO.gif)![demo5](https://i.imgur.com/EXxgXyX.gif)![demo6](https://i.imgur.com/Yr2hom2.gif)![demo7](https://i.imgur.com/0mmCddv.gif)![demo8](https://i.imgur.com/fGGFvAj.gif)![demo9](https://i.imgur.com/xHmFWqn.gif)![demo10](https://i.imgur.com/9a9kB6E.gif)![demo11](https://i.imgur.com/m4D0HYn.gif)![demo12](https://i.imgur.com/o8DS4Xb.gif)
 
 > <img alt="rlabs" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116227197-400d2380-a72a-11eb-9e7b-389aae76f13e.png" /> Created by [[r]labs](https://r-labs.io).
 
-> <img alt="discord" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116226650-a180c280-a729-11eb-8ae2-be2745d40481.png" /> Join our [Discord server](https://discord.com/invite/JE33cc2) to find pre-built ROMs and user-created content!
+> <img alt="discord" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116226650-a180c280-a729-11eb-8ae2-be2745d40481.png" /> Join our [Discord server](https://discord.com/invite/JE33cc2) to find **pre-built ROMs** and user-created content!
 
 ## Key features
 
@@ -34,10 +34,12 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Mirror and random steps
   - Training mode: Rate and Fast-forward
   - AutoMod: Swaps mods randomly
+- **Background videos** can be displayed using an _EverDrive_
 - Hardware **integrations**:
   - Rumble
   - I/O LED Sync
   - SRAM LED Sync
+  - PS/2 input
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~70 songs per ROM file.
@@ -51,21 +53,6 @@ Charts are converted into a format created for this project called **PIUS**. The
 **[Read the wiki](https://github.com/afska/piugba/wiki)** for more details!
 
 ## How to a build a ROM
-
-- Install everything (read the section below).
-- Create in `src/data/content/songs` one folder per song, including:
-  - one `.mp3` file with the song
-  - one `.png` file with the background
-  - one `.ssc` file with the charts
-- Run:
-
-```bash
-make import
-make assets
-make restart ENV=production
-```
-
-**Full guide:**
 
 **[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)**
 
@@ -84,13 +71,13 @@ make restart ENV=production
     - [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA ROMs. It comes with:
       - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
       - _gbfs_: Used to create a package with all the game assets
-    - [node.js 10](https://nodejs.org/en): The JS runtime
+    - [node.js 14.\*](https://nodejs.org/en): The JS runtime
     - [make 3.81](scripts/toolchain/programs/make-3.81.zip): The build automation tool
   - Media Processing
     - [ImageMagick 7.0.10.3](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
     - [ffmpeg _(with libgsm)_ 3.3.3](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to PCM
       - To avoid using the `ffmpeg.exe` binary included with _ImageMagick_, add it to `PATH` first!
-      - Check this running `where ffmpeg`
+      - Check this by running `where ffmpeg`
     - [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
   - Other
     - [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`
@@ -139,13 +126,16 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 
 #### Parameters
 
-| Name     | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| -------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MODE`   | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See **[Wiki: Autoimporting songs](https://github.com/afska/piugba/wiki/Autoimporting-songs)**.                                                                                                                                                                                                                                                                                                                                                                                    |
-| `ENV`    | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have:<br><br>1) PIU-style controls by default, and a _debug menu_ to correct songs' offsets. See **[Wiki: Correcting offsets](https://github.com/afska/piugba/wiki/Building-a-ROM#correcting-offsets)**.<br><br>2) If _SELECT_ is pressed when a campaign song starts, stage-break will be ON regardless of the environment. |
-| `BOSS`   | false or **true**                             | Automatically adds _boss levels_ to the campaign modes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `ARCADE` | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `SONGS`  | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Name          | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MODE`        | **`auto`** or `manual`                        | When using `auto`, the import process tries to guess the missing data (e.g. difficulty levels). See **[Wiki: Autoimporting songs](https://github.com/afska/piugba/wiki/Autoimporting-songs)**.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `ENV`         | **`development`**, or `debug` or `production` | `debug`: everything is unlocked, backgrounds are disabled, and stage-break is OFF.<br>`development`: the same thing, but including backgrounds.<br>`production`: backgrounds, stage-break ON, and working locks.<br><br>Non-production versions also have:<br><br>1) PIU-style controls by default, and a _debug menu_ to correct songs' offsets. See **[Wiki: Correcting offsets](https://github.com/afska/piugba/wiki/Building-a-ROM#correcting-offsets)**.<br><br>2) If _SELECT_ is pressed when a campaign song starts, stage-break will be ON regardless of the environment. |
+| `BOSS`        | false or **true**                             | Automatically adds _boss levels_ to the campaign modes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `ARCADE`      | **false** or true                             | Creates an arcade-only version of the game that only uses numeric levels, without the campaign modes.<br><br>Add this parameter to both _import_ and _build_ commands!                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `SONGS`       | _path to a directory_                         | Songs directory. Defaults to: `src/data/content/songs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `VIDEOLIB`    | _path to a directory_                         | Video library output directory. Defaults to: `src/data/content/piuGBA_videos`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `VIDEOENABLE` | **false** or true                             | Enables the creation of a video library file (`VIDEOLIB`) using the `${SONGS}/_videos` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `FAST`        | **false** or true                             | Uses async I/O to import songs faster. It may disrupt stdout order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Scripts
 
@@ -181,12 +171,13 @@ cat rom.gba files.gbfs > rom.out.gba
 #### Build gba-sprite-engine
 
 ```bash
-rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ./../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../
+rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../ ; rm -rf ../piugba/libs/libgba-sprite-engine/include/ ; cp -r ./engine/include ../piugba/libs/libgba-sprite-engine/
 ```
 
 #### Build importer.exe
 
 ```bash
+cd scripts/importer
 npm install -g pkg
 pkg --targets node14-win --config package.json -o importer.exe --public --public-packages "*" --no-bytecode --compress GZip src/importer.js
 ```
@@ -210,3 +201,4 @@ If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
 - [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v6.0.3
+- [FatFS](http://elm-chan.org/fsw/ff/): R0.15

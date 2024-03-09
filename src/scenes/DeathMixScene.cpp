@@ -96,17 +96,10 @@ void DeathMixScene::setUpSpritesPalette() {
 }
 
 void DeathMixScene::processKeys(u16 keys) {
-  if (SAVEFILE_isUsingGBAStyle()) {
-    backButton->setIsPressed(keys & KEY_L);
-    nextButton->setIsPressed(keys & KEY_R);
-    multiplier->setIsPressed(keys & KEY_SELECT);
-    settingsMenuInput->setIsPressed(keys & KEY_START);
-  } else {
-    backButton->setIsPressed(KEY_UPLEFT(keys));
-    nextButton->setIsPressed(KEY_UPRIGHT(keys));
-    multiplier->setIsPressed(keys & KEY_SELECT);
-    settingsMenuInput->setIsPressed(keys & KEY_START);
-  }
+  backButton->setIsPressed(KEY_PREV(keys));
+  nextButton->setIsPressed(KEY_NEXT(keys));
+  multiplier->setIsPressed(KEY_SEL(keys));
+  settingsMenuInput->setIsPressed(KEY_STA(keys));
 }
 
 void DeathMixScene::processDifficultyChangeEvents() {
@@ -173,8 +166,7 @@ void DeathMixScene::loadProgress() {
 }
 
 void DeathMixScene::confirm(u16 keys) {
-  bool isPressed =
-      SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+  bool isPressed = KEY_CONFIRM(keys);
 
   if (isPressed) {
     SAVEFILE_write32(SRAM->randomSeed, __qran_seed);

@@ -1,13 +1,13 @@
 #ifndef DEATH_MIX_H
 #define DEATH_MIX_H
 
-#include "Library.h"
-#include "models/Song.h"
-#include "objects/score/Score.h"
-
 #include <array>
 #include <memory>
 #include <vector>
+
+#include "Library.h"
+#include "models/Song.h"
+#include "objects/score/Score.h"
 
 typedef struct {
   Song* song;

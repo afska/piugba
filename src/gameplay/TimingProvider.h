@@ -3,11 +3,6 @@
 
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
-#ifndef AUDIO_LAG
-// Defined in Makefile: Emulator's audio lag
-#define AUDIO_LAG 0
-#endif
-
 /*
   x = x0 + v * t
   ARROW_FINAL_Y() = ARROW_INITIAL_Y + ARROW_SPEED * t

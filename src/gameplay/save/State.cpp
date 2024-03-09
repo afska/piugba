@@ -20,7 +20,8 @@ void STATE_setup(Song* song, Chart* chart) {
           : static_cast<BackgroundType>(
                 SAVEFILE_read8(SRAM->settings.backgroundType));
   GameState.settings.bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
-  GameState.adminSettings.rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
+  GameState.adminSettings.rumble =
+      static_cast<RumbleOpts>(SAVEFILE_read8(SRAM->adminSettings.rumble));
   GameState.adminSettings.ioBlink =
       static_cast<IOBlinkOpts>(SAVEFILE_read8(SRAM->adminSettings.ioBlink));
   GameState.adminSettings.sramBlink =
@@ -124,13 +125,15 @@ void STATE_setup(Song* song, Chart* chart) {
     }
   }
 
-#ifdef SENV_DEVELOPMENT
   if (gameMode == GameMode::DEATH_MIX) {
+#ifdef SENV_DEVELOPMENT
     GameState.mods.stageBreak = ((~REG_KEYS & KEY_ANY) & KEY_SELECT)
                                     ? StageBreakOpts::sON
                                     : StageBreakOpts::sOFF;
-  }
 #endif
+
+    GameState.mods.speedHack = SpeedHackOpts::hFIXED_VELOCITY;
+  }
 
   GameState.positionX[0] =
       isMultiplayer() ? (isVs() ? GAME_POSITION_X[0] : GAME_COOP_POSITION_X)

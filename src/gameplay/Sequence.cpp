@@ -8,6 +8,8 @@
 #include "Key.h"
 #include "SequenceMessages.h"
 #include "gameplay/Library.h"
+#include "gameplay/video/VideoStore.h"
+#include "multiplayer/PS2Keyboard.h"
 #include "multiplayer/Syncer.h"
 #include "scenes/CalibrateScene.h"
 #include "scenes/ControlsScene.h"
@@ -34,20 +36,30 @@ void SEQUENCE_initialize(std::shared_ptr<GBAEngine> engine,
 Scene* SEQUENCE_getInitialScene() {
   u32 fixes = SAVEFILE_initialize(_fs);
 
-  if (!SAVEFILE_isWorking(_fs)) {
-    auto scene = new TalkScene(_engine, _fs, SRAM_TEST_FAILED, [](u16 keys) {});
-    scene->withButton = false;
-    return scene;
+  if (!SAVEFILE_isWorking(_fs))
+    return SEQUENCE_halt(SRAM_TEST_FAILED);
+
+  if (fixes > 0)
+    return SEQUENCE_halt(SAVE_FILE_FIXED_1 + std::to_string(fixes) +
+                         SAVE_FILE_FIXED_2);
+
+  bool ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
+  if (ewramOverclock)
+    SCENE_overclockEWRAM();
+
+  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  if (ps2Input)
+    ps2Keyboard->activate();
+
+  if (videoStore->isActivating()) {
+    videoStore->disable();
+    return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_CRASH);
   }
 
-  if (fixes > 0) {
-    auto scene =
-        new TalkScene(_engine, _fs,
-                      "Save file fixed!\r\n -> code: " + std::to_string(fixes) +
-                          "\r\n\r\n=> Press A+B+START+SELECT",
-                      [](u16 keys) {});
-    scene->withButton = false;
-    return scene;
+  if (videoStore->isEnabled()) {
+    auto nextScene = SEQUENCE_activateVideo(false);
+    if (nextScene != NULL)
+      return nextScene;
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
@@ -69,13 +81,13 @@ Scene* SEQUENCE_getCalibrateOrMainScene() {
 
   if (!isAudioLagCalibrated) {
     auto scene = new TalkScene(_engine, _fs, CALIBRATE_AUDIO_LAG, [](u16 keys) {
-      if (keys & KEY_START) {
+      if (KEY_STA(keys)) {
         SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 1);
         goTo(new CalibrateScene(_engine, _fs,
                                 []() { goTo(SEQUENCE_getMainScene()); }));
       }
 
-      if (keys & KEY_SELECT) {
+      if (KEY_SEL(keys)) {
         SAVEFILE_write8(SRAM->memory.isAudioLagCalibrated, 1);
         goTo(SEQUENCE_getMainScene());
       }
@@ -91,6 +103,47 @@ Scene* SEQUENCE_getMainScene() {
   return new StartScene(_engine, _fs);
 }
 
+Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
+  auto videoState = videoStore->activate();
+  switch (videoState) {
+    case VideoStore::NO_SUPPORTED_FLASHCART: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_NO_FLASHCART);
+      break;
+    }
+    case VideoStore::MOUNT_ERROR: {
+      return SEQUENCE_halt(VIDEO_ACTIVATION_FAILED_MOUNT_FAILED);
+      break;
+    }
+    case VideoStore::ACTIVE:
+    default: {
+      return showSuccessMessage ? SEQUENCE_halt(VIDEO_ACTIVATION_SUCCESS)
+                                : NULL;
+    }
+  }
+}
+
+Scene* SEQUENCE_deactivateVideo() {
+  videoStore->disable();
+  return SEQUENCE_halt(VIDEO_DEACTIVATION_SUCCESS);
+}
+
+Scene* SEQUENCE_activateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_ENABLED);
+}
+
+Scene* SEQUENCE_deactivateEWRAMOverclock() {
+  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
+  return SEQUENCE_halt(EWRAM_OVERCLOCK_DISABLED);
+}
+
+Scene* SEQUENCE_halt(std::string error) {
+  auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
+  scene->withButton = false;
+  return scene;
+}
+
 void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool areArcadeModesUnlocked = SAVEFILE_isModeUnlocked(GameMode::ARCADE);
   bool isImpossibleModeUnlocked = SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
@@ -99,8 +152,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, ARCADE_MODE_LOCKED,
         [](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
@@ -112,8 +164,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     goTo(new TalkScene(
         _engine, _fs, IMPOSSIBLE_MODE_LOCKED,
         [](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new StartScene(_engine, _fs));
         },
@@ -121,17 +172,36 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
+  if (IS_MULTIPLAYER(gameMode) && ps2Keyboard->isActive()) {
+    goTo(new TalkScene(
+        _engine, _fs, MULTIPLAYER_UNAVAILABLE_PS2_ON,
+        [](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(new StartScene(_engine, _fs));
+        },
+        true));
+    return;
+  }
+
+  u16 keys = ~REG_KEYS & KEY_ANY;
+  bool isHoldingStart = KEY_STA(keys);
+  bool wasBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
+  bool isBonusMode = SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
   auto lastGameMode = SAVEFILE_getGameMode();
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
       (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
-  if (lastGameMode != gameMode &&
-      !isTransitioningBetweenCampaignAndChallenges) {
+  if ((lastGameMode != gameMode &&
+       !isTransitioningBetweenCampaignAndChallenges) ||
+      (gameMode == GameMode::ARCADE && lastGameMode == GameMode::ARCADE &&
+       wasBonusMode != isBonusMode)) {
     bool shouldResetCursor =
         !(IS_STORY(lastGameMode) && gameMode == GameMode::ARCADE &&
           SAVEFILE_getMaxLibraryType() ==
               static_cast<DifficultyLevel>(
-                  SAVEFILE_read8(SRAM->memory.difficultyLevel)));
+                  SAVEFILE_read8(SRAM->memory.difficultyLevel)) &&
+          !isBonusMode);
 
     auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
@@ -143,9 +213,9 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
+  SAVEFILE_write8(SRAM->isBonusMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
-    u16 keys = ~REG_KEYS & KEY_ANY;
-    linkUniversal->setProtocol((keys & KEY_START)
+    linkUniversal->setProtocol(isHoldingStart
                                    ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 
@@ -153,14 +223,16 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   } else if (gameMode == GameMode::DEATH_MIX) {
     goTo(new DeathMixScene(_engine, _fs));
   } else {
+    SAVEFILE_write8(SRAM->isBonusMode, isBonusMode);
+
     auto message = gameMode == GameMode::CAMPAIGN ? MODE_CAMPAIGN
-                   : gameMode == GameMode::ARCADE ? MODE_ARCADE
-                                                  : MODE_IMPOSSIBLE;
+                   : gameMode == GameMode::ARCADE
+                       ? (isBonusMode ? MODE_ARCADE_BONUS : MODE_ARCADE)
+                       : MODE_IMPOSSIBLE;
     goTo(new TalkScene(
         _engine, _fs, message,
         [](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new SelectionScene(_engine, _fs));
         },
@@ -185,13 +257,12 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
 
   if (gameMode == GameMode::CAMPAIGN && song->applyTo[chart->difficulty] &&
       song->hasMessage) {
-    goTo(new TalkScene(
-        _engine, _fs, std::string(song->message), [song, chart](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
-          if (isPressed)
-            goTo(new SongScene(_engine, _fs, song, chart));
-        }));
+    goTo(new TalkScene(_engine, _fs, std::string(song->message),
+                       [song, chart](u16 keys) {
+                         bool isPressed = KEY_CONFIRM(keys);
+                         if (isPressed)
+                           goTo(new SongScene(_engine, _fs, song, chart));
+                       }));
     return;
   }
 
@@ -199,8 +270,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_HINT,
         [song, chart](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
@@ -213,8 +283,7 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, KEYS_TRAINING_HINT,
         [song, chart](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
@@ -227,8 +296,20 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     goTo(new TalkScene(
         _engine, _fs, COOP_HINT,
         [song, chart](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
+    return;
+  }
+
+  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() && ps2Input) {
+    goTo(new TalkScene(
+        _engine, _fs, DOUBLE_PS2_INPUT_HINT,
+        [song, chart](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(new SongScene(_engine, _fs, song, chart));
         },
@@ -244,15 +325,26 @@ void SEQUENCE_goToWinOrSelection(bool isLastSong) {
 
   if ((IS_STORY(gameMode) || gameMode == GameMode::DEATH_MIX) && isLastSong)
     goTo(new TalkScene(
-        _engine, _fs, gameMode == GameMode::CAMPAIGN ? WIN : WIN_IMPOSSIBLE,
+        _engine, _fs,
+        gameMode == GameMode::DEATH_MIX
+            ? (SAVEFILE_bonusCount(_fs) > 0 ? WIN_DEATHMIX : WIN_IMPOSSIBLE)
+        : gameMode == GameMode::CAMPAIGN ? WIN
+                                         : WIN_IMPOSSIBLE,
         [](u16 keys) {
-          bool isPressed =
-              SAVEFILE_isUsingGBAStyle() ? (keys & KEY_A) : KEY_CENTER(keys);
+          bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
             goTo(SEQUENCE_getMainScene());
         }));
   else
     goTo(new SelectionScene(_engine, _fs));
+}
+
+void SEQUENCE_goToAdminMenuHint() {
+  goTo(new TalkScene(_engine, _fs, OPEN_ADMIN_MENU_HINT, [](u16 keys) {
+    bool isPressed = KEY_CONFIRM(keys);
+    if (isPressed)
+      goTo(SEQUENCE_getMainScene());
+  }));
 }
 
 bool SEQUENCE_isMultiplayerSessionDead() {

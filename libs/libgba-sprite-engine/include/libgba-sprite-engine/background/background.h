@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 28/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_BACKGROUND_H
 #define GBA_SPRITE_ENGINE_BACKGROUND_H
 
@@ -15,28 +11,7 @@
 #define MAPLAYOUT_64X64 3
 
 class Background {
- private:
-  void buildRegister();
-  u32 getBgControlRegisterIndex();
-
- protected:
-  const void* data;
-  const void* map;
-  int size, bgIndex;
-  int mapSize, mapLayout;
-  int screenBlockIndex, charBlockIndex, priority;
-  bool mosaicEnabled = false;
-
  public:
-  const int getScreenBlock() { return screenBlockIndex; }
-  const int getCharBlock() { return charBlockIndex; }
-  void useMapScreenBlock(int block) { screenBlockIndex = block; }
-  void useCharBlock(int block) { charBlockIndex = block; }
-  void usePriority(int value) { priority = value; }
-  void scroll(int x, int y);
-  void scrollSpeed(int dx, int dy);
-  void setMosaic(bool enabled) { mosaicEnabled = enabled; }
-
   Background(int bgIndex,
              const void* data,
              int size,
@@ -65,10 +40,53 @@ class Background {
         charBlockIndex(bgIndex),
         priority(bgIndex),
         mapSize(mapSize) {}
+
+  const int getScreenBlock() { return screenBlockIndex; }
+  const int getCharBlock() { return charBlockIndex; }
+  void useMapScreenBlock(int block) { screenBlockIndex = block; }
+  void useCharBlock(int block) { charBlockIndex = block; }
+  void usePriority(int value) { priority = value; }
+  void setMosaic(bool enabled) { mosaicEnabled = enabled; }
+
   virtual void persist();
-  void updateMap(const void* map);
+  void render();
   void clearMap();
   void clearData();
+  void scroll(int x, int y);
+  void scrollNow(int x, int y);
+
+  template <typename F>
+  void persistNow(F copyMemory) {
+    copyMemory(screen_block(screenBlockIndex), this->mapSize);
+    copyMemory(char_block(charBlockIndex), this->size);
+    buildRegister();
+  }
+
+ protected:
+  const void* data;
+  const void* map;
+  int size, bgIndex;
+  int mapSize, mapLayout;
+  int screenBlockIndex, charBlockIndex, priority;
+  bool mosaicEnabled = false;
+  int scrollX = 0;
+  int scrollY = 0;
+
+ private:
+  void buildRegister();
+  u32 getBgControlRegisterIndex();
+
+  // WHY using this instead of Allocation?
+  // Because each char block seems to be 16K and there are 4 - there are also 4
+  // backgrounds. Use the bgIndex as a hardcoded char block and let the
+  // background decide on the map screen block.
+  void* screen_block(unsigned long block) {
+    return (void*)(0x6000000 + (block * 0x800));
+  }
+
+  void* char_block(unsigned long block) {
+    return (void*)(0x6000000 + (block * 0x4000));
+  }
 };
 
 #endif  // GBA_SPRITE_ENGINE_BACKGROUND_H

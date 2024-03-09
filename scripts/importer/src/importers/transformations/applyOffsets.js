@@ -62,7 +62,7 @@ const getOffsetCorrections = _.memoize(() => {
         };
       });
   } catch (e) {
-    console.log("  ⚠️  error parsing offset corrections");
+    console.log("  ⚠️  error parsing offset corrections".yellow);
     return [];
   }
 });
@@ -100,7 +100,7 @@ const applyOffsets = (metadata, charts) => {
         )
         .forEach((similarChart) => {
           console.log(
-            `  ⚠️  copying offset from ${level(chart)} to ${level(
+            `  📢  copying offset from ${level(chart)} to ${level(
               similarChart
             )}`
           );
@@ -116,12 +116,12 @@ module.exports = { getOffsetCorrections, applyOffsets };
 const apply = (chart, correction) => {
   if (correction.isDeleted) {
     chart.isDeleted = true;
-    console.log(`  ⚠️  deleting ${level(chart)} chart`);
+    console.log(`  📢  deleting ${level(chart)} chart`);
     correction.used = true;
     return;
   }
 
-  console.log(`  ⚠️  applying offset ${correction.offset} to ${level(chart)}`);
+  console.log(`  📢  applying offset ${correction.offset} to ${level(chart)}`);
   chart.header.$originalOffset = chart.header.offset;
   chart.header.offset = chart.header.offset - correction.offset; // [!] offsets in PIUS are negative
   correction.used = true;

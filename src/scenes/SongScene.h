@@ -11,6 +11,7 @@
 #include "gameplay/DeathMix.h"
 #include "gameplay/Judge.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "gameplay/video/VideoStore.h"
 #include "objects/Arrow.h"
 #include "objects/ArrowHolder.h"
 #include "objects/LifeBar.h"
@@ -37,6 +38,7 @@ class SongScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void render() override;
 
   ~SongScene();
 
@@ -60,9 +62,11 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> selectInput;
   std::unique_ptr<InputHandler> aInput;
   std::unique_ptr<InputHandler> bInput;
+  std::unique_ptr<InputHandler> rateDownPs2Input;
+  std::unique_ptr<InputHandler> rateUpPs2Input;
   std::unique_ptr<DeathMix> deathMix;
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
-      $isVsDifferentLevels;
+      $isVsDifferentLevels, $ps2Input, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId;
   int rate = 0;
@@ -87,6 +91,8 @@ class SongScene : public Scene {
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
+    $ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+    usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
     localBaseIndex = isMultiplayer()
@@ -124,6 +130,9 @@ class SongScene : public Scene {
   void updateGameY();
   void updateRumble();
   void animateWinnerLifeBar();
+  void prepareVideo();
+  void drawVideo();
+  void throwVideoError();
   void processKeys(u16 keys);
 
   void onNewBeat(bool isAnyKeyPressed);

@@ -48,9 +48,11 @@ typedef unsigned long u32;
 /* a power of two, less than or equal to the argument passed to
    padbin.  Increasing the stride makes find_first_gbfs_file()
    faster at the cost of a slightly larger binary. */
-#define GBFS_ALIGNMENT 256
+#define GBFS_ALIGNMENT 1024  // [!] was 256
 
 const GBFS_FILE* find_first_gbfs_file(const void* start) {
+  start = GBFS_2ND_SEARCH_START;  // [!]
+
   /* align the pointer */
   const u32* here = (const u32*)((unsigned long)start & (-GBFS_ALIGNMENT));
   const char rest_of_magic[] = "ightGBFS\r\n\x1a\n";

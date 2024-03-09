@@ -39,6 +39,7 @@ SRCDIRS		:= src \
 						 src/gameplay/models \
 						 src/gameplay/multiplayer \
 						 src/gameplay/save \
+						 src/gameplay/video \
 						 src/objects \
 						 src/objects/base \
 						 src/objects/score \
@@ -51,6 +52,9 @@ SRCDIRS		:= src \
 						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gbfs \
+						 src/utils/flashcartio \
+						 src/utils/flashcartio/everdrivegbax5 \
+						 src/utils/flashcartio/fatfs \
 						 src/utils/pool \
 						 libs
 DATADIRS	:=
@@ -82,10 +86,10 @@ CFLAGS		+= -Wall
 CFLAGS		+= $(INCLUDE)
 CFLAGS		+= -ffast-math -fno-strict-aliasing
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections
 
 ASFLAGS		:= $(ARCH) $(INCLUDE)
-LDFLAGS 	:= $(ARCH) -Wl,--print-memory-usage,-Map,$(PROJ).map
+LDFLAGS 	:= $(ARCH) -Wl,--print-memory-usage,-Map,$(PROJ).map,--gc-sections
 
 # --- switched additions ----------------------------------------------
 
@@ -121,8 +125,10 @@ GAMETITLE=piuGBA
 GAMEMAKER=AGB
 GAMECODE=AZCE # Megaman Zero (SRAM - 64kb)
 MODE ?= auto
-SORT ?= level
 SONGS ?= src/data/content/songs
+VIDEOLIB ?= src/data/content/piuGBA_videos
+VIDEOENABLE ?= false
+FAST ?= false
 ENV ?= development
 BOSS ?= true
 ARCADE ?= false
@@ -220,11 +226,11 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --boss=$(BOSS) --arcade=$(ARCADE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)
-	./scripts/package.sh
+	./scripts/package.sh "piugba.gba" "src/data/content/files.gbfs"
 
 start: check-env package
 	start "$(TARGET).out.gba"

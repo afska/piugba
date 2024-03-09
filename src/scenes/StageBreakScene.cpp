@@ -4,6 +4,7 @@
 #include "SelectionScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_break.h"
+#include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "player/PlaybackState.h"
@@ -78,7 +79,7 @@ void StageBreakScene::load() {
 }
 
 void StageBreakScene::tick(u16 keys) {
-  if (engine->isTransitioning())
+  if (engine->isTransitioning() || !hasStarted)
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
@@ -87,25 +88,17 @@ void StageBreakScene::tick(u16 keys) {
     return;
   }
 
-  if (!hasStarted) {
-    BACKGROUND_enable(true, true, false, false);
-    SPRITE_enable();
-    hasStarted = true;
-    player_play(SOUND_STAGE_BREAK);
-  }
-
   if (isMultiplayer()) {
     processMultiplayerUpdates();
     if (!syncer->isPlaying())
       return;
   }
 
-  animate();
   pixelBlink->tick();
   instructor->get()->flipHorizontally(isFlippedX);
   instructor->get()->flipVertically(isFlippedY);
 
-  if (PlaybackState.hasFinished && (keys & KEY_ANY)) {
+  if (PlaybackState.hasFinished && KEY_ANYKEY(keys)) {
     if (isMultiplayer()) {
       if (syncer->isMaster())
         syncer->send(SYNC_EVENT_CONFIRM_SONG_END, 0);
@@ -115,6 +108,20 @@ void StageBreakScene::tick(u16 keys) {
 
     finish();
   }
+}
+
+void StageBreakScene::render() {
+  if (engine->isTransitioning())
+    return;
+
+  if (!hasStarted) {
+    BACKGROUND_enable(true, true, false, false);
+    SPRITE_enable();
+    player_play(SOUND_STAGE_BREAK);
+    hasStarted = true;
+  }
+
+  animate();
 }
 
 void StageBreakScene::setUpSpritesPalette() {

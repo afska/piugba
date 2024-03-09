@@ -1,7 +1,3 @@
-//
-// Created by Wouter Groeneveld on 28/07/18.
-//
-
 #ifndef GBA_SPRITE_ENGINE_SPRITE_BUILDER_H
 #define GBA_SPRITE_ENGINE_SPRITE_BUILDER_H
 
@@ -11,20 +7,6 @@
 
 template <typename T>
 class SpriteBuilder {
- private:
-  u32 imageSize;
-  const void* imageData;
-  u32 x, y;
-  u32 beginFrame, numberOfFrames, animationDelay;
-  SpriteSize size;
-
-  void setProperties(T* sprite);
-  void reset() {
-    imageSize = x = y = beginFrame = numberOfFrames = animationDelay = 0;
-    imageData = nullptr;
-    size = SIZE_16_16;
-  }
-
  public:
   SpriteBuilder() { reset(); }
   SpriteBuilder& withData(const void* imageData, int imageSize) {
@@ -58,6 +40,20 @@ class SpriteBuilder {
   T build();
   std::unique_ptr<T> buildPtr();
   std::unique_ptr<T> buildWithDataOf(const Sprite& other);
+
+ private:
+  u32 imageSize;
+  const void* imageData;
+  u32 x, y;
+  u32 beginFrame, numberOfFrames, animationDelay;
+  SpriteSize size;
+
+  void setProperties(T* sprite);
+  void reset() {
+    imageSize = x = y = beginFrame = numberOfFrames = animationDelay = 0;
+    imageData = nullptr;
+    size = SIZE_16_16;
+  }
 };
 
 template <typename T>
