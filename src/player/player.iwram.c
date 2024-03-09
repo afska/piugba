@@ -123,18 +123,21 @@ INLINE void init() {
   mute();
 }
 
+INLINE void stop() {
+  mute();
+  src_pos = NULL;
+  src_end = NULL;
+  decode_pos = 160;
+  cur_buffer = 0;
+  last_sample = 0;
+}
+
 INLINE void play(const char* name) {
+  stop();
   gsmInit(&decoder);
   src = gbfs_get_obj(fs, name, &src_len);
   src_pos = src;
   src_end = src + src_len;
-  mute();
-}
-
-INLINE void stop() {
-  src_pos = NULL;
-  src_end = NULL;
-  mute();
 }
 
 INLINE void disableAudioDMA() {
