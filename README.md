@@ -30,7 +30,7 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Jump/Reduce: Moves game area
   - Bounce: Makes the arrows bounce
   - Color filter: Alters colors
-  - Speed hack: AutoVelocity or RandomSpeed
+  - Speed hack: AutoVelocity, FixedVelocity or RandomSpeed
   - Mirror and random steps
   - Training mode: Rate and Fast-forward
   - AutoMod: Swaps mods randomly
