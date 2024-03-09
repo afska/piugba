@@ -2,7 +2,7 @@
 
 This is a PIU emulator for the GBA that uses [StepMania](https://github.com/stepmania/stepmania) SSC charts.
 
-![demo1](https://i.imgur.com/8YB5wcF.gif)![demo2](https://i.imgur.com/z5rg1ck.gif)![demo3](https://i.imgur.com/FJzNbrp.gif)![demo4](https://i.imgur.com/yFCJ6uO.gif)![demo5](https://i.imgur.com/EXxgXyX.gif)![demo6](https://i.imgur.com/Yr2hom2.gif)![demo7](https://i.imgur.com/0mmCddv.gif)![demo8](https://i.imgur.com/EmIJdG3.gif)![demo9](https://i.imgur.com/xHmFWqn.gif)![demo10](https://i.imgur.com/9a9kB6E.gif)![demo11](https://i.imgur.com/m4D0HYn.gif)![demo12](https://i.imgur.com/o8DS4Xb.gif)
+![demo1](https://i.imgur.com/Lo1Mxdd.gif)![demo2](https://i.imgur.com/z5rg1ck.gif)![demo3](https://i.imgur.com/FJzNbrp.gif)![demo4](https://i.imgur.com/yFCJ6uO.gif)![demo5](https://i.imgur.com/EXxgXyX.gif)![demo6](https://i.imgur.com/Yr2hom2.gif)![demo7](https://i.imgur.com/0mmCddv.gif)![demo8](https://i.imgur.com/fGGFvAj.gif)![demo9](https://i.imgur.com/xHmFWqn.gif)![demo10](https://i.imgur.com/9a9kB6E.gif)![demo11](https://i.imgur.com/m4D0HYn.gif)![demo12](https://i.imgur.com/o8DS4Xb.gif)
 
 > <img alt="rlabs" width="16" height="16" src="https://user-images.githubusercontent.com/1631752/116227197-400d2380-a72a-11eb-9e7b-389aae76f13e.png" /> Created by [[r]labs](https://r-labs.io).
 
@@ -34,10 +34,12 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Mirror and random steps
   - Training mode: Rate and Fast-forward
   - AutoMod: Swaps mods randomly
+- **Background videos** can be displayed using an _EverDrive_
 - Hardware **integrations**:
   - Rumble
   - I/O LED Sync
   - SRAM LED Sync
+  - PS/2 input
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~70 songs per ROM file.
