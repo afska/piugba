@@ -7,20 +7,20 @@ volatile bool IS_FLASHCART_UNLOCKED = false;
 
 ActiveFlashcart active_flashcart = NO_FLASHCART;
 
-bool flashcartio_activate(void) {
+ActivationResult flashcartio_activate(void) {
   // Everdrive GBA X5
   if (bi_init_sd_only()) {
     bi_init();
     bool success = diskInit() == 0;
     bi_lock_regs();
     if (!success)
-      return false;
+      return FLASHCART_ACTIVATION_FAILED;
 
     active_flashcart = EVERDRIVE_GBA_X5;
-    return true;
+    return FLASHCART_ACTIVATED;
   }
 
-  return false;
+  return NO_FLASHCART_FOUND;
 }
 
 bool flashcartio_read_sector(u32 sector, u8* destination, u16 count) {

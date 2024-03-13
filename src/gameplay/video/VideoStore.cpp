@@ -42,9 +42,12 @@ VideoStore::State VideoStore::activate() {
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   BackgroundVideosOpts::dACTIVATING);
 
-  if (!flashcartio_activate()) {
+  auto result = flashcartio_activate();
+  if (result != FLASHCART_ACTIVATED) {
     disable();
-    return (state = NO_SUPPORTED_FLASHCART);
+    return (state = (result == FLASHCART_ACTIVATION_FAILED
+                         ? MOUNT_ERROR
+                         : NO_SUPPORTED_FLASHCART));
   }
 
   if (f_mount(&fatfs, "", 1) > 0) {
@@ -58,15 +61,19 @@ VideoStore::State VideoStore::activate() {
   return state;
 }
 
-bool VideoStore::load(std::string videoPath, int videoOffset) {
+VideoStore::LoadResult VideoStore::load(std::string videoPath,
+                                        int videoOffset) {
   if (state != ACTIVE)
-    return false;
+    return LoadResult::NO_FILE;
   memory = getSecondaryMemory(REQUIRED_MEMORY);
   if (memory == NULL)
-    return false;
+    return LoadResult::NO_FILE;
 
-  if (f_open(&file, (VIDEOS_FOLDER_NAME + videoPath).c_str(), FA_READ) > 0)
-    return false;
+  auto result =
+      f_open(&file, (VIDEOS_FOLDER_NAME + videoPath).c_str(), FA_READ);
+  if (result > 0)
+    return result == FR_NO_FILE || result == FR_NO_PATH ? LoadResult::NO_FILE
+                                                        : LoadResult::ERROR;
 
   isPlaying = true;
   frame = 0;
@@ -76,13 +83,13 @@ bool VideoStore::load(std::string videoPath, int videoOffset) {
   file.cltbl[0] = CLMT_ENTRIES;
   if (f_lseek(&file, CREATE_LINKMAP) > 0) {
     unload();
-    return false;
+    return LoadResult::ERROR;
   }
 
   if (!seek(0))
-    return false;
+    return LoadResult::ERROR;
 
-  return true;
+  return LoadResult::OK;
 }
 
 void VideoStore::unload() {

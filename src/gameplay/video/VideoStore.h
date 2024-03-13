@@ -16,6 +16,7 @@
 class VideoStore {
  public:
   enum State { OFF, NO_SUPPORTED_FLASHCART, MOUNT_ERROR, ACTIVE };
+  enum LoadResult { OK, NO_FILE, ERROR };
 
   bool isActive() { return state == ACTIVE; }
   bool canRead() { return frame >= 0; }
@@ -29,7 +30,7 @@ class VideoStore {
   void disable();
   bool isActivating();
   State activate();
-  bool load(std::string videoPath, int videoOffset);
+  LoadResult load(std::string videoPath, int videoOffset);
   void unload();
 
   bool seek(u32 msecs);

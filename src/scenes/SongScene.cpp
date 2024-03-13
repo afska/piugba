@@ -605,8 +605,11 @@ void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
 
-  if (!videoStore->load(song->videoPath, song->videoOffset))
+  auto result = videoStore->load(song->videoPath, song->videoOffset);
+  if (result == VideoStore::LoadResult::NO_FILE)
     usesVideo = false;
+  else if (result == VideoStore::LoadResult::ERROR)
+    throwVideoError();
 }
 
 void SongScene::drawVideo() {
@@ -1268,9 +1271,8 @@ void SongScene::unload() {
 
   if ($isMultiplayer)
     syncer->resetSongState();
-  else {
+  else
     IOPORT_low();
-  }
 }
 
 SongScene::~SongScene() {
