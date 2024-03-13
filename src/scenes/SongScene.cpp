@@ -193,12 +193,14 @@ void SongScene::tick(u16 keys) {
   processKeys(keys);
 
   if ($isMultiplayer) {
-    processMultiplayerUpdates();
-    if (!syncer->isPlaying())
-      return;
+    processMultiplayerUpdates();  // (*)
+    if (!syncer->isPlaying() || engine->isTransitioning())
+      return;  // (*) = (onAbort, onStagePass, onStageBreak)
   }
 
-  bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);
+  bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);  // (*)
+  if (engine->isTransitioning())
+    return;  // (*) = (onStageBreak)
   if (isNewBeat) {
     onNewBeat(KEY_ANY_ARROW(keys));
     if (deathMix != NULL &&
@@ -208,7 +210,9 @@ void SongScene::tick(u16 keys) {
     }
   }
   if ($isVs)
-    chartReaders[syncer->getRemotePlayerId()]->update((int)songMsecs);
+    chartReaders[syncer->getRemotePlayerId()]->update((int)songMsecs);  // (*)
+  if (engine->isTransitioning())
+    return;  // (*) = (onStageBreak)
 
   updateBlink();
   updateArrowHolders();
@@ -217,7 +221,9 @@ void SongScene::tick(u16 keys) {
   pixelBlink->tick(minMosaic);
 
   updateFakeHeads();
-  updateArrows();
+  updateArrows();  // (*)
+  if (engine->isTransitioning())
+    return;  // (*) = (onStageBreak)
   updateScoresAndLifebars();
   updateRumble();
 
