@@ -7,7 +7,7 @@
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
-#define TITLE "ADMIN MENU (v1.9.0)"
+#define TITLE "ADMIN MENU (v1.9.1)"
 #define SUBMENU_OFFSETS 0
 #define SUBMENU_RESET 1
 #define SUBMENU_SURE_OFFSETS 2
