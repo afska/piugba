@@ -96,11 +96,16 @@ inline void SCENE_overclockEWRAM() {
 }
 
 inline void SCENE_softReset() {
+  REG_IME = 0;
+
   if (IS_FLASHCART_UNLOCKED)
     flashcartio_lock();
 
-  VBlankIntrWait();
-  REG_IME = 0;
+  while (REG_VCOUNT >= 160)
+    ;  // wait till VDraw
+  while (REG_VCOUNT < 160)
+    ;  // wait till VBlank
+
   player_stop();
   player_unload();
 
