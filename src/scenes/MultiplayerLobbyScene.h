@@ -23,6 +23,7 @@ class MultiplayerLobbyScene : public TextScene {
  private:
   SyncMode mode;
   int messageId = -1;
+  bool canExit = false;
 
   std::unique_ptr<Explosion> loadingIndicator;
 

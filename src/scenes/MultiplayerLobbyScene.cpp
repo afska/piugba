@@ -47,7 +47,10 @@ void MultiplayerLobbyScene::tick(u16 keys) {
     return;
   }
 
-  if (KEY_SEL(keys)) {
+  if (!KEY_ANYKEY(keys))
+    canExit = true;
+
+  if (canExit && KEY_SEL(keys)) {
     goBack();
     return;
   }
