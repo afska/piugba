@@ -464,7 +464,7 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents() {
   if (isMultiplayer()) {
-    if (syncer->isMaster() && multiplier->hasBeenPressedNow()) {
+    if (multiplier->hasBeenPressedNow()) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
       quit();
     }
