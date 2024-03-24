@@ -74,7 +74,7 @@ class SelectionScene : public Scene {
   u32 count = 0;
   u32 selectedSongId = 0;
   bool confirmed = false;
-  bool isCrossingPage = false;
+  u8 isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
 
   inline void playNow(const char* name) {
@@ -223,7 +223,8 @@ class SelectionScene : public Scene {
   void unconfirm();
   void setPage(u32 page, int direction);
   void startPageCross(int direction);
-  void stopPageCross();
+  void stopPageCross1();
+  void stopPageCross2();
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);

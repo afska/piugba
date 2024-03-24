@@ -159,8 +159,10 @@ void SelectionScene::tick(u16 keys) {
 
   processKeys(keys);
 
-  if (pixelBlink->tick() && isCrossingPage)
-    stopPageCross();
+  if (isCrossingPage == 2)
+    stopPageCross2();
+  if (pixelBlink->tick() && isCrossingPage == 1)
+    stopPageCross1();
   for (auto& it : arrowSelectors)
     it->tick();
   multiplier->tick();
@@ -223,8 +225,6 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
-  VBlankIntrWait();
-  // ---
   auto backgroundFile = library->getPrefix() + std::to_string(getPageStart());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
@@ -245,8 +245,6 @@ void SelectionScene::setUpBackground() {
 
   loadChannels();
   loadProgress();
-  // ---
-  VBlankIntrWait();
 }
 
 void SelectionScene::setUpArrows() {
@@ -747,14 +745,17 @@ void SelectionScene::setPage(u32 page, int direction) {
 }
 
 void SelectionScene::startPageCross(int direction) {
-  this->isCrossingPage = true;
+  this->isCrossingPage = 1;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
-  highlighter->select(selected);
   pixelBlink->blink();
 }
 
-void SelectionScene::stopPageCross() {
+void SelectionScene::stopPageCross1() {
   setUpBackground();
+  this->isCrossingPage = 2;
+}
+
+void SelectionScene::stopPageCross2() {
   updateSelection();
   this->isCrossingPage = false;
 }
