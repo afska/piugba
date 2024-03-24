@@ -745,6 +745,8 @@ void SelectionScene::setPage(u32 page, int direction) {
 }
 
 void SelectionScene::startPageCross(int direction) {
+  pendingAudio = "";
+  pendingSeek = 0;
   this->isCrossingPage = 1;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
   pixelBlink->blink();
