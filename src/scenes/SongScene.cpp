@@ -52,9 +52,6 @@ const u32 IO_BLINK_TIME = 6;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
-const u32 RUMBLE_FRAMES = 4;
-const u32 RUMBLE_PRELOAD_FRAMES = 2;
-const u32 RUMBLE_IDLE_FREQUENCY = 5;
 const u32 DEATH_MIX_ANTICIPATION_LEVEL = 6;
 const u32 DEATH_MIX_SEEK_SPEED_FRAMES = 5;
 const u32 BOUNCE_STEPS[] = {0, 1, 2, 4, 5,
@@ -566,7 +563,7 @@ void SongScene::updateRumble() {
 
   if (localChartReader->beatDurationFrames != -1 &&
       localChartReader->beatFrame ==
-          localChartReader->beatDurationFrames - RUMBLE_PRELOAD_FRAMES) {
+          localChartReader->beatDurationFrames - rumblePreRollFrames) {
     rumbleIdleFrame = 0;
     rumbleBeatFrame = 0;
     START_RUMBLE();
@@ -575,7 +572,7 @@ void SongScene::updateRumble() {
   if (rumbleBeatFrame > -1) {
     rumbleBeatFrame++;
 
-    if (rumbleBeatFrame == RUMBLE_FRAMES) {
+    if ((u32)rumbleBeatFrame == rumbleTotalFrames) {
       rumbleBeatFrame = -1;
       STOP_RUMBLE();
     }
@@ -584,7 +581,7 @@ void SongScene::updateRumble() {
 
     if (rumbleIdleFrame == 1)
       STOP_RUMBLE();
-    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
+    else if (rumbleIdleFrame == rumbleIdleCyclePeriod) {
       START_RUMBLE();
       rumbleIdleFrame = 0;
     }

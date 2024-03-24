@@ -7,13 +7,15 @@
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
-#define TITLE "ADMIN MENU (v1.9.1)"
-#define SUBMENU_OFFSETS 0
-#define SUBMENU_RESET 1
-#define SUBMENU_SURE_OFFSETS 2
-#define SUBMENU_SURE_ARCADE 3
-#define SUBMENU_SURE_ALL 4
-#define OPTION_COUNT_DEFAULT 9
+#define TITLE "ADMIN MENU (v1.9.2)"
+#define SUBMENU_RUMBLE 0
+#define SUBMENU_OFFSETS 1
+#define SUBMENU_RESET 2
+#define SUBMENU_SURE_OFFSETS 3
+#define SUBMENU_SURE_ARCADE 4
+#define SUBMENU_SURE_ALL 5
+#define OPTION_COUNT_DEFAULT 10
+#define OPTION_COUNT_RUMBLE 5
 #define OPTION_COUNT_OFFSETS 3
 #define OPTION_COUNT_RESET 3
 #define OPTION_COUNT_ARE_YOU_SURE 2
@@ -25,8 +27,9 @@
 #define OPTION_BACKGROUND_VIDEOS 4
 #define OPTION_EWRAM_OVERCLOCK 5
 #define OPTION_PS2_INPUT 6
-#define OPTION_CUSTOM_OFFSETS 7
-#define OPTION_RESET_SAVE_FILE 8
+#define OPTION_RUMBLE_OPTS 7
+#define OPTION_CUSTOM_OFFSETS 8
+#define OPTION_RESET_SAVE_FILE 9
 
 AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
                        const GBFS_FILE* fs,
@@ -38,6 +41,7 @@ AdminScene::AdminScene(std::shared_ptr<GBAEngine> engine,
 u32 AdminScene::getOptionCount() {
   return submenu >= SUBMENU_SURE_OFFSETS ? OPTION_COUNT_ARE_YOU_SURE
          : submenu == SUBMENU_RESET      ? OPTION_COUNT_RESET
+         : submenu == SUBMENU_RUMBLE     ? OPTION_COUNT_RUMBLE
          : submenu == SUBMENU_OFFSETS    ? OPTION_COUNT_OFFSETS
                                          : OPTION_COUNT_DEFAULT;
 }
@@ -57,7 +61,24 @@ void AdminScene::printOptions() {
 
   TextStream::instance().scrollNow(0, -2);
 
-  if (submenu == SUBMENU_OFFSETS) {
+  if (submenu == SUBMENU_RUMBLE) {
+    SCENE_write("RUMBLE OPTIONS", 1);
+
+    u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+    u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+    u8 rumblePreRollFrames = RUMBLE_PREROLL(rumbleOpts);
+    u8 rumbleIdleCyclePeriod = RUMBLE_IDLE(rumbleOpts);
+
+    printOption(0, "Total frames", std::to_string(rumbleFrames), 4);
+    printOption(1, "Pre-roll frames", std::to_string(rumblePreRollFrames), 6);
+    printOption(2, "Idle cycle period", std::to_string(rumbleIdleCyclePeriod),
+                8);
+
+    printOption(3, "[RESET RUMBLE]", "", 13);
+    printOption(4, "[BACK]", "", 15);
+
+    return;
+  } else if (submenu == SUBMENU_OFFSETS) {
     SCENE_write("CUSTOM OFFSETS", 1);
 
     bool offsetEditingEnabled =
@@ -126,11 +147,57 @@ void AdminScene::printOptions() {
   printOption(OPTION_PS2_INPUT, "PS/2 input",
               backgroundVideos > 0 ? "---" : (ps2Input > 0 ? "ON" : "OFF"), 11);
 
-  printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 13);
+  printOption(OPTION_RUMBLE_OPTS, "[RUMBLE OPTIONS]", "", 13);
+  printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 14);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
 }
 
 bool AdminScene::selectOption(u32 selected, int direction) {
+  if (submenu == SUBMENU_RUMBLE) {
+    u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+    u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+    u8 rumblePreRollFrames = RUMBLE_PREROLL(rumbleOpts);
+    u8 rumbleIdleCyclePeriod = RUMBLE_IDLE(rumbleOpts);
+
+    switch (selected) {
+      case 0: {
+        SAVEFILE_write8(SRAM->adminSettings.rumbleFrames,
+                        1 + change(rumbleFrames - 1, 8, direction));
+        return true;
+      }
+      case 1: {
+        SAVEFILE_write8(
+            SRAM->adminSettings.rumbleOpts,
+            RUMBLE_OPTS_BUILD(1 + change(rumblePreRollFrames - 1, 8, direction),
+                              rumbleIdleCyclePeriod));
+        return true;
+      }
+      case 2: {
+        SAVEFILE_write8(SRAM->adminSettings.rumbleOpts,
+                        RUMBLE_OPTS_BUILD(rumblePreRollFrames,
+                                          2 + change(rumbleIdleCyclePeriod - 2,
+                                                     5, direction)));
+        return true;
+      }
+      case 3: {
+        if (direction != 0)
+          return true;
+
+        SAVEFILE_resetRumble();
+        return true;
+      }
+      case 4: {
+        if (direction != 0)
+          return true;
+        submenu = -1;
+        this->selected = 0;
+        return true;
+      }
+    }
+
+    return true;
+  }
+
   if (submenu == SUBMENU_OFFSETS) {
     switch (selected) {
       case 0: {
@@ -295,6 +362,14 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       else
         ps2Keyboard->deactivate();
 
+      return true;
+    }
+    case OPTION_RUMBLE_OPTS: {
+      if (direction != 0)
+        return true;
+
+      submenu = SUBMENU_RUMBLE;
+      this->selected = 0;
       return true;
     }
     case OPTION_CUSTOM_OFFSETS: {

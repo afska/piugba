@@ -18,6 +18,11 @@ enum SRAMBlinkOpts : u8 {
 enum NavigationStyleOpts : u8 { PIU, GBA };
 enum BackgroundVideosOpts { dOFF, dACTIVATING, dACTIVE };
 
+#define RUMBLE_PREROLL(OPTS) (((OPTS) >> 4) & 0b1111)
+#define RUMBLE_IDLE(OPTS) (((OPTS) >> 0) & 0b1111)
+#define RUMBLE_OPTS_BUILD(PREROLL, IDLE) \
+  ((((PREROLL) & 0b1111) << 4) | (((IDLE) & 0b1111) << 0))
+
 typedef struct __attribute__((__packed__)) {
   ArcadeChartsOpts arcadeCharts;
   RumbleOpts rumble;
@@ -28,6 +33,8 @@ typedef struct __attribute__((__packed__)) {
   BackgroundVideosOpts backgroundVideos;
   bool ewramOverclock;
   bool ps2Input;
+  u8 rumbleFrames;
+  u8 rumbleOpts;
 } AdminSettings;
 
 #endif  // ADMIN_SETTINGS_H

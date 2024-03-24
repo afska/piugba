@@ -45,7 +45,6 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[2];
 
   bool isBonusMode;
   u32 randomSeed;
@@ -96,6 +95,13 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
 }
 
+inline void SAVEFILE_resetRumble() {
+  u8 rumbleOpts = RUMBLE_OPTS_BUILD(2, 5);
+
+  SAVEFILE_write8(SRAM->adminSettings.rumbleFrames, 4);
+  SAVEFILE_write8(SRAM->adminSettings.rumbleOpts, rumbleOpts);
+}
+
 inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::rCARTRIDGE);
@@ -108,6 +114,7 @@ inline void SAVEFILE_resetAdminSettings() {
                   BackgroundVideosOpts::dOFF);
   SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
   SAVEFILE_write8(SRAM->adminSettings.ps2Input, false);
+  SAVEFILE_resetRumble();
 
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
@@ -194,9 +201,14 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
   u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
   u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+  u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
-      backgroundVideos >= 3 || ewramOverclock >= 2 || ps2Input >= 2) {
+      backgroundVideos >= 3 || ewramOverclock >= 2 || ps2Input >= 2 ||
+      rumbleFrames == 0 || rumbleFrames >= 9 ||
+      RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
+      RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }

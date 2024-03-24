@@ -68,7 +68,8 @@ class SongScene : public Scene {
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
       $isVsDifferentLevels, $ps2Input, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
-      localPlayerId;
+      localPlayerId, rumbleTotalFrames, rumblePreRollFrames,
+      rumbleIdleCyclePeriod;
   int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
@@ -78,7 +79,7 @@ class SongScene : public Scene {
   int reduceDirection = 1;
   int bounceDirection = -1;
   int rumbleBeatFrame = -1;
-  int rumbleIdleFrame = 0;
+  u32 rumbleIdleFrame = 0;
   u32 autoModDuration = 1;
   u32 autoModCounter = 0;
   u32 lastDownLeftKeys = 0;
@@ -92,6 +93,7 @@ class SongScene : public Scene {
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
     $ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+
     usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
@@ -100,6 +102,11 @@ class SongScene : public Scene {
                          : 0;
     remoteBaseIndex = getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
     localPlayerId = isVs() ? syncer->getLocalPlayerId() : 0;
+
+    u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+    rumbleTotalFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+    rumblePreRollFrames = RUMBLE_PREROLL(rumbleOpts);
+    rumbleIdleCyclePeriod = RUMBLE_IDLE(rumbleOpts);
   }
 
   inline ArrowDirection getDirectionFromIndex(u32 index) {
