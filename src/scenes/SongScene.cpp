@@ -332,11 +332,13 @@ bool SongScene::initializeGame(u16 keys) {
   }
   BACKGROUND_enable(true, !ENV_DEBUG && !usesVideo, false, false);
   SPRITE_enable();
-  if (GameState.mods.autoMod)
+  if (GameState.mods.autoMod) {
     backupPalettes(usesVideo, [](u32 progress) {
       EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0));
       EFFECT_render();
     });
+    VBlankIntrWait();
+  }
 
 initialized:
   if (deathMix != NULL) {
