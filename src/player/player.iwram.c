@@ -39,9 +39,11 @@ static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
 static int rate = 0;
 static u32 rateCounter = 0;
 static u32 currentAudioChunk = 0;
+static bool didRun = false;
 
 /* GSM Player ----------------------------------------- */
 #define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)           \
+  didRun = true;                                      \
   dst_pos = double_buffers[cur_buffer];               \
                                                       \
   if (src_pos < src_end) {                            \
@@ -130,6 +132,11 @@ INLINE void stop() {
   decode_pos = 160;
   cur_buffer = 0;
   last_sample = 0;
+  for (u32 i = 0; i < 2; i++) {
+    u32* bufferPtr = (u32*)double_buffers[i];
+    for (u32 j = 0; j < 608 / 4; j++)
+      bufferPtr[j] = 0;
+  }
 }
 
 INLINE void play(const char* name) {
@@ -241,12 +248,18 @@ CODE_EWRAM bool player_isPlaying() {
 }
 
 void player_onVBlank() {
+  if (!didRun) {
+    mute();
+    return;
+  }
+
   dsoundSwitchBuffers(double_buffers[cur_buffer]);
 
   if (src_pos != NULL)
     unmute();
 
   cur_buffer = !cur_buffer;
+  didRun = false;
 }
 
 CODE_EWRAM void updateRate() {
