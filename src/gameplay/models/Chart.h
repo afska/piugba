@@ -18,8 +18,8 @@ typedef struct {
 
   u32 eventChunkSize;
 
-  u32 rythmEventCount;
-  Event* rythmEvents;  // ("rythmEventCount" times)
+  u32 rhythmEventCount;
+  Event* rhythmEvents;  // ("rhythmEventCount" times)
 
   u32 eventCount;
   Event* events;  // ("eventCount" times)

@@ -160,14 +160,14 @@ module.exports = class Simfile {
           const events = chart.events; // (ensure it can be parsed correctly)
 
           // check limits
-          const [rythmEvents, normalEvents] = _.partition(
+          const [rhythmEvents, normalEvents] = _.partition(
             events,
             (it) =>
               it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
           );
-          if (rythmEvents.length + normalEvents.length > MAX_EVENTS)
+          if (rhythmEvents.length + normalEvents.length > MAX_EVENTS)
             throw new Error(
-              `too_big: (${rythmEvents.length} rythm + ${normalEvents.length} normal) events`
+              `too_big: (${rhythmEvents.length} rhythm + ${normalEvents.length} normal) events`
             );
 
           return chart;

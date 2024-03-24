@@ -100,7 +100,7 @@ class ChartReader : public TimingProvider {
   u32 multiplier;
   std::unique_ptr<ObjectPool<HoldArrow>> holdArrows;
   std::array<HoldArrowState, ARROWS_TOTAL * GAME_MAX_PLAYERS> holdArrowStates;
-  u32 rythmEventIndex = 0;
+  u32 rhythmEventIndex = 0;
   u32 eventIndex = 0;
   u32 bpm = 0;
   u32 autoVelocityFactor = 1;
@@ -218,7 +218,7 @@ class ChartReader : public TimingProvider {
   }
 
   int getYFor(int timestamp);
-  void processRythmEvents();
+  void processRhythmEvents();
   void processNextEvents(int now);
   void processUniqueNote(int timestamp, u8 data, u8 param, bool isFake);
   void startHoldNote(int timestamp,
@@ -228,7 +228,7 @@ class ChartReader : public TimingProvider {
                      bool isFake);
   void endHoldNote(int timestamp, u8 data, u8 offset = 0);
   void orchestrateHoldArrows();
-  bool processTicks(int rythmMsecs, bool checkHoldArrows);
+  bool processTicks(int rhythmMsecs, bool checkHoldArrows);
   void connectArrows(std::vector<Arrow*>& arrows);
   int getFillTopY(HoldArrow* holdArrow);
   int getFillBottomY(HoldArrow* holdArrow, int topY);
