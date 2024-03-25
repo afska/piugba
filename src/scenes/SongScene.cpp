@@ -77,7 +77,6 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
   this->chart = chart;
   this->remoteChart = remoteChart != NULL ? remoteChart : chart;
   this->deathMix = std::move(deathMix);
-  this->hasPreVBlank = true;
 }
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -235,11 +234,6 @@ void SongScene::tick(u16 keys) {
 #endif
 }
 
-void SongScene::preVBlank() {
-  if (!engine->isTransitioning() && init > 1 && usesVideo)
-    preloadVideo();
-}
-
 void SongScene::render() {
   if (engine->isTransitioning())
     return;
@@ -260,6 +254,7 @@ void SongScene::render() {
   }
 
   drawVideo();
+  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
 }
 
 void SongScene::setUpPalettes() {
@@ -622,54 +617,50 @@ void SongScene::prepareVideo() {
     throwVideoError();
 }
 
-void SongScene::preloadVideo() {
-  if (!videoStore->isPreRead())
-    return;
-
-  if (videoStore->canRead() && !videoStore->preRead()) {
-    throwVideoError();
-    return;
-  } else
-    videoStore->advance();
-}
-
 void SongScene::drawVideo() {
   if (!usesVideo)
     return;
 
-  if (!videoStore->canRead()) {
-    videoStore->advance(true);
-    return;
-  }
-
-  auto c1 = pal_bg_mem[254];
-  auto c2 = pal_bg_mem[255];
-  if (!videoStore->endRead((u8*)pal_bg_mem, 1)) {
-    throwVideoError();
-    return;
-  }
-  pal_bg_mem[254] = c1;
-  pal_bg_mem[255] = c2;
-
-  u32 backgroundTilesLength = VIDEO_SIZE_TILES / VIDEO_SECTOR;
-  u32 backgroundMapLength = VIDEO_SIZE_MAP / VIDEO_SECTOR;
-  Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
-                        backgroundMapLength);
-  background.useCharBlock(BANK_BACKGROUND_TILES);
-  background.useMapScreenBlock(BANK_BACKGROUND_MAP);
-  background.usePriority(MAIN_BACKGROUND_PRIORITY);
-  background.setMosaic(true);
-  bool success = true;
-  background.persistNow([&success](void* dst, u32 size) {
-    success = success && videoStore->endRead((u8*)dst, size);
-  });
-
-  if (success) {
-    BACKGROUND_enable(true, !ENV_DEBUG, false, false);
-    if (!videoStore->seek(PlaybackState.msecs))
+  if (videoStore->isPreRead()) {
+    if (videoStore->canRead() && !videoStore->preRead()) {
       throwVideoError();
-  } else
-    throwVideoError();
+      return;
+    } else
+      videoStore->advance();
+  } else {
+    if (!videoStore->canRead()) {
+      videoStore->advance(true);
+      return;
+    }
+
+    auto c1 = pal_bg_mem[254];
+    auto c2 = pal_bg_mem[255];
+    if (!videoStore->endRead((u8*)pal_bg_mem, 1)) {
+      throwVideoError();
+      return;
+    }
+    pal_bg_mem[254] = c1;
+    pal_bg_mem[255] = c2;
+
+    u32 backgroundTilesLength = VIDEO_SIZE_TILES / VIDEO_SECTOR;
+    u32 backgroundMapLength = VIDEO_SIZE_MAP / VIDEO_SECTOR;
+    Background background(MAIN_BACKGROUND_ID, NULL, backgroundTilesLength, NULL,
+                          backgroundMapLength);
+    background.useCharBlock(BANK_BACKGROUND_TILES);
+    background.useMapScreenBlock(BANK_BACKGROUND_MAP);
+    background.usePriority(MAIN_BACKGROUND_PRIORITY);
+    background.setMosaic(true);
+    bool success = true;
+    background.persistNow([&success](void* dst, u32 size) {
+      success = success && videoStore->endRead((u8*)dst, size);
+    });
+
+    if (success) {
+      if (!videoStore->seek(PlaybackState.msecs))
+        throwVideoError();
+    } else
+      throwVideoError();
+  }
 }
 
 void SongScene::throwVideoError() {

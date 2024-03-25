@@ -45,10 +45,9 @@ class GBAEngine {
 
   void updateSpritesInScene();
 
-  Scene* currentScene;
-
  private:
   // WHY raw pointers? the engine does the transition and cleanup work itself
+  Scene* currentScene;
   Scene* sceneToTransitionTo;
   SceneEffect* currentEffectForTransition;
 

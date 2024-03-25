@@ -71,16 +71,6 @@ int main() {
                    : 0;  // (unsynchronized)
       },
       []() {
-        // (onPreVBlank)
-
-        bool wasVBlank = (REG_DISPSTAT & 1);
-        if (engine->currentScene->hasPreVBlank)
-          engine->currentScene->preVBlank();
-        bool isVBlank = (REG_DISPSTAT & 1);
-
-        return !wasVBlank && isVBlank;
-      },
-      []() {
         // (onRender)
         if (ps2Keyboard->softReset)
           SCENE_softReset();
