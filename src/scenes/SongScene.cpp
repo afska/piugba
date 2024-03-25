@@ -254,7 +254,6 @@ void SongScene::render() {
   }
 
   drawVideo();
-  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
 }
 
 void SongScene::setUpPalettes() {
@@ -656,6 +655,7 @@ void SongScene::drawVideo() {
     });
 
     if (success) {
+      BACKGROUND_enable(true, !ENV_DEBUG, false, false);
       if (!videoStore->seek(PlaybackState.msecs))
         throwVideoError();
     } else
