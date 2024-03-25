@@ -271,6 +271,7 @@ CODE_EWRAM void updateRate() {
 }
 
 void player_forever(int (*onUpdate)(),
+                    bool (*onPreVBlank)(),
                     void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current)) {
   while (1) {
@@ -324,8 +325,13 @@ void player_forever(int (*onUpdate)(),
     msecs = fracumul(msecs, AS_MSECS);
     PlaybackState.msecs = msecs;
 
-    // > wait for vertical blank
-    VBlankIntrWait();
+    // > call optional action before vertical blank
+    bool didVBlankStart = onPreVBlank();
+
+    if (!didVBlankStart) {
+      // > wait for vertical blank
+      VBlankIntrWait();
+    }
 
     // > draw
     onRender();

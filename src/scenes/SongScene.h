@@ -38,6 +38,7 @@ class SongScene : public Scene {
 
   void load() override;
   void tick(u16 keys) override;
+  void preVBlank() override;
   void render() override;
 
   ~SongScene();
@@ -138,6 +139,7 @@ class SongScene : public Scene {
   void updateRumble();
   void animateWinnerLifeBar();
   void prepareVideo();
+  void preloadVideo();
   void drawVideo();
   void throwVideoError();
   void processKeys(u16 keys);

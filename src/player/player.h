@@ -16,6 +16,7 @@ void player_stop();
 bool player_isPlaying();
 void player_onVBlank();
 void player_forever(int (*onUpdate)(),
+                    bool (*onPreVBlank)(),
                     void (*onRender)(),
                     void (*onAudioChunks)(unsigned int current));
 

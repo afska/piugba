@@ -27,7 +27,9 @@ class Scene {
 
   virtual void load() = 0;
   virtual void tick(u16 keys) = 0;
+  virtual void preVBlank() {}
   virtual void render() {}
+  bool hasPreVBlank = false;
 
   Scene(std::shared_ptr<GBAEngine> engine)
       : engine(engine),
