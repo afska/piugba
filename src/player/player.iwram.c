@@ -173,7 +173,7 @@ INLINE void disableAudioDMA() {
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 }
 
-INLINE void dsoundSwitchBuffers(const void* src) {
+INLINE void dsoundStartAudioCopy(const void* src) {
   // disable DMA2
   disableAudioDMA();
 
@@ -248,12 +248,10 @@ CODE_EWRAM bool player_isPlaying() {
 }
 
 void player_onVBlank() {
-  if (!didRun) {
-    mute();
-    return;
-  }
+  dsoundStartAudioCopy(double_buffers[cur_buffer]);
 
-  dsoundSwitchBuffers(double_buffers[cur_buffer]);
+  if (!didRun)
+    return;
 
   if (src_pos != NULL)
     unmute();
