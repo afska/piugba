@@ -44,6 +44,17 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
 - **Song selector** with names, backgrounds and sound previews
 - **Optimized** to support ~70 songs per ROM file.
 
+## Downloads
+
+The downloads provided in our [Releases](https://github.com/afska/piugba/releases) section include:
+
+- A portable song importer for Windows.
+- 4 clean builds (without songs) ready to be used with the importer.
+  - _If you use the portable importer, these files are not needed!_
+- A small demo with 9 songs from [Project Outfox Serenity](https://projectoutfox.com/outfox-serenity)'s Volume I & II sets.
+
+**To play, you need to [build a custom ROM](https://github.com/afska/piugba/wiki/Building-a-ROM) or download a complete one from [our Discord](https://discord.com/invite/JE33cc2).**
+
 ## How does it work?
 
 A node.js script (the **importer**) converts a list of SSC/MP3/PNG files into binary files which the GBA can then understand. For audio, it uses GSM audio files which are very small in size.
