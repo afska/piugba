@@ -37,8 +37,8 @@ const MAX_FILE_LENGTH = 15;
 const MAX_SONGS = 99;
 const SELECTOR_OPTIONS = 4;
 const FILE_METADATA = /\.ssc$/i;
-const FILE_AUDIO = /\.(mp3|flac|ogg)$/i;
-const FILE_BACKGROUND = /\.png$/i;
+const FILE_AUDIO = /\.(mp3|flac|ogg|opus)$/i;
+const FILE_BACKGROUND = /\.(png|jpg|jpeg)$/i;
 const FILE_VIDEO_EXTENSIONS = "mp4|mpg|mpeg";
 const FILE_VIDEO = (name) =>
   new RegExp(`^${REGEXP_ESCAPE(name)}\\.(${FILE_VIDEO_EXTENSIONS})$`, "i");
