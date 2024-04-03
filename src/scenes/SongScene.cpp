@@ -372,7 +372,11 @@ initialized:
     }
   }
 
-  player_play(song->audioPath.c_str());
+  if ($isMultiplayer)
+    player_playGSM(song->audioPath.c_str());
+  else
+    player_play(song->audioPath.c_str());
+
   if (deathMix != NULL) {
     player_seek(song->sampleStart);
     if (usesVideo && !videoStore->seek(song->sampleStart)) {

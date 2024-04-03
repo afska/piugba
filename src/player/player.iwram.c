@@ -77,8 +77,6 @@ static bool did_run = false;
                                                                 \
   if (is_pcm) {                                                 \
     if (src_pos < src_len) {                                    \
-      ON_STEP;                                                  \
-      ON_STEP;                                                  \
       if (!audio_store_read(dst_pos)) {                         \
         ON_ERROR;                                               \
       } else {                                                  \
@@ -231,22 +229,7 @@ INLINE void dsound_start_audio_copy(const void* src) {
                 DMA_ENABLE | 1;
 }
 
-CODE_ROM void player_init() {
-  fs = find_first_gbfs_file(0);
-  turn_on_sound();
-  init();
-
-  PlaybackState.msecs = 0;
-  PlaybackState.hasFinished = false;
-  PlaybackState.isLooping = false;
-  PlaybackState.fatfs = NULL;
-}
-
-CODE_ROM void player_unload() {
-  disable_audio_dma();
-}
-
-CODE_ROM void player_play(const char* name) {
+INLINE void loadFile(const char* name, bool forceGSM) {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
@@ -254,7 +237,7 @@ CODE_ROM void player_play(const char* name) {
   rate_counter = 0;
   current_audio_chunk = 0;
 
-  if (PlaybackState.fatfs != NULL) {
+  if (PlaybackState.fatfs != NULL && !forceGSM) {
     char fileName[64];
     strcpy(fileName, name);
     strcat(fileName, ".aud.bin");
@@ -272,6 +255,29 @@ CODE_ROM void player_play(const char* name) {
   strcat(fileName, ".gsm");
   is_pcm = false;
   play(fileName);
+}
+
+CODE_ROM void player_init() {
+  fs = find_first_gbfs_file(0);
+  turn_on_sound();
+  init();
+
+  PlaybackState.msecs = 0;
+  PlaybackState.hasFinished = false;
+  PlaybackState.isLooping = false;
+  PlaybackState.fatfs = NULL;
+}
+
+CODE_ROM void player_unload() {
+  disable_audio_dma();
+}
+
+CODE_ROM void player_play(const char* name) {
+  loadFile(name, false);
+}
+
+CODE_ROM void player_playGSM(const char* name) {
+  loadFile(name, true);
 }
 
 CODE_ROM void player_loop(const char* name) {
@@ -322,6 +328,7 @@ CODE_ROM void player_stop() {
   rate = 0;
   rate_counter = 0;
   current_audio_chunk = 0;
+  is_pcm = false;
 }
 
 CODE_ROM bool player_isPlaying() {
