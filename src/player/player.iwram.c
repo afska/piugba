@@ -22,10 +22,12 @@
 #define CHANNEL_A_UNMUTE 0b0000001100000000
 #define CHANNEL_B_MUTE 0b1100111111111111
 #define CHANNEL_B_UNMUTE 0b0011000000000000
-#define AUDIO_CHUNK_SIZE 33
+#define AUDIO_CHUNK_SIZE_GSM 33
+#define AUDIO_CHUNK_SIZE_PCM 304
 #define FRACUMUL_PRECISION 0xFFFFFFFF
-#define AS_MSECS (1146880 * 1000)
-#define AS_CURSOR 3201039125
+#define AS_MSECS_GSM 1146880000
+#define AS_MSECS_PCM 118273043  // 0xffffffff * (1000/36314)
+#define AS_CURSOR_GSM 3201039125
 #define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0d0)
 #define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0d2)
 
@@ -34,24 +36,91 @@
 
 Playback PlaybackState;
 
+// This player uses:
+// - In GSM mode:
+//   A sample rate of 18157hz, linearly interpolated to 36314hz.
+//   Each GSM chunk is 33 bytes and represents 304 samples.
+//   Two chunks are copied per frame, filling the 608 entries of the buffer.
+//   (This is one of the few combinations of sample rate / buffer size that
+//   time out perfectly in the 280896 cycles of a GBA frame)
+//   See: (JS code)
+//     for (var i=80; i<1000; i++)
+//       if ((280896%i)==0 && (i%16) == 0)
+//         console.log(
+//           'timer =', 65536-(280896/i), '; buffer =',
+//           i, '; sample rate =', i*(1<<24)/280896, 'hz'
+//         );
+// - In PCM s8 mode:
+//   A sample rate of 36314.
+//   Each PCM chunk is 304 bytes and represents 304 samples.
+//   Two chunks are copied per frame.
+
 static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
 
+static bool isPCM = false;
 static int rate = 0;
 static u32 rateCounter = 0;
 static u32 currentAudioChunk = 0;
 static bool didRun = false;
 
+#define AUDIO_CHUNK_SIZE (isPCM ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
+#define AS_MSECS (isPCM ? AS_MSECS_PCM : AS_MSECS_GSM)
+#define AS_CURSOR AS_CURSOR_GSM
+
 /* GSM Player ----------------------------------------- */
-#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP) \
-  didRun = true;                            \
-  dst_pos = double_buffers[cur_buffer];     \
-                                            \
-  if (src_pos < src_end) {                  \
-    for (i = 0; i < 608; i++) {             \
-      *dst_pos++ = *src_pos++;              \
-    }                                       \
-  } else if (src_pos != NULL) {             \
-    ON_STOP;                                \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)             \
+  didRun = true;                                        \
+  dst_pos = double_buffers[cur_buffer];                 \
+                                                        \
+  if (isPCM) {                                          \
+    for (i = 0; i < 608; i++) {                         \
+      ON_STEP;                                          \
+      ON_STEP;                                          \
+      if (src_pos < src_end) {                          \
+        *dst_pos++ = *src_pos++;                        \
+      } else {                                          \
+        if (src_pos != NULL) {                          \
+          ON_STOP;                                      \
+        }                                               \
+        break;                                          \
+      }                                                 \
+    }                                                   \
+  } else {                                              \
+    if (src_pos < src_end) {                            \
+      for (i = 304 / 4; i > 0; i--) {                   \
+        int cur_sample;                                 \
+        if (decode_pos >= 160) {                        \
+          if (src_pos < src_end)                        \
+            gsm_decode(&decoder, src_pos, out_samples); \
+          src_pos += sizeof(gsm_frame);                 \
+          decode_pos = 0;                               \
+          ON_STEP;                                      \
+        }                                               \
+                                                        \
+        /* 2:1 linear interpolation */                  \
+        cur_sample = out_samples[decode_pos++];         \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
+        *dst_pos++ = cur_sample >> 8;                   \
+        last_sample = cur_sample;                       \
+                                                        \
+        cur_sample = out_samples[decode_pos++];         \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
+        *dst_pos++ = cur_sample >> 8;                   \
+        last_sample = cur_sample;                       \
+                                                        \
+        cur_sample = out_samples[decode_pos++];         \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
+        *dst_pos++ = cur_sample >> 8;                   \
+        last_sample = cur_sample;                       \
+                                                        \
+        cur_sample = out_samples[decode_pos++];         \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
+        *dst_pos++ = cur_sample >> 8;                   \
+        last_sample = cur_sample;                       \
+      }                                                 \
+    } else if (src_pos != NULL) {                       \
+      ON_STOP;                                          \
+    }                                                   \
   }
 
 uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
@@ -91,8 +160,8 @@ INLINE void turnOnSound() {
 INLINE void init() {
   /* TMxCNT_L is count; TMxCNT_H is control */
   REG_TM1CNT_H = 0;
-  REG_TM1CNT_L = 0x10000 - (924 / 2);  // 0x10000 - (16777216 / 36314)
-  REG_TM1CNT_H = TIMER_16MHZ | TIMER_START;
+  REG_TM1CNT_L = 0x10000 - (924 / 2);        // 0x10000 - (16777216 / 36314)
+  REG_TM1CNT_H = TIMER_16MHZ | TIMER_START;  //            cpuFreq  / sampleRate
 
   mute();
 }
@@ -113,10 +182,11 @@ INLINE void stop() {
 
 INLINE void play(const char* name) {
   stop();
-  // gsmInit(&decoder);
-  src = gbfs_get_obj(fs, "414.aud.bin", &src_len);
+  gsmInit(&decoder);
+  src = gbfs_get_obj(fs, "414.aud.bin", &src_len);  // TODO: name
   src_pos = src;
   src_end = src + src_len;
+  isPCM = true;  // TODO: REMOVE
 }
 
 INLINE void disableAudioDMA() {
@@ -292,9 +362,8 @@ void player_forever(int (*onUpdate)(),
     updateRate();
 
     // > calculate played milliseconds
-    unsigned int msecs = src_pos - src;
-    msecs = fracumul(msecs, AS_MSECS);
-    PlaybackState.msecs = msecs;
+    unsigned int diff = src_pos - src;
+    PlaybackState.msecs = fracumul(diff, AS_MSECS);
 
     // > wait for vertical blank
     VBlankIntrWait();
