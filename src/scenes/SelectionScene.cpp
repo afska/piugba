@@ -183,8 +183,12 @@ void SelectionScene::tick(u16 keys) {
   processConfirmEvents();
   processMenuEvents();
 
-  blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
-                   HIGHLIGHTER_OPACITY);
+  blendCount++;
+  if (blendCount == 2) {
+    blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
+                     HIGHLIGHTER_OPACITY);
+    blendCount = 0;
+  }
   EFFECT_setBlendAlpha(blendAlpha);
 }
 

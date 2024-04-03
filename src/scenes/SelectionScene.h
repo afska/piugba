@@ -76,6 +76,7 @@ class SelectionScene : public Scene {
   bool confirmed = false;
   u8 isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
+  u32 blendCount = 0;
 
   inline void playNow(const char* name) {
     player_play(name);
