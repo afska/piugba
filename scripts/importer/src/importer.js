@@ -252,6 +252,13 @@ async function run() {
       () => importers.audio(name, path, GLOBAL_OPTIONS.output),
       audioFile
     );
+
+    if (GLOBAL_OPTIONS.hqaudioenable) {
+      await utils.report(
+        () => importers.hqaudio(name, path, GLOBAL_OPTIONS.hqaudiolib),
+        audioFile + " (hq)"
+      );
+    }
   }
 
   // ------------
