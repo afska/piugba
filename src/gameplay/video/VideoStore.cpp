@@ -5,6 +5,7 @@
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
 #include "objects/ArrowInfo.h"
+#include "player/PlaybackState.h"
 #include "utils/MathUtils.h"
 
 extern "C" {
@@ -38,24 +39,24 @@ void VideoStore::disable() {
 }
 
 VideoStore::State VideoStore::activate() {
-  state = OFF;
+  setState(OFF);
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   BackgroundVideosOpts::dACTIVATING);
 
   auto result = flashcartio_activate();
   if (result != FLASHCART_ACTIVATED) {
     disable();
-    return (state = (result == FLASHCART_ACTIVATION_FAILED
+    return setState((result == FLASHCART_ACTIVATION_FAILED
                          ? MOUNT_ERROR
                          : NO_SUPPORTED_FLASHCART));
   }
 
   if (f_mount(&fatfs, "", 1) > 0) {
     disable();
-    return (state = MOUNT_ERROR);
+    return setState(MOUNT_ERROR);
   }
 
-  state = ACTIVE;
+  setState(ACTIVE, &fatfs);
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   BackgroundVideosOpts::dACTIVE);
   return state;
@@ -148,4 +149,10 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
   }
 
   return true;
+}
+
+VideoStore::State VideoStore::setState(State newState, void* fatfs) {
+  state = newState;
+  PlaybackState.fatfs = fatfs;
+  return newState;
 }

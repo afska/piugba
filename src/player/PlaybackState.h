@@ -5,6 +5,7 @@ typedef struct {
   unsigned int msecs;
   bool hasFinished;
   bool isLooping;
+  void* fatfs;
 } Playback;
 
 extern Playback PlaybackState;

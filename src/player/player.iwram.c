@@ -36,9 +36,9 @@
 
 Playback PlaybackState;
 
-// This player uses:
 // - In GSM mode:
-//   A sample rate of 18157hz, linearly interpolated to 36314hz.
+//   Audio is taken from the embedded GBFS file in ROM.
+//   The sample rate is 18157hz, linearly interpolated to 36314hz.
 //   Each GSM chunk is 33 bytes and represents 304 samples.
 //   Two chunks are copied per frame, filling the 608 entries of the buffer.
 //   (This is one of the few combinations of sample rate / buffer size that
@@ -51,7 +51,8 @@ Playback PlaybackState;
 //           i, '; sample rate =', i*(1<<24)/280896, 'hz'
 //         );
 // - In PCM s8 mode:
-//   A sample rate of 36314.
+//   Audio is taken from the flash cart's SD card (gba-flashcartio).
+//   The sample rate is 36314hz.
 //   Each PCM chunk is 304 bytes and represents 304 samples.
 //   Two chunks are copied per frame.
 
@@ -231,6 +232,11 @@ CODE_EWRAM void player_init() {
   fs = find_first_gbfs_file(0);
   turnOnSound();
   init();
+
+  PlaybackState.msecs = 0;
+  PlaybackState.hasFinished = false;
+  PlaybackState.isLooping = false;
+  PlaybackState.fatfs = NULL;
 }
 
 CODE_EWRAM void player_unload() {

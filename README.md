@@ -215,4 +215,5 @@ If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
 - [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v6.0.3
+- [afska/gba-flashcartio](https://github.com/afska/gba-flashcartio): v1.0.4
 - [FatFS](http://elm-chan.org/fsw/ff/): R0.15
