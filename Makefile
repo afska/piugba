@@ -128,6 +128,8 @@ MODE ?= auto
 SONGS ?= src/data/content/songs
 VIDEOLIB ?= src/data/content/piuGBA_videos
 VIDEOENABLE ?= false
+HQAUDIOLIB ?= src/data/content/piuGBA_audios
+HQAUDIOENABLE ?= false
 FAST ?= false
 ENV ?= development
 BOSS ?= true
@@ -226,7 +228,7 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE)
+	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)

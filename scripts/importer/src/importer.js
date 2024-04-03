@@ -31,6 +31,7 @@ const DEFAULT_SONGS_PATH = $path.resolve(CONTENT_PATH, "songs");
 const DEFAULT_OUTPUT_PATH = $path.resolve(CONTENT_PATH, "_compiled_files");
 const DEFAULT_ASSETS_PATH = $path.resolve(DATA_PATH, "assets");
 const DEFAULT_VIDEOLIB_PATH = $path.resolve(CONTENT_PATH, "piuGBA_videos");
+const DEFAULT_HQAUDIOLIB_PATH = $path.resolve(CONTENT_PATH, "piuGBA_audios");
 
 const ID_SIZE = 3;
 const MAX_FILE_LENGTH = 15;
@@ -100,6 +101,16 @@ const opt = getopt
       "video library output directory (defaults to: ../../../src/data/content/piuGBA_videos)",
     ],
     ["x", "videoenable=VIDEOENABLE", "enable video (one of: *false*|true)"],
+    [
+      "h",
+      "hqaudiolib=HQAUDIOLIB",
+      "hq audio library output directory (defaults to: ../../../src/data/content/piuGBA_audios)",
+    ],
+    [
+      "y",
+      "hqaudioenable=HQAUDIOENABLE",
+      "enable hq audio (one of: *false*|true)",
+    ],
     ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only (one of: *false*|true)"],
@@ -129,6 +140,10 @@ GLOBAL_OPTIONS.videolib = $path.resolve(
   GLOBAL_OPTIONS.videolib || DEFAULT_VIDEOLIB_PATH
 );
 GLOBAL_OPTIONS.videoenable = GLOBAL_OPTIONS.videoenable === "true";
+GLOBAL_OPTIONS.hqaudiolib = $path.resolve(
+  GLOBAL_OPTIONS.hqaudiolib || DEFAULT_HQAUDIOLIB_PATH
+);
+GLOBAL_OPTIONS.hqaudioenable = GLOBAL_OPTIONS.hqaudioenable === "true";
 GLOBAL_OPTIONS.boss = GLOBAL_OPTIONS.boss !== "false";
 GLOBAL_OPTIONS.arcade = GLOBAL_OPTIONS.arcade === "true";
 GLOBAL_OPTIONS.fast = GLOBAL_OPTIONS.fast === "true";
@@ -220,6 +235,7 @@ async function run() {
   await utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
   mkdirp.sync(GLOBAL_OPTIONS.output);
   if (GLOBAL_OPTIONS.videoenable) mkdirp.sync(GLOBAL_OPTIONS.videolib);
+  if (GLOBAL_OPTIONS.hqaudioenable) mkdirp.sync(GLOBAL_OPTIONS.hqaudiolib);
 
   // ------------
   // AUDIO ASSETS
@@ -363,6 +379,16 @@ async function run() {
         "audio",
         true
       );
+
+      // hq audio
+      if (GLOBAL_OPTIONS.hqaudioenable) {
+        await utils.report(
+          () =>
+            importers.hqaudio(outputName, audioFile, GLOBAL_OPTIONS.hqaudiolib),
+          "hq audio",
+          true
+        );
+      }
 
       // background
       await utils.report(
