@@ -21,8 +21,8 @@ extern "C" {
 
 const u32 FRACUMUL_MS_TO_FRAME_AT_30FPS = 128849018;  // (*30/1000)
 
-static FATFS fatfs;
-static FIL file;
+DATA_EWRAM static FATFS fatfs;
+DATA_EWRAM static FIL file;
 
 bool VideoStore::isEnabled() {
   return SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);

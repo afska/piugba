@@ -15,6 +15,8 @@
 #include "core/private.h" /* for sizeof(struct gsm_state) */
 #include "utils/gbfs/gbfs.h"
 
+#include "audio_store.h"
+
 #define TIMER_16MHZ 0
 #define FIFO_ADDR_A 0x040000a0
 #define FIFO_ADDR_B 0x040000A4
@@ -31,6 +33,7 @@
 #define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0d0)
 #define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0d2)
 
+#define CODE_ROM __attribute__((section(".code")))
 #define CODE_EWRAM __attribute__((section(".ewram")))
 #define INLINE static inline __attribute__((always_inline))
 
@@ -69,67 +72,65 @@ static bool didRun = false;
 #define AS_CURSOR AS_CURSOR_GSM
 
 /* GSM Player ----------------------------------------- */
-#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)             \
-  didRun = true;                                        \
-  dst_pos = double_buffers[cur_buffer];                 \
-                                                        \
-  if (isPCM) {                                          \
-    for (i = 0; i < 608; i++) {                         \
-      ON_STEP;                                          \
-      ON_STEP;                                          \
-      if (src_pos < src_end) {                          \
-        *dst_pos++ = *src_pos++;                        \
-      } else {                                          \
-        if (src_pos != NULL) {                          \
-          ON_STOP;                                      \
-        }                                               \
-        break;                                          \
-      }                                                 \
-    }                                                   \
-  } else {                                              \
-    if (src_pos < src_end) {                            \
-      for (i = 304 / 4; i > 0; i--) {                   \
-        int cur_sample;                                 \
-        if (decode_pos >= 160) {                        \
-          if (src_pos < src_end)                        \
-            gsm_decode(&decoder, src_pos, out_samples); \
-          src_pos += sizeof(gsm_frame);                 \
-          decode_pos = 0;                               \
-          ON_STEP;                                      \
-        }                                               \
-                                                        \
-        /* 2:1 linear interpolation */                  \
-        cur_sample = out_samples[decode_pos++];         \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
-        *dst_pos++ = cur_sample >> 8;                   \
-        last_sample = cur_sample;                       \
-                                                        \
-        cur_sample = out_samples[decode_pos++];         \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
-        *dst_pos++ = cur_sample >> 8;                   \
-        last_sample = cur_sample;                       \
-                                                        \
-        cur_sample = out_samples[decode_pos++];         \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
-        *dst_pos++ = cur_sample >> 8;                   \
-        last_sample = cur_sample;                       \
-                                                        \
-        cur_sample = out_samples[decode_pos++];         \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;   \
-        *dst_pos++ = cur_sample >> 8;                   \
-        last_sample = cur_sample;                       \
-      }                                                 \
-    } else if (src_pos != NULL) {                       \
-      ON_STOP;                                          \
-    }                                                   \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)                     \
+  didRun = true;                                                \
+  dst_pos = double_buffers[cur_buffer];                         \
+                                                                \
+  if (isPCM) {                                                  \
+    ON_STEP;                                                    \
+    ON_STEP;                                                    \
+    if (!audio_store_read(dst_pos)) {                           \
+      ON_STOP;                                                  \
+      return;                                                   \
+    }                                                           \
+    src_pos += 608;                                             \
+    if (src_pos >= src_len) {                                   \
+      ON_STOP;                                                  \
+      return;                                                   \
+    }                                                           \
+  } else {                                                      \
+    if (src_pos < src_len) {                                    \
+      for (i = 304 / 4; i > 0; i--) {                           \
+        int cur_sample;                                         \
+        if (decode_pos >= 160) {                                \
+          if (src_pos < src_len)                                \
+            gsm_decode(&decoder, (src + src_pos), out_samples); \
+          src_pos += sizeof(gsm_frame);                         \
+          decode_pos = 0;                                       \
+          ON_STEP;                                              \
+        }                                                       \
+                                                                \
+        /* 2:1 linear interpolation */                          \
+        cur_sample = out_samples[decode_pos++];                 \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+        *dst_pos++ = cur_sample >> 8;                           \
+        last_sample = cur_sample;                               \
+                                                                \
+        cur_sample = out_samples[decode_pos++];                 \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+        *dst_pos++ = cur_sample >> 8;                           \
+        last_sample = cur_sample;                               \
+                                                                \
+        cur_sample = out_samples[decode_pos++];                 \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+        *dst_pos++ = cur_sample >> 8;                           \
+        last_sample = cur_sample;                               \
+                                                                \
+        cur_sample = out_samples[decode_pos++];                 \
+        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+        *dst_pos++ = cur_sample >> 8;                           \
+        last_sample = cur_sample;                               \
+      }                                                         \
+    } else if (src != NULL) {                                   \
+      ON_STOP;                                                  \
+    }                                                           \
   }
 
 uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 static const GBFS_FILE* fs;
-static const unsigned char* src;
-static uint32_t src_len;
-static const unsigned char* src_pos = NULL;
-static const unsigned char* src_end = NULL;
+static const unsigned char* src = NULL;
+static uint32_t src_len = 0;
+static unsigned int src_pos = 0;
 static struct gsm_state decoder;
 static signed short out_samples[160];
 static signed char double_buffers[2][608] __attribute__((aligned(4)));
@@ -169,8 +170,7 @@ INLINE void init() {
 
 INLINE void stop() {
   mute();
-  src_pos = NULL;
-  src_end = NULL;
+  src = NULL;
   decode_pos = 160;
   cur_buffer = 0;
   last_sample = 0;
@@ -183,11 +183,15 @@ INLINE void stop() {
 
 INLINE void play(const char* name) {
   stop();
-  gsmInit(&decoder);
-  src = gbfs_get_obj(fs, "414.aud.bin", &src_len);  // TODO: name
-  src_pos = src;
-  src_end = src + src_len;
-  isPCM = true;  // TODO: REMOVE
+
+  if (isPCM) {
+    // src = 1;  // (unused) // TODO: (char*)1
+    src_pos = 0;
+  } else {
+    gsmInit(&decoder);
+    src = gbfs_get_obj(fs, name, &src_len);
+    src_pos = 0;
+  }
 }
 
 INLINE void disableAudioDMA() {
@@ -228,7 +232,7 @@ INLINE void dsoundStartAudioCopy(const void* src) {
 }
 /* ---------------------------------------------------- */
 
-CODE_EWRAM void player_init() {
+CODE_ROM void player_init() {
   fs = find_first_gbfs_file(0);
   turnOnSound();
   init();
@@ -239,48 +243,69 @@ CODE_EWRAM void player_init() {
   PlaybackState.fatfs = NULL;
 }
 
-CODE_EWRAM void player_unload() {
+CODE_ROM void player_unload() {
   disableAudioDMA();
 }
 
-CODE_EWRAM void player_play(const char* name) {
-  play(name);
-
+CODE_ROM void player_play(const char* name) {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
   rate = 0;
   rateCounter = 0;
   currentAudioChunk = 0;
+
+  if (PlaybackState.fatfs != NULL) {
+    char fileName[64];
+    strcpy(fileName, name);
+    strcat(fileName, ".aud.bin");
+
+    bool success = audio_store_load(fileName);
+    if (success) {
+      isPCM = true;
+      play(fileName);
+      return;
+    }
+  }
+
+  char fileName[64];
+  strcpy(fileName, name);
+  strcat(fileName, ".gsm");
+  isPCM = false;
+  play(fileName);
 }
 
-CODE_EWRAM void player_loop(const char* name) {
+CODE_ROM void player_loop(const char* name) {
   player_play(name);
   PlaybackState.isLooping = true;
 }
 
-CODE_EWRAM void player_seek(unsigned int msecs) {
-  // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
-  // cursor = src_pos - src
-  // msecs = cursor * msecsPerSample
-  // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
-  // => msecs = cursor * 0.267
-  // => cursor = msecs / 0.267 = msecs * 3.7453
-  // => cursor = msecs * (3 + 0.7453)
+CODE_ROM void player_seek(unsigned int msecs) {
+  if (isPCM) {
+    // TODO: IMPLEMENT
+  } else {
+    // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
+    // cursor = src_pos
+    // msecs = cursor * msecsPerSample
+    // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
+    // => msecs = cursor * 0.267
+    // => cursor = msecs / 0.267 = msecs * 3.7453
+    // => cursor = msecs * (3 + 0.7453)
 
-  unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
-  cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
-  src_pos = src + cursor;
-  rateCounter = 0;
-  currentAudioChunk = 0;
+    unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
+    cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
+    src_pos = cursor;
+    rateCounter = 0;
+    currentAudioChunk = 0;
+  }
 }
 
-CODE_EWRAM void player_setRate(int newRate) {
+CODE_ROM void player_setRate(int newRate) {
   rate = newRate;
   rateCounter = 0;
 }
 
-CODE_EWRAM void player_stop() {
+CODE_ROM void player_stop() {
   stop();
 
   PlaybackState.msecs = 0;
@@ -291,8 +316,8 @@ CODE_EWRAM void player_stop() {
   currentAudioChunk = 0;
 }
 
-CODE_EWRAM bool player_isPlaying() {
-  return src_pos != NULL;
+CODE_ROM bool player_isPlaying() {
+  return src != NULL;
 }
 
 void player_onVBlank() {
@@ -301,7 +326,7 @@ void player_onVBlank() {
   if (!didRun)
     return;
 
-  if (src_pos != NULL)
+  if (src != NULL)
     unmute();
 
   cur_buffer = !cur_buffer;
@@ -368,8 +393,7 @@ void player_forever(int (*onUpdate)(),
     updateRate();
 
     // > calculate played milliseconds
-    unsigned int diff = src_pos - src;
-    PlaybackState.msecs = fracumul(diff, AS_MSECS);
+    PlaybackState.msecs = fracumul(src_pos, AS_MSECS);
 
     // > wait for vertical blank
     VBlankIntrWait();
