@@ -75,8 +75,8 @@ int main() {
         if (ps2Keyboard->softReset)
           SCENE_softReset();
 
-        engine->render();
         EFFECT_render();
+        engine->render();
       },
       [](u32 current) {
         // (onAudioChunk)
