@@ -8,6 +8,7 @@
 
 bool audio_store_load(char* audioPath);
 bool audio_store_read(void* buffer);
+bool audio_store_seek(unsigned int offset);
 unsigned int audio_store_len();
 
 #endif  // AUDIO_STORE_H

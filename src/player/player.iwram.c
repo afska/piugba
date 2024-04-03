@@ -30,6 +30,7 @@
 #define AS_MSECS_GSM 1146880000
 #define AS_MSECS_PCM 118273043  // 0xffffffff * (1000/36314)
 #define AS_CURSOR_GSM 3201039125
+#define AS_CURSOR_PCM 1348619731
 #define REG_DMA2CNT_L *(vu16*)(REG_BASE + 0x0d0)
 #define REG_DMA2CNT_H *(vu16*)(REG_BASE + 0x0d2)
 
@@ -69,7 +70,6 @@ static bool did_run = false;
 
 #define AUDIO_CHUNK_SIZE (is_pcm ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
 #define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
-#define AS_CURSOR AS_CURSOR_GSM
 
 #define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)           \
   did_run = true;                                               \
@@ -280,19 +280,28 @@ CODE_ROM void player_loop(const char* name) {
 }
 
 CODE_ROM void player_seek(unsigned int msecs) {
+  // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
+  // cursor = src_pos
+
   if (is_pcm) {
-    // TODO: IMPLEMENT
+    // cursor = msecs * (sampleRate / 1000) = msecs * 36.314
+    // => cursor = msecs * (36 + 0.314)
+
+    unsigned int cursor = msecs * 36 + fracumul(msecs, AS_CURSOR_PCM);
+    cursor = (cursor / AUDIO_CHUNK_SIZE_PCM) * AUDIO_CHUNK_SIZE_PCM;
+    src_pos = cursor;
+    rate_counter = 0;
+    current_audio_chunk = 0;
+    audio_store_seek(src_pos);
   } else {
-    // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
-    // cursor = src_pos
-    // msecs = cursor * msecsPerSample
-    // msecsPerSample = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
+    // msecs = cursor * msecsPerByte
+    // msecsPerByte = AS_MSECS / FRACUMUL_PRECISION ~= 0.267
     // => msecs = cursor * 0.267
     // => cursor = msecs / 0.267 = msecs * 3.7453
     // => cursor = msecs * (3 + 0.7453)
 
-    unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
-    cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
+    unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR_GSM);
+    cursor = (cursor / AUDIO_CHUNK_SIZE_GSM) * AUDIO_CHUNK_SIZE_GSM;
     src_pos = cursor;
     rate_counter = 0;
     current_audio_chunk = 0;

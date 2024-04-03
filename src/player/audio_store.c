@@ -45,10 +45,6 @@ bool audio_store_load(char* audioPath) {
   return true;
 }
 
-unsigned int audio_store_len() {
-  return hasLoaded ? f_size(&file) : 0;
-}
-
 bool audio_store_read(void* buffer) {
   if (!hasLoaded)
     return false;
@@ -57,19 +53,13 @@ bool audio_store_read(void* buffer) {
   return f_read(&file, buffer, AUDIO_SIZE_FRAME, &readBytes) == 0;
 }
 
-// TODO: SEEK
-// bool VideoStore::seek(u32 msecs) {
-//   frame = MATH_fracumul(msecs, FRACUMUL_MS_TO_FRAME_AT_30FPS) -
-//           SGN(videoOffset) *
-//               MATH_fracumul(ABS(videoOffset), FRACUMUL_MS_TO_FRAME_AT_30FPS);
-//   frameLatch = false;
-//   cursor = frame > 0 ? frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR : 0;
-//   memoryCursor = 0;
+bool audio_store_seek(unsigned int offset) {
+  if (!hasLoaded)
+    return false;
 
-//   if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
-//     unload();
-//     return false;
-//   }
+  return f_lseek(&file, offset) == 0;
+}
 
-//   return true;
-// }
+unsigned int audio_store_len() {
+  return hasLoaded ? f_size(&file) : 0;
+}
