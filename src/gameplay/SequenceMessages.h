@@ -106,19 +106,19 @@
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_CRASH \
-  "HQ activation failed!\r\n"         \
+  "HQ mode disabled!\r\n"             \
   " -> it crashed :/\r\n"             \
   "\r\n"                              \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_NO_FLASHCART \
-  "HQ activation failed!\r\n"                \
+  "HQ mode disabled!\r\n"                    \
   " -> no EverDrive found\r\n"               \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_MOUNT_FAILED \
-  "HQ activation failed!\r\n"                \
+  "HQ mode disabled!\r\n"                    \
   " -> FAT mount error\r\n"                  \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
@@ -133,12 +133,6 @@
   "HQ mode is now disabled!\r\n"   \
   "\r\n"                           \
   "\r\n"                           \
-  "=> Press A+B+START+SELECT"
-
-#define VIDEO_READING_FAILED     \
-  "Error reading SD card :(\r\n" \
-  "HQ mode is now disabled.\r\n" \
-  "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
 #define EWRAM_OVERCLOCK_ENABLED \
