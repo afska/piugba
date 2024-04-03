@@ -54,10 +54,12 @@ void AdminScene::loadBackground(u32 id) {
 }
 
 void AdminScene::printOptions() {
-  if (withSound) {
-    player_play(SOUND_STEP);
-    withSound = false;
-  }
+#define PLAY_AND_END()       \
+  if (withSound) {           \
+    player_play(SOUND_STEP); \
+    withSound = false;       \
+  }                          \
+  return;
 
   TextStream::instance().scrollNow(0, -2);
 
@@ -77,7 +79,7 @@ void AdminScene::printOptions() {
     printOption(3, "[RESET RUMBLE]", "", 13);
     printOption(4, "[BACK]", "", 15);
 
-    return;
+    PLAY_AND_END();
   } else if (submenu == SUBMENU_OFFSETS) {
     SCENE_write("CUSTOM OFFSETS", 1);
 
@@ -93,7 +95,7 @@ void AdminScene::printOptions() {
     printOption(1, "[RESET ALL OFFSETS]", "", 13);
     printOption(2, "[BACK]", "", 15);
 
-    return;
+    PLAY_AND_END();
   } else if (submenu == SUBMENU_RESET) {
     SCENE_write("DELETE SAVE FILE", 1);
 
@@ -101,14 +103,14 @@ void AdminScene::printOptions() {
     printOption(1, "[DELETE ALL SAVED DATA]", "", 13);
     printOption(2, "[BACK]", "", 15);
 
-    return;
+    PLAY_AND_END();
   } else if (submenu >= SUBMENU_SURE_OFFSETS) {
     SCENE_write("ARE YOU SURE?!", 1);
 
     printOption(0, "[NO]", "", 13);
     printOption(1, "[YES]", "", 15);
 
-    return;
+    PLAY_AND_END();
   }
 
   SCENE_write(TITLE, 1);
@@ -150,6 +152,8 @@ void AdminScene::printOptions() {
   printOption(OPTION_RUMBLE_OPTS, "[RUMBLE OPTIONS]", "", 13);
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 14);
   printOption(OPTION_RESET_SAVE_FILE, "[DELETE SAVE FILE]", "", 15);
+
+  PLAY_AND_END();
 }
 
 bool AdminScene::selectOption(u32 selected, int direction) {

@@ -184,10 +184,10 @@ void CalibrateScene::calibrate() {
 void CalibrateScene::start() {
   isMeasuring = true;
   hasDoneChanges = true;
-  player_play(SOUND_CALIBRATE);
   SPRITE_hide(resetButton->get());
   SPRITE_hide(saveButton->get());
   printTitle();
+  player_play(SOUND_CALIBRATE);
 }
 
 void CalibrateScene::finish() {
