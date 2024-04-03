@@ -354,6 +354,8 @@ CODE_EWRAM void update_rate() {
     if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
       src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
       rate_counter = 0;
+      if (is_pcm)
+        audio_store_seek(src_pos);
     }
   }
 }
