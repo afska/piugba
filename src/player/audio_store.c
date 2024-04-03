@@ -45,6 +45,10 @@ bool audio_store_load(char* audioPath) {
   return true;
 }
 
+unsigned int audio_store_len() {
+  return hasLoaded ? f_size(&file) : 0;
+}
+
 bool audio_store_read(void* buffer) {
   if (!hasLoaded)
     return false;

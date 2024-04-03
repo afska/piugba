@@ -59,34 +59,33 @@ Playback PlaybackState;
 //   Each PCM chunk is 304 bytes and represents 304 samples.
 //   Two chunks are copied per frame.
 
-static const int rateDelays[] = {1, 2, 4, 0, 4, 2, 1};
+static const int rate_delays[] = {1, 2, 4, 0, 4, 2, 1};
 
-static bool isPCM = false;
+static bool is_pcm = false;
 static int rate = 0;
-static u32 rateCounter = 0;
-static u32 currentAudioChunk = 0;
-static bool didRun = false;
+static u32 rate_counter = 0;
+static u32 current_audio_chunk = 0;
+static bool did_run = false;
 
-#define AUDIO_CHUNK_SIZE (isPCM ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
-#define AS_MSECS (isPCM ? AS_MSECS_PCM : AS_MSECS_GSM)
+#define AUDIO_CHUNK_SIZE (is_pcm ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
+#define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
 #define AS_CURSOR AS_CURSOR_GSM
 
-/* GSM Player ----------------------------------------- */
 #define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)                     \
-  didRun = true;                                                \
+  did_run = true;                                               \
   dst_pos = double_buffers[cur_buffer];                         \
                                                                 \
-  if (isPCM) {                                                  \
-    ON_STEP;                                                    \
-    ON_STEP;                                                    \
-    if (!audio_store_read(dst_pos)) {                           \
+  if (is_pcm) {                                                 \
+    if (src_pos < src_len) {                                    \
+      ON_STEP;                                                  \
+      ON_STEP;                                                  \
+      if (!audio_store_read(dst_pos)) {                         \
+        ON_STOP;                                                \
+        return;                                                 \
+      }                                                         \
+      src_pos += 608;                                           \
+    } else if (src != NULL) {                                   \
       ON_STOP;                                                  \
-      return;                                                   \
-    }                                                           \
-    src_pos += 608;                                             \
-    if (src_pos >= src_len) {                                   \
-      ON_STOP;                                                  \
-      return;                                                   \
     }                                                           \
   } else {                                                      \
     if (src_pos < src_len) {                                    \
@@ -139,7 +138,7 @@ static signed char* dst_pos;
 static int last_sample = 0;
 static int i;
 
-INLINE void gsmInit(gsm r) {
+INLINE void gsm_init(gsm r) {
   memset((char*)r, 0, sizeof(*r));
   r->nrp = 40;
 }
@@ -152,7 +151,7 @@ INLINE void unmute() {
   DSOUNDCTRL = DSOUNDCTRL | CHANNEL_B_UNMUTE;
 }
 
-INLINE void turnOnSound() {
+INLINE void turn_on_sound() {
   SETSNDRES(1);
   SNDSTAT = SNDSTAT_ENABLE;
   DSOUNDCTRL = 0b1111000000001100;
@@ -184,17 +183,18 @@ INLINE void stop() {
 INLINE void play(const char* name) {
   stop();
 
-  if (isPCM) {
-    // src = 1;  // (unused) // TODO: (char*)1
+  if (is_pcm) {
+    src = (const unsigned char*)1;  // (unused)
     src_pos = 0;
+    src_len = audio_store_len();
   } else {
-    gsmInit(&decoder);
+    gsm_init(&decoder);
     src = gbfs_get_obj(fs, name, &src_len);
     src_pos = 0;
   }
 }
 
-INLINE void disableAudioDMA() {
+INLINE void disable_audio_dma() {
   // ----------------------------------------------------
   // This convoluted process was taken from the official manual.
   // It's supposed to disable DMA2 in a "safe" way, avoiding DMA lockups.
@@ -220,9 +220,9 @@ INLINE void disableAudioDMA() {
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 }
 
-INLINE void dsoundStartAudioCopy(const void* src) {
+INLINE void dsound_start_audio_copy(const void* src) {
   // disable DMA2
-  disableAudioDMA();
+  disable_audio_dma();
 
   // setup DMA2 for audio
   REG_DMA2SAD = (intptr_t)src;
@@ -230,11 +230,10 @@ INLINE void dsoundStartAudioCopy(const void* src) {
   REG_DMA2CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
                 DMA_ENABLE | 1;
 }
-/* ---------------------------------------------------- */
 
 CODE_ROM void player_init() {
   fs = find_first_gbfs_file(0);
-  turnOnSound();
+  turn_on_sound();
   init();
 
   PlaybackState.msecs = 0;
@@ -244,7 +243,7 @@ CODE_ROM void player_init() {
 }
 
 CODE_ROM void player_unload() {
-  disableAudioDMA();
+  disable_audio_dma();
 }
 
 CODE_ROM void player_play(const char* name) {
@@ -252,8 +251,8 @@ CODE_ROM void player_play(const char* name) {
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
   rate = 0;
-  rateCounter = 0;
-  currentAudioChunk = 0;
+  rate_counter = 0;
+  current_audio_chunk = 0;
 
   if (PlaybackState.fatfs != NULL) {
     char fileName[64];
@@ -262,7 +261,7 @@ CODE_ROM void player_play(const char* name) {
 
     bool success = audio_store_load(fileName);
     if (success) {
-      isPCM = true;
+      is_pcm = true;
       play(fileName);
       return;
     }
@@ -271,7 +270,7 @@ CODE_ROM void player_play(const char* name) {
   char fileName[64];
   strcpy(fileName, name);
   strcat(fileName, ".gsm");
-  isPCM = false;
+  is_pcm = false;
   play(fileName);
 }
 
@@ -281,7 +280,7 @@ CODE_ROM void player_loop(const char* name) {
 }
 
 CODE_ROM void player_seek(unsigned int msecs) {
-  if (isPCM) {
+  if (is_pcm) {
     // TODO: IMPLEMENT
   } else {
     // (cursor must be a multiple of AUDIO_CHUNK_SIZE)
@@ -295,14 +294,14 @@ CODE_ROM void player_seek(unsigned int msecs) {
     unsigned int cursor = msecs * 3 + fracumul(msecs, AS_CURSOR);
     cursor = (cursor / AUDIO_CHUNK_SIZE) * AUDIO_CHUNK_SIZE;
     src_pos = cursor;
-    rateCounter = 0;
-    currentAudioChunk = 0;
+    rate_counter = 0;
+    current_audio_chunk = 0;
   }
 }
 
 CODE_ROM void player_setRate(int newRate) {
   rate = newRate;
-  rateCounter = 0;
+  rate_counter = 0;
 }
 
 CODE_ROM void player_stop() {
@@ -312,8 +311,8 @@ CODE_ROM void player_stop() {
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
   rate = 0;
-  rateCounter = 0;
-  currentAudioChunk = 0;
+  rate_counter = 0;
+  current_audio_chunk = 0;
 }
 
 CODE_ROM bool player_isPlaying() {
@@ -321,24 +320,24 @@ CODE_ROM bool player_isPlaying() {
 }
 
 void player_onVBlank() {
-  dsoundStartAudioCopy(double_buffers[cur_buffer]);
+  dsound_start_audio_copy(double_buffers[cur_buffer]);
 
-  if (!didRun)
+  if (!did_run)
     return;
 
   if (src != NULL)
     unmute();
 
   cur_buffer = !cur_buffer;
-  didRun = false;
+  did_run = false;
 }
 
-CODE_EWRAM void updateRate() {
+CODE_EWRAM void update_rate() {
   if (rate != 0) {
-    rateCounter++;
-    if (rateCounter == rateDelays[rate + RATE_LEVELS]) {
+    rate_counter++;
+    if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
       src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
-      rateCounter = 0;
+      rate_counter = 0;
     }
   }
 }
@@ -352,13 +351,13 @@ void player_forever(int (*onUpdate)(),
 
     // > multiplayer audio sync
     bool isSynchronized = expectedAudioChunk > 0;
-    int availableAudioChunks = expectedAudioChunk - currentAudioChunk;
+    int availableAudioChunks = expectedAudioChunk - current_audio_chunk;
     if (isSynchronized && availableAudioChunks > AUDIO_SYNC_LIMIT) {
       // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
 
       src_pos += AUDIO_CHUNK_SIZE * diff;
-      currentAudioChunk += diff;
+      current_audio_chunk += diff;
       availableAudioChunks = AUDIO_SYNC_LIMIT;
     }
 
@@ -373,9 +372,9 @@ void player_forever(int (*onUpdate)(),
               src_pos -= AUDIO_CHUNK_SIZE;
               availableAudioChunks = -AUDIO_SYNC_LIMIT;
             } else
-              currentAudioChunk++;
+              current_audio_chunk++;
           } else
-            currentAudioChunk++;
+            current_audio_chunk++;
         },
         {
           if (PlaybackState.isLooping)
@@ -387,10 +386,10 @@ void player_forever(int (*onUpdate)(),
         });
 
     // > notify multiplayer audio sync cursor
-    onAudioChunks(currentAudioChunk);
+    onAudioChunks(current_audio_chunk);
 
     // > adjust position based on audio rate
-    updateRate();
+    update_rate();
 
     // > calculate played milliseconds
     PlaybackState.msecs = fracumul(src_pos, AS_MSECS);
