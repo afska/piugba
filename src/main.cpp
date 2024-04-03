@@ -91,7 +91,8 @@ int main() {
           LOGN(syncer->$currentAudioChunk, 0);
 #endif
         }
-      });
+      },
+      []() { SCENE_softReset(); });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 

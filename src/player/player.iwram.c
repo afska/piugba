@@ -71,7 +71,7 @@ static bool did_run = false;
 #define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
 #define AS_CURSOR AS_CURSOR_GSM
 
-#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP)                     \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)           \
   did_run = true;                                               \
   dst_pos = double_buffers[cur_buffer];                         \
                                                                 \
@@ -80,10 +80,10 @@ static bool did_run = false;
       ON_STEP;                                                  \
       ON_STEP;                                                  \
       if (!audio_store_read(dst_pos)) {                         \
-        ON_STOP;                                                \
-        return;                                                 \
+        ON_ERROR;                                               \
+      } else {                                                  \
+        src_pos += 608;                                         \
       }                                                         \
-      src_pos += 608;                                           \
     } else if (src != NULL) {                                   \
       ON_STOP;                                                  \
     }                                                           \
@@ -344,7 +344,8 @@ CODE_EWRAM void update_rate() {
 
 void player_forever(int (*onUpdate)(),
                     void (*onRender)(),
-                    void (*onAudioChunks)(unsigned int current)) {
+                    void (*onAudioChunks)(unsigned int current),
+                    void (*onError)()) {
   while (1) {
     // > main game loop
     int expectedAudioChunk = onUpdate();
@@ -383,7 +384,8 @@ void player_forever(int (*onUpdate)(),
             player_stop();
             PlaybackState.hasFinished = true;
           }
-        });
+        },
+        { onError(); });
 
     // > notify multiplayer audio sync cursor
     onAudioChunks(current_audio_chunk);
