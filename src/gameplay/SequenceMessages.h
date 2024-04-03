@@ -106,38 +106,38 @@
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_CRASH \
-  "Video activation failed!\r\n"      \
+  "HQ activation failed!\r\n"         \
   " -> it crashed :/\r\n"             \
   "\r\n"                              \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_NO_FLASHCART \
-  "Video activation failed!\r\n"             \
+  "HQ activation failed!\r\n"                \
   " -> no EverDrive found\r\n"               \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_MOUNT_FAILED \
-  "Video activation failed!\r\n"             \
+  "HQ activation failed!\r\n"                \
   " -> FAT mount error\r\n"                  \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_SUCCESS \
-  "Videos are now enabled!\r\n"  \
+  "HQ mode is now enabled!\r\n"  \
   "\r\n"                         \
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_DEACTIVATION_SUCCESS \
-  "Videos are now disabled!\r\n"   \
+  "HQ mode is now disabled!\r\n"   \
   "\r\n"                           \
   "\r\n"                           \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_READING_FAILED     \
   "Error reading SD card :(\r\n" \
-  "Videos are now disabled.\r\n" \
+  "HQ mode is now disabled.\r\n" \
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 

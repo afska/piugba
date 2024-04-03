@@ -139,7 +139,7 @@ void AdminScene::printOptions() {
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
               8);
-  printOption(OPTION_BACKGROUND_VIDEOS, "Background videos",
+  printOption(OPTION_BACKGROUND_VIDEOS, "HQ (audio / video)",
               ps2Input > 0 ? "---" : (backgroundVideos > 0 ? "ON" : "OFF"), 9);
   printOption(
       OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
