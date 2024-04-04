@@ -71,63 +71,65 @@ static bool did_run = false;
 #define AUDIO_CHUNK_SIZE (is_pcm ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
 #define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
 
-#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)           \
-  did_run = true;                                               \
-  dst_pos = double_buffers[cur_buffer];                         \
-                                                                \
-  if (is_pcm) {                                                 \
-    if (src_pos < src_len) {                                    \
-      if (!audio_store_read(dst_pos)) {                         \
-        ON_ERROR;                                               \
-      } else {                                                  \
-        src_pos += 608;                                         \
-      }                                                         \
-    } else if (src != NULL) {                                   \
-      ON_STOP;                                                  \
-    }                                                           \
-  } else {                                                      \
-    if (src_pos < src_len) {                                    \
-      for (i = 304 / 4; i > 0; i--) {                           \
-        int cur_sample;                                         \
-        if (decode_pos >= 160) {                                \
-          if (src_pos < src_len)                                \
-            gsm_decode(&decoder, (src + src_pos), out_samples); \
-          src_pos += sizeof(gsm_frame);                         \
-          decode_pos = 0;                                       \
-          ON_STEP;                                              \
-        }                                                       \
-                                                                \
-        /* 2:1 linear interpolation */                          \
-        cur_sample = out_samples[decode_pos++];                 \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-        *dst_pos++ = cur_sample >> 8;                           \
-        last_sample = cur_sample;                               \
-                                                                \
-        cur_sample = out_samples[decode_pos++];                 \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-        *dst_pos++ = cur_sample >> 8;                           \
-        last_sample = cur_sample;                               \
-                                                                \
-        cur_sample = out_samples[decode_pos++];                 \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-        *dst_pos++ = cur_sample >> 8;                           \
-        last_sample = cur_sample;                               \
-                                                                \
-        cur_sample = out_samples[decode_pos++];                 \
-        *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-        *dst_pos++ = cur_sample >> 8;                           \
-        last_sample = cur_sample;                               \
-      }                                                         \
-    } else if (src != NULL) {                                   \
-      ON_STOP;                                                  \
-    }                                                           \
+#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)             \
+  did_run = true;                                                 \
+  dst_pos = double_buffers[cur_buffer];                           \
+                                                                  \
+  if (src != NULL) {                                              \
+    if (is_pcm) {                                                 \
+      if (src_pos < src_len) {                                    \
+        if (!audio_store_read(dst_pos)) {                         \
+          ON_ERROR;                                               \
+        } else {                                                  \
+          src_pos += 608;                                         \
+        }                                                         \
+      } else {                                                    \
+        ON_STOP;                                                  \
+      }                                                           \
+    } else {                                                      \
+      if (src_pos < src_len) {                                    \
+        for (i = 304 / 4; i > 0; i--) {                           \
+          int cur_sample;                                         \
+          if (decode_pos >= 160) {                                \
+            if (src_pos < src_len)                                \
+              gsm_decode(&decoder, (src + src_pos), out_samples); \
+            src_pos += sizeof(gsm_frame);                         \
+            decode_pos = 0;                                       \
+            ON_STEP;                                              \
+          }                                                       \
+                                                                  \
+          /* 2:1 linear interpolation */                          \
+          cur_sample = out_samples[decode_pos++];                 \
+          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+          *dst_pos++ = cur_sample >> 8;                           \
+          last_sample = cur_sample;                               \
+                                                                  \
+          cur_sample = out_samples[decode_pos++];                 \
+          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+          *dst_pos++ = cur_sample >> 8;                           \
+          last_sample = cur_sample;                               \
+                                                                  \
+          cur_sample = out_samples[decode_pos++];                 \
+          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+          *dst_pos++ = cur_sample >> 8;                           \
+          last_sample = cur_sample;                               \
+                                                                  \
+          cur_sample = out_samples[decode_pos++];                 \
+          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
+          *dst_pos++ = cur_sample >> 8;                           \
+          last_sample = cur_sample;                               \
+        }                                                         \
+      } else {                                                    \
+        ON_STOP;                                                  \
+      }                                                           \
+    }                                                             \
   }
 
 uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
 static const GBFS_FILE* fs;
 static const unsigned char* src = NULL;
 static uint32_t src_len = 0;
-static unsigned int src_pos = 0;
+static uint32_t src_pos = 0;
 static struct gsm_state decoder;
 static signed short out_samples[160];
 static signed char double_buffers[2][608] __attribute__((aligned(4)));
