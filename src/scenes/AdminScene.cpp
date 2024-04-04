@@ -4,6 +4,7 @@
 #include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/PS2Keyboard.h"
 #include "gameplay/save/SaveFile.h"
+#include "player/PlaybackState.h"
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
@@ -142,7 +143,12 @@ void AdminScene::printOptions() {
                                : "OFF",
               8);
   printOption(OPTION_BACKGROUND_VIDEOS, "HQ (audio + video)",
-              ps2Input > 0 ? "---" : (backgroundVideos > 0 ? "ON" : "OFF"), 9);
+              ps2Input > 0 ? "---"
+                           : (backgroundVideos == 3   ? "VIDEO"
+                              : backgroundVideos == 4 ? "AUDIO"
+                              : backgroundVideos > 0  ? "ALL"
+                                                      : "OFF"),
+              9);
   printOption(
       OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
       ewramOverclock == 1 ? (backgroundVideos > 0 ? "*!*" : "ON") : "OFF", 10);
@@ -320,14 +326,26 @@ bool AdminScene::selectOption(u32 selected, int direction) {
 
       u8 backgroundVideos =
           SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+      u8 updatedBackgroundVideos = change(backgroundVideos, 5, direction);
+      bool wasOn = backgroundVideos > 1;
+      bool isOn = updatedBackgroundVideos > 1;
 
-      player_stop();
-      engine->transitionIntoScene(backgroundVideos > 0
-                                      ? SEQUENCE_deactivateVideo()
-                                      : SEQUENCE_activateVideo(true),
-                                  new PixelTransitionEffect());
+      if (wasOn && isOn) {
+        SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
+                        updatedBackgroundVideos);
+        PlaybackState.isPCMDisabled =
+            static_cast<BackgroundVideosOpts>(updatedBackgroundVideos) ==
+            BackgroundVideosOpts::dVIDEO_ONLY;
+        return true;
+      } else {
+        player_stop();
+        engine->transitionIntoScene(backgroundVideos > 0
+                                        ? SEQUENCE_deactivateVideo()
+                                        : SEQUENCE_activateVideo(true),
+                                    new PixelTransitionEffect());
 
-      return false;
+        return false;
+      }
     }
     case OPTION_EWRAM_OVERCLOCK: {
       u8 backgroundVideos =

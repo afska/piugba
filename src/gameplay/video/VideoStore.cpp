@@ -24,13 +24,17 @@ const u32 FRACUMUL_MS_TO_FRAME_AT_30FPS = 128849018;  // (*30/1000)
 DATA_EWRAM static FATFS fatfs;
 DATA_EWRAM static FIL file;
 
+BackgroundVideosOpts getMode() {
+  return static_cast<BackgroundVideosOpts>(
+      SAVEFILE_read8(SRAM->adminSettings.backgroundVideos));
+}
+
 bool VideoStore::isEnabled() {
   return SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
 }
 
 bool VideoStore::isActivating() {
-  return static_cast<BackgroundVideosOpts>(SAVEFILE_read8(
-             SRAM->adminSettings.backgroundVideos)) == dACTIVATING;
+  return getMode() == BackgroundVideosOpts::dACTIVATING;
 }
 
 void VideoStore::disable() {
@@ -66,6 +70,9 @@ VideoStore::LoadResult VideoStore::load(std::string videoPath,
                                         int videoOffset) {
   if (state != ACTIVE)
     return LoadResult::NO_FILE;
+  if (getMode() == BackgroundVideosOpts::dAUDIO_ONLY)
+    return LoadResult::NO_FILE;
+
   memory = getSecondaryMemory(REQUIRED_MEMORY);
   if (memory == NULL)
     return LoadResult::NO_FILE;
@@ -153,6 +160,7 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
 
 VideoStore::State VideoStore::setState(State newState, void* fatfs) {
   state = newState;
+  PlaybackState.isPCMDisabled = getMode() == BackgroundVideosOpts::dVIDEO_ONLY;
   PlaybackState.fatfs = fatfs;
   return newState;
 }

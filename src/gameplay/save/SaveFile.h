@@ -205,7 +205,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
-      backgroundVideos >= 3 || ewramOverclock >= 2 || ps2Input >= 2 ||
+      backgroundVideos >= 5 || ewramOverclock >= 2 || ps2Input >= 2 ||
       rumbleFrames == 0 || rumbleFrames >= 9 ||
       RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
       RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7) {

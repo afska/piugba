@@ -239,7 +239,8 @@ INLINE void loadFile(const char* name, bool forceGSM) {
   rate_counter = 0;
   current_audio_chunk = 0;
 
-  if (PlaybackState.fatfs != NULL && !forceGSM) {
+  if (PlaybackState.fatfs != NULL && !PlaybackState.isPCMDisabled &&
+      !forceGSM) {
     char fileName[64];
     strcpy(fileName, name);
     strcat(fileName, ".aud.bin");
@@ -267,6 +268,7 @@ CODE_ROM void player_init() {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
+  PlaybackState.isPCMDisabled = false;
   PlaybackState.fatfs = NULL;
 }
 

@@ -16,7 +16,13 @@ enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_ON_HIT
 };
 enum NavigationStyleOpts : u8 { PIU, GBA };
-enum BackgroundVideosOpts { dOFF, dACTIVATING, dACTIVE };
+enum BackgroundVideosOpts {
+  dOFF,
+  dACTIVATING,
+  dACTIVE,
+  dVIDEO_ONLY,
+  dAUDIO_ONLY
+};
 
 #define RUMBLE_PREROLL(OPTS) (((OPTS) >> 4) & 0b1111)
 #define RUMBLE_IDLE(OPTS) (((OPTS) >> 0) & 0b1111)
