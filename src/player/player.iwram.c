@@ -166,7 +166,6 @@ INLINE void init() {
 }
 
 INLINE void stop() {
-  PlaybackState.mute = false;
   mute();
   src = NULL;
   decode_pos = 160;
@@ -234,7 +233,6 @@ INLINE void loadFile(const char* name, bool forceGSM) {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
-  PlaybackState.mute = false;
   rate = 0;
   rate_counter = 0;
   current_audio_chunk = 0;
@@ -343,7 +341,7 @@ void player_onVBlank() {
   if (!did_run)
     return;
 
-  if (src != NULL && !PlaybackState.mute)
+  if (src != NULL)
     unmute();
 
   cur_buffer = !cur_buffer;
@@ -392,14 +390,8 @@ void player_forever(int (*onUpdate)(),
               // overrun (master is behind slave)
               src_pos -= AUDIO_CHUNK_SIZE;
               availableAudioChunks = -AUDIO_SYNC_LIMIT;
-              if (PlaybackState.msecs < 1000) {
-                PlaybackState.mute = true;
-                mute();
-              }
-            } else {
+            } else
               current_audio_chunk++;
-              PlaybackState.mute = false;
-            }
           } else
             current_audio_chunk++;
         },
