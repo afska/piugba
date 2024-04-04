@@ -348,7 +348,7 @@ void player_onVBlank() {
   did_run = false;
 }
 
-CODE_EWRAM void update_rate() {
+CODE_ROM void update_rate() {
   if (rate != 0) {
     rate_counter++;
     if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
