@@ -68,7 +68,6 @@ static u32 rate_counter = 0;
 static u32 current_audio_chunk = 0;
 static bool did_run = false;
 
-#define AUDIO_CHUNK_SIZE (is_pcm ? AUDIO_CHUNK_SIZE_PCM : AUDIO_CHUNK_SIZE_GSM)
 #define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
 
 #define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)             \
@@ -356,10 +355,8 @@ CODE_ROM void update_rate() {
   if (rate != 0) {
     rate_counter++;
     if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
-      src_pos += AUDIO_CHUNK_SIZE * (rate < 0 ? -1 : 1);
+      src_pos += AUDIO_CHUNK_SIZE_GSM * (rate < 0 ? -1 : 1);
       rate_counter = 0;
-      if (is_pcm)
-        audio_store_seek(src_pos);
     }
   }
 }
@@ -379,10 +376,13 @@ void player_forever(int (*onUpdate)(),
       // underrun (slave is behind master)
       unsigned int diff = availableAudioChunks - AUDIO_SYNC_LIMIT;
 
-      src_pos += AUDIO_CHUNK_SIZE * diff;
+      src_pos += AUDIO_CHUNK_SIZE_GSM * diff;
       current_audio_chunk += diff;
       availableAudioChunks = AUDIO_SYNC_LIMIT;
     }
+
+    // > adjust position based on audio rate
+    update_rate();
 
     // > audio processing (back buffer)
     PLAYER_PRE_UPDATE(
@@ -392,7 +392,7 @@ void player_forever(int (*onUpdate)(),
 
             if (availableAudioChunks < -AUDIO_SYNC_LIMIT) {
               // overrun (master is behind slave)
-              src_pos -= AUDIO_CHUNK_SIZE;
+              src_pos -= AUDIO_CHUNK_SIZE_GSM;
               availableAudioChunks = -AUDIO_SYNC_LIMIT;
             } else
               current_audio_chunk++;
@@ -411,9 +411,6 @@ void player_forever(int (*onUpdate)(),
 
     // > notify multiplayer audio sync cursor
     onAudioChunks(current_audio_chunk);
-
-    // > adjust position based on audio rate
-    update_rate();
 
     // > calculate played milliseconds
     PlaybackState.msecs = fracumul(src_pos, AS_MSECS);
