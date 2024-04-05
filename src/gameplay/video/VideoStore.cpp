@@ -44,6 +44,7 @@ void VideoStore::disable() {
 
 VideoStore::State VideoStore::activate() {
   setState(OFF);
+  auto previousMode = getMode();
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   BackgroundVideosOpts::dACTIVATING);
 
@@ -62,7 +63,9 @@ VideoStore::State VideoStore::activate() {
 
   setState(ACTIVE, &fatfs);
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
-                  BackgroundVideosOpts::dACTIVE);
+                  previousMode > BackgroundVideosOpts::dACTIVE
+                      ? previousMode
+                      : BackgroundVideosOpts::dACTIVE);
   return state;
 }
 
