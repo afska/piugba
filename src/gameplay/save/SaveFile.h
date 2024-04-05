@@ -212,7 +212,7 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
       rumbleFrames == 0 || rumbleFrames >= 9 ||
       RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
       RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
-      globalOffset < -3000 || globalOffset > 3000) {
+      globalOffset < -3000 || globalOffset > 3000 || (globalOffset & 7) != 0) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
