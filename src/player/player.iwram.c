@@ -63,7 +63,7 @@ Playback PlaybackState;
 //   Playback rate can be either 1 or 1.11.
 
 static const int rate_delays[] = {1, 2, 4, 0, 4, 2, 1};
-static signed char rate_larp[304];
+static signed char rate_xfade[304];
 
 static bool is_pcm = false;
 static int rate = 0;
@@ -80,20 +80,25 @@ static bool did_run = false;
   if (src != NULL) {                                                     \
     if (is_pcm) {                                                        \
       if (src_pos < src_len) {                                           \
-        if (!audio_store_read(buffer)) {                                 \
+        bool skipSamples = is_pcm && rate != 0 && rate_counter == 0;     \
+        if (skipSamples) {                                               \
+          audio_store_read(rate_xfade, AUDIO_CHUNK_SIZE_PCM);            \
+          src_pos += AUDIO_CHUNK_SIZE_PCM;                               \
+        }                                                                \
+        if (!audio_store_read(buffer, 608)) {                            \
           ON_ERROR;                                                      \
         } else {                                                         \
           src_pos += 608;                                                \
         }                                                                \
-        if (is_pcm && rate != 0 && rate_counter == 0) {                  \
+        if (skipSamples) {                                               \
           const int FIXED_POINT_MULTIPLIER = 1024;                       \
           const int FIXED_POINT_SHIFT = 10;                              \
           for (int i = 0; i < 304; i++) {                                \
             int lerp_weight = (304 - i) * FIXED_POINT_MULTIPLIER / 304;  \
             int inv_lerp_weight = i * FIXED_POINT_MULTIPLIER / 304;      \
-            int sample_rate_larp = (int)rate_larp[i];                    \
+            int sample_rate_xfade = (int)rate_xfade[i];                  \
             int sample_buffer = (int)buffer[i];                          \
-            int crossfaded_sample = (sample_rate_larp * lerp_weight +    \
+            int crossfaded_sample = (sample_rate_xfade * lerp_weight +   \
                                      sample_buffer * inv_lerp_weight) >> \
                                     FIXED_POINT_SHIFT;                   \
             buffer[i] = (signed char)crossfaded_sample;                  \
@@ -372,14 +377,8 @@ CODE_ROM void update_rate() {
   if (rate != 0) {
     rate_counter++;
     if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
-      if (is_pcm) {
-        for (int i = 0; i < 304; i++)
-          rate_larp[i] = double_buffers[!cur_buffer][304 + i];
-        src_pos += AUDIO_CHUNK_SIZE_PCM;
-        audio_store_seek(src_pos);
-      } else {
+      if (!is_pcm)
         src_pos += AUDIO_CHUNK_SIZE_GSM * (rate < 0 ? -1 : 1);
-      }
       rate_counter = 0;
     }
   }

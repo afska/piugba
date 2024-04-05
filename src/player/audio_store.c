@@ -45,12 +45,12 @@ bool audio_store_load(char* audioPath) {
   return true;
 }
 
-bool audio_store_read(void* buffer) {
+bool audio_store_read(void* buffer, int size) {
   if (!hasLoaded)
     return false;
 
   unsigned int readBytes;
-  return f_read(&file, buffer, AUDIO_SIZE_FRAME, &readBytes) == 0;
+  return f_read(&file, buffer, size, &readBytes) == 0;
 }
 
 bool audio_store_seek(unsigned int offset) {
