@@ -17,6 +17,7 @@ ChartReader::ChartReader(Chart* chart,
                          Judge* judge,
                          PixelBlink* pixelBlink,
                          int audioLag,
+                         int globalOffset,
                          u32 multiplier) {
   this->chart = chart;
   this->playerId = playerId;
@@ -25,7 +26,7 @@ ChartReader::ChartReader(Chart* chart,
   this->pixelBlink = pixelBlink;
   this->audioLag = audioLag;
   this->rateAudioLag = audioLag;
-  this->customOffset = chart->customOffset;
+  this->customOffset = chart->customOffset + globalOffset;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE * (1 + chart->isDouble),

@@ -154,12 +154,14 @@ void SongScene::load() {
                 [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = GameState.settings.audioLag;
+  int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
   u32 multiplier =
       deathMix != NULL ? deathMix->multiplier : GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < playerCount; playerId++)
-    chartReaders[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
-        playerId == localPlayerId ? chart : remoteChart, playerId,
-        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier)};
+    chartReaders[playerId] = std::unique_ptr<ChartReader>{
+        new ChartReader(playerId == localPlayerId ? chart : remoteChart,
+                        playerId, arrowPool.get(), judge.get(),
+                        pixelBlink.get(), audioLag, globalOffset, multiplier)};
 
   startInput = std::unique_ptr<InputHandler>{new InputHandler()};
   selectInput = std::unique_ptr<InputHandler>{new InputHandler()};

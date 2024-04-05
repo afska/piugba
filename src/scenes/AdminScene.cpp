@@ -17,7 +17,7 @@
 #define SUBMENU_SURE_ALL 5
 #define OPTION_COUNT_DEFAULT 10
 #define OPTION_COUNT_RUMBLE 5
-#define OPTION_COUNT_OFFSETS 3
+#define OPTION_COUNT_OFFSETS 4
 #define OPTION_COUNT_RESET 3
 #define OPTION_COUNT_ARE_YOU_SURE 2
 
@@ -84,17 +84,22 @@ void AdminScene::printOptions() {
   } else if (submenu == SUBMENU_OFFSETS) {
     SCENE_write("CUSTOM OFFSETS", 1);
 
+    int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
+
     bool offsetEditingEnabled =
         SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
     printOption(0, "Offset editing", offsetEditingEnabled ? "ON" : "OFF", 4);
+    printOption(1, "Global offset",
+                (globalOffset > 0 ? "+" : "") + std::to_string(globalOffset),
+                5);
 
-    SCENE_write("When editing is enabled,", 6);
-    SCENE_write("press SELECT + L/R", 7);
-    SCENE_write("to add -/+ 8ms offsets.", 8);
-    SCENE_write("Total offsets: " + std::to_string(totalOffsets), 10);
+    SCENE_write("When editing is enabled,", 7);
+    SCENE_write("press SELECT + L/R", 8);
+    SCENE_write("to add -/+ 8ms offsets.", 9);
+    SCENE_write("Total offsets: " + std::to_string(totalOffsets), 11);
 
-    printOption(1, "[RESET ALL OFFSETS]", "", 13);
-    printOption(2, "[BACK]", "", 15);
+    printOption(2, "[RESET ALL OFFSETS]", "", 13);
+    printOption(3, "[BACK]", "", 15);
 
     PLAY_AND_END();
   } else if (submenu == SUBMENU_RESET) {
@@ -217,13 +222,24 @@ bool AdminScene::selectOption(u32 selected, int direction) {
         return true;
       }
       case 1: {
+        int value = (int)SAVEFILE_read32(SRAM->globalOffset) +
+                    8 * (direction >= 0 ? 1 : -1);
+        if (value > 3000)
+          value = 3000;
+        else if (value < -3000)
+          value = -3000;
+
+        SAVEFILE_write32(SRAM->globalOffset, value);
+        return true;
+      }
+      case 2: {
         if (direction != 0)
           return true;
         submenu = SUBMENU_SURE_OFFSETS;
         this->selected = 0;
         return true;
       }
-      case 2: {
+      case 3: {
         if (direction != 0)
           return true;
         submenu = -1;

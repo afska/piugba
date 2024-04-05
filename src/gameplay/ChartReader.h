@@ -32,6 +32,7 @@ class ChartReader : public TimingProvider {
               Judge* judge,
               PixelBlink* pixelBlink,
               int audioLag,
+              int globalOffset,
               u32 multiplier);
 
   bool update(int msecs);

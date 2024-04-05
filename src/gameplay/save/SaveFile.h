@@ -35,7 +35,8 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
-  char padding[10];
+  u32 globalOffset;
+  char padding[6];
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -114,6 +115,7 @@ inline void SAVEFILE_resetAdminSettings() {
                   BackgroundVideosOpts::dOFF);
   SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
   SAVEFILE_write8(SRAM->adminSettings.ps2Input, false);
+  SAVEFILE_write32(SRAM->globalOffset, 0);
   SAVEFILE_resetRumble();
 
 #ifdef SENV_DEVELOPMENT
@@ -203,12 +205,14 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
   u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
   u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+  int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
       backgroundVideos >= 5 || ewramOverclock >= 2 || ps2Input >= 2 ||
       rumbleFrames == 0 || rumbleFrames >= 9 ||
       RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
-      RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7) {
+      RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
+      globalOffset < -3000 || globalOffset > 3000) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
@@ -516,6 +520,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
 }
 
 inline void SAVEFILE_resetOffsets() {
+  SAVEFILE_write32(SRAM->globalOffset, 0);
   OFFSET_initialize();
 }
 
