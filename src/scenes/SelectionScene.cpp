@@ -205,9 +205,11 @@ void SelectionScene::render() {
       VBlankIntrWait();
     }
 
+    highlighter->initialize(selected);
+    EFFECT_setBlendAlpha(blendAlpha);
+    EFFECT_render();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
-    highlighter->initialize(selected);
     init++;
   }
 
