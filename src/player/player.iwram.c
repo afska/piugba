@@ -45,6 +45,7 @@ Playback PlaybackState;
 //   The sample rate is 18157hz, linearly interpolated to 36314hz.
 //   Each GSM chunk is 33 bytes and represents 304 samples.
 //   Two chunks are copied per frame, filling the 608 entries of the buffer.
+//   Playback rate can be changed: 0.86, 0.73, 0.47, 1, 1.11, 1.26, 1.54.
 //   (This is one of the few combinations of sample rate / buffer size that
 //   time out perfectly in the 280896 cycles of a GBA frame)
 //   See: (JS code)
@@ -59,8 +60,10 @@ Playback PlaybackState;
 //   The sample rate is 36314hz.
 //   Each PCM chunk is 304 bytes and represents 304 samples.
 //   Two chunks are copied per frame.
+//   Playback rate can be either 1 or 1.11.
 
 static const int rate_delays[] = {1, 2, 4, 0, 4, 2, 1};
+static signed char rate_larp[304];
 
 static bool is_pcm = false;
 static int rate = 0;
@@ -70,58 +73,72 @@ static bool did_run = false;
 
 #define AS_MSECS (is_pcm ? AS_MSECS_PCM : AS_MSECS_GSM)
 
-#define PLAYER_PRE_UPDATE(ON_STEP, ON_STOP, ON_ERROR)             \
-  did_run = true;                                                 \
-  dst_pos = double_buffers[cur_buffer];                           \
-                                                                  \
-  if (src != NULL) {                                              \
-    if (is_pcm) {                                                 \
-      if (src_pos < src_len) {                                    \
-        if (!audio_store_read(dst_pos)) {                         \
-          ON_ERROR;                                               \
-        } else {                                                  \
-          src_pos += 608;                                         \
-        }                                                         \
-      } else {                                                    \
-        ON_STOP;                                                  \
-      }                                                           \
-    } else {                                                      \
-      if (src_pos < src_len) {                                    \
-        for (i = 304 / 4; i > 0; i--) {                           \
-          int cur_sample;                                         \
-          if (decode_pos >= 160) {                                \
-            if (src_pos < src_len)                                \
-              gsm_decode(&decoder, (src + src_pos), out_samples); \
-            src_pos += sizeof(gsm_frame);                         \
-            decode_pos = 0;                                       \
-            ON_STEP;                                              \
-          }                                                       \
-                                                                  \
-          /* 2:1 linear interpolation */                          \
-          cur_sample = out_samples[decode_pos++];                 \
-          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-          *dst_pos++ = cur_sample >> 8;                           \
-          last_sample = cur_sample;                               \
-                                                                  \
-          cur_sample = out_samples[decode_pos++];                 \
-          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-          *dst_pos++ = cur_sample >> 8;                           \
-          last_sample = cur_sample;                               \
-                                                                  \
-          cur_sample = out_samples[decode_pos++];                 \
-          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-          *dst_pos++ = cur_sample >> 8;                           \
-          last_sample = cur_sample;                               \
-                                                                  \
-          cur_sample = out_samples[decode_pos++];                 \
-          *dst_pos++ = (last_sample + cur_sample) >> 9;           \
-          *dst_pos++ = cur_sample >> 8;                           \
-          last_sample = cur_sample;                               \
-        }                                                         \
-      } else {                                                    \
-        ON_STOP;                                                  \
-      }                                                           \
-    }                                                             \
+#define AUDIO_PROCESS(ON_STEP, ON_STOP, ON_ERROR)                        \
+  did_run = true;                                                        \
+  buffer = double_buffers[cur_buffer];                                   \
+                                                                         \
+  if (src != NULL) {                                                     \
+    if (is_pcm) {                                                        \
+      if (src_pos < src_len) {                                           \
+        if (!audio_store_read(buffer)) {                                 \
+          ON_ERROR;                                                      \
+        } else {                                                         \
+          src_pos += 608;                                                \
+        }                                                                \
+        if (is_pcm && rate != 0 && rate_counter == 0) {                  \
+          const int FIXED_POINT_MULTIPLIER = 1024;                       \
+          const int FIXED_POINT_SHIFT = 10;                              \
+          for (int i = 0; i < 304; i++) {                                \
+            int lerp_weight = (304 - i) * FIXED_POINT_MULTIPLIER / 304;  \
+            int inv_lerp_weight = i * FIXED_POINT_MULTIPLIER / 304;      \
+            int sample_rate_larp = (int)rate_larp[i];                    \
+            int sample_buffer = (int)buffer[i];                          \
+            int crossfaded_sample = (sample_rate_larp * lerp_weight +    \
+                                     sample_buffer * inv_lerp_weight) >> \
+                                    FIXED_POINT_SHIFT;                   \
+            buffer[i] = (signed char)crossfaded_sample;                  \
+          }                                                              \
+        }                                                                \
+      } else {                                                           \
+        ON_STOP;                                                         \
+      }                                                                  \
+    } else {                                                             \
+      if (src_pos < src_len) {                                           \
+        for (i = 304 / 4; i > 0; i--) {                                  \
+          int cur_sample;                                                \
+          if (decode_pos >= 160) {                                       \
+            if (src_pos < src_len)                                       \
+              gsm_decode(&decoder, (src + src_pos), out_samples);        \
+            src_pos += sizeof(gsm_frame);                                \
+            decode_pos = 0;                                              \
+            ON_STEP;                                                     \
+          }                                                              \
+                                                                         \
+          /* 2:1 linear interpolation */                                 \
+          cur_sample = out_samples[decode_pos++];                        \
+          *buffer++ = (last_sample + cur_sample) >> 9;                   \
+          *buffer++ = cur_sample >> 8;                                   \
+          last_sample = cur_sample;                                      \
+                                                                         \
+          cur_sample = out_samples[decode_pos++];                        \
+          *buffer++ = (last_sample + cur_sample) >> 9;                   \
+          *buffer++ = cur_sample >> 8;                                   \
+          last_sample = cur_sample;                                      \
+                                                                         \
+          cur_sample = out_samples[decode_pos++];                        \
+          *buffer++ = (last_sample + cur_sample) >> 9;                   \
+          *buffer++ = cur_sample >> 8;                                   \
+          last_sample = cur_sample;                                      \
+                                                                         \
+          cur_sample = out_samples[decode_pos++];                        \
+          *buffer++ = (last_sample + cur_sample) >> 9;                   \
+          *buffer++ = cur_sample >> 8;                                   \
+          last_sample = cur_sample;                                      \
+        }                                                                \
+      } else {                                                           \
+        ON_STOP;                                                         \
+      }                                                                  \
+    }                                                                    \
   }
 
 uint32_t fracumul(uint32_t x, uint32_t frac) __attribute__((long_call));
@@ -133,7 +150,7 @@ static struct gsm_state decoder;
 static signed short out_samples[160];
 static signed char double_buffers[2][608] __attribute__((aligned(4)));
 static unsigned int decode_pos = 160, cur_buffer = 0;
-static signed char* dst_pos;
+static signed char* buffer;
 static int last_sample = 0;
 static int i;
 
@@ -355,7 +372,14 @@ CODE_ROM void update_rate() {
   if (rate != 0) {
     rate_counter++;
     if (rate_counter == rate_delays[rate + RATE_LEVELS]) {
-      src_pos += AUDIO_CHUNK_SIZE_GSM * (rate < 0 ? -1 : 1);
+      if (is_pcm) {
+        for (int i = 0; i < 304; i++)
+          rate_larp[i] = double_buffers[!cur_buffer][304 + i];
+        src_pos += AUDIO_CHUNK_SIZE_PCM;
+        audio_store_seek(src_pos);
+      } else {
+        src_pos += AUDIO_CHUNK_SIZE_GSM * (rate < 0 ? -1 : 1);
+      }
       rate_counter = 0;
     }
   }
@@ -385,7 +409,7 @@ void player_forever(int (*onUpdate)(),
     update_rate();
 
     // > audio processing (back buffer)
-    PLAYER_PRE_UPDATE(
+    AUDIO_PROCESS(
         {
           if (isSynchronized) {
             availableAudioChunks--;

@@ -372,8 +372,7 @@ initialized:
     }
   }
 
-  if ($isMultiplayer || GameState.mods.trainingMode != TrainingModeOpts::tOFF ||
-      SAVEFILE_getGameMode() == GameMode::IMPOSSIBLE)
+  if ($isMultiplayer || GameState.mods.trainingMode != TrainingModeOpts::tOFF)
     player_playGSM(song->audioPath.c_str());
   else
     player_play(song->audioPath.c_str());
