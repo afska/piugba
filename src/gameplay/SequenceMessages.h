@@ -66,7 +66,7 @@
   "How to use Training Mode:\r\n" \
   "- Speed: START/SELECT\r\n"     \
   "- Rate: B + START/SELECT\r\n"  \
-  "- Fast-forward: A + START"
+  "- Seek: A + START/SELECT"
 
 #define COOP_HINT             \
   "       CO-OP LEVEL\r\n"    \

@@ -30,6 +30,7 @@
 #define PS2_KEY_LEFT 107          // Left
 #define PS2_KEY_RIGHT 116         // Right
 #define PS2_KEY_UP 117            // Up
+#define PS2_KEY_DOWN 114          // Down
 #define PS2_KEY_ESC 118           // ESC
 #define PS2_KEY_SUPR 113          // Supr
 
@@ -41,14 +42,15 @@
 class PS2Keyboard {
  public:
   bool arrows[10];
-  bool start1, start2, select1, select2, left, right, up;
+  bool start1, start2, select1, select2, left, right, up, down;
   bool softReset = false;
 
   bool any() {
     for (u32 i = 0; i < 10; i++)
       if (arrows[i])
         return true;
-    return start1 || start2 || select1 || select2 || left || right || up;
+    return start1 || start2 || select1 || select2 || left || right || up ||
+           down;
   }
 
   bool isActive() { return isEnabled; }
@@ -125,6 +127,11 @@ class PS2Keyboard {
       case PS2_KEY_UP:
         if (isSpecial)
           return assign(up);
+        else
+          break;
+      case PS2_KEY_DOWN:
+        if (isSpecial)
+          return assign(down);
         else
           break;
       case PS2_KEY_ESC: {

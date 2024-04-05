@@ -24,6 +24,14 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+struct RewindState {
+  u32 rewindPoint = 0;
+  u32 multiplier = 3;
+  u32 rate = 1;
+  bool isInitializing = false;
+  bool isRewinding = false;
+};
+
 class SongScene : public Scene {
  public:
   explicit SongScene(std::shared_ptr<GBAEngine> engine,
@@ -31,7 +39,8 @@ class SongScene : public Scene {
                      Song* song,
                      Chart* chart,
                      Chart* remoteChart = NULL,
-                     std::unique_ptr<DeathMix> deathMix = NULL);
+                     std::unique_ptr<DeathMix> deathMix = NULL,
+                     RewindState rewindState = RewindState{});
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -85,6 +94,7 @@ class SongScene : public Scene {
   u32 lastDownLeftKeys = 0;
   u32 lastUpLeftKeys = 0;
   u32 lastCenterKeys = 0;
+  RewindState rewindState;
 
   inline void setUpGameConfig() {
     $isMultiplayer = isMultiplayer();
@@ -157,6 +167,9 @@ class SongScene : public Scene {
   void processTrainingModeMod();
   void processMultiplayerUpdates();
   bool setRate(int rate);
+  void startSeek(u32 msecs);
+  void endSeek(u32 previousMultiplier);
+  bool seek(u32 msecs);
 
   void unload();
 };
