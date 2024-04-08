@@ -7,6 +7,7 @@ arrows:
 
 	Scale Method:
 	None -> Remark black borders
+	*Modern: 16x16 (cubic)
 
 	Background:
 	#FF00FF
@@ -16,6 +17,7 @@ arrows:
 
 	Light Placeholders:
 	-> Colors -> Hue-Saturation... -> Lightness=100 & Saturation=100
+	*Modern:     ^^ this for the first frame, then: contrast+=28 each time
 
 ===
 
