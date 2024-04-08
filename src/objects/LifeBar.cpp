@@ -18,18 +18,16 @@ const u32 MIN_VALUE = 0;
 const u32 ALMOST_MIN_VALUE = 1;
 const u32 MAX_VALUE = 10;
 const u32 UNIT = 2;
-const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] =
-    {  // TODO: MODERN CHECK
-        {127, 4345, 410, 7606, 2686, 1595, 766, 700, 927, 894, 988, 923, 1017,
-         951, 974, 879, 9199, 936},
-        {126, 4344, 409, 7605, 1629, 1562, 733, 667, 862, 829, 922, 890, 984,
-         918, 942, 846, 8142, 904}};
+const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
+    {127, 4345, 410, 7606, 2686, 1595, 766, 700, 927, 894, 988, 923, 1017, 951,
+     974, 879, 9199, 936},
+    {126, 4344, 409, 7605, 1629, 1562, 733, 667, 862, 829, 922, 890, 984, 918,
+     942, 846, 8142, 904}};
 const u8 PALETTE_INDEXES[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
-    // TODO: MODERN CHECK
-    {184, 187, 191, 192, 202, 198, 211, 204, 227, 220, 228, 222, 229, 221, 217,
-     210, 224, 209},
-    {183, 186, 189, 190, 200, 195, 208, 201, 219, 214, 225, 216, 226, 215, 212,
-     207, 218, 206}};
+    {198, 201, 207, 208, 219, 215, 228, 221, 244, 237, 245, 239, 246, 238, 234,
+     227, 241, 226},
+    {197, 200, 205, 206, 217, 212, 225, 218, 236, 231, 242, 233, 243, 232, 229,
+     224, 235, 223}};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;
@@ -90,11 +88,6 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
     wait = WAIT_TIME;
   } else if (wait > 0)
     wait--;
-
-  if (blinkWait == 0)
-    animatedRainbowOffset++;
-  if (animatedRainbowOffset >= LIFEBAR_COLORS / 2)
-    animatedRainbowOffset = 0;
 }
 
 CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
@@ -130,16 +123,8 @@ CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
         color = cursor;
     } else {
       // blink green
-      if (false) {  // TODO: MODERN CHECK
-        color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR
-                                            : PALETTE_COLORS[playerId][i];
-      } else {
-        color = PALETTE_COLORS[playerId][(
-            (LIFEBAR_COLORS - 1 - i + animatedRainbowOffset * 2) %
-            LIFEBAR_COLORS)];
-        if (i >= LIFEBAR_COLORS - 2)
-          color = isBorder ? CURSOR_COLOR_BORDER : CURSOR_COLOR;
-      }
+      color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR
+                                          : PALETTE_COLORS[playerId][i];
     }
 
     foregroundPalette->change(0, PALETTE_INDEXES[playerId][i], color);

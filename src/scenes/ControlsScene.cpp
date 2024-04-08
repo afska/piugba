@@ -135,7 +135,7 @@ void ControlsScene::setUpArrows() {
   comboArrows[1]->get()->moveTo(94, 142);
   comboArrows[2]->get()->moveTo(112, 142);
   comboArrows[3]->get()->moveTo(130, 142);
-  comboArrows[4]->get()->moveTo(148, 142);
+  comboArrows[4]->get()->moveTo(148, 141);
 }
 
 void ControlsScene::processKeys(u16 keys) {
