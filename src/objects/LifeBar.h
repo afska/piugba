@@ -33,11 +33,13 @@ class LifeBar {
   u32 value = Div(INITIAL_LIFE, 10);
   u32 absLife = INITIAL_LIFE;
   int animatedOffset = 0;
+  u32 animatedRainbowOffset = 0;
   u32 wait = 0;
   u32 blinkWait = 0;
   u8 mosaicValue = 0;
   bool animatedFlag = false;
   bool isDead = false;
+  bool isModern;
 
   void paint(ForegroundPaletteManager* foregroundPalette);
 };

@@ -56,6 +56,7 @@ LifeBar::LifeBar(u8 playerId) {
 
   this->playerId = playerId;
   sprite->flipVertically(playerId > 0);
+  isModern = SAVEFILE_isUsingModernTheme();
 }
 
 void LifeBar::setLife(int life) {
@@ -94,6 +95,11 @@ void LifeBar::tick(ForegroundPaletteManager* foregroundPalette) {
     wait = WAIT_TIME;
   } else if (wait > 0)
     wait--;
+
+  if (blinkWait == 0)
+    animatedRainbowOffset++;
+  if (animatedRainbowOffset >= LIFEBAR_COLORS / 2)
+    animatedRainbowOffset = 0;
 }
 
 CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
@@ -128,9 +134,18 @@ CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
       if (i >= index * UNIT && i <= index * UNIT + 1)
         color = cursor;
     } else {
-      // blink green
-      color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR
-                                          : PALETTE_COLORS[playerId][i];
+      if (isModern) {
+        // rainbow
+        color = PALETTE_COLORS[playerId][(
+            (LIFEBAR_COLORS - 1 - i + animatedRainbowOffset * 2) %
+            LIFEBAR_COLORS)];
+        if (i >= LIFEBAR_COLORS - 2)
+          color = isBorder ? CURSOR_COLOR_BORDER : CURSOR_COLOR;
+      } else {
+        // blink green
+        color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR
+                                            : PALETTE_COLORS[playerId][i];
+      }
     }
 
     foregroundPalette->change(0, PALETTE_INDEXES[playerId][i], color);
