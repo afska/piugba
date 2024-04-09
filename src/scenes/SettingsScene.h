@@ -5,7 +5,9 @@
 
 class SettingsScene : public MenuScene {
  public:
-  SettingsScene(std::shared_ptr<GBAEngine> engine, const GBFS_FILE* fs);
+  SettingsScene(std::shared_ptr<GBAEngine> engine,
+                const GBFS_FILE* fs,
+                u32 initialOption = 0);
 
  protected:
   u32 getOptionCount() override;
@@ -16,6 +18,7 @@ class SettingsScene : public MenuScene {
 
  private:
   bool quitToAdminMenu = false;
+  bool initialOption;
 };
 
 #endif  // SETTINGS_SCENE_H

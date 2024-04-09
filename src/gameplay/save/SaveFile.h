@@ -35,8 +35,8 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
+  char padding[5];
   u32 globalOffset;
-  char padding[6];
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -79,6 +79,7 @@ inline void SAVEFILE_resetSettings() {
   SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
   SAVEFILE_write8(SRAM->settings.backgroundType, BackgroundType::FULL_BGA_DARK);
   SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
+  SAVEFILE_write8(SRAM->settings.theme, Theme::CLASSIC);
 }
 
 inline void SAVEFILE_resetMods() {
@@ -132,8 +133,9 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+  u8 theme = SAVEFILE_read8(SRAM->settings.theme);
   if (audioLag < -3000 || audioLag > 3000 || gamePosition >= 3 ||
-      backgroundType >= 3 || bgaDarkBlink >= 2) {
+      backgroundType >= 3 || bgaDarkBlink >= 2 || theme >= 2) {
     SAVEFILE_resetSettings();
     fixes |= 1;
   }
