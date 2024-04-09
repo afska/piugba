@@ -17,9 +17,11 @@ grit \
   spr_combo.bmp \
   spr_combo_mdrn.bmp \
   spr_numbers.bmp \
+  spr_numbers_mdrn.bmp \
   spr_feedback.bmp \
   spr_feedback_mdrn.bmp \
   spr_lifebar.bmp \
+  spr_lifebar_mdrn.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_song.c
 mv *.h *.c "$DESTINATION"
 
@@ -29,6 +31,7 @@ grit \
   spr_combo.bmp \
   spr_combo_mdrn.bmp \
   spr_numbers.bmp \
+  spr_numbers_mdrn.bmp \
   spr_difficulties.bmp \
   spr_of.bmp \
   spr_multipliers.bmp \
