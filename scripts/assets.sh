@@ -15,6 +15,7 @@ grit \
   spr_arrows_mdrn.bmp \
   spr_arrows_alt_keys.bmp \
   spr_combo.bmp \
+  spr_combo_mdrn.bmp \
   spr_numbers.bmp \
   spr_feedback.bmp \
   spr_lifebar.bmp \
@@ -25,6 +26,7 @@ mv *.h *.c "$DESTINATION"
 grit \
   spr_arrows.bmp \
   spr_combo.bmp \
+  spr_combo_mdrn.bmp \
   spr_numbers.bmp \
   spr_difficulties.bmp \
   spr_of.bmp \
