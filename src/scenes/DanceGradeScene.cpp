@@ -178,13 +178,28 @@ void DanceGradeScene::setUpSpritesPalette() {
 
 void DanceGradeScene::setUpBackground() {
   if (isVs()) {
-    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_PALETTE);
-    bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_MULTI_TILES,
-                                        BG_GRADE_MULTI_MAP, ID_MAIN_BACKGROUND);
+    if (SAVEFILE_isUsingModernTheme()) {
+      backgroundPalette =
+          BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_MDRN_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_MULTI_MDRN_TILES,
+                                          BG_GRADE_MULTI_MDRN_MAP,
+                                          ID_MAIN_BACKGROUND);
+    } else {
+      backgroundPalette =
+          BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(
+          fs, BG_GRADE_MULTI_TILES, BG_GRADE_MULTI_MAP, ID_MAIN_BACKGROUND);
+    }
   } else {
-    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
-    bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP,
-                                        ID_MAIN_BACKGROUND);
+    if (SAVEFILE_isUsingModernTheme()) {
+      backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_MDRN_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(
+          fs, BG_GRADE_MDRN_TILES, BG_GRADE_MDRN_MAP, ID_MAIN_BACKGROUND);
+    } else {
+      backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP,
+                                          ID_MAIN_BACKGROUND);
+    }
   }
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);

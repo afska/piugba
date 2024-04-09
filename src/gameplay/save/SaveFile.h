@@ -333,6 +333,11 @@ inline u32 SAVEFILE_bonusCount(const GBFS_FILE* fs) {
   return count != NULL ? as_le(count) : 0;
 }
 
+inline bool SAVEFILE_isUsingModernTheme() {
+  return static_cast<Theme>(SAVEFILE_read8(SRAM->settings.theme)) ==
+         Theme::MODERN;
+}
+
 inline bool SAVEFILE_isUsingGBAStyle() {
   return static_cast<NavigationStyleOpts>(SAVEFILE_read8(
              SRAM->adminSettings.navigationStyle)) == NavigationStyleOpts::GBA;

@@ -102,9 +102,17 @@ void ControlsScene::setUpSpritesPalette() {
 }
 
 void ControlsScene::setUpBackground() {
-  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_CONTROLS_TILES, BG_CONTROLS_MAP,
-                                      ID_MAIN_BACKGROUND);
+  if (SAVEFILE_isUsingModernTheme()) {
+    backgroundPalette =
+        BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_MDRN_PALETTE);
+    bg = BACKGROUND_loadBackgroundFiles(
+        fs, BG_CONTROLS_MDRN_TILES, BG_CONTROLS_MDRN_MAP, ID_MAIN_BACKGROUND);
+  } else {
+    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_PALETTE);
+    bg = BACKGROUND_loadBackgroundFiles(fs, BG_CONTROLS_TILES, BG_CONTROLS_MAP,
+                                        ID_MAIN_BACKGROUND);
+  }
+
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);

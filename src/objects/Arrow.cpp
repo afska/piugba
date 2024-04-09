@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_arrows.h"
+#include "data/content/_compiled_sprites/spr_arrows_mdrn.h"
 #include "utils/SpriteUtils.h"
 
 const u32 END_ANIMATION_DELAY_FRAMES = 2;
@@ -12,11 +13,16 @@ const u32 END_ANIMATION_FRAMES[] = {0, 0, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1};
 
 Arrow::Arrow(u32 id) {
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
-               .withSize(SIZE_16_16)
-               .withAnimated(ARROW_ANIMATION_FRAMES, ARROW_ANIMATION_DELAY)
-               .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
-               .buildPtr();
+  sprite =
+      builder
+          .withData(SAVEFILE_isUsingModernTheme() ? spr_arrows_mdrnTiles
+                                                  : spr_arrowsTiles,
+                    SAVEFILE_isUsingModernTheme() ? sizeof(spr_arrows_mdrnTiles)
+                                                  : sizeof(spr_arrowsTiles))
+          .withSize(SIZE_16_16)
+          .withAnimated(ARROW_ANIMATION_FRAMES, ARROW_ANIMATION_DELAY)
+          .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
+          .buildPtr();
   sprite->enabled = false;
 
   if (id != ARROW_TILEMAP_LOADING_ID)

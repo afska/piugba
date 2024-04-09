@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_combo.h"
+#include "data/content/_compiled_sprites/spr_combo_mdrn.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
@@ -17,10 +18,15 @@ ComboTitle::ComboTitle(u8 playerId) {
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_comboTiles, sizeof(spr_comboTiles))
-               .withSize(SIZE_64_32)
-               .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
-               .buildPtr();
+  sprite =
+      builder
+          .withData(SAVEFILE_isUsingModernTheme() ? spr_combo_mdrnTiles
+                                                  : spr_comboTiles,
+                    SAVEFILE_isUsingModernTheme() ? sizeof(spr_combo_mdrnTiles)
+                                                  : sizeof(spr_comboTiles))
+          .withSize(SIZE_64_32)
+          .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
+          .buildPtr();
 
   if (playerId > 0)
     SPRITE_reuseTiles(sprite.get());

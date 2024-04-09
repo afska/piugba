@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_lifebar.h"
+#include "data/content/_compiled_sprites/spr_lifebar_mdrn.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/EffectUtils.h"
@@ -24,10 +25,10 @@ const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
     {126, 4344, 409, 7605, 1629, 1562, 733, 667, 862, 829, 922, 890, 984, 918,
      942, 846, 8142, 904}};
 const u8 PALETTE_INDEXES[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
-    {206, 209, 215, 216, 227, 223, 236, 229, 252, 245, 253, 247, 254, 246, 242,
-     235, 249, 234},
-    {204, 208, 213, 214, 225, 220, 233, 226, 244, 239, 250, 241, 251, 240, 237,
-     232, 243, 231}};
+    {200, 203, 209, 210, 221, 217, 230, 223, 246, 239, 247, 241, 248, 240, 236,
+     229, 243, 228},
+    {198, 202, 207, 208, 219, 214, 227, 220, 238, 233, 244, 235, 245, 234, 231,
+     226, 237, 225}};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;
@@ -37,7 +38,12 @@ const COLOR BLINK_MAX_COLOR = 0x7FFF;
 
 LifeBar::LifeBar(u8 playerId) {
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_lifebarTiles, sizeof(spr_lifebarTiles))
+  sprite = builder
+               .withData(SAVEFILE_isUsingModernTheme() ? spr_lifebar_mdrnTiles
+                                                       : spr_lifebarTiles,
+                         SAVEFILE_isUsingModernTheme()
+                             ? sizeof(spr_lifebar_mdrnTiles)
+                             : sizeof(spr_lifebarTiles))
                .withSize(SIZE_64_32)
                .withLocation((isDouble() ? GAME_POSITION_X[1]
                                          : GameState.positionX[playerId]) +

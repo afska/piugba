@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_arrows.h"
+#include "data/content/_compiled_sprites/spr_arrows_mdrn.h"
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_TOTAL_FRAMES = 18;
@@ -20,11 +21,16 @@ const u8 ANIMATION_FRAMES[] = {
 
 Explosion::Explosion(u32 x, u32 y, bool reuseTiles) {
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_arrowsTiles, sizeof(spr_arrowsTiles))
-               .withAnimated(15, 4, 2)
-               .withSize(SIZE_16_16)
-               .withLocation(x, y)
-               .buildPtr();
+  sprite =
+      builder
+          .withData(SAVEFILE_isUsingModernTheme() ? spr_arrows_mdrnTiles
+                                                  : spr_arrowsTiles,
+                    SAVEFILE_isUsingModernTheme() ? sizeof(spr_arrows_mdrnTiles)
+                                                  : sizeof(spr_arrowsTiles))
+          .withAnimated(15, 4, 2)
+          .withSize(SIZE_16_16)
+          .withLocation(x, y)
+          .buildPtr();
 
   this->x = x;
   this->y = y;

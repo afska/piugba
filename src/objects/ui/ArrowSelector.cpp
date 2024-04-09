@@ -5,6 +5,7 @@
 
 #include "data/content/_compiled_sprites/spr_arrows.h"
 #include "data/content/_compiled_sprites/spr_arrows_alt_keys.h"
+#include "data/content/_compiled_sprites/spr_arrows_mdrn.h"
 #include "utils/SpriteUtils.h"
 
 const u32 ANIMATION_FRAMES = 5;
@@ -36,10 +37,13 @@ ArrowSelector::ArrowSelector(ArrowDirection direction,
   SpriteBuilder<Sprite> builder;
   sprite =
       builder
-          .withData(
-              isUsingGBAStyle() ? spr_arrows_alt_keysTiles : spr_arrowsTiles,
-              isUsingGBAStyle() ? sizeof(spr_arrows_alt_keysTiles)
-                                : sizeof(spr_arrowsTiles))
+          .withData(isUsingGBAStyle()               ? spr_arrows_alt_keysTiles
+                    : SAVEFILE_isUsingModernTheme() ? spr_arrows_mdrnTiles
+                                                    : spr_arrowsTiles,
+                    isUsingGBAStyle() ? sizeof(spr_arrows_alt_keysTiles)
+                    : SAVEFILE_isUsingModernTheme()
+                        ? sizeof(spr_arrows_mdrnTiles)
+                        : sizeof(spr_arrowsTiles))
           .withSize(SIZE_16_16)
           .withAnimated(this->startTile, this->animationFrames, ANIMATION_DELAY)
           .withLocation(0, 0)
