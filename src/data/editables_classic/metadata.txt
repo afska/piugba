@@ -12,6 +12,8 @@ arrows:
 
 	Background:
 	#FF00FF
+    -> When saving, due to a GIMP bug, #FF00FF gets converted to #FF00FD
+    -> So, #FF00FD is using as backdrop color when calling grit
 
 	Palette:
 	-> 35 colors x arrow group = 105 colors

@@ -22,7 +22,7 @@ grit \
   spr_feedback_mdrn.bmp \
   spr_lifebar.bmp \
   spr_lifebar_mdrn.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_song.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_song.c
 mv *.h *.c "$DESTINATION"
 
 # SelectionScene
@@ -41,7 +41,7 @@ grit \
   spr_channels.bmp \
   spr_lock.bmp \
   spr_level.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_selection.c
 mv \
   spr_difficulties.h \
   spr_difficulties.c \
@@ -67,7 +67,7 @@ grit \
   spr_arrows_alt_keys.bmp \
   spr_buttons.bmp \
   spr_buttons_mini.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_start.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_start.c
 mv \
   spr_buttons.h \
   spr_buttons.c \
@@ -82,7 +82,7 @@ grit \
   spr_arrows_mdrn.bmp \
   spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_controls.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_controls.c
 mv \
   spr_instructors.h \
   spr_instructors.c \
@@ -95,7 +95,7 @@ grit \
   spr_arrows_mdrn.bmp \
   spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_break.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_break.c
 mv \
   palette_break.* \
   "$DESTINATION"
@@ -105,7 +105,7 @@ grit \
   spr_numbers_mini.bmp \
   spr_numbers_mini_mdrn.bmp \
   spr_grade_*.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_grade.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_grade.c
 mv \
   spr_numbers_mini.h \
   spr_numbers_mini.c \
@@ -121,7 +121,7 @@ grit \
   spr_numbers_mini.bmp \
   spr_numbers_mini_mdrn.bmp \
   spr_grades_mini_evaluation.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_grade_multi.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_grade_multi.c
 mv \
   spr_grades_mini_evaluation.h \
   spr_grades_mini_evaluation.c \

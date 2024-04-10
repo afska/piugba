@@ -156,8 +156,8 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 #### Build sprites
 
 ```bash
-# use #FF00FF as transparency color
-grit *.bmp -ftc -pS -gB8 -gT ff00ff -O shared_palette.c
+# use #FF00FD as transparency color
+grit *.bmp -ftc -pS -gB8 -gT ff00fd -O shared_palette.c
 ```
 
 #### Build backgrounds
