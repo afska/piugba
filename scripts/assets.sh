@@ -28,6 +28,8 @@ mv *.h *.c "$DESTINATION"
 # SelectionScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_combo.bmp \
   spr_combo_mdrn.bmp \
   spr_numbers.bmp \
@@ -61,6 +63,8 @@ mv \
 # StartScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_buttons.bmp \
   spr_buttons_mini.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_start.c
@@ -75,6 +79,8 @@ mv \
 # ControlsScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_controls.c
 mv \
@@ -86,6 +92,8 @@ mv \
 # StageBreakScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
   -ftc -pS -gB8 -gT ff00ff -O palette_break.c
 mv \
