@@ -26,7 +26,7 @@ combo:
 -> 10 colors
 
 feedback:
--> 60 colors (pushed to 70 in merge)
+-> 60 colors
 
 numbers:
 -> 30 colors
