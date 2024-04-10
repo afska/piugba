@@ -46,7 +46,7 @@ difficulties:
 -> 38 colors
 
 grades:
--> 220 colors
+-> 225 colors
 
 grades_mini:
 -> 38 colors
