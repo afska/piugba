@@ -20,8 +20,9 @@ grit \
   spr_numbers_mdrn.bmp \
   spr_feedback.bmp \
   spr_feedback_mdrn.bmp \
+  spr_lifebar.bmp \
   spr_lifebar_mdrn.bmp \
-  -ftc -pS -gB8 -gT ff00fd -O palette_song.c # // TODO: CLASSIC LIFEBAR
+  -ftc -pS -gB8 -gT ff00fd -O palette_song.c
 mv *.h *.c "$DESTINATION"
 
 # SelectionScene
