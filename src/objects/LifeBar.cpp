@@ -4,31 +4,36 @@
 #include <libgba-sprite-engine/gba_engine.h>
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
-#include "data/content/_compiled_sprites/spr_lifebar.h"
+// #include "data/content/_compiled_sprites/spr_lifebar.h"
+// TODO: CLASSIC LIFE BAR
 #include "data/content/_compiled_sprites/spr_lifebar_mdrn.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/EffectUtils.h"
 #include "utils/SpriteUtils.h"
 
-#define LIFEBAR_COLORS 18
+#define THEME_COUNT 2
+#define LIFEBAR_COLORS 27  // TODO: OR 18 ON CLASSIC LIFEBAR
 
 const int ANIMATION_OFFSET = 2;
 const u32 WAIT_TIME = 3;
 const u32 MIN_VALUE = 0;
-const u32 ALMOST_MIN_VALUE = 1;
-const u32 MAX_VALUE = 10;
+const u32 ALMOST_MIN_VALUE = 2;  // TODO: OR 1 ON CLASSIC LIFEBAR
+const u32 MAX_VALUE = 14;        // TODO: OR 10 ON CLASSIC LIFEBAR
 const u32 UNIT = 2;
+// TODO: RESTORE CLASSIC LIFE BAR
 const u16 PALETTE_COLORS[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
-    {127, 4345, 410, 7606, 2686, 1595, 766, 700, 927, 894, 988, 923, 1017, 951,
-     974, 879, 9199, 936},
-    {126, 4344, 409, 7605, 1629, 1562, 733, 667, 862, 829, 922, 890, 984, 918,
-     942, 846, 8142, 904}};
+    {63,    350,   542,   1662,  734,   861,   927,   989,   890,
+     918,   850,   809,   960,   9152,  19392, 21312, 25442, 27456,
+     26272, 26208, 32384, 31264, 30048, 30912, 30724, 27661, 26644},
+    {61,    348,   508,   604,   700,   795,   797,   828,   824,
+     853,   785,   744,   896,   9088,  18304, 22368, 23330, 26368,
+     24160, 24096, 30304, 29184, 28000, 28864, 28676, 25612, 24595}};
 const u8 PALETTE_INDEXES[GAME_MAX_PLAYERS][LIFEBAR_COLORS] = {
-    {200, 203, 209, 210, 221, 217, 230, 223, 246, 239, 247, 241, 248, 240, 236,
-     229, 243, 228},
-    {198, 202, 207, 208, 219, 214, 227, 220, 238, 233, 244, 235, 245, 234, 231,
-     226, 237, 225}};
+    {194, 201, 212, 222, 232, 242, 245, 246, 243, 241, 234, 219, 230, 231,
+     233, 218, 228, 221, 207, 203, 206, 202, 197, 192, 186, 188, 191},
+    {193, 198, 208, 215, 225, 236, 237, 240, 238, 235, 229, 213, 220, 223,
+     226, 224, 217, 214, 205, 200, 204, 199, 196, 190, 185, 187, 189}};
 const COLOR DISABLED_COLOR = 0x0000;
 const COLOR DISABLED_COLOR_BORDER = 0x2529;
 const COLOR CURSOR_COLOR = 0x7FD8;
@@ -38,18 +43,20 @@ const COLOR BLINK_MAX_COLOR = 0x7FFF;
 
 LifeBar::LifeBar(u8 playerId) {
   SpriteBuilder<Sprite> builder;
-  sprite = builder
-               .withData(SAVEFILE_isUsingModernTheme() ? spr_lifebar_mdrnTiles
-                                                       : spr_lifebarTiles,
-                         SAVEFILE_isUsingModernTheme()
-                             ? sizeof(spr_lifebar_mdrnTiles)
-                             : sizeof(spr_lifebarTiles))
-               .withSize(SIZE_64_32)
-               .withLocation((isDouble() ? GAME_POSITION_X[1]
-                                         : GameState.positionX[playerId]) +
-                                 LIFEBAR_POSITION_X,
-                             GameState.positionY + LIFEBAR_POSITION_Y)
-               .buildPtr();
+  sprite =
+      builder  // TODO: CLASSIC LIFE BAR
+          .withData(SAVEFILE_isUsingModernTheme()
+                        ? spr_lifebar_mdrnTiles
+                        : spr_lifebar_mdrnTiles /*spr_lifebarTiles*/,
+                    SAVEFILE_isUsingModernTheme()
+                        ? sizeof(spr_lifebar_mdrnTiles)
+                        : sizeof(spr_lifebar_mdrnTiles /*spr_lifebarTiles*/))
+          .withSize(SIZE_64_32)
+          .withLocation((isDouble() ? GAME_POSITION_X[1]
+                                    : GameState.positionX[playerId]) +
+                            LIFEBAR_POSITION_X,
+                        GameState.positionY + LIFEBAR_POSITION_Y)
+          .buildPtr();
 
   if (playerId > 0)
     SPRITE_reuseTiles(sprite.get());
@@ -57,6 +64,7 @@ LifeBar::LifeBar(u8 playerId) {
   this->playerId = playerId;
   sprite->flipVertically(playerId > 0);
   isModern = SAVEFILE_isUsingModernTheme();
+  value = INITIAL_LIFE * MAX_VALUE / MAX_LIFE;
 }
 
 void LifeBar::setLife(int life) {
@@ -139,8 +147,6 @@ CODE_IWRAM void LifeBar::paint(ForegroundPaletteManager* foregroundPalette) {
         color = PALETTE_COLORS[playerId][(
             (LIFEBAR_COLORS - 1 - i + animatedRainbowOffset * 2) %
             LIFEBAR_COLORS)];
-        if (i >= LIFEBAR_COLORS - 2)
-          color = isBorder ? CURSOR_COLOR_BORDER : CURSOR_COLOR;
       } else {
         // blink green
         color = (animatedFlag && !isBorder) ? BLINK_MAX_COLOR

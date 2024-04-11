@@ -16,7 +16,7 @@ arrows:
     -> So, #FF00FD is using as backdrop color when calling grit
 
 	Palette:
-	-> 35 colors x arrow group = 105 colors
+	-> 35 colors x arrow group = 105 colors (but see below)
 
 	Light Placeholders:
 	-> Colors -> Hue-Saturation... -> Lightness=100 & Saturation=100
@@ -28,10 +28,10 @@ combo:
 -> 10 colors
 
 feedback:
--> 60 colors
+-> 60 colors (but see below)
 
 numbers:
--> 30 colors
+-> 30 colors (but see below)
 	red:
 		-> Colors -> Color  Balance... ->
 			Cyan/Red = 100
@@ -39,7 +39,8 @@ numbers:
 			Yellow/Blue = -100
 
 lifebar:
--> 56 colors + 20 (lifebar_dual)
+-> 56 colors + 20 colors (76 total)
+  (player 2 has the same colors but with V=-6 in the HSV color space)
 
 numbers_mini:
 -> 30 colors
@@ -74,6 +75,17 @@ level:
 of:
 -> 10 colors
 
+===
+
+screen_song: 
+
+This screen uses colors from:
+  arrows+combo+numbers+feedback+lifebar
+  105+10+30+60+64 = 269 (13 extra colors)
+    -> these spritesheets are merges of classic&modern themes (in the `editables_merge` folder)
+  To avoid exceeding the 256 limit, some spritesheets (arrows,numbers,feedback) were reduced by N colors (N < 10):
+  98+10+27+57+64 = 256
+  
 ===
 
 screen_selection:
