@@ -63,10 +63,10 @@ inline void EFFECT_clearAffine() {
     affine[i].fill1[0] = HIDE_SPRITE;
     affine[i].fill2[0] = HIDE_SPRITE;
     affine[i].fill3[0] = HIDE_SPRITE;
-    affine[i].pa = 0;
+    affine[i].pa = 0x100;
     affine[i].pb = 0;
     affine[i].pc = 0;
-    affine[i].pd = 0;
+    affine[i].pd = 0x100;
   }
 }
 
