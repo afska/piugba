@@ -54,6 +54,7 @@ class SelectionScene : public Scene {
   InitialLevel initialLevel;
   std::string pendingAudio = "";
   u32 pendingSeek = 0;
+  u32 animationFrame = 0;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;

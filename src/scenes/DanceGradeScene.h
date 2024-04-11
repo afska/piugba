@@ -47,6 +47,7 @@ class DanceGradeScene : public Scene {
   std::unique_ptr<Total> maxComboTotal;
   bool differentCharts;
   bool isLastSong;
+  u32 animationFrame = 0;
 
   std::array<std::unique_ptr<GradeBadge>, GAME_MAX_PLAYERS> miniGrades;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> remoteTotals;

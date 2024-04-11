@@ -111,6 +111,10 @@ void DanceGradeScene::load() {
         new GradeBadge(MINI_GRADE_X[remoteId], MINI_GRADE_Y, true, true)};
     miniGrades[0]->setType(evaluation->getGrade());
     miniGrades[1]->setType(remoteEvaluation->getGrade());
+    miniGrades[0]->get()->setDoubleSize(true);
+    miniGrades[0]->get()->setAffineId(AFFINE_BASE);
+    miniGrades[1]->get()->setDoubleSize(true);
+    miniGrades[1]->get()->setAffineId(AFFINE_BASE + 1);
 
     for (u32 i = 0; i < remoteTotals.size(); i++)
       remoteTotals[i] = std::unique_ptr<Total>{
@@ -124,9 +128,12 @@ void DanceGradeScene::load() {
     remoteTotals[FeedbackType::BAD]->setValue(remoteEvaluation->bads);
     remoteTotals[FeedbackType::MISS]->setValue(remoteEvaluation->misses);
     remoteMaxComboTotal->setValue(remoteEvaluation->maxCombo);
-  } else
+  } else {
     grade = std::unique_ptr<Grade>{
         new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
+    grade->get()->setDoubleSize(true);
+    grade->get()->setAffineId(AFFINE_BASE);
+  }
 }
 
 void DanceGradeScene::tick(u16 keys) {
@@ -155,6 +162,22 @@ void DanceGradeScene::tick(u16 keys) {
 
     finish();
   }
+
+  if (isVs()) {
+    if (miniGrades[0]->getType() == GradeType::S)
+      EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+    if (miniGrades[1]->getType() == GradeType::S)
+      EFFECT_setScale(1, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  } else {
+    if (grade->getType() == GradeType::S)
+      EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  }
+  animationFrame++;
+  if (animationFrame >= BREATH_STEPS)
+    animationFrame = 0;
 }
 
 void DanceGradeScene::render() {

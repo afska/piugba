@@ -4,8 +4,8 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 #define HIDE_SPRITE (1 << 9)
-#define AFFINE_BASE 26
-#define MAX_AFFINES 6
+#define AFFINE_BASE 30
+#define MAX_AFFINES 2
 
 const u32 MIN_OPACITY = 0;
 const u32 MAX_OPACITY = 16;
@@ -15,6 +15,10 @@ const u8 BLD_BG[] = {BLD_BG0, BLD_BG1, BLD_BG2, BLD_BG3};
 const u8 BLD_MODE_OFF = 0;
 const u8 BLD_MODE_NORMAL = 1;
 
+const u32 BREATH_SCALE_LUT[] = {256, 250, 244, 238, 233, 228, 223, 218, 213,
+                                213, 218, 223, 228, 233, 238, 244, 250};
+const u32 BREATH_STEPS = 17;
+
 extern u16 regBldCnt, regBldAlpha, regMosaic;
 extern OBJ_AFFINE affine[MAX_AFFINES];
 
@@ -22,7 +26,7 @@ inline void EFFECT_render() {
   REG_BLDCNT = regBldCnt;
   REG_BLDALPHA = regBldAlpha;
   REG_MOSAIC = regMosaic;
-  for (u32 i = 0; i < 6; i++)
+  for (u32 i = 0; i < MAX_AFFINES; i++)
     obj_aff_mem[AFFINE_BASE + i] = affine[i];
 }
 

@@ -190,6 +190,15 @@ void SelectionScene::tick(u16 keys) {
     blendCount = 0;
   }
   EFFECT_setBlendAlpha(blendAlpha);
+
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    if (gradeBadges[i]->getType() == GradeType::S)
+      EFFECT_setScale(i, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  }
+  animationFrame++;
+  if (animationFrame >= BREATH_STEPS)
+    animationFrame = 0;
 }
 
 void SelectionScene::render() {
@@ -303,6 +312,8 @@ void SelectionScene::setUpGradeBadges() {
     gradeBadges.push_back(std::unique_ptr<GradeBadge>{
         new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0, false)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
+    gradeBadges[i]->get()->setDoubleSize(true);
+    gradeBadges[i]->get()->setAffineId(AFFINE_BASE + i);
   }
 }
 
@@ -792,6 +803,8 @@ void SelectionScene::loadProgress() {
     locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
                          songIndex <= count - 1);
   }
+
+  EFFECT_clearAffine();
 }
 
 void SelectionScene::setNames(std::string title, std::string artist) {
@@ -853,6 +866,8 @@ void SelectionScene::loadSelectedSongGrade() {
                             selectedSongId, getSelectedNumericLevelIndex())
                       : GradeType::UNPLAYED);
   }
+
+  EFFECT_clearAffine();
 }
 
 void SelectionScene::processMultiplayerUpdates() {
