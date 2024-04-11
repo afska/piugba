@@ -60,6 +60,8 @@ class Sprite {
   inline void setImageSize(u32 size) { imageSize = size; }
 
   inline void setPriority(u32 priority) { this->priority = priority; }
+  inline void setAffineId(u32 affineId) { this->affineId = affineId; }
+  inline void setDoubleSize(bool enabled) { this->doubleSize = enabled; }
   inline void makeAnimated(int beginFrame,
                            int numberOfFrames,
                            int animationDelay);
@@ -91,12 +93,12 @@ class Sprite {
   const void* data;
   int x, y;
   u8 animation_offset;
-  u32 priority, w, h, size_bits, shape_bits;
+  u32 priority, affineId, w, h, size_bits, shape_bits;
   u32 imageSize, tileIndex;
   SpriteSize spriteSize;
   u8 animationDelay, numberOfFrames, beginFrame, currentFrame, previousFrame,
       animationCounter;
-  bool animating;
+  bool animating, doubleSize;
 
   inline void syncAnimation();
   inline void syncOam();
@@ -141,8 +143,11 @@ inline void Sprite::makeAnimated(int beginFrame,
 }
 
 inline void Sprite::syncPosition() {
-  oam.attr0 = (oam.attr0 & ~ATTR0_Y_MASK) | (y & ATTR0_Y_MASK);
-  oam.attr1 = (oam.attr1 & ~ATTR1_X_MASK) | (x & ATTR1_X_MASK);
+  u32 x = (this->x - doubleSize * (w / 2)) & ATTR1_X_MASK;
+  u32 y = (this->y - doubleSize * (h / 2)) & ATTR0_Y_MASK;
+
+  oam.attr0 = (oam.attr0 & ~ATTR0_Y_MASK) | y;
+  oam.attr1 = (oam.attr1 & ~ATTR1_X_MASK) | x;
   oam.attr2 =
       (oam.attr2 & ~ATTR2_PRIO_MASK) | (ATTR2_PRIO(priority) & ATTR2_PRIO_MASK);
 }
@@ -278,15 +283,18 @@ inline void Sprite::setAttributesBasedOnSize(SpriteSize size) {
 
 inline void Sprite::buildOam(int tileIndex) {
   this->tileIndex = tileIndex;
+  bool isAffine = affineId > 0;
 
-  oam.attr0 = ATTR0_Y(this->y & 0x00FF) | ATTR0_MODE(0) | (GFX_MODE << 10) |
+  oam.attr0 = ATTR0_Y(this->y & 0x00FF) |
+              ATTR0_MODE(doubleSize * 2 + isAffine) | (GFX_MODE << 10) |
               (MOSAIC_MODE << 12) | (COLOR_MODE_256 << 13) |
               (this->shape_bits << 14);
-  oam.attr1 = (this->x & 0x01FF) | (AFFINE_FLAG_NONE_SET_YET << 9) |
-              (((oam.attr1 & ATTR1_HFLIP) != 0) << 12) |
-              (((oam.attr1 & ATTR1_VFLIP) != 0) << 13) |
-              (this->size_bits << 14);
-
+  oam.attr1 = isAffine ? (this->x & 0x01FF) | ((affineId & 0b11111) << 9) |
+                             (this->size_bits << 14)
+                       : (this->x & 0x01FF) | (AFFINE_FLAG_NONE_SET_YET << 9) |
+                             (((oam.attr1 & ATTR1_HFLIP) != 0) << 12) |
+                             (((oam.attr1 & ATTR1_VFLIP) != 0) << 13) |
+                             (this->size_bits << 14);
   oam.attr2 = ATTR2_ID(tileIndex) | ATTR2_PRIO(priority) | ATTR2_PALBANK(0);
 }
 

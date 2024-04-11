@@ -45,6 +45,7 @@ inline void SCENE_init() {
   SPRITE_disable();
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
+  EFFECT_clearAffine();
   EFFECT_render();
   TextStream::instance().scrollNow(0, 0);
   TextStream::instance().setMosaic(false);
