@@ -509,7 +509,7 @@ CODE_IWRAM void SongScene::updateArrows() {
 void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
 
-  if ($isMultiplayer || GameState.settings.bgaDarkBlink)
+  if (GameState.settings.bgaDarkBlink)
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   if (!$isMultiplayer &&
