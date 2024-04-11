@@ -98,6 +98,7 @@ class Score {
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;
   u32 longNotes = 0;
+  u32 scaleStep = 0;
 
   bool updateLife(FeedbackType feedbackType);
   void updateCombo(FeedbackType feedbackType);
