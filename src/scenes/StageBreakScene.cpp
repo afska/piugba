@@ -24,13 +24,12 @@ const u32 INSTRUCTOR_X = 152;
 const u32 INSTRUCTOR_Y = 48;
 const u32 PIXEL_BLINK_LEVEL = 2;
 
-#define WRITE(MSECS, TEXT, ROW, COL, DX, DY, FLIP_X, FLIP_Y)     \
+#define WRITE(MSECS, TEXT, ROW, COL, DX, DY, SCALE_X, SCALE_Y)   \
   if (msecs > MSECS && step == totalSteps) {                     \
     TextStream::instance().setText(TEXT, ROW, COL);              \
     instructor->get()->moveTo(instructor->get()->getX() + (DX),  \
                               instructor->get()->getY() + (DY)); \
-    isFlippedX = FLIP_X;                                         \
-    isFlippedY = FLIP_Y;                                         \
+    EFFECT_setScale(0, SCALE_X, SCALE_Y);                        \
     pixelBlink->blink();                                         \
     step++;                                                      \
   }                                                              \
@@ -76,6 +75,8 @@ void StageBreakScene::load() {
 
   instructor = std::unique_ptr<Instructor>{
       new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
+  instructor->get()->setDoubleSize(true);
+  instructor->get()->setAffineId(AFFINE_BASE);
 }
 
 void StageBreakScene::tick(u16 keys) {
@@ -95,8 +96,6 @@ void StageBreakScene::tick(u16 keys) {
   }
 
   pixelBlink->tick();
-  instructor->get()->flipHorizontally(isFlippedX);
-  instructor->get()->flipVertically(isFlippedY);
 
   if (PlaybackState.hasFinished && KEY_ANYKEY(keys)) {
     if (isMultiplayer()) {
@@ -147,25 +146,25 @@ void StageBreakScene::animate() {
   TextStream::instance().setFontColor(msecs >= 2110 ? TEXT_COLOR_END
                                                     : TEXT_COLOR_START);
 
-  WRITE(1500, "H", heyRow, heyCol + 0, -1, 2, false, false);
-  WRITE(1525, "e", heyRow, heyCol + 1, 3, -3, false, true);
-  WRITE(1550, "e", heyRow, heyCol + 2, 1, 1, true, false);
-  WRITE(1575, "e", heyRow, heyCol + 3, -3, -4, false, false);
-  WRITE(1600, "e", heyRow, heyCol + 4, -6, 4, true, false);
-  WRITE(1625, "e", heyRow, heyCol + 5, 2, -3, false, false);
-  WRITE(1650, "y", heyRow, heyCol + 6, -2, -1, false, false);
-  WRITE(1675, "!", heyRow, heyCol + 7, 1, 1, false, true);
+  WRITE(1500, "H", heyRow, heyCol + 0, -1, 2, 228, 228);
+  WRITE(1525, "e", heyRow, heyCol + 1, 3, -3, 205, -205);
+  WRITE(1550, "e", heyRow, heyCol + 2, 1, 1, -186, 186);
+  WRITE(1575, "e", heyRow, heyCol + 3, -3, -4, 171, 171);
+  WRITE(1600, "e", heyRow, heyCol + 4, -6, 4, -158, 158);
+  WRITE(1625, "e", heyRow, heyCol + 5, 4, -3, 146, 146);
+  WRITE(1650, "y", heyRow, heyCol + 6, 4, -1, 137, 137);
+  WRITE(1675, "!", heyRow, heyCol + 7, 4, 1, 128, 128);
   CLEAR(2110);
 
-  WRITE(2116, "Why", /*   */ 6, 1, -10, -8, false, false);
-  WRITE(2310, "don't", /* */ 7, 4, 2, 10, false, false);
-  WRITE(2430, "you", /*   */ 8, 9, -4, -3, true, false);
-  WRITE(2480, "just", /*  */ 9, 4, 6, -2, false, false);
-  WRITE(2660, "get", /*   */ 10, 1, -3, -6, false, false);
-  WRITE(2730, "up", /*    */ 11, 5, 4, 8, true, false);
-  WRITE(2830, "and", /*   */ 12, 8, -2, 4, false, false);
-  WRITE(2970, "dance,", /**/ 13, 1, -4, -4, false, false);
-  WRITE(3280, "man?", /*  */ 14, 7, 2, 4, false, false);
+  WRITE(2116, "Why", /*   */ 6, 1, -10, -8, 0x100, 0x100);
+  WRITE(2310, "don't", /* */ 7, 4, 2, 10, 0x100, 0x100);
+  WRITE(2430, "you", /*   */ 8, 9, -4, -3, -0x100, 0x100);
+  WRITE(2480, "just", /*  */ 9, 4, 6, -2, 0x100, 0x100);
+  WRITE(2660, "get", /*   */ 10, 1, -3, -6, 0x100, 0x100);
+  WRITE(2730, "up", /*    */ 11, 5, 4, 8, -0x100, 0x100);
+  WRITE(2830, "and", /*   */ 12, 8, -2, 4, 0x100, 0x100);
+  WRITE(2970, "dance,", /**/ 13, 1, -4, -4, 0x100, 0x100);
+  WRITE(3280, "man?", /*  */ 14, 7, 2, 4, 0x100, 0x100);
 }
 
 void StageBreakScene::finish() {

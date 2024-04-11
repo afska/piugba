@@ -32,8 +32,6 @@ class StageBreakScene : public Scene {
 
   std::unique_ptr<Instructor> instructor;
   u32 step = 0;
-  bool isFlippedX = false;
-  bool isFlippedY = false;
 
   void setUpSpritesPalette();
   void setUpBackground();
