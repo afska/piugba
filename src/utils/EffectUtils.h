@@ -4,8 +4,8 @@
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 #define HIDE_SPRITE (1 << 9)
-#define AFFINE_BASE 30
-#define MAX_AFFINES 2
+#define MAX_AFFINES 4
+#define AFFINE_BASE (32 - MAX_AFFINES)
 
 const u32 MIN_OPACITY = 0;
 const u32 MAX_OPACITY = 16;
