@@ -17,8 +17,10 @@ extern "C" {
 #define SCORE_TITLE "Score:"
 #define PLAYER_1_WINS "Player 1 *WINS*"
 #define PLAYER_2_WINS "Player 2 *WINS*"
+#define GAME_TIED "Game *TIED*"
 #define PLAYER_1_ARROW "<<<"
 #define PLAYER_2_ARROW ">>>"
+#define GAME_TIED_ARROW "(!)"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
@@ -250,12 +252,15 @@ void DanceGradeScene::printScore() {
     auto player1Points = getMultiplayerPointsOf(player1Evaluation);
     auto player2Points = getMultiplayerPointsOf(player2Evaluation);
 
-    if (player1Points >= player2Points) {
+    if (player1Points > player2Points) {
       SCENE_write(PLAYER_1_WINS, TEXT_ROW);
       SCENE_write(PLAYER_1_ARROW, TEXT_ROW + 1);
-    } else {
+    } else if (player2Points > player1Points) {
       SCENE_write(PLAYER_2_WINS, TEXT_ROW);
       SCENE_write(PLAYER_2_ARROW, TEXT_ROW + 1);
+    } else {
+      SCENE_write(GAME_TIED, TEXT_ROW);
+      SCENE_write(GAME_TIED_ARROW, TEXT_ROW + 1);
     }
 
     if (differentCharts) {

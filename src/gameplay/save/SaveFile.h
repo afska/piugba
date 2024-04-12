@@ -268,6 +268,11 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   if (isBonusMode >= 2)
     SAVEFILE_write8(SRAM->isBonusMode, false);
 
+  if (fixes > 0) {
+    // if something was fixed, reset custom offset, just in case
+    SAVEFILE_write32(SRAM->globalOffset, 0);
+  }
+
   return fixes;
 }
 
