@@ -12,10 +12,11 @@ const u32 MAX_SCALE_STEP = 5;
 
 const u32 SCALE_STEPS[] = {256, 233, 213, 197, 171, 205};
 
-Score::Score(LifeBar* lifeBar, u8 playerId) {
+Score::Score(LifeBar* lifeBar, u8 playerId, bool isLocal) {
   lifeBar->setLife(life);
   this->lifeBar = lifeBar;
   this->playerId = playerId;
+  this->isLocal = isLocal;
 
   feedback = std::unique_ptr<Feedback>{new Feedback(playerId)};
   combo = std::unique_ptr<Combo>{new Combo(playerId)};
@@ -26,16 +27,18 @@ Score::Score(LifeBar* lifeBar, u8 playerId) {
   if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH)
     lifeBar->setLife(MIN_LIFE);
 
-  feedback->get()->setDoubleSize(true);
-  feedback->get()->setAffineId(AFFINE_BASE + playerId);
-  combo->getTitle()->get()->setDoubleSize(true);
-  combo->getTitle()->get()->setAffineId(AFFINE_BASE + playerId);
-  combo->getDigits()->at(0)->get()->setDoubleSize(true);
-  combo->getDigits()->at(0)->get()->setAffineId(AFFINE_BASE + playerId);
-  combo->getDigits()->at(1)->get()->setDoubleSize(true);
-  combo->getDigits()->at(1)->get()->setAffineId(AFFINE_BASE + playerId);
-  combo->getDigits()->at(2)->get()->setDoubleSize(true);
-  combo->getDigits()->at(2)->get()->setAffineId(AFFINE_BASE + playerId);
+  if (isLocal) {
+    feedback->get()->setDoubleSize(true);
+    feedback->get()->setAffineId(AFFINE_BASE + playerId);
+    combo->getTitle()->get()->setDoubleSize(true);
+    combo->getTitle()->get()->setAffineId(AFFINE_BASE + playerId);
+    combo->getDigits()->at(0)->get()->setDoubleSize(true);
+    combo->getDigits()->at(0)->get()->setAffineId(AFFINE_BASE + playerId);
+    combo->getDigits()->at(1)->get()->setDoubleSize(true);
+    combo->getDigits()->at(1)->get()->setAffineId(AFFINE_BASE + playerId);
+    combo->getDigits()->at(2)->get()->setDoubleSize(true);
+    combo->getDigits()->at(2)->get()->setAffineId(AFFINE_BASE + playerId);
+  }
 }
 
 bool Score::update(FeedbackType feedbackType, bool isLong) {
