@@ -36,6 +36,7 @@ class DeathMixScene : public TalkScene {
   std::unique_ptr<ArrowSelector> backButton;
   std::unique_ptr<ArrowSelector> nextButton;
   std::unique_ptr<InputHandler> settingsMenuInput;
+  u32 animationFrame = 0;
 
   void setUpSpritesPalette();
 
