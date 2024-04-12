@@ -15,9 +15,9 @@ const u8 BLD_BG[] = {BLD_BG0, BLD_BG1, BLD_BG2, BLD_BG3};
 const u8 BLD_MODE_OFF = 0;
 const u8 BLD_MODE_NORMAL = 1;
 
-const u32 BREATH_SCALE_LUT[] = {256, 250, 244, 238, 233, 228, 223, 218, 213,
-                                213, 218, 223, 228, 233, 238, 244, 250};
-const u32 BREATH_STEPS = 17;
+const u32 BREATH_SCALE_LUT[] = {256, 244, 233, 223, 213, 205, 209, 213,
+                                218, 223, 228, 233, 238, 244, 250};
+const u32 BREATH_STEPS = 15;
 
 extern u16 regBldCnt, regBldAlpha, regMosaic;
 extern OBJ_AFFINE affine[MAX_AFFINES];
