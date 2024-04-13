@@ -140,8 +140,8 @@ void StageBreakScene::setUpBackground() {
 void StageBreakScene::animate() {
   u32 msecs = PlaybackState.msecs;
   u32 totalSteps = 0;
-  int heyRow = 4;
-  int heyCol = 7;
+  int heyRow = 9;
+  int heyCol = 1;
 
   TextStream::instance().setFontColor(msecs >= 2110 ? TEXT_COLOR_END
                                                     : TEXT_COLOR_START);
@@ -151,9 +151,9 @@ void StageBreakScene::animate() {
   WRITE(1550, "e", heyRow, heyCol + 2, 1, 1, -186, 186);
   WRITE(1575, "e", heyRow, heyCol + 3, -3, -4, 171, 171);
   WRITE(1600, "e", heyRow, heyCol + 4, -6, 4, -158, 158);
-  WRITE(1625, "e", heyRow, heyCol + 5, 4, -3, 146, 146);
-  WRITE(1650, "y", heyRow, heyCol + 6, 4, -1, 137, 137);
-  WRITE(1675, "!", heyRow, heyCol + 7, 4, 1, 128, 128);
+  WRITE(1625, "e", heyRow, heyCol + 5, -2, -3, 146, 146);
+  WRITE(1650, "y", heyRow, heyCol + 6, -2, -1, 137, 137);
+  WRITE(1675, "!", heyRow, heyCol + 7, -2, 1, 128, 128);
   CLEAR(2110);
 
   WRITE(2116, "Why", /*   */ 6, 1, -10, -8, 0x100, 0x100);
