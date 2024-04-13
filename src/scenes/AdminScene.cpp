@@ -147,7 +147,7 @@ void AdminScene::printOptions() {
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
               8);
-  printOption(OPTION_BACKGROUND_VIDEOS, "HQ (audio + video)",
+  printOption(OPTION_BACKGROUND_VIDEOS, "HQ (audio / video)",
               ps2Input > 0 ? "---"
                            : (backgroundVideos == 3   ? "VIDEO"
                               : backgroundVideos == 4 ? "AUDIO"
