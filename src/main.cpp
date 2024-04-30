@@ -14,6 +14,8 @@ extern "C" {
 #include "player/player.h"
 }
 
+#define CODE_EWRAM __attribute__((section(".ewram")))
+
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
@@ -99,7 +101,7 @@ int main() {
   return 0;
 }
 
-void ISR_reset() {
+CODE_EWRAM void ISR_reset() {
   if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
     return;

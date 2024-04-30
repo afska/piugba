@@ -34,8 +34,8 @@ This is a PIU emulator for the GBA that uses [StepMania](https://github.com/step
   - Mirror and random steps
   - Training mode: Rate, Fast-forward, Rewind
   - AutoMod: Swaps mods randomly
-- **Background videos** _(uncompressed 240x160)_ can be displayed using an _EverDrive_
-- **HQ audio** _(uncompressed s8 PCM)_ can be played using an _EverDrive_
+- **Background videos** _(uncompressed 240x160)_ can be displayed using a flash cart
+- **HQ audio** _(uncompressed s8 PCM)_ can be played using a flash cart
 - Two **themes**: _Classic_ and _Modern_
 - **BGA DARK** background with blink effect
 - **Song selector** with names, backgrounds and sound previews
@@ -216,5 +216,5 @@ If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 - [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
 - [AntonioND/libugba](https://github.com/AntonioND/libugba): May 20, 2022
 - [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v6.0.3
-- [afska/gba-flashcartio](https://github.com/afska/gba-flashcartio): v1.0.4
+- [afska/gba-flashcartio](https://github.com/afska/gba-flashcartio): v1.0.5
 - [FatFS](http://elm-chan.org/fsw/ff/): R0.15

@@ -3,16 +3,30 @@
 
 #include <stdbool.h>
 
-// Use DMA1 instead of DMA3 (uncomment to enable)
-#define FLASHCARTIO_USE_DMA1
+#define BI_SAV_EEP 16
+#define BI_SAV_SRM 32
+#define BI_SAV_FLA64 64
+#define BI_SAV_FLA128 80
 
-#ifdef FLASHCARTIO_USE_DMA1
+// Use DMA1 instead of DMA3
+#define FLASHCARTIO_USE_DMA1 1
+
+// (EverDrive) Set your game's save type here
+#define FLASHCARTIO_ED_SAVE_TYPE BI_SAV_SRM
+
+// (EverDrive) Enables 32MB ROM support
+#define FLASHCARTIO_ED_BIG_ROM 1
+
+// (EZ Flash) Disables interrupts while reading
+#define FLASHCARTIO_EZFO_DISABLE_IRQ 0
+
+#if FLASHCARTIO_USE_DMA1 != 0
 #define DMA_SRC *((volatile u32*)0x40000BC)
 #define DMA_DST *((volatile u32*)0x40000C0)
 #define DMA_LEN *((volatile u16*)0x40000C4)
 #define DMA_CTR *((volatile u16*)0x40000C6)
 #endif
-#ifndef FLASHCARTIO_USE_DMA1
+#if FLASHCARTIO_USE_DMA1 == 0
 #define DMA_SRC *((vu32*)0x40000D4)
 #define DMA_DST *((vu32*)0x40000D8)
 #define DMA_LEN *((vu16*)0x40000DC)
@@ -73,10 +87,10 @@ inline __attribute__((always_inline)) void dmaCopy(const void* source,
                                                    void* dest,
                                                    u32 size) {
 #ifdef FLASHCARTIO_USE_DMA1
-  DMA_Copy(1, source, dest, DMA16 | size >> 1);
+  DMA_Copy(1, source, dest, DMA32 | size >> 2);
 #endif
 #ifndef FLASHCARTIO_USE_DMA1
-  DMA_Copy(3, source, dest, DMA16 | size >> 1);
+  DMA_Copy(3, source, dest, DMA32 | size >> 2);
 #endif
 }
 

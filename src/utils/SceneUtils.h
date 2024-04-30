@@ -99,8 +99,11 @@ inline void SCENE_overclockEWRAM() {
 inline void SCENE_softReset() {
   REG_IME = 0;
 
-  if (IS_FLASHCART_UNLOCKED)
-    flashcartio_lock();
+  if (flashcartio_is_reading) {
+    flashcartio_needs_reset = true;
+    flashcartio_reset_callback = []() { SCENE_softReset(); };
+    return;
+  }
 
   while (REG_VCOUNT >= 160)
     ;  // wait till VDraw

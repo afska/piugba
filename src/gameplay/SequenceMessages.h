@@ -113,7 +113,7 @@
 
 #define VIDEO_ACTIVATION_FAILED_NO_FLASHCART \
   "HQ mode disabled!\r\n"                    \
-  " -> no EverDrive found\r\n"               \
+  " -> no flashcart found\r\n"               \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
