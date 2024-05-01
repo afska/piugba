@@ -61,11 +61,12 @@ VideoStore::State VideoStore::activate() {
     return setState(MOUNT_ERROR);
   }
 
-  setState(ACTIVE, &fatfs);
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   previousMode > BackgroundVideosOpts::dACTIVE
                       ? previousMode
                       : BackgroundVideosOpts::dACTIVE);
+  setState(ACTIVE, &fatfs);
+
   return state;
 }
 
