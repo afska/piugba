@@ -7,6 +7,5 @@
 
 bool _EZFO_startUp(void);
 bool _EZFO_readSectors(u32 address, u32 count, void* buffer);
-bool _EZFO_writeSectors(u32 address, u32 count, const void* buffer);
 
 #endif /* IO_EZFO_H */

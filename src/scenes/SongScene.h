@@ -119,6 +119,11 @@ class SongScene : public Scene {
     rumbleIdleCyclePeriod = RUMBLE_IDLE(rumbleOpts);
   }
 
+  inline bool shouldForceGSM() {
+    return $isMultiplayer ||
+           GameState.mods.trainingMode != TrainingModeOpts::tOFF;
+  }
+
   inline ArrowDirection getDirectionFromIndex(u32 index) {
     return static_cast<ArrowDirection>($isDouble ? index
                                                  : DivMod(index, ARROWS_TOTAL));

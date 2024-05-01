@@ -8,15 +8,10 @@
 // SOURCE:
 // https://github.com/ez-flash/omega-de-kernel/blob/main/source/Ezcard_OP.c
 
-static void EWRAM_CODE delay(u32 R0) {
-  int volatile i;
+// [!] Some small optimizations were made for piuGBA
 
-  for (i = R0; i; --i)
-    ;
-  return;
-}
 // --------------------------------------------------------------------
-static void EWRAM_CODE SetSDControl(u16 control) {
+inline __attribute__((always_inline)) void SetSDControl(u16 control) {
   *(vu16*)0x9fe0000 = 0xd200;
   *(vu16*)0x8000000 = 0x1500;
   *(vu16*)0x8020000 = 0xd200;
@@ -25,23 +20,23 @@ static void EWRAM_CODE SetSDControl(u16 control) {
   *(vu16*)0x9fc0000 = 0x1500;
 }
 // --------------------------------------------------------------------
-static void EWRAM_CODE SD_Enable(void) {
+inline __attribute__((always_inline)) void SD_Enable(void) {
   SetSDControl(1);
 }
 // --------------------------------------------------------------------
-static void EWRAM_CODE SD_Read_state(void) {
+inline __attribute__((always_inline)) void SD_Read_state(void) {
   SetSDControl(3);
 }
 // --------------------------------------------------------------------
-static void EWRAM_CODE SD_Disable(void) {
+inline __attribute__((always_inline)) void SD_Disable(void) {
   SetSDControl(0);
 }
 // --------------------------------------------------------------------
-static u16 EWRAM_CODE SD_Response(void) {
+inline __attribute__((always_inline)) u16 SD_Response(void) {
   return *(vu16*)0x9E00000;
 }
 // --------------------------------------------------------------------
-static u32 EWRAM_CODE Wait_SD_Response() {
+inline __attribute__((always_inline)) u32 Wait_SD_Response() {
   vu16 res;
   u32 count = 0;
   while (1) {
@@ -51,27 +46,22 @@ static u32 EWRAM_CODE Wait_SD_Response() {
     }
 
     count++;
-    if (count > 0x100000) {
-      // DEBUG_printf("time out %x",res);
-      // wait_btn();
+    if (count > 0x100000)
       return 1;
-    }
   }
 }
 // --------------------------------------------------------------------
-// [!]
-__attribute__((section(".iwram"), target("arm"), noinline)) static u32
-Read_SD_sectors(u32 address, u16 count, u8* SDbuffer) {
+inline __attribute__((always_inline)) u32 Read_SD_sectors(u32 address,
+                                                          u16 count,
+                                                          u8* SDbuffer) {
   SD_Enable();
 
   u16 i;
   u16 blocks;
   u32 res;
-  u32 times = 2;
   for (i = 0; i < count; i += 4) {
     blocks = (count - i > 4) ? 4 : (count - i);
 
-  read_again:
     *(vu16*)0x9fe0000 = 0xd200;
     *(vu16*)0x8000000 = 0x1500;
     *(vu16*)0x8020000 = 0xd200;
@@ -84,11 +74,8 @@ Read_SD_sectors(u32 address, u16 count, u8* SDbuffer) {
     res = Wait_SD_Response();
     SD_Enable();
     if (res == 1) {
-      times--;
-      if (times) {
-        delay(5000);
-        goto read_again;
-      }
+      SD_Disable();
+      return 1;
     }
 
     dmaCopy((void*)0x9E00000, SDbuffer + i * 512, blocks * 512);
@@ -97,37 +84,8 @@ Read_SD_sectors(u32 address, u16 count, u8* SDbuffer) {
   return 0;
 }
 // --------------------------------------------------------------------
-static u32 EWRAM_CODE Write_SD_sectors(u32 address,
-                                       u16 count,
-                                       const u8* SDbuffer) {
-  SD_Enable();
-  SD_Read_state();
-  u16 i;
-  u16 blocks;
-  u32 res;
-  for (i = 0; i < count; i += 4) {
-    blocks = (count - i > 4) ? 4 : (count - i);
-
-    dmaCopy(SDbuffer + i * 512, (void*)0x9E00000, blocks * 512);
-    *(vu16*)0x9fe0000 = 0xd200;
-    *(vu16*)0x8000000 = 0x1500;
-    *(vu16*)0x8020000 = 0xd200;
-    *(vu16*)0x8040000 = 0x1500;
-    *(vu16*)0x9600000 = ((address + i) & 0x0000FFFF);
-    *(vu16*)0x9620000 = ((address + i) & 0xFFFF0000) >> 16;
-    *(vu16*)0x9640000 = 0x8000 + blocks;
-    *(vu16*)0x9fc0000 = 0x1500;
-
-    res = Wait_SD_Response();
-    if (res == 1)
-      return 1;
-  }
-  delay(3000);
-  SD_Disable();
-  return 0;
-}
-// --------------------------------------------------------------------
-static void EWRAM_CODE SetRompage(u16 page) {
+__attribute__((section(".iwram"), target("arm"), noinline)) void SetRompage(
+    u16 page) {
   *(vu16*)0x9fe0000 = 0xd200;
   *(vu16*)0x8000000 = 0x1500;
   *(vu16*)0x8020000 = 0xd200;
@@ -202,20 +160,6 @@ bool EWRAM_CODE _EZFO_readSectors(u32 address, u32 count, void* buffer) {
 #endif
   SetRompage(ROMPAGE_BOOTLOADER);
   const u32 result = Read_SD_sectors(address, count, buffer);
-  SetRompage(ROMPAGE_ROM);
-#if FLASHCARTIO_EZFO_DISABLE_IRQ != 0
-  REG_IME = ime;
-#endif
-  return result == 0;
-}
-
-bool EWRAM_CODE _EZFO_writeSectors(u32 address, u32 count, const void* buffer) {
-#if FLASHCARTIO_EZFO_DISABLE_IRQ != 0
-  u16 ime = REG_IME;
-  REG_IME = 0;
-#endif
-  SetRompage(ROMPAGE_BOOTLOADER);
-  const u32 result = Write_SD_sectors(address, count, buffer);
   SetRompage(ROMPAGE_ROM);
 #if FLASHCARTIO_EZFO_DISABLE_IRQ != 0
   REG_IME = ime;

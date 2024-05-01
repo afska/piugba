@@ -380,7 +380,7 @@ initialized:
     }
   }
 
-  if ($isMultiplayer || GameState.mods.trainingMode != TrainingModeOpts::tOFF)
+  if (shouldForceGSM())
     player_playGSM(song->audioPath.c_str());
   else
     player_play(song->audioPath.c_str());
@@ -623,6 +623,11 @@ void SongScene::animateWinnerLifeBar() {
 void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
+
+  if (shouldForceGSM() && active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+    usesVideo = false;
+    return;
+  }
 
   auto result = videoStore->load(song->videoPath, song->videoOffset);
   if (result == VideoStore::LoadResult::NO_FILE)
