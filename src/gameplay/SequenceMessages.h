@@ -158,4 +158,10 @@
   "modes, disable PS/2 input\r\n"      \
   "in the ADMIN MENU."
 
+#define HQ_AUDIO_REQUIRED         \
+  "HQ audio failed!\r\n"          \
+  "\r\n"                          \
+  "It is required when using\r\n" \
+  "videos on this flashcart.\r\n"
+
 #endif  // SEQUENCE_MESSAGES_H

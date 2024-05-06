@@ -8,7 +8,7 @@
 
 void player_init();
 void player_unload();
-void player_play(const char* name);
+bool player_play(const char* name);
 void player_playGSM(const char* name);
 void player_loop(const char* name);
 void player_seek(unsigned int msecs);

@@ -297,8 +297,9 @@ CODE_ROM void player_unload() {
   disable_audio_dma();
 }
 
-CODE_ROM void player_play(const char* name) {
+CODE_ROM bool player_play(const char* name) {
   loadFile(name, false);
+  return is_pcm;
 }
 
 CODE_ROM void player_playGSM(const char* name) {
