@@ -223,7 +223,8 @@ void SelectionScene::render() {
   }
 
   if (pendingAudio != "") {
-    player_playSfx(pendingAudio.c_str());
+    player_play(pendingAudio.c_str(),
+                isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
     pendingAudio = "";
   }
 

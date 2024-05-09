@@ -116,7 +116,8 @@ void StageBreakScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
-    player_playSfx(SOUND_STAGE_BREAK);
+    player_play(SOUND_STAGE_BREAK,
+                isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
     hasStarted = true;
   }
 

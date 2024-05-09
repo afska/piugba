@@ -296,30 +296,31 @@ u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
 
 void DanceGradeScene::playSound() {
   auto gradeType = isVs() ? miniGrades[0].get()->getType() : grade->getType();
+  auto forceGSM = isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA;
 
   switch (gradeType) {
     case GradeType::S: {
-      player_playSfx(SOUND_RANK_S);
+      player_play(SOUND_RANK_S, forceGSM);
       break;
     }
     case GradeType::A: {
-      player_playSfx(SOUND_RANK_A);
+      player_play(SOUND_RANK_A, forceGSM);
       break;
     }
     case GradeType::B: {
-      player_playSfx(SOUND_RANK_B);
+      player_play(SOUND_RANK_B, forceGSM);
       break;
     }
     case GradeType::C: {
-      player_playSfx(SOUND_RANK_C);
+      player_play(SOUND_RANK_C, forceGSM);
       break;
     }
     case GradeType::D: {
-      player_playSfx(SOUND_RANK_D);
+      player_play(SOUND_RANK_D, forceGSM);
       break;
     }
     case GradeType::F: {
-      player_playSfx(SOUND_RANK_F);
+      player_play(SOUND_RANK_F, forceGSM);
       break;
     }
     default: {
