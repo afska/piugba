@@ -90,7 +90,7 @@ void ControlsScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
-    player_play(SOUND_ENTER);
+    player_playSfx(SOUND_ENTER);
     hasStarted = true;
   }
 }
@@ -172,7 +172,7 @@ void ControlsScene::processCombo() {
 }
 
 void ControlsScene::advanceCombo() {
-  player_play(SOUND_STEP);
+  player_playSfx(SOUND_STEP);
   comboArrows[comboStep]->on();
   comboStep++;
 
@@ -186,7 +186,7 @@ void ControlsScene::resetCombo() {
   if (comboStep == 0)
     return;
 
-  player_play(SOUND_MOD);
+  player_playSfx(SOUND_MOD);
   pixelBlink->blink();
 
   comboStep = 0;

@@ -116,7 +116,7 @@ void StageBreakScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
-    player_play(SOUND_STAGE_BREAK);
+    player_playSfx(SOUND_STAGE_BREAK);
     hasStarted = true;
   }
 

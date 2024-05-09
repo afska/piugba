@@ -299,27 +299,27 @@ void DanceGradeScene::playSound() {
 
   switch (gradeType) {
     case GradeType::S: {
-      player_play(SOUND_RANK_S);
+      player_playSfx(SOUND_RANK_S);
       break;
     }
     case GradeType::A: {
-      player_play(SOUND_RANK_A);
+      player_playSfx(SOUND_RANK_A);
       break;
     }
     case GradeType::B: {
-      player_play(SOUND_RANK_B);
+      player_playSfx(SOUND_RANK_B);
       break;
     }
     case GradeType::C: {
-      player_play(SOUND_RANK_C);
+      player_playSfx(SOUND_RANK_C);
       break;
     }
     case GradeType::D: {
-      player_play(SOUND_RANK_D);
+      player_playSfx(SOUND_RANK_D);
       break;
     }
     case GradeType::F: {
-      player_play(SOUND_RANK_F);
+      player_playSfx(SOUND_RANK_F);
       break;
     }
     default: {

@@ -55,11 +55,11 @@ void AdminScene::loadBackground(u32 id) {
 }
 
 void AdminScene::printOptions() {
-#define PLAY_AND_END()       \
-  if (withSound) {           \
-    player_play(SOUND_STEP); \
-    withSound = false;       \
-  }                          \
+#define PLAY_AND_END()          \
+  if (withSound) {              \
+    player_playSfx(SOUND_STEP); \
+    withSound = false;          \
+  }                             \
   return;
 
   TextStream::instance().scrollNow(0, -2);

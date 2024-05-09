@@ -381,10 +381,11 @@ initialized:
   }
 
   if (shouldForceGSM()) {
-    player_playGSM(song->audioPath.c_str());
+    player_play(song->audioPath.c_str(), true);
   } else {
-    bool isPCM = player_play(song->audioPath.c_str());
-    if (!isPCM && usesVideo && active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+    bool isPCM = player_play(song->audioPath.c_str(), false);
+    if (!isPCM && usesVideo &&
+        active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
       unload();
       engine->transitionIntoScene(SEQUENCE_halt(HQ_AUDIO_REQUIRED),
                                   new PixelTransitionEffect());

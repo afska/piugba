@@ -80,7 +80,7 @@ class SelectionScene : public Scene {
   u32 blendCount = 0;
 
   inline void playNow(const char* name) {
-    player_play(name);
+    player_playSfx(name);
     pendingAudio = "";
     pendingSeek = 0;
   }

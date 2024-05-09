@@ -16,6 +16,7 @@
 #include "utils/gbfs/gbfs.h"
 
 #include "audio_store.h"
+#include "utils/flashcartio/flashcartio.h"
 
 #define TIMER_16MHZ 0
 #define FIFO_ADDR_A 0x040000a0
@@ -297,17 +298,17 @@ CODE_ROM void player_unload() {
   disable_audio_dma();
 }
 
-CODE_ROM bool player_play(const char* name) {
-  loadFile(name, false);
+CODE_ROM bool player_playSfx(const char* name) {
+  loadFile(name, active_flashcart == EZ_FLASH_OMEGA);
   return is_pcm;
 }
 
-CODE_ROM void player_playGSM(const char* name) {
-  loadFile(name, true);
+CODE_ROM bool player_play(const char* name, bool forceGSM) {
+  loadFile(name, forceGSM);
+  return is_pcm;
 }
 
-CODE_ROM void player_loop(const char* name) {
-  player_play(name);
+CODE_ROM void player_enableLoop() {
   PlaybackState.isLooping = true;
 }
 

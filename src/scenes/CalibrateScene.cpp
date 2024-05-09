@@ -187,7 +187,7 @@ void CalibrateScene::start() {
   SPRITE_hide(resetButton->get());
   SPRITE_hide(saveButton->get());
   printTitle();
-  player_play(SOUND_CALIBRATE);
+  player_playSfx(SOUND_CALIBRATE);
 }
 
 void CalibrateScene::finish() {

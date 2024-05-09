@@ -81,7 +81,7 @@ void SettingsScene::printOptions() {
       16);
 
   if (initialOption > 0) {
-    player_play(SOUND_STEP);
+    player_playSfx(SOUND_STEP);
     initialOption = false;
   }
 }

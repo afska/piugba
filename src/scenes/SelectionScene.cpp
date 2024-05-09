@@ -223,7 +223,7 @@ void SelectionScene::render() {
   }
 
   if (pendingAudio != "") {
-    player_play(pendingAudio.c_str());
+    player_playSfx(pendingAudio.c_str());
     pendingAudio = "";
   }
 

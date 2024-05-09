@@ -123,7 +123,7 @@ void DeathMixScene::processDifficultyChangeEvents() {
 
 void DeathMixScene::processMenuEvents() {
   if (multiplier->hasBeenPressedNow()) {
-    player_play(SOUND_MOD);
+    player_playSfx(SOUND_MOD);
     SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
   }
 
@@ -137,7 +137,7 @@ void DeathMixScene::processMenuEvents() {
 bool DeathMixScene::onDifficultyLevelChange(ArrowSelector* button,
                                             DifficultyLevel newValue) {
   if (button->hasBeenPressedNow()) {
-    player_play(SOUND_STEP);
+    player_playSfx(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
