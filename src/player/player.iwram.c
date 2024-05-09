@@ -45,7 +45,6 @@ Playback PlaybackState;
 //   The sample rate is 18157hz, linearly interpolated to 36314hz.
 //   Each GSM chunk is 33 bytes and represents 304 samples.
 //   Two chunks are copied per frame, filling the 608 entries of the buffer.
-//   Playback rate can be changed: 0.86, 0.73, 0.47, 1, 1.11, 1.26, 1.54.
 //   (This is one of the few combinations of sample rate / buffer size that
 //   time out perfectly in the 280896 cycles of a GBA frame)
 //   See: (JS code)
@@ -55,6 +54,7 @@ Playback PlaybackState;
 //           'timer =', 65536-(280896/i), '; buffer =',
 //           i, '; sample rate =', i*(1<<24)/280896, 'hz'
 //         );
+//   Playback rate can be changed: 0.86, 0.73, 0.47, 1, 1.11, 1.26, 1.54.
 // - In PCM s8 mode:
 //   Audio is taken from the flash cart's SD card (gba-flashcartio).
 //   The sample rate is 36314hz.
