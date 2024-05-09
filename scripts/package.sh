@@ -20,7 +20,7 @@ if [ ! -f "$DATA" ]; then
 fi
 
 KB=$((1024))
-MAX_ROM_SIZE_KB=$((32 * $KB - 256 - 1))
+MAX_ROM_SIZE_KB=$((32 * $KB - 1))
 INITIAL_REQUIRED_SIZE_KB=1024
 
 ROM_SIZE=$(wc -c < $FILE_INPUT)
