@@ -90,7 +90,7 @@ void ControlsScene::render() {
   if (!hasStarted) {
     BACKGROUND_enable(true, true, false, false);
     SPRITE_enable();
-    player_play(SOUND_ENTER);
+    player_playSfx(SOUND_ENTER);
     hasStarted = true;
   }
 }
@@ -102,9 +102,17 @@ void ControlsScene::setUpSpritesPalette() {
 }
 
 void ControlsScene::setUpBackground() {
-  backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_PALETTE);
-  bg = BACKGROUND_loadBackgroundFiles(fs, BG_CONTROLS_TILES, BG_CONTROLS_MAP,
-                                      ID_MAIN_BACKGROUND);
+  if (SAVEFILE_isUsingModernTheme()) {
+    backgroundPalette =
+        BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_MDRN_PALETTE);
+    bg = BACKGROUND_loadBackgroundFiles(
+        fs, BG_CONTROLS_MDRN_TILES, BG_CONTROLS_MDRN_MAP, ID_MAIN_BACKGROUND);
+  } else {
+    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_CONTROLS_PALETTE);
+    bg = BACKGROUND_loadBackgroundFiles(fs, BG_CONTROLS_TILES, BG_CONTROLS_MAP,
+                                        ID_MAIN_BACKGROUND);
+  }
+
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
@@ -135,7 +143,7 @@ void ControlsScene::setUpArrows() {
   comboArrows[1]->get()->moveTo(94, 142);
   comboArrows[2]->get()->moveTo(112, 142);
   comboArrows[3]->get()->moveTo(130, 142);
-  comboArrows[4]->get()->moveTo(148, 141);
+  comboArrows[4]->get()->moveTo(148, 142);
 }
 
 void ControlsScene::processKeys(u16 keys) {
@@ -164,7 +172,7 @@ void ControlsScene::processCombo() {
 }
 
 void ControlsScene::advanceCombo() {
-  player_play(SOUND_STEP);
+  player_playSfx(SOUND_STEP);
   comboArrows[comboStep]->on();
   comboStep++;
 
@@ -178,7 +186,7 @@ void ControlsScene::resetCombo() {
   if (comboStep == 0)
     return;
 
-  player_play(SOUND_MOD);
+  player_playSfx(SOUND_MOD);
   pixelBlink->blink();
 
   comboStep = 0;

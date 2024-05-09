@@ -20,7 +20,7 @@ const u32 FRACUMUL_0_90 = 3865470565;
 
 class Score {
  public:
-  Score(LifeBar* lifeBar, u8 playerId);
+  Score(LifeBar* lifeBar, u8 playerId, bool isLocal);
 
   inline u32 getPoints() { return points; }
   inline u32 getPercent() {
@@ -90,6 +90,7 @@ class Score {
   std::unique_ptr<Combo> combo;
   LifeBar* lifeBar;
   u8 playerId;
+  bool isLocal;
 
   int life = INITIAL_LIFE;
   bool hasMissCombo = false;
@@ -98,6 +99,7 @@ class Score {
   std::array<u32, FEEDBACK_TYPES_TOTAL> counters;
   u32 points = 0;
   u32 longNotes = 0;
+  u32 scaleStep = 0;
 
   bool updateLife(FeedbackType feedbackType);
   void updateCombo(FeedbackType feedbackType);

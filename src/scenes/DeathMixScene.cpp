@@ -87,6 +87,13 @@ void DeathMixScene::tick(u16 keys) {
 
   processDifficultyChangeEvents();
   processMenuEvents();
+
+  if (gradeBadge->getType() == GradeType::S)
+    EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                    BREATH_SCALE_LUT[animationFrame]);
+  animationFrame++;
+  if (animationFrame >= BREATH_STEPS)
+    animationFrame = 0;
 }
 
 void DeathMixScene::setUpSpritesPalette() {
@@ -116,7 +123,7 @@ void DeathMixScene::processDifficultyChangeEvents() {
 
 void DeathMixScene::processMenuEvents() {
   if (multiplier->hasBeenPressedNow()) {
-    player_play(SOUND_MOD);
+    player_playSfx(SOUND_MOD);
     SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
   }
 
@@ -130,7 +137,7 @@ void DeathMixScene::processMenuEvents() {
 bool DeathMixScene::onDifficultyLevelChange(ArrowSelector* button,
                                             DifficultyLevel newValue) {
   if (button->hasBeenPressedNow()) {
-    player_play(SOUND_STEP);
+    player_playSfx(SOUND_STEP);
 
     if (newValue == difficulty->getValue())
       return true;
@@ -153,6 +160,9 @@ void DeathMixScene::loadProgress() {
 
   progress->setValue(completed, total);
 
+  gradeBadge->get()->setDoubleSize(true);
+  gradeBadge->get()->setAffineId(AFFINE_BASE);
+
   if (completed == total) {
     auto gradeType = static_cast<GradeType>(
         SAVEFILE_read8(SRAM->deathMixProgress.grades[difficulty->getValue()]));
@@ -163,6 +173,8 @@ void DeathMixScene::loadProgress() {
     progress->show();
     gradeBadge->setType(GradeType::UNPLAYED);
   }
+
+  EFFECT_clearAffine();
 }
 
 void DeathMixScene::confirm(u16 keys) {

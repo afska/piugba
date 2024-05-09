@@ -22,10 +22,6 @@
 #define SD_MODE4 4
 #define SD_MODE8 6
 
-#define BI_SAV_EEP 16
-#define BI_SAV_SRM 32
-#define BI_SAV_FLA64 64
-#define BI_SAV_FLA128 80
 #define BI_SAV_BITS (BI_SAV_EEP | BI_SAV_FLA128 | BI_SAV_FLA64 | BI_SAV_SRM)
 #define BI_RAM_BNK_0 0
 #define BI_RAM_BNK_1 128

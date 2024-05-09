@@ -4,7 +4,10 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_numbers.h"
+#include "data/content/_compiled_sprites/spr_numbers_mdrn.h"
 #include "data/content/_compiled_sprites/spr_numbers_mini.h"
+#include "data/content/_compiled_sprites/spr_numbers_mini_mdrn.h"
+#include "gameplay/save/SaveFile.h"
 #include "utils/SpriteUtils.h"
 
 const u32 DIGIT_WIDTHS[] = {26, 19};
@@ -15,14 +18,23 @@ Digit::Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles) {
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
-  sprite = builder
-               .withData(size == DigitSize::BIG ? spr_numbersTiles
-                                                : spr_numbers_miniTiles,
-                         size == DigitSize::BIG ? sizeof(spr_numbersTiles)
-                                                : sizeof(spr_numbers_miniTiles))
-               .withSize(SIZE_32_16)
-               .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
-               .buildPtr();
+  sprite =
+      builder
+          .withData(
+              size == DigitSize::BIG
+                  ? (SAVEFILE_isUsingModernTheme() ? spr_numbers_mdrnTiles
+                                                   : spr_numbersTiles)
+                  : (SAVEFILE_isUsingModernTheme() ? spr_numbers_mini_mdrnTiles
+                                                   : spr_numbers_miniTiles),
+              size == DigitSize::BIG ? (SAVEFILE_isUsingModernTheme()
+                                            ? sizeof(spr_numbers_mdrnTiles)
+                                            : sizeof(spr_numbersTiles))
+                                     : (SAVEFILE_isUsingModernTheme()
+                                            ? sizeof(spr_numbers_mini_mdrnTiles)
+                                            : sizeof(spr_numbers_miniTiles)))
+          .withSize(SIZE_32_16)
+          .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
+          .buildPtr();
 
   if (reuseTiles || index > 0)
     SPRITE_reuseTiles(sprite.get());

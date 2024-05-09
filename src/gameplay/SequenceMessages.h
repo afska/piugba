@@ -66,7 +66,7 @@
   "How to use Training Mode:\r\n" \
   "- Speed: START/SELECT\r\n"     \
   "- Rate: B + START/SELECT\r\n"  \
-  "- Fast-forward: A + START"
+  "- Seek: A + START/SELECT"
 
 #define COOP_HINT             \
   "       CO-OP LEVEL\r\n"    \
@@ -106,39 +106,33 @@
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_CRASH \
-  "Video activation failed!\r\n"      \
+  "HQ mode disabled!\r\n"             \
   " -> it crashed :/\r\n"             \
   "\r\n"                              \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_NO_FLASHCART \
-  "Video activation failed!\r\n"             \
-  " -> no EverDrive found\r\n"               \
+  "HQ mode disabled!\r\n"                    \
+  " -> no flashcart found\r\n"               \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_FAILED_MOUNT_FAILED \
-  "Video activation failed!\r\n"             \
+  "HQ mode disabled!\r\n"                    \
   " -> FAT mount error\r\n"                  \
   "\r\n"                                     \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_ACTIVATION_SUCCESS \
-  "Videos are now enabled!\r\n"  \
+  "HQ mode is now enabled!\r\n"  \
   "\r\n"                         \
   "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
 #define VIDEO_DEACTIVATION_SUCCESS \
-  "Videos are now disabled!\r\n"   \
+  "HQ mode is now disabled!\r\n"   \
   "\r\n"                           \
   "\r\n"                           \
-  "=> Press A+B+START+SELECT"
-
-#define VIDEO_READING_FAILED     \
-  "Error reading SD card :(\r\n" \
-  "Videos are now disabled.\r\n" \
-  "\r\n"                         \
   "=> Press A+B+START+SELECT"
 
 #define EWRAM_OVERCLOCK_ENABLED \
@@ -163,5 +157,11 @@
   "To use the multiplayer\r\n"         \
   "modes, disable PS/2 input\r\n"      \
   "in the ADMIN MENU."
+
+#define HQ_AUDIO_REQUIRED         \
+  "HQ audio failed!\r\n"          \
+  "\r\n"                          \
+  "It is required when using\r\n" \
+  "videos on this flashcart.\r\n"
 
 #endif  // SEQUENCE_MESSAGES_H

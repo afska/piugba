@@ -12,19 +12,28 @@ rm $DESTINATION/*.h $DESTINATION/*.c
 # SongScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_combo.bmp \
+  spr_combo_mdrn.bmp \
   spr_numbers.bmp \
+  spr_numbers_mdrn.bmp \
   spr_feedback.bmp \
+  spr_feedback_mdrn.bmp \
   spr_lifebar.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_song.c
+  spr_lifebar_mdrn.bmp \
+  -ftc -pS -gB8 -gT ff00fd -O palette_song.c
 mv *.h *.c "$DESTINATION"
 
 # SelectionScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
   spr_arrows_alt_keys.bmp \
   spr_combo.bmp \
+  spr_combo_mdrn.bmp \
   spr_numbers.bmp \
+  spr_numbers_mdrn.bmp \
   spr_difficulties.bmp \
   spr_of.bmp \
   spr_multipliers.bmp \
@@ -32,10 +41,8 @@ grit \
   spr_channels.bmp \
   spr_lock.bmp \
   spr_level.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_selection.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_selection.c
 mv \
-  spr_arrows_alt_keys.h \
-  spr_arrows_alt_keys.c \
   spr_difficulties.h \
   spr_difficulties.c \
   spr_of.h \
@@ -56,9 +63,11 @@ mv \
 # StartScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_buttons.bmp \
   spr_buttons_mini.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_start.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_start.c
 mv \
   spr_buttons.h \
   spr_buttons.c \
@@ -70,8 +79,10 @@ mv \
 # ControlsScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_controls.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_controls.c
 mv \
   spr_instructors.h \
   spr_instructors.c \
@@ -81,8 +92,10 @@ mv \
 # StageBreakScene
 grit \
   spr_arrows.bmp \
+  spr_arrows_mdrn.bmp \
+  spr_arrows_alt_keys.bmp \
   spr_instructors.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_break.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_break.c
 mv \
   palette_break.* \
   "$DESTINATION"
@@ -90,11 +103,14 @@ mv \
 # DanceGradeScene (single player)
 grit \
   spr_numbers_mini.bmp \
+  spr_numbers_mini_mdrn.bmp \
   spr_grade_*.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_grade.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_grade.c
 mv \
   spr_numbers_mini.h \
   spr_numbers_mini.c \
+  spr_numbers_mini_mdrn.h \
+  spr_numbers_mini_mdrn.c \
   spr_grade_*.h \
   spr_grade_*.c \
   palette_grade.* \
@@ -103,11 +119,10 @@ mv \
 # DanceGradeScene (multi player)
 grit \
   spr_numbers_mini.bmp \
+  spr_numbers_mini_mdrn.bmp \
   spr_grades_mini_evaluation.bmp \
-  -ftc -pS -gB8 -gT ff00ff -O palette_grade_multi.c
+  -ftc -pS -gB8 -gT ff00fd -O palette_grade_multi.c
 mv \
-  spr_numbers_mini.h \
-  spr_numbers_mini.c \
   spr_grades_mini_evaluation.h \
   spr_grades_mini_evaluation.c \
   palette_grade_multi.* \

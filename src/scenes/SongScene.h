@@ -24,6 +24,14 @@ extern "C" {
 #include "utils/gbfs/gbfs.h"
 }
 
+struct RewindState {
+  u32 rewindPoint = 0;
+  u32 multiplier = 3;
+  u32 rate = 1;
+  bool isInitializing = false;
+  bool isRewinding = false;
+};
+
 class SongScene : public Scene {
  public:
   explicit SongScene(std::shared_ptr<GBAEngine> engine,
@@ -31,7 +39,8 @@ class SongScene : public Scene {
                      Song* song,
                      Chart* chart,
                      Chart* remoteChart = NULL,
-                     std::unique_ptr<DeathMix> deathMix = NULL);
+                     std::unique_ptr<DeathMix> deathMix = NULL,
+                     RewindState rewindState = RewindState{});
 
   std::vector<Background*> backgrounds() override;
   std::vector<Sprite*> sprites() override;
@@ -68,7 +77,8 @@ class SongScene : public Scene {
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
       $isVsDifferentLevels, $ps2Input, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
-      localPlayerId;
+      localPlayerId, rumbleTotalFrames, rumblePreRollFrames,
+      rumbleIdleCyclePeriod;
   int rate = 0;
   u32 blinkFrame = 0;
   u8 targetMosaic = 0;
@@ -78,12 +88,13 @@ class SongScene : public Scene {
   int reduceDirection = 1;
   int bounceDirection = -1;
   int rumbleBeatFrame = -1;
-  int rumbleIdleFrame = 0;
+  u32 rumbleIdleFrame = 0;
   u32 autoModDuration = 1;
   u32 autoModCounter = 0;
   u32 lastDownLeftKeys = 0;
   u32 lastUpLeftKeys = 0;
   u32 lastCenterKeys = 0;
+  RewindState rewindState;
 
   inline void setUpGameConfig() {
     $isMultiplayer = isMultiplayer();
@@ -92,6 +103,7 @@ class SongScene : public Scene {
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
     $ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+
     usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
     playerCount = 1 + isVs();
@@ -100,6 +112,16 @@ class SongScene : public Scene {
                          : 0;
     remoteBaseIndex = getBaseIndexFromPlayerId(syncer->getRemotePlayerId());
     localPlayerId = isVs() ? syncer->getLocalPlayerId() : 0;
+
+    u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+    rumbleTotalFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+    rumblePreRollFrames = RUMBLE_PREROLL(rumbleOpts);
+    rumbleIdleCyclePeriod = RUMBLE_IDLE(rumbleOpts);
+  }
+
+  inline bool shouldForceGSM() {
+    return $isMultiplayer ||
+           GameState.mods.trainingMode != TrainingModeOpts::tOFF;
   }
 
   inline ArrowDirection getDirectionFromIndex(u32 index) {
@@ -150,6 +172,9 @@ class SongScene : public Scene {
   void processTrainingModeMod();
   void processMultiplayerUpdates();
   bool setRate(int rate);
+  void startSeek(u32 msecs);
+  void endSeek(u32 previousMultiplier);
+  bool seek(u32 msecs);
 
   void unload();
 };

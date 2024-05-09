@@ -136,7 +136,8 @@ void StartScene::render() {
     printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
-    player_loop(SOUND_LOOP);
+    player_playSfx(SOUND_LOOP);
+    player_enableLoop();
     hasStarted = true;
   }
 }

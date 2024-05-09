@@ -68,7 +68,7 @@ module.exports = class SongSerializer {
         TMP.chart = chart;
 
         const events = chart.events;
-        const [rythmEvents, normalEvents] = _.partition(
+        const [rhythmEvents, normalEvents] = _.partition(
           events,
           (it) =>
             it.type === Events.SET_TEMPO || it.type === Events.SET_TICKCOUNT
@@ -84,7 +84,7 @@ module.exports = class SongSerializer {
           .UInt8(chart.header.offsetLabel.charCodeAt(0))
           .UInt8(chart.header.isMultiplayer ? 2 : chart.header.isDouble ? 1 : 0)
           .UInt32LE(4 * 2 /* (eventCounts) */ + eventChunkSize)
-          .EventArray(rythmEvents)
+          .EventArray(rhythmEvents)
           .EventArray(normalEvents);
       },
     });

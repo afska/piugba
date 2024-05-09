@@ -45,6 +45,7 @@ inline void SCENE_init() {
   SPRITE_disable();
   EFFECT_turnOffBlend();
   EFFECT_turnOffMosaic();
+  EFFECT_clearAffine();
   EFFECT_render();
   TextStream::instance().scrollNow(0, 0);
   TextStream::instance().setMosaic(false);
@@ -98,8 +99,11 @@ inline void SCENE_overclockEWRAM() {
 inline void SCENE_softReset() {
   REG_IME = 0;
 
-  if (IS_FLASHCART_UNLOCKED)
-    flashcartio_lock();
+  if (flashcartio_is_reading) {
+    flashcartio_needs_reset = true;
+    flashcartio_reset_callback = []() { SCENE_softReset(); };
+    return;
+  }
 
   while (REG_VCOUNT >= 160)
     ;  // wait till VDraw

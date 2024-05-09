@@ -4,6 +4,7 @@
 #include <libgba-sprite-engine/sprites/sprite_builder.h>
 
 #include "data/content/_compiled_sprites/spr_feedback.h"
+#include "data/content/_compiled_sprites/spr_feedback_mdrn.h"
 #include "gameplay/multiplayer/Syncer.h"
 #include "objects/ArrowInfo.h"
 #include "utils/SpriteUtils.h"
@@ -17,7 +18,12 @@ Feedback::Feedback(u8 playerId) {
   relocate();
 
   SpriteBuilder<Sprite> builder;
-  sprite = builder.withData(spr_feedbackTiles, sizeof(spr_feedbackTiles))
+  sprite = builder
+               .withData(SAVEFILE_isUsingModernTheme() ? spr_feedback_mdrnTiles
+                                                       : spr_feedbackTiles,
+                         SAVEFILE_isUsingModernTheme()
+                             ? sizeof(spr_feedback_mdrnTiles)
+                             : sizeof(spr_feedbackTiles))
                .withSize(SIZE_64_32)
                .withLocation(HIDDEN_WIDTH, HIDDEN_HEIGHT)
                .buildPtr();

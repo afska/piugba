@@ -17,8 +17,10 @@ extern "C" {
 #define SCORE_TITLE "Score:"
 #define PLAYER_1_WINS "Player 1 *WINS*"
 #define PLAYER_2_WINS "Player 2 *WINS*"
+#define GAME_TIED "Game *TIED*"
 #define PLAYER_1_ARROW "<<<"
 #define PLAYER_2_ARROW ">>>"
+#define GAME_TIED_ARROW "(!)"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
@@ -111,6 +113,10 @@ void DanceGradeScene::load() {
         new GradeBadge(MINI_GRADE_X[remoteId], MINI_GRADE_Y, true, true)};
     miniGrades[0]->setType(evaluation->getGrade());
     miniGrades[1]->setType(remoteEvaluation->getGrade());
+    miniGrades[0]->get()->setDoubleSize(true);
+    miniGrades[0]->get()->setAffineId(AFFINE_BASE);
+    miniGrades[1]->get()->setDoubleSize(true);
+    miniGrades[1]->get()->setAffineId(AFFINE_BASE + 1);
 
     for (u32 i = 0; i < remoteTotals.size(); i++)
       remoteTotals[i] = std::unique_ptr<Total>{
@@ -124,9 +130,12 @@ void DanceGradeScene::load() {
     remoteTotals[FeedbackType::BAD]->setValue(remoteEvaluation->bads);
     remoteTotals[FeedbackType::MISS]->setValue(remoteEvaluation->misses);
     remoteMaxComboTotal->setValue(remoteEvaluation->maxCombo);
-  } else
+  } else {
     grade = std::unique_ptr<Grade>{
         new Grade(evaluation->getGrade(), GRADE_X, GRADE_Y)};
+    grade->get()->setDoubleSize(true);
+    grade->get()->setAffineId(AFFINE_BASE);
+  }
 }
 
 void DanceGradeScene::tick(u16 keys) {
@@ -155,6 +164,22 @@ void DanceGradeScene::tick(u16 keys) {
 
     finish();
   }
+
+  if (isVs()) {
+    if (miniGrades[0]->getType() == GradeType::S)
+      EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+    if (miniGrades[1]->getType() == GradeType::S)
+      EFFECT_setScale(1, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  } else {
+    if (grade->getType() == GradeType::S)
+      EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  }
+  animationFrame++;
+  if (animationFrame >= BREATH_STEPS)
+    animationFrame = 0;
 }
 
 void DanceGradeScene::render() {
@@ -178,13 +203,28 @@ void DanceGradeScene::setUpSpritesPalette() {
 
 void DanceGradeScene::setUpBackground() {
   if (isVs()) {
-    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_PALETTE);
-    bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_MULTI_TILES,
-                                        BG_GRADE_MULTI_MAP, ID_MAIN_BACKGROUND);
+    if (SAVEFILE_isUsingModernTheme()) {
+      backgroundPalette =
+          BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_MDRN_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_MULTI_MDRN_TILES,
+                                          BG_GRADE_MULTI_MDRN_MAP,
+                                          ID_MAIN_BACKGROUND);
+    } else {
+      backgroundPalette =
+          BACKGROUND_loadPaletteFile(fs, BG_GRADE_MULTI_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(
+          fs, BG_GRADE_MULTI_TILES, BG_GRADE_MULTI_MAP, ID_MAIN_BACKGROUND);
+    }
   } else {
-    backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
-    bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP,
-                                        ID_MAIN_BACKGROUND);
+    if (SAVEFILE_isUsingModernTheme()) {
+      backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_MDRN_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(
+          fs, BG_GRADE_MDRN_TILES, BG_GRADE_MDRN_MAP, ID_MAIN_BACKGROUND);
+    } else {
+      backgroundPalette = BACKGROUND_loadPaletteFile(fs, BG_GRADE_PALETTE);
+      bg = BACKGROUND_loadBackgroundFiles(fs, BG_GRADE_TILES, BG_GRADE_MAP,
+                                          ID_MAIN_BACKGROUND);
+    }
   }
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
@@ -212,12 +252,15 @@ void DanceGradeScene::printScore() {
     auto player1Points = getMultiplayerPointsOf(player1Evaluation);
     auto player2Points = getMultiplayerPointsOf(player2Evaluation);
 
-    if (player1Points >= player2Points) {
+    if (player1Points > player2Points) {
       SCENE_write(PLAYER_1_WINS, TEXT_ROW);
       SCENE_write(PLAYER_1_ARROW, TEXT_ROW + 1);
-    } else {
+    } else if (player2Points > player1Points) {
       SCENE_write(PLAYER_2_WINS, TEXT_ROW);
       SCENE_write(PLAYER_2_ARROW, TEXT_ROW + 1);
+    } else {
+      SCENE_write(GAME_TIED, TEXT_ROW);
+      SCENE_write(GAME_TIED_ARROW, TEXT_ROW + 1);
     }
 
     if (differentCharts) {
@@ -253,30 +296,31 @@ u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
 
 void DanceGradeScene::playSound() {
   auto gradeType = isVs() ? miniGrades[0].get()->getType() : grade->getType();
+  auto forceGSM = isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA;
 
   switch (gradeType) {
     case GradeType::S: {
-      player_play(SOUND_RANK_S);
+      player_play(SOUND_RANK_S, forceGSM);
       break;
     }
     case GradeType::A: {
-      player_play(SOUND_RANK_A);
+      player_play(SOUND_RANK_A, forceGSM);
       break;
     }
     case GradeType::B: {
-      player_play(SOUND_RANK_B);
+      player_play(SOUND_RANK_B, forceGSM);
       break;
     }
     case GradeType::C: {
-      player_play(SOUND_RANK_C);
+      player_play(SOUND_RANK_C, forceGSM);
       break;
     }
     case GradeType::D: {
-      player_play(SOUND_RANK_D);
+      player_play(SOUND_RANK_D, forceGSM);
       break;
     }
     case GradeType::F: {
-      player_play(SOUND_RANK_F);
+      player_play(SOUND_RANK_F, forceGSM);
       break;
     }
     default: {

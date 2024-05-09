@@ -91,19 +91,19 @@ Song* SONG_parse(const GBFS_FILE* fs,
     bool shouldParseEvents = VECTOR_contains(chartIndexes, i);
     if (!shouldParseEvents) {
       cursor += chart->eventChunkSize;
-      chart->rythmEventCount = 0;
+      chart->rhythmEventCount = 0;
       chart->eventCount = 0;
       continue;
     }
 
-    chart->rythmEventCount = parse_u32le(data, &cursor);
-    chart->rythmEvents = chartAllocations[slot].events;
-    song->totalSize += sizeof(Event) * chart->rythmEventCount;
-    parseEvents(chart->rythmEvents, chart->rythmEventCount, chart->isDouble,
+    chart->rhythmEventCount = parse_u32le(data, &cursor);
+    chart->rhythmEvents = chartAllocations[slot].events;
+    song->totalSize += sizeof(Event) * chart->rhythmEventCount;
+    parseEvents(chart->rhythmEvents, chart->rhythmEventCount, chart->isDouble,
                 data, &cursor);
 
     chart->eventCount = parse_u32le(data, &cursor);
-    chart->events = chartAllocations[slot].events + chart->rythmEventCount;
+    chart->events = chartAllocations[slot].events + chart->rhythmEventCount;
     song->totalSize += sizeof(Event) * chart->eventCount;
     parseEvents(chart->events, chart->eventCount, chart->isDouble, data,
                 &cursor);

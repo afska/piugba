@@ -35,7 +35,8 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
-  char padding[10];
+  char padding[5];
+  u32 globalOffset;
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -45,7 +46,6 @@ typedef struct __attribute__((__packed__)) {
   u8 doubleArcadeProgress[ARCADE_PROGRESS_SIZE];
 
   AdminSettings adminSettings;
-  char padding2[2];
 
   bool isBonusMode;
   u32 randomSeed;
@@ -79,6 +79,7 @@ inline void SAVEFILE_resetSettings() {
   SAVEFILE_write8(SRAM->settings.gamePosition, GamePosition::LEFT);
   SAVEFILE_write8(SRAM->settings.backgroundType, BackgroundType::FULL_BGA_DARK);
   SAVEFILE_write8(SRAM->settings.bgaDarkBlink, true);
+  SAVEFILE_write8(SRAM->settings.theme, Theme::CLASSIC);
 }
 
 inline void SAVEFILE_resetMods() {
@@ -96,6 +97,13 @@ inline void SAVEFILE_resetMods() {
   SAVEFILE_write8(SRAM->mods.trainingMode, TrainingModeOpts::tOFF);
 }
 
+inline void SAVEFILE_resetRumble() {
+  u8 rumbleOpts = RUMBLE_OPTS_BUILD(2, 5);
+
+  SAVEFILE_write8(SRAM->adminSettings.rumbleFrames, 4);
+  SAVEFILE_write8(SRAM->adminSettings.rumbleOpts, rumbleOpts);
+}
+
 inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::rCARTRIDGE);
@@ -108,6 +116,8 @@ inline void SAVEFILE_resetAdminSettings() {
                   BackgroundVideosOpts::dOFF);
   SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
   SAVEFILE_write8(SRAM->adminSettings.ps2Input, false);
+  SAVEFILE_write32(SRAM->globalOffset, 0);
+  SAVEFILE_resetRumble();
 
 #ifdef SENV_DEVELOPMENT
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
@@ -123,8 +133,9 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 gamePosition = SAVEFILE_read8(SRAM->settings.gamePosition);
   u8 backgroundType = SAVEFILE_read8(SRAM->settings.backgroundType);
   u8 bgaDarkBlink = SAVEFILE_read8(SRAM->settings.bgaDarkBlink);
+  u8 theme = SAVEFILE_read8(SRAM->settings.theme);
   if (audioLag < -3000 || audioLag > 3000 || gamePosition >= 3 ||
-      backgroundType >= 3 || bgaDarkBlink >= 2) {
+      backgroundType >= 3 || bgaDarkBlink >= 2 || theme >= 2) {
     SAVEFILE_resetSettings();
     fixes |= 1;
   }
@@ -194,9 +205,16 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
   u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
   u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
+  u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
+  int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
-      backgroundVideos >= 3 || ewramOverclock >= 2 || ps2Input >= 2) {
+      backgroundVideos >= 5 || ewramOverclock >= 2 || ps2Input >= 2 ||
+      rumbleFrames == 0 || rumbleFrames >= 9 ||
+      RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
+      RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
+      globalOffset < -3000 || globalOffset > 3000 || (globalOffset & 7) != 0) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
@@ -249,6 +267,11 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
   if (isBonusMode >= 2)
     SAVEFILE_write8(SRAM->isBonusMode, false);
+
+  if (fixes > 0) {
+    // if something was fixed, reset custom offset, just in case
+    SAVEFILE_write32(SRAM->globalOffset, 0);
+  }
 
   return fixes;
 }
@@ -313,6 +336,11 @@ inline bool SAVEFILE_isWorking(const GBFS_FILE* fs) {
 inline u32 SAVEFILE_bonusCount(const GBFS_FILE* fs) {
   auto count = (u8*)gbfs_get_obj(fs, BONUS_COUNT_FILE, NULL);
   return count != NULL ? as_le(count) : 0;
+}
+
+inline bool SAVEFILE_isUsingModernTheme() {
+  return static_cast<Theme>(SAVEFILE_read8(SRAM->settings.theme)) ==
+         Theme::MODERN;
 }
 
 inline bool SAVEFILE_isUsingGBAStyle() {
@@ -504,6 +532,7 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
 }
 
 inline void SAVEFILE_resetOffsets() {
+  SAVEFILE_write32(SRAM->globalOffset, 0);
   OFFSET_initialize();
 }
 

@@ -159,8 +159,10 @@ void SelectionScene::tick(u16 keys) {
 
   processKeys(keys);
 
-  if (pixelBlink->tick() && isCrossingPage)
-    stopPageCross();
+  if (isCrossingPage == 2)
+    stopPageCross2();
+  if (pixelBlink->tick() && isCrossingPage == 1)
+    stopPageCross1();
   for (auto& it : arrowSelectors)
     it->tick();
   multiplier->tick();
@@ -181,9 +183,22 @@ void SelectionScene::tick(u16 keys) {
   processConfirmEvents();
   processMenuEvents();
 
-  blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
-                   HIGHLIGHTER_OPACITY);
+  blendCount++;
+  if (blendCount == 2) {
+    blendAlpha = max(min(blendAlpha + (confirmed ? 1 : -1), MAX_OPACITY),
+                     HIGHLIGHTER_OPACITY);
+    blendCount = 0;
+  }
   EFFECT_setBlendAlpha(blendAlpha);
+
+  for (u32 i = 0; i < PAGE_SIZE; i++) {
+    if (gradeBadges[i]->getType() == GradeType::S)
+      EFFECT_setScale(i, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+  }
+  animationFrame++;
+  if (animationFrame >= BREATH_STEPS)
+    animationFrame = 0;
 }
 
 void SelectionScene::render() {
@@ -199,14 +214,17 @@ void SelectionScene::render() {
       VBlankIntrWait();
     }
 
+    highlighter->initialize(selected);
+    EFFECT_setBlendAlpha(blendAlpha);
+    EFFECT_render();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
-    highlighter->initialize(selected);
     init++;
   }
 
   if (pendingAudio != "") {
-    player_play(pendingAudio.c_str());
+    player_play(pendingAudio.c_str(),
+                isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
     pendingAudio = "";
   }
 
@@ -223,8 +241,6 @@ void SelectionScene::setUpSpritesPalette() {
 }
 
 void SelectionScene::setUpBackground() {
-  VBlankIntrWait();
-  // ---
   auto backgroundFile = library->getPrefix() + std::to_string(getPageStart());
   auto backgroundPaletteFile = backgroundFile + BACKGROUND_PALETTE_EXTENSION;
   auto backgroundTilesFile = backgroundFile + BACKGROUND_TILES_EXTENSION;
@@ -245,8 +261,6 @@ void SelectionScene::setUpBackground() {
 
   loadChannels();
   loadProgress();
-  // ---
-  VBlankIntrWait();
 }
 
 void SelectionScene::setUpArrows() {
@@ -299,6 +313,8 @@ void SelectionScene::setUpGradeBadges() {
     gradeBadges.push_back(std::unique_ptr<GradeBadge>{
         new GradeBadge(GRADE_BADGE_X[i], GRADE_BADGE_Y, i > 0, false)});
     gradeBadges[i]->get()->setPriority(ID_MAIN_BACKGROUND);
+    gradeBadges[i]->get()->setDoubleSize(true);
+    gradeBadges[i]->get()->setAffineId(AFFINE_BASE + i);
   }
 }
 
@@ -464,7 +480,7 @@ void SelectionScene::processConfirmEvents() {
 
 void SelectionScene::processMenuEvents() {
   if (isMultiplayer()) {
-    if (syncer->isMaster() && multiplier->hasBeenPressedNow()) {
+    if (multiplier->hasBeenPressedNow()) {
       syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
       quit();
     }
@@ -747,14 +763,19 @@ void SelectionScene::setPage(u32 page, int direction) {
 }
 
 void SelectionScene::startPageCross(int direction) {
-  this->isCrossingPage = true;
+  pendingAudio = "";
+  pendingSeek = 0;
+  this->isCrossingPage = 1;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
-  highlighter->select(selected);
   pixelBlink->blink();
 }
 
-void SelectionScene::stopPageCross() {
+void SelectionScene::stopPageCross1() {
   setUpBackground();
+  this->isCrossingPage = 2;
+}
+
+void SelectionScene::stopPageCross2() {
   updateSelection();
   this->isCrossingPage = false;
 }
@@ -783,6 +804,8 @@ void SelectionScene::loadProgress() {
     locks[i]->setVisible(songIndex > getLastUnlockedSongIndex() &&
                          songIndex <= count - 1);
   }
+
+  EFFECT_clearAffine();
 }
 
 void SelectionScene::setNames(std::string title, std::string artist) {
@@ -844,6 +867,8 @@ void SelectionScene::loadSelectedSongGrade() {
                             selectedSongId, getSelectedNumericLevelIndex())
                       : GradeType::UNPLAYED);
   }
+
+  EFFECT_clearAffine();
 }
 
 void SelectionScene::processMultiplayerUpdates() {

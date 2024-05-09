@@ -14,6 +14,8 @@ extern "C" {
 #include "player/player.h"
 }
 
+#define CODE_EWRAM __attribute__((section(".ewram")))
+
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
@@ -75,8 +77,8 @@ int main() {
         if (ps2Keyboard->softReset)
           SCENE_softReset();
 
-        engine->render();
         EFFECT_render();
+        engine->render();
       },
       [](u32 current) {
         // (onAudioChunk)
@@ -91,14 +93,15 @@ int main() {
           LOGN(syncer->$currentAudioChunk, 0);
 #endif
         }
-      });
+      },
+      []() { SCENE_softReset(); });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 
   return 0;
 }
 
-void ISR_reset() {
+CODE_EWRAM void ISR_reset() {
   if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
     return;

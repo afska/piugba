@@ -17,6 +17,7 @@ ChartReader::ChartReader(Chart* chart,
                          Judge* judge,
                          PixelBlink* pixelBlink,
                          int audioLag,
+                         int globalOffset,
                          u32 multiplier) {
   this->chart = chart;
   this->playerId = playerId;
@@ -25,7 +26,7 @@ ChartReader::ChartReader(Chart* chart,
   this->pixelBlink = pixelBlink;
   this->audioLag = audioLag;
   this->rateAudioLag = audioLag;
-  this->customOffset = chart->customOffset;
+  this->customOffset = chart->customOffset + globalOffset;
 
   holdArrows = std::unique_ptr<ObjectPool<HoldArrow>>{new ObjectPool<HoldArrow>(
       HOLD_ARROW_POOL_SIZE * (1 + chart->isDouble),
@@ -41,7 +42,7 @@ ChartReader::ChartReader(Chart* chart,
 };
 
 CODE_IWRAM bool ChartReader::update(int songMsecs) {
-  int rythmMsecs = songMsecs - rateAudioLag + customOffset - lastBpmChange;
+  int rhythmMsecs = songMsecs - rateAudioLag + customOffset - lastBpmChange;
   msecs =
       songMsecs - rateAudioLag + customOffset - (int)stoppedMs + (int)warpedMs;
 
@@ -56,17 +57,17 @@ CODE_IWRAM bool ChartReader::update(int songMsecs) {
         asyncStoppedMs = stopAsyncStoppedTime;
     } else {
       if (stopAsync)
-        processRythmEvents();
+        processRhythmEvents();
       processNextEvents(stopStart);
       orchestrateHoldArrows();
-      return processTicks(rythmMsecs, false);
+      return processTicks(rhythmMsecs, false);
     }
   }
 
-  processRythmEvents();
+  processRhythmEvents();
   processNextEvents(msecs);
   orchestrateHoldArrows();
-  return processTicks(rythmMsecs, true);
+  return processTicks(rhythmMsecs, true);
 }
 
 CODE_IWRAM int ChartReader::getYFor(Arrow* arrow) {
@@ -122,9 +123,9 @@ CODE_IWRAM int ChartReader::getYFor(int timestamp) {
              ARROW_INITIAL_Y);
 }
 
-CODE_IWRAM void ChartReader::processRythmEvents() {
+CODE_IWRAM void ChartReader::processRhythmEvents() {
   processEvents(
-      chart->rythmEvents, chart->rythmEventCount, rythmEventIndex,
+      chart->rhythmEvents, chart->rhythmEventCount, rhythmEventIndex,
       msecs + (int)asyncStoppedMs,
       [this](EventType type, Event* event, bool* stop) {
         if (type == EventType::SET_TEMPO) {
@@ -383,20 +384,20 @@ CODE_IWRAM void ChartReader::orchestrateHoldArrows() {
   });
 }
 
-CODE_IWRAM bool ChartReader::processTicks(int rythmMsecs,
+CODE_IWRAM bool ChartReader::processTicks(int rhythmMsecs,
                                           bool checkHoldArrows) {
   if (bpm == 0)
     return false;
 
   // 60000 ms           -> BPM beats
-  // rythmMsecs ms      -> beat = rythmMsecs * BPM / 60000
+  // rhythmMsecs ms      -> beat = rhythmMsecs * BPM / 60000
 
-  int beat = MATH_fracumul(rythmMsecs * bpm, FRACUMUL_DIV_BY_MINUTE);
+  int beat = MATH_fracumul(rhythmMsecs * bpm, FRACUMUL_DIV_BY_MINUTE);
   bool isNewBeat = beat != lastBeat;
   lastBeat = beat;
 
   int tick =
-      MATH_fracumul(rythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
+      MATH_fracumul(rhythmMsecs * bpm * tickCount, FRACUMUL_DIV_BY_MINUTE);
   bool isNewTick = tick != lastTick;
   lastTick = tick;
 

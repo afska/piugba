@@ -62,14 +62,14 @@ bool bi_init_sd_only() {
   return true;
 }
 
-// [!] tweaked for piuGBA
 void bi_init() {
   // regs read on, switch from boot rom to psram, psram write on, big rom (32MB)
-  cart_cfg = CFG_REGS_ON | CFG_NROM_RAM | CFG_ROM_WE_ON | CFG_BIG_ROM;
+  cart_cfg = CFG_REGS_ON | CFG_NROM_RAM | CFG_ROM_WE_ON |
+             (FLASHCARTIO_ED_BIG_ROM ? CFG_BIG_ROM : 0);
 
   bi_reg_wr(REG_KEY, 0xA5);  // unlock everdrive registers (write only)
   bi_reg_wr(REG_CFG, cart_cfg);
-  bi_set_save_type(BI_SAV_SRM);
+  bi_set_save_type(FLASHCARTIO_ED_SAVE_TYPE);
 }
 
 u16 bi_reg_rd(u16 reg) {
@@ -174,6 +174,7 @@ u8 bi_sd_dma_to_rom(void* dst, int slen) {
   return 0;
 }
 
+// [!]
 __attribute__((section(".iwram"), target("arm"), noinline)) u8 bi_sd_dma_rd(
     void* dst,
     int slen) {

@@ -203,18 +203,18 @@ void MenuScene::move(int direction) {
   else
     selected += direction;
 
-  player_play(SOUND_STEP);
   pixelBlink->blink();
   printMenu();
+  player_playSfx(SOUND_STEP);
 }
 
 void MenuScene::select(int direction) {
-  player_play(SOUND_STEP);
   pixelBlink->blink();
 
-  if (selectOption(selected, direction))
+  if (selectOption(selected, direction)) {
     printMenu();
-  else
+    player_playSfx(SOUND_STEP);
+  } else
     player_stop();
 }
 

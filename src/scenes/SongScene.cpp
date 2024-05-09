@@ -43,7 +43,7 @@ const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
 const u32 MAIN_BACKGROUND_ID = 1;
 const u32 MAIN_BACKGROUND_PRIORITY = 3;
-const u32 ARROW_POOL_SIZE = 90;
+const u32 ARROW_POOL_SIZE = 80;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_LEVEL = 10;
@@ -52,11 +52,8 @@ const u32 IO_BLINK_TIME = 6;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
 const u32 LIFEBAR_TILE_END = 15;
-const u32 RUMBLE_FRAMES = 4;
-const u32 RUMBLE_PRELOAD_FRAMES = 2;
-const u32 RUMBLE_IDLE_FREQUENCY = 5;
-const u32 DEATH_MIX_ANTICIPATION_LEVEL = 6;
-const u32 DEATH_MIX_SEEK_SPEED_FRAMES = 5;
+const u32 SEEK_ANTICIPATION_LEVEL = 6;
+const u32 SEEK_SPEED_FRAMES = 5;
 const u32 BOUNCE_STEPS[] = {0, 1, 2, 4, 5,
                             8, 7, 5, 3, 0};  // <~>ALPHA_BLINK_LEVEL
 
@@ -73,13 +70,16 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      Song* song,
                      Chart* chart,
                      Chart* remoteChart,
-                     std::unique_ptr<DeathMix> deathMix)
+                     std::unique_ptr<DeathMix> deathMix,
+                     RewindState rewindState)
     : Scene(engine) {
   this->fs = fs;
   this->song = song;
   this->chart = chart;
   this->remoteChart = remoteChart != NULL ? remoteChart : chart;
   this->deathMix = std::move(deathMix);
+  this->rewindState = rewindState;
+  this->rewindState.isRewinding = false;
 }
 
 std::vector<Background*> SongScene::backgrounds() {
@@ -149,20 +149,22 @@ void SongScene::load() {
     lifeBars[playerId] = std::unique_ptr<LifeBar>{new LifeBar(playerId)};
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
-    scores[playerId] =
-        std::unique_ptr<Score>{new Score(lifeBars[playerId].get(), playerId)};
+    scores[playerId] = std::unique_ptr<Score>{new Score(
+        lifeBars[playerId].get(), playerId, playerId == localPlayerId)};
 
   judge = std::unique_ptr<Judge>{
       new Judge(arrowPool.get(), &arrowHolders, &scores,
                 [this](u8 playerId) { onStageBreak(playerId); })};
 
   int audioLag = GameState.settings.audioLag;
+  int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
   u32 multiplier =
       deathMix != NULL ? deathMix->multiplier : GameState.mods.multiplier;
   for (u32 playerId = 0; playerId < playerCount; playerId++)
-    chartReaders[playerId] = std::unique_ptr<ChartReader>{new ChartReader(
-        playerId == localPlayerId ? chart : remoteChart, playerId,
-        arrowPool.get(), judge.get(), pixelBlink.get(), audioLag, multiplier)};
+    chartReaders[playerId] = std::unique_ptr<ChartReader>{
+        new ChartReader(playerId == localPlayerId ? chart : remoteChart,
+                        playerId, arrowPool.get(), judge.get(),
+                        pixelBlink.get(), audioLag, globalOffset, multiplier)};
 
   startInput = std::unique_ptr<InputHandler>{new InputHandler()};
   selectInput = std::unique_ptr<InputHandler>{new InputHandler()};
@@ -190,7 +192,9 @@ void SongScene::tick(u16 keys) {
   }
 
   __qran_seed += (1 + keys) * REG_VCOUNT;
-  processKeys(keys);
+  processKeys(keys);  // (*)
+  if (engine->isTransitioning())
+    return;  // (*) = (rewind => restart scene)
 
   if ($isMultiplayer) {
     processMultiplayerUpdates();  // (*)
@@ -257,7 +261,6 @@ void SongScene::render() {
   }
 
   drawVideo();
-  BACKGROUND_enable(true, !ENV_DEBUG, false, false);
 }
 
 void SongScene::setUpPalettes() {
@@ -326,6 +329,17 @@ void SongScene::initializeBackground() {
 }
 
 bool SongScene::initializeGame(u16 keys) {
+  if (rewindState.rewindPoint > 0) {
+    if (!rewindState.isInitializing) {
+      startSeek(rewindState.rewindPoint);
+      rewindState.isInitializing = true;
+      return false;
+    } else {
+      rewindState.isInitializing = false;
+      endSeek(rewindState.multiplier);
+    }
+  }
+
   if (deathMix != NULL && deathMix->didStartScroll)
     goto initialized;
 
@@ -335,11 +349,13 @@ bool SongScene::initializeGame(u16 keys) {
   }
   BACKGROUND_enable(true, !ENV_DEBUG && !usesVideo, false, false);
   SPRITE_enable();
-  if (GameState.mods.autoMod)
+  if (GameState.mods.autoMod) {
     backupPalettes(usesVideo, [](u32 progress) {
       EFFECT_setMosaic(max(MAX_MOSAIC - progress, 0));
       EFFECT_render();
     });
+    VBlankIntrWait();
+  }
 
 initialized:
   if (deathMix != NULL) {
@@ -356,32 +372,37 @@ initialized:
         lifeBars[0]->tick(foregroundPalette.get());
       }
 
-      arrowPool->turnOff();
-      chartReaders[0]->turnOffObjectPools();
-
-      chartReaders[0]->setMultiplier(DEATH_MIX_ANTICIPATION_LEVEL);
-      for (u32 t = 0; t < song->sampleStart;
-           t += FRAME_MS * DEATH_MIX_SEEK_SPEED_FRAMES)
-        chartReaders[0]->update(t);
-      chartReaders[0]->update(song->sampleStart);
-
+      startSeek(song->sampleStart);
       deathMix->didStartScroll = true;
       return false;
     } else {
-      arrowPool->turnOn();
-      chartReaders[0]->turnOnObjectPools();
-      chartReaders[0]->setMultiplier(deathMix->multiplier);
+      endSeek(deathMix->multiplier);
     }
   }
 
-  player_play(song->audioPath.c_str());
-  if (deathMix != NULL) {
-    player_seek(song->sampleStart);
-    if (usesVideo && !videoStore->seek(song->sampleStart)) {
-      throwVideoError();
+  if (shouldForceGSM()) {
+    player_play(song->audioPath.c_str(), true);
+  } else {
+    bool isPCM = player_play(song->audioPath.c_str(), false);
+    if (!isPCM && usesVideo &&
+        active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+      unload();
+      engine->transitionIntoScene(SEQUENCE_halt(HQ_AUDIO_REQUIRED),
+                                  new PixelTransitionEffect());
       return false;
     }
   }
+
+  if (deathMix != NULL) {
+    if (!seek(song->sampleStart))
+      return false;
+  }
+  if (rewindState.rewindPoint > 0) {
+    if (!seek(rewindState.rewindPoint))
+      return false;
+    setRate(rewindState.rate);
+  }
+
   processModsLoad();
 
   if (IS_ARCADE(SAVEFILE_getGameMode()) && KEY_STA(keys) && KEY_SEL(keys)) {
@@ -496,7 +517,7 @@ CODE_IWRAM void SongScene::updateArrows() {
 void SongScene::updateBlink() {
   blinkFrame = max(blinkFrame - 1, 0);
 
-  if ($isMultiplayer || GameState.settings.bgaDarkBlink)
+  if (GameState.settings.bgaDarkBlink)
     EFFECT_setBlendAlpha(ALPHA_BLINK_LEVEL - blinkFrame);
 
   if (!$isMultiplayer &&
@@ -508,7 +529,7 @@ void SongScene::updateBlink() {
   }
 }
 
-CODE_IWRAM void SongScene::updateFakeHeads() {
+void SongScene::updateFakeHeads() {
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     auto direction = getDirectionFromIndex(i);
     u8 playerId = getPlayerIdFromIndex(i);
@@ -566,7 +587,7 @@ void SongScene::updateRumble() {
 
   if (localChartReader->beatDurationFrames != -1 &&
       localChartReader->beatFrame ==
-          localChartReader->beatDurationFrames - RUMBLE_PRELOAD_FRAMES) {
+          localChartReader->beatDurationFrames - rumblePreRollFrames) {
     rumbleIdleFrame = 0;
     rumbleBeatFrame = 0;
     START_RUMBLE();
@@ -575,7 +596,7 @@ void SongScene::updateRumble() {
   if (rumbleBeatFrame > -1) {
     rumbleBeatFrame++;
 
-    if (rumbleBeatFrame == RUMBLE_FRAMES) {
+    if ((u32)rumbleBeatFrame == rumbleTotalFrames) {
       rumbleBeatFrame = -1;
       STOP_RUMBLE();
     }
@@ -584,7 +605,7 @@ void SongScene::updateRumble() {
 
     if (rumbleIdleFrame == 1)
       STOP_RUMBLE();
-    else if (rumbleIdleFrame == RUMBLE_IDLE_FREQUENCY) {
+    else if (rumbleIdleFrame == rumbleIdleCyclePeriod) {
       START_RUMBLE();
       rumbleIdleFrame = 0;
     }
@@ -610,6 +631,11 @@ void SongScene::animateWinnerLifeBar() {
 void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
+
+  if (shouldForceGSM() && active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+    usesVideo = false;
+    return;
+  }
 
   auto result = videoStore->load(song->videoPath, song->videoOffset);
   if (result == VideoStore::LoadResult::NO_FILE)
@@ -657,6 +683,7 @@ void SongScene::drawVideo() {
     });
 
     if (success) {
+      BACKGROUND_enable(true, !ENV_DEBUG, false, false);
       if (!videoStore->seek(PlaybackState.msecs))
         throwVideoError();
     } else
@@ -665,12 +692,7 @@ void SongScene::drawVideo() {
 }
 
 void SongScene::throwVideoError() {
-  videoStore->disable();
-  if ($isMultiplayer)
-    syncer->initialize(SyncMode::SYNC_MODE_OFFLINE);
-  unload();
-  engine->transitionIntoScene(SEQUENCE_halt(VIDEO_READING_FAILED),
-                              new PixelTransitionEffect());
+  SCENE_softReset();
 }
 
 void SongScene::processKeys(u16 keys) {
@@ -1126,9 +1148,32 @@ void SongScene::processTrainingModeMod() {
     player_seek(msecs);
     if (usesVideo && !videoStore->canRead())
       videoStore->seek(msecs);
+    rewindState.rewindPoint = msecs;
     STOP_RUMBLE();
   } else
     judge->enable();
+
+  // Rewind
+  if ((aInput->getIsPressed() && selectInput->getIsPressed()) || PS2_DOWN()) {
+    selectInput->setHandledFlag(true);
+
+    if (rewindState.rewindPoint > 0) {
+      rewindState.multiplier = chartReaders[0]->getMultiplier();
+      rewindState.rate = rate;
+      rewindState.isInitializing = false;
+      rewindState.isRewinding = true;
+
+      unload();
+      for (u32 i = 0; i < chart->rhythmEventCount; i++)
+        chart->rhythmEvents[i].handled[0] = false;
+      for (u32 i = 0; i < chart->eventCount; i++)
+        chart->events[i].handled[0] = false;
+
+      engine->transitionIntoScene(
+          new SongScene(engine, fs, song, chart, NULL, NULL, rewindState),
+          new PixelTransitionEffect());
+    }
+  }
 
   // Multiplier down
   if (selectInput->hasBeenReleasedNow()) {
@@ -1270,6 +1315,34 @@ bool SongScene::setRate(int rate) {
   return true;
 }
 
+void SongScene::startSeek(u32 msecs) {
+  arrowPool->turnOff();
+  chartReaders[0]->turnOffObjectPools();
+
+  auto speedHack = GameState.mods.speedHack;
+  GameState.mods.speedHack = SpeedHackOpts::hFIXED_VELOCITY;
+  chartReaders[0]->setMultiplier(SEEK_ANTICIPATION_LEVEL);
+  for (u32 t = 0; t < msecs; t += FRAME_MS * SEEK_SPEED_FRAMES)
+    chartReaders[0]->update(t);
+  chartReaders[0]->update(msecs);
+  GameState.mods.speedHack = speedHack;
+}
+
+void SongScene::endSeek(u32 multiplier) {
+  arrowPool->turnOn();
+  chartReaders[0]->turnOnObjectPools();
+  chartReaders[0]->setMultiplier(multiplier);
+}
+
+bool SongScene::seek(u32 msecs) {
+  player_seek(msecs);
+  if (usesVideo && !videoStore->seek(msecs)) {
+    throwVideoError();
+    return false;
+  }
+  return true;
+}
+
 void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
@@ -1284,7 +1357,8 @@ void SongScene::unload() {
 SongScene::~SongScene() {
   arrowHolders.clear();
   fakeHeads.clear();
-  SONG_free(song);
+  if (!rewindState.isRewinding)
+    SONG_free(song);
 }
 
 inline void backupPalettes(bool usesVideo, void (*onProgress)(u32 progress)) {

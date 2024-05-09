@@ -8,8 +8,9 @@
 
 void player_init();
 void player_unload();
-void player_play(const char* name);
-void player_loop(const char* name);
+bool player_play(const char* name, bool forceGSM);
+bool player_playSfx(const char* name);
+void player_enableLoop();
 void player_seek(unsigned int msecs);
 void player_setRate(int rate);
 void player_stop();
@@ -17,6 +18,7 @@ bool player_isPlaying();
 void player_onVBlank();
 void player_forever(int (*onUpdate)(),
                     void (*onRender)(),
-                    void (*onAudioChunks)(unsigned int current));
+                    void (*onAudioChunks)(unsigned int current),
+                    void (*onError)());
 
 #endif  // PLAYER_H

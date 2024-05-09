@@ -54,6 +54,7 @@ class SelectionScene : public Scene {
   InitialLevel initialLevel;
   std::string pendingAudio = "";
   u32 pendingSeek = 0;
+  u32 animationFrame = 0;
 
   std::unique_ptr<Library> library;
   std::vector<std::unique_ptr<SongFile>> songs;
@@ -74,11 +75,12 @@ class SelectionScene : public Scene {
   u32 count = 0;
   u32 selectedSongId = 0;
   bool confirmed = false;
-  bool isCrossingPage = false;
+  u8 isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
+  u32 blendCount = 0;
 
   inline void playNow(const char* name) {
-    player_play(name);
+    player_play(name, isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
     pendingAudio = "";
     pendingSeek = 0;
   }
@@ -223,7 +225,8 @@ class SelectionScene : public Scene {
   void unconfirm();
   void setPage(u32 page, int direction);
   void startPageCross(int direction);
-  void stopPageCross();
+  void stopPageCross1();
+  void stopPageCross2();
   void loadChannels();
   void loadProgress();
   void setNames(std::string title, std::string artist);

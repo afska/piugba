@@ -46,6 +46,8 @@ class VideoStore {
   bool frameLatch = false;
   int frame = 0;
   int videoOffset = 0;
+
+  State setState(State newState, void* fatfs = NULL);
 };
 
 extern VideoStore* videoStore;

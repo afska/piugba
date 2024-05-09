@@ -75,6 +75,10 @@
 		"player.h": "c",
 		"disk.h": "c",
 		"diskio.h": "c",
-		"flashcartio.h": "c"
+		"flashcartio.h": "c",
+		"audio_store.h": "c",
+		"stdbool.h": "c",
+		"sys.h": "c",
+		"io_ezfo.h": "c"
 	}
 }

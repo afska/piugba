@@ -5,6 +5,7 @@
 #include "gameplay/models/Song.h"
 #include "gameplay/save/SaveFile.h"
 #include "objects/ArrowInfo.h"
+#include "player/PlaybackState.h"
 #include "utils/MathUtils.h"
 
 extern "C" {
@@ -20,16 +21,20 @@ extern "C" {
 
 const u32 FRACUMUL_MS_TO_FRAME_AT_30FPS = 128849018;  // (*30/1000)
 
-static FATFS fatfs;
-static FIL file;
+DATA_EWRAM static FATFS fatfs;
+DATA_EWRAM static FIL file;
+
+BackgroundVideosOpts getMode() {
+  return static_cast<BackgroundVideosOpts>(
+      SAVEFILE_read8(SRAM->adminSettings.backgroundVideos));
+}
 
 bool VideoStore::isEnabled() {
   return SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
 }
 
 bool VideoStore::isActivating() {
-  return static_cast<BackgroundVideosOpts>(SAVEFILE_read8(
-             SRAM->adminSettings.backgroundVideos)) == dACTIVATING;
+  return getMode() == BackgroundVideosOpts::dACTIVATING;
 }
 
 void VideoStore::disable() {
@@ -38,26 +43,30 @@ void VideoStore::disable() {
 }
 
 VideoStore::State VideoStore::activate() {
-  state = OFF;
+  setState(OFF);
+  auto previousMode = getMode();
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
                   BackgroundVideosOpts::dACTIVATING);
 
   auto result = flashcartio_activate();
   if (result != FLASHCART_ACTIVATED) {
     disable();
-    return (state = (result == FLASHCART_ACTIVATION_FAILED
+    return setState((result == FLASHCART_ACTIVATION_FAILED
                          ? MOUNT_ERROR
                          : NO_SUPPORTED_FLASHCART));
   }
 
   if (f_mount(&fatfs, "", 1) > 0) {
     disable();
-    return (state = MOUNT_ERROR);
+    return setState(MOUNT_ERROR);
   }
 
-  state = ACTIVE;
   SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
-                  BackgroundVideosOpts::dACTIVE);
+                  previousMode > BackgroundVideosOpts::dACTIVE
+                      ? previousMode
+                      : BackgroundVideosOpts::dACTIVE);
+  setState(ACTIVE, &fatfs);
+
   return state;
 }
 
@@ -65,6 +74,9 @@ VideoStore::LoadResult VideoStore::load(std::string videoPath,
                                         int videoOffset) {
   if (state != ACTIVE)
     return LoadResult::NO_FILE;
+  if (getMode() == BackgroundVideosOpts::dAUDIO_ONLY)
+    return LoadResult::NO_FILE;
+
   memory = getSecondaryMemory(REQUIRED_MEMORY);
   if (memory == NULL)
     return LoadResult::NO_FILE;
@@ -148,4 +160,11 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
   }
 
   return true;
+}
+
+VideoStore::State VideoStore::setState(State newState, void* fatfs) {
+  state = newState;
+  PlaybackState.isPCMDisabled = getMode() == BackgroundVideosOpts::dVIDEO_ONLY;
+  PlaybackState.fatfs = fatfs;
+  return newState;
 }
