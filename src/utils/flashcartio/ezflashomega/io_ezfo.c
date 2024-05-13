@@ -10,7 +10,7 @@
 
 // [!] Some small optimizations were made for piuGBA
 
-inline __attribute__((always_inline)) delay(u32 R0) {
+inline __attribute__((always_inline)) void delay(u32 R0) {
   int volatile i;
 
   for (i = R0; i; --i)
