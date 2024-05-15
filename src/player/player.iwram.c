@@ -242,12 +242,12 @@ INLINE void disable_audio_dma() {
   asm volatile("eor r0, r0; eor r0, r0" ::: "r0");
 }
 
-INLINE void dsound_start_audio_copy(const void* src) {
+INLINE void dsound_start_audio_copy(const void* source) {
   // disable DMA2
   disable_audio_dma();
 
   // setup DMA2 for audio
-  REG_DMA2SAD = (intptr_t)src;
+  REG_DMA2SAD = (intptr_t)source;
   REG_DMA2DAD = (intptr_t)FIFO_ADDR_B;
   REG_DMA2CNT = DMA_DST_FIXED | DMA_SRC_INC | DMA_REPEAT | DMA32 | DMA_SPECIAL |
                 DMA_ENABLE | 1;
