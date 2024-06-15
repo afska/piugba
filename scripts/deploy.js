@@ -104,7 +104,7 @@ if (!SEARCH) {
       );
 
       log(
-        `⌚  GENERATING IPS PATCH: VARIANT=${variant}, ENV=production, PATCH=${patch}`
+        `⌚  BUILDING IPS PATCH: VARIANT=${variant}, ENV=production, PATCH=${patch}`
       );
 
       run(
@@ -113,6 +113,7 @@ if (!SEARCH) {
           cwd: CONTENT_DIR,
         }
       );
+      run(`rm ${patchedFile}`, { cwd: CONTENT_DIR });
     });
   });
 }
