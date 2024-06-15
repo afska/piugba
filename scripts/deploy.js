@@ -7,8 +7,8 @@ const CONTENT_DIR = $path.join(ROOT_DIR, "src/data/content");
 const SONG_PACKS_DIR = $path.join(CONTENT_DIR, "songs-pack");
 const ROM_PACKS_DIR = $path.join(CONTENT_DIR, "roms");
 const DEV_DIR = $path.join(CONTENT_DIR, "roms/#dev");
-const FLIPS_FROM_CONTENT_DIR =
-  "../../../scripts/toolchain/programs/flips/flips.exe";
+const FLIPS_DIR = $path.join(__dirname, "toolchain/programs/flips");
+const FLIPS_TO_CONTENT_PATH = "../../../../src/data/content";
 const ROMNAME = "romname.txt";
 const ARCADE_SIGNAL = "ARCADE";
 const VARIANTS = ["arcade", "full"];
@@ -108,9 +108,9 @@ if (!SEARCH) {
       );
 
       run(
-        `${FLIPS_FROM_CONTENT_DIR} --create --ips ${cleanFile} ${patchedFile} ${patch}.${variant}.prod.ips`,
+        `flips.exe --create --ips ${FLIPS_TO_CONTENT_PATH}/${cleanFile} ${FLIPS_TO_CONTENT_PATH}/${patchedFile} ${FLIPS_TO_CONTENT_PATH}/${patch}.${variant}.prod.ips`,
         {
-          cwd: CONTENT_DIR,
+          cwd: FLIPS_DIR,
         }
       );
       run(`rm ${patchedFile}`, { cwd: CONTENT_DIR });
