@@ -4,15 +4,14 @@ const $path = require("path");
 const _ = require("lodash");
 require("colors");
 
-// This script compares two copies of the same song library and prints which songs have different chart count.
+// This script prints the song with larger number of charts.
 
-const BASE_DIRECTORY = "./src/data/content/INSERT_BASE_DIRECTORY";
-const UPDATE_DIRECTORY = "./src/data/content/INSERT_UPDATE_DIRECTORY";
+const BASE_DIRECTORY = "./src/data/content/songs";
 
 global.GLOBAL_OPTIONS = {
   mode: "auto",
   arcade: true,
-  directory: UPDATE_DIRECTORY,
+  directory: BASE_DIRECTORY,
   boss: true,
 };
 const FILE_METADATA = /\.ssc$/i;
@@ -55,17 +54,18 @@ function importSong(song) {
   return importers.metadata(outputName, metadataFile, ".", id);
 }
 
-const s1 = read(UPDATE_DIRECTORY);
-const s2 = read(BASE_DIRECTORY);
-
-const songs1 = s1.map((song) => {
-  return importSong(song);
-});
-const songs2 = s2.map((song) => {
+const songs = read(BASE_DIRECTORY).map((song) => {
   return importSong(song);
 });
 
-songs1.forEach((song, i) => {
-  if (songs2[i].charts.length === song.charts.length);
-  else console.log(song.metadata.title);
+let max = 0;
+let maxSong = null;
+songs.forEach((song) => {
+  if (song.charts.length > max) {
+    max = song.charts.length;
+    maxSong = song;
+  }
 });
+
+console.log(maxSong);
+console.log("MAXIMUM: " + max);
