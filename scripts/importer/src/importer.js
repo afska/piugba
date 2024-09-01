@@ -157,6 +157,7 @@ const UNIQUE_MAP_PATH = $path.resolve(
 const BLACK_DOT_FILE = $path.resolve(IMAGES_PATH, "black.bmp");
 const BONUS_DIRECTORY = $path.join(GLOBAL_OPTIONS.directory, BONUS_FOLDER_NAME);
 
+mkdirp.sync(GLOBAL_OPTIONS.output);
 if (!fs.existsSync(GLOBAL_OPTIONS.directory))
   throw new Error("Songs directory not found: " + GLOBAL_OPTIONS.directory);
 if (!fs.existsSync(GLOBAL_OPTIONS.output))
