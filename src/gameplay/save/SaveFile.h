@@ -112,8 +112,7 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::GBA);
   SAVEFILE_write8(SRAM->adminSettings.offsetEditingEnabled, false);
-  SAVEFILE_write8(SRAM->adminSettings.backgroundVideos,
-                  BackgroundVideosOpts::dOFF);
+  SAVEFILE_write8(SRAM->adminSettings.hqMode, HQModeOpts::dOFF);
   SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
   SAVEFILE_write8(SRAM->adminSettings.ps2Input, false);
   SAVEFILE_write32(SRAM->globalOffset, 0);
@@ -202,19 +201,19 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
   u8 offsetEditingEnabled =
       SAVEFILE_read8(SRAM->adminSettings.offsetEditingEnabled);
-  u8 backgroundVideos = SAVEFILE_read8(SRAM->adminSettings.backgroundVideos);
+  u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
   u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
   u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
   u8 rumbleFrames = SAVEFILE_read8(SRAM->adminSettings.rumbleFrames);
   u8 rumbleOpts = SAVEFILE_read8(SRAM->adminSettings.rumbleOpts);
   int globalOffset = (int)SAVEFILE_read32(SRAM->globalOffset);
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
-      navigationStyle >= 2 || offsetEditingEnabled >= 2 ||
-      backgroundVideos >= 5 || ewramOverclock >= 2 || ps2Input >= 2 ||
-      rumbleFrames == 0 || rumbleFrames >= 9 ||
-      RUMBLE_PREROLL(rumbleOpts) == 0 || RUMBLE_PREROLL(rumbleOpts) >= 9 ||
-      RUMBLE_IDLE(rumbleOpts) <= 1 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
-      globalOffset < -3000 || globalOffset > 3000 || (globalOffset & 7) != 0) {
+      navigationStyle >= 2 || offsetEditingEnabled >= 2 || hqMode >= 5 ||
+      ewramOverclock >= 2 || ps2Input >= 2 || rumbleFrames == 0 ||
+      rumbleFrames >= 9 || RUMBLE_PREROLL(rumbleOpts) == 0 ||
+      RUMBLE_PREROLL(rumbleOpts) >= 9 || RUMBLE_IDLE(rumbleOpts) <= 1 ||
+      RUMBLE_IDLE(rumbleOpts) >= 7 || globalOffset < -3000 ||
+      globalOffset > 3000 || (globalOffset & 7) != 0) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }
