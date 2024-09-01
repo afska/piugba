@@ -43,6 +43,7 @@ std::vector<Sprite*> DeathMixScene::sprites() {
 }
 
 void DeathMixScene::load() {
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
   TalkScene::load();
 
   setUpSpritesPalette();
