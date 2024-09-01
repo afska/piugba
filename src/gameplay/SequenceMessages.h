@@ -68,10 +68,10 @@
   "- Rate: B + START/SELECT\r\n"  \
   "- Seek: A + START/SELECT"
 
-#define COOP_HINT             \
-  "       CO-OP LEVEL\r\n"    \
-  "1) Get a friend.\r\n"      \
-  "2) Grab a Link Cable.\r\n" \
+#define COOP_HINT               \
+  "       CO-OP LEVEL\r\n"      \
+  "1) Get a friend.\r\n"        \
+  "2) Grab a Link Adapter.\r\n" \
   "3) Use Multi COOP."
 
 #define DOUBLE_PS2_INPUT_HINT  \
