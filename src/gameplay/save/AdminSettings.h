@@ -16,7 +16,7 @@ enum SRAMBlinkOpts : u8 {
   SRAM_BLINK_ON_HIT
 };
 enum NavigationStyleOpts : u8 { PIU, GBA };
-enum BackgroundVideosOpts {
+enum BackgroundVideosOpts : u8 {
   dOFF,
   dACTIVATING,
   dACTIVE,
