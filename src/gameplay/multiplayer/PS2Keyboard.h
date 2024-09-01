@@ -32,7 +32,7 @@
 #define PS2_KEY_UP 117            // Up
 #define PS2_KEY_DOWN 114          // Down
 #define PS2_KEY_ESC 118           // ESC
-#define PS2_KEY_SUPR 113          // Supr
+#define PS2_KEY_DELETE 113        // Delete
 
 #define PS2_KEY_RELEASE 240
 #define PS2_KEY_SPECIAL 224
@@ -137,7 +137,7 @@ class PS2Keyboard {
       case PS2_KEY_ESC: {
         return (softReset = true);
       }
-      case PS2_KEY_SUPR: {
+      case PS2_KEY_DELETE: {
         if (isSpecial) {
           softReset = true;
           return true;
