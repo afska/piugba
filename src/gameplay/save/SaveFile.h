@@ -56,7 +56,7 @@ typedef struct __attribute__((__packed__)) {
 
   DeathMixProgress deathMixProgress;
 
-  s8 customOffsets[CUSTOM_OFFSET_TABLE_SIZE];
+  s8 customOffsets[CUSTOM_OFFSET_TABLE_TOTAL_SIZE];
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
