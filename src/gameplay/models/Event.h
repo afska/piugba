@@ -68,10 +68,10 @@ inline bool EVENT_HAS_PARAM3(EventType event) {
 
 typedef struct {
   // (PIUS file)
-  // u32 timestampAndData;
+  u32 timestampAndData;
   /*  {
         [bit 0]      is fake (only note types)
-        [bits 1-23]  timestamp (signed int)
+        [bits 1-23]  timestamp (signed int, ms)
         [bits 24-26] type (see EventType)
         [bits 27-31] data (5-bit array with the arrows)
       }
@@ -86,14 +86,16 @@ typedef struct {
 
   // custom fields:
   bool handled[GAME_MAX_PLAYERS];
-  bool isFake;
-  int timestamp;  // in ms
-  u8 data;
-  /*  {
-        [bits 0-2] type (see EventType)
-        [bits 3-7] data (5-bit array with the arrows)
-      }
-  */
+
+  inline int timestamp() {
+    int timestamp = (timestampAndData >> 1) & 0x7fffff;
+    if (timestamp & 0x400000)  // (sign extension)
+      timestamp |= 0xff800000;
+    return timestamp;
+  }
+
+  inline u8 data() { return (timestampAndData >> 24) & 0xff; }
+  inline bool isFake() { return timestampAndData & 1; }
 } Event;
 
 #endif  // EVENT_H

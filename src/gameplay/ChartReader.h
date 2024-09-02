@@ -124,10 +124,10 @@ class ChartReader : public TimingProvider {
     u32 currentIndex = index;
     bool skipped = false;
 
-    while (targetMsecs >= events[currentIndex].timestamp &&
+    while (targetMsecs >= events[currentIndex].timestamp() &&
            currentIndex < count) {
       auto event = events + currentIndex;
-      EventType type = static_cast<EventType>((event->data & EVENT_TYPE));
+      EventType type = static_cast<EventType>(event->data() & EVENT_TYPE);
 
       if (event->handled[playerId]) {
         currentIndex++;
