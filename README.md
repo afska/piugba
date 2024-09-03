@@ -71,7 +71,7 @@ Charts are converted into a format created for this project called **PIUS**. The
 
 # Developing
 
-## Any OS (Docker)
+## Install - Any OS (Docker)
 
 - Install [Docker](https://www.docker.com/)
 - Run: `docker pull afska/piugba-dev`
@@ -115,7 +115,7 @@ Charts are converted into a format created for this project called **PIUS**. The
 | `HQAUDIOENABLE` | **false** or true                             | Enables the conversion of HQ audio files to the `HQAUDIOLIB` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `FAST`          | **false** or true                             | Uses async I/O to import songs faster. It may disrupt stdout order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-### Windows (Native)
+### Install - Windows (Native)
 
 > Advanced usage only! The code requires specific versions of tools that are difficult to obtain, and I cannot provide them. I created the Docker image so everyone can have the same environment.
 
