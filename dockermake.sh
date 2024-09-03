@@ -9,7 +9,7 @@ MAKE_TARGET=$1
 shift
 MAKE_ARGS="$@"
 
-docker run --rm \
+docker run --rm -it \
   -v "$(pwd)":/opt/piugba \
   -e PWD=/opt/piugba \
   afska/piugba-dev \
