@@ -320,7 +320,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: check-env clean assets start rebuild restart
+.PHONY: check-env clean assets start rebuild restart reimport
 
 check-env:
 ifndef DEVKITPRO
@@ -332,21 +332,21 @@ assets: check-env
 	./scripts/assets.sh
 
 import: check-env
-	node ./scripts/importer/src/importer.js --mode "$(MODE)" --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
+	./scripts/importer/run.sh --mode "$(MODE)" --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
 package: check-env $(BUILD)
 	./scripts/package.sh "piugba.gba" "src/data/content/files.gbfs"
 
 start: check-env package
-	start "$(TARGET).out.gba"
+	@if command -v start > /dev/null; then \
+		start "$(TARGET).out.gba"; \
+	fi
 
 rebuild: check-env clean package
 
-restart: check-env rebuild
-	start "$(TARGET).out.gba"
+restart: check-env rebuild start
 
-reimport: check-env import package
-	start "$(TARGET).out.gba"
+reimport: check-env import package start
 
 # EOF

@@ -5,8 +5,4 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-MAKE_TARGET=$1
-shift
-MAKE_ARGS="$@"
-
-wsl -e ./dockermake.sh "$MAKE_TARGET" $MAKE_ARGS
+wsl -e ./dockermake.sh "$@"
