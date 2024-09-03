@@ -97,6 +97,8 @@ Charts are converted into a format created for this project called **PIUS**. The
 - `make rebuild`: Recompiles (clean+build+package) a full ROM
 - `make restart`: Recompiles and starts the ROM
 - `make reimport`: Reimports the songs and starts the ROM without recompiling
+- `make check`: Verifies that all the tools are installed correctly
+- `make install`: Installs the importer dependencies
 
 #### Parameters
 
@@ -160,7 +162,7 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/devkitARM/bin"
 export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 ```
 
-- You can check if the tools are installed correctly by running `./scripts/toolchain/check.sh`
+- You can check if the tools are installed correctly by running `make check`
 
 ### Scripts
 

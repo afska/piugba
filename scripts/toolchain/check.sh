@@ -1,11 +1,17 @@
-function try {
+#!/bin/bash
+
+try() {
   "$@"
-  local status=$?
+  status=$?
   if [ $status -eq 127 ]; then
       echo "❌  $1" >&2
-      exit $?
+      exit $status
   fi
 }
+
+if [ -n "$NVM_DIR" ]; then
+  source $NVM_DIR/nvm.sh
+fi
 
 try gbfs > /dev/null
 try pngfix > /dev/null

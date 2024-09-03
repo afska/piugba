@@ -320,7 +320,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: check-env clean assets start rebuild restart reimport install
+.PHONY: check-env clean assets start rebuild restart reimport check install
 
 check-env:
 ifndef DEVKITPRO
@@ -348,6 +348,9 @@ rebuild: check-env clean package
 restart: check-env rebuild start
 
 reimport: check-env import package start
+
+check: check-env
+	./scripts/toolchain/check.sh
 
 install: check-env
 	./scripts/importer/install.sh
