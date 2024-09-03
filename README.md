@@ -55,7 +55,7 @@ The downloads provided in our [Releases](https://github.com/afska/piugba/release
   - _If you use the portable importer, these files are not needed!_
 - A small demo with 9 songs from [Project Outfox Serenity](https://projectoutfox.com/outfox-serenity)'s Volume I & II sets.
 
-**To play, you need to [build a custom ROM](https://github.com/afska/piugba/wiki/Building-a-ROM) or download a complete one from [our Discord](https://discord.com/invite/JE33cc2).**
+**To play, you need to [download a ROM from our Discord](https://discord.com/invite/JE33cc2) or [build a custom ROM](https://github.com/afska/piugba/wiki/Building-a-ROM).**
 
 ## How does it work?
 
@@ -69,63 +69,24 @@ Charts are converted into a format created for this project called **PIUS**. The
 
 **[Wiki: Building a ROM](https://github.com/afska/piugba/wiki/Building-a-ROM)**
 
-## Install
+# Developing
 
-### Windows
+## Any OS (Docker)
 
-- Choose a folder (from now, `GBA_DIR`) and use this file structure:
-  - `gba`
-    - `tools`
-      - `devkitPro`
-    - `projects`
-      - `piugba`
-- Install the toolchain:
-  - Dev
-    - [devkitPro&gcc 9.1.0](http://www.mediafire.com/file/69k859riisvo660/devkitPro-gcc-9.1.0.zip/file): The devkit for compiling GBA ROMs. It comes with:
-      - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
-      - _gbfs_: Used to create a package with all the game assets
-    - [node.js 14.\*](https://nodejs.org/en): The JS runtime
-    - [make 3.81](scripts/toolchain/programs/make-3.81.zip): The build automation tool
-  - Media Processing
-    - [ImageMagick 7.0.10.3](scripts/toolchain/programs/ImageMagick-7.0.10-3-Q16-x64-static.exe): The tool used to convert images to paletted bitmaps
-    - [ffmpeg _(with libgsm)_ 3.3.3](scripts/toolchain/programs/ffmpeg-3.3.3-win64-static.zip): The tool used to convert audio files to GSM
-      - To avoid using the `ffmpeg.exe` binary included with _ImageMagick_, add it to `PATH` first!
-      - Check this by running `where ffmpeg`
-    - [pngfix](scripts/toolchain/programs/pngfix.exe): A small command line util to fix corrupted PNG files
-  - Other
-    - [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`
-    - [VSCode](https://code.visualstudio.com): The IDE
-- Install node dependencies:
+- Install [Docker](https://www.docker.com/)
+- Run: `docker pull afska/piugba-dev`
+- Run `./dockermake.sh install`
+- Run `./dockermake.sh {makefile_action} {arguments}`
+  - For example: `./dockermake.sh rebuild ENV=production ARCADE=true`
 
-```bash
-cd scripts/importer
-npm install
-```
-
-- Add to `~/.bash_profile`:
-
-```bash
-# set your ImageMagick install path here:
-export PATH=$PATH:/c/Program\ Files/ImageMagick-7.0.10-Q16
-
-export GBA_DIR="/c/Work/gba" # <<< CHANGE THIS PATH
-
-export DEVKITPRO="$GBA_DIR/tools/devkitPro"
-export PATH="$PATH:$GBA_DIR/tools/devkitPro/bin"
-export PATH="$PATH:$GBA_DIR/tools/devkitPro/devkitARM/bin"
-export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
-```
-
-- You can check if the tools are installed correctly by running `./scripts/toolchain/check.sh`
-
-### VSCode
+## VSCode
 
 - Recommended plugins: `C/C++ Extensions`, `EditorConfig`, `Prettier - Code formatter`
 - Recommended settings: [here](scripts/toolchain/vscode_settings.json)
 
-## Actions
+### Actions
 
-### Commands
+#### Commands
 
 - `make clean`: Cleans build artifacts
 - `make assets`: Compiles the needed assets in `src/data/content/_compiled_sprites` (required for compiling)
@@ -151,6 +112,55 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 | `HQAUDIOLIB`    | _path to a directory_                         | HQ Audio library output directory. Defaults to: `src/data/content/piuGBA_audios`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `HQAUDIOENABLE` | **false** or true                             | Enables the conversion of HQ audio files to the `HQAUDIOLIB` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `FAST`          | **false** or true                             | Uses async I/O to import songs faster. It may disrupt stdout order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+
+### Windows (Native)
+
+> Advanced usage only! The code requires specific versions of tools that are difficult to obtain, and I cannot provide them. I created the Docker image so everyone can have the same environment.
+
+- Choose a folder (from now, `GBA_DIR`) and use this file structure:
+  - `gba`
+    - `tools`
+      - `devkitPro`
+    - `projects`
+      - `piugba`
+- Install the toolchain:
+  - Dev
+    - **devkitPro** `r53` (with gcc `9.1.0`): The devkit for compiling GBA ROMs. It comes with:
+      - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
+      - _gbfs_: Used to create a package with all the game assets
+      - ⚠️ While newer versions of gcc may work, they might require some tweaks. I've noticed that with gcc 14, the code runs 5% slower, so I prefer to stick with gcc 9.
+    - **node** `14.*`: The JS runtime
+    - **make** `3.81` (compiled for `i386-pc-mingw32`): The build automation tool
+  - Media Processing
+    - **ImageMagick** `7.0.10.3`: The tool used to convert images to paletted bitmaps
+    - **ffmpeg** `3.3.3` (bundled with `libgsm`): The tool used to convert audio files to GSM
+      - ⚠️ Avoid using the `ffmpeg.exe` binary included with _ImageMagick_ or any other version. After `3.3.3`, they stopped including `libgsm` on Windows builds.
+    - **png-fix-IDAT-windowsize** `0.5`: A small command line util to fix corrupted PNG files
+  - Other
+    - [Git Bash](https://gitforwindows.org): Linux shell and tools. It contains required commands like `dd` or `md5sum`
+    - [VSCode](https://code.visualstudio.com): The IDE
+- Install node dependencies:
+
+```bash
+cd scripts/importer
+npm install
+```
+
+- Add to `~/.bash_profile`:
+
+```bash
+# set your ImageMagick install path here:
+export PATH=$PATH:/c/Program\ Files/ImageMagick-7.0.10-Q16
+
+export GBA_DIR="/c/Work/gba" # <<< CHANGE THIS PATH
+
+export DEVKITPRO="$GBA_DIR/tools/devkitPro"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/bin"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/devkitARM/bin"
+export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
+```
+
+- You can check if the tools are installed correctly by running `./scripts/toolchain/check.sh`
 
 ### Scripts
 
