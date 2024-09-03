@@ -19,7 +19,7 @@ cleanup() {
 
 trap cleanup SIGINT
 
-container_id=$(docker run -d \
+container_id=$(docker run -it -d \
   -v "$(pwd)":/opt/piugba \
   -e PWD=/opt/piugba \
   afska/piugba-dev \
