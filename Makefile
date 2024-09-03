@@ -4,12 +4,13 @@
 .SUFFIXES:
 
 # --- Paths ---
+export WORKDIR = $(PWD)
 export DEVKITARM = $(DEVKITPRO)/devkitARM
 
 export LIBTONC :=              $(DEVKITPRO)/libtonc
 export LIBGBA  :=              $(DEVKITPRO)/libgba
-export LIBGBA_SPRITE_ENGINE := $(PWD)/libs/libgba-sprite-engine
-export LIBUGBA :=              $(PWD)/libs/libugba
+export LIBGBA_SPRITE_ENGINE := $(WORKDIR)/libs/libgba-sprite-engine
+export LIBUGBA :=              $(WORKDIR)/libs/libugba
 
 # === TONC RULES ======================================================
 #

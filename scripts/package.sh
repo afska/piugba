@@ -52,7 +52,7 @@ cp $FILE_INPUT $FILE_TMP
 if [ $? -ne 0 ]; then
   exit 1
 fi
-dd if=/dev/zero bs=1 count=$PAD_NEEDED >> $FILE_TMP
+dd if=/dev/zero bs=$PAD_NEEDED count=1 >> $FILE_TMP
 if [ $? -ne 0 ]; then
   exit 1
 fi
