@@ -22,7 +22,19 @@ const OUTPUT_BUILDS = (variant) => ({
 const ARCADE_FLAG = (variant) => (variant === "arcade" ? "ARCADE=true" : "");
 const SEPARATOR = "----------";
 
-const SEARCH = process.argv[2];
+const MODE = process.argv[2];
+const SEARCH = process.argv[3];
+
+let make;
+if (MODE == "docker") make = "bash ./dockermake.sh";
+else if (MODE == "wsl") make = "bash ./wslmake.sh";
+else if (MODE == "native") make = "make";
+else {
+  console.log("Usage: node deploy.js <mode> [search]");
+  console.log("<mode>: docker | wsl | native");
+  console.log("[search]: ROM name");
+  process.exit(1);
+}
 
 const log = (text) => console.log(`${SEPARATOR}${text}${SEPARATOR}`);
 const run = (command, options) => {
@@ -62,9 +74,9 @@ if (!SEARCH) {
     ENVIRONMENTS.forEach((environment) => {
       log(`⌚  COMPILING: VARIANT=${variant}, ENV=${environment}`);
       run(`git checkout ${baseBranch}`, { cwd: ROOT_DIR });
-      run("make clean", { cwd: ROOT_DIR });
-      run("make assets", { cwd: ROOT_DIR });
-      run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
+      run(`${make} clean`, { cwd: ROOT_DIR });
+      run(`${make} assets`, { cwd: ROOT_DIR });
+      run(`${make} build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
         cwd: ROOT_DIR,
       });
       fs.copyFileSync(
@@ -83,9 +95,9 @@ if (!SEARCH) {
             `⌚  COMPILING: VARIANT=${variant}, ENV=${environment}, PATCH=${patch}`
           );
           run(`git checkout ${patch}`, { cwd: ROOT_DIR });
-          run("make clean", { cwd: ROOT_DIR });
-          run("make assets", { cwd: ROOT_DIR });
-          run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
+          run(`${make} clean`, { cwd: ROOT_DIR });
+          run(`${make} assets`, { cwd: ROOT_DIR });
+          run(`${make} build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
             cwd: ROOT_DIR,
           });
           fs.copyFileSync(
@@ -141,7 +153,7 @@ sources.forEach(({ name, path, variant }) => {
   const shortName = fs.readFileSync($path.join(path, ROMNAME)).toString();
   log(`⌚  IMPORTING: ${name} <<${shortName}>>`);
 
-  run(`make import SONGS="${path}" ${ARCADE_FLAG(variant)} FAST=true`, {
+  run(`${make} import SONGS="${path}" ${ARCADE_FLAG(variant)} FAST=true`, {
     cwd: ROOT_DIR,
   });
 
@@ -150,7 +162,7 @@ sources.forEach(({ name, path, variant }) => {
       $path.join(CONTENT_DIR, OUTPUT_BUILDS(variant)[environment]),
       $path.join(ROOT_DIR, OUTPUT_EMPTY)
     );
-    run("make package", { cwd: ROOT_DIR });
+    run(`${make} package`, { cwd: ROOT_DIR });
     const outputName = `${prefix} piuGBA - ${shortName}.gba`;
     if (environment === "production") {
       fs.copyFileSync(
