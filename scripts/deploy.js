@@ -2,13 +2,13 @@ const fs = require("fs");
 const childProcess = require("child_process");
 const $path = require("path");
 
+// Requires the `flips` command.
+
 const ROOT_DIR = $path.join(__dirname, "..");
 const CONTENT_DIR = $path.join(ROOT_DIR, "src/data/content");
 const SONG_PACKS_DIR = $path.join(CONTENT_DIR, "songs-pack");
 const ROM_PACKS_DIR = $path.join(CONTENT_DIR, "roms");
 const DEV_DIR = $path.join(CONTENT_DIR, "roms/#dev");
-const FLIPS_DIR = $path.join(__dirname, "toolchain/programs/flips");
-const FLIPS_TO_CONTENT_PATH = "../../../../src/data/content";
 const ROMNAME = "romname.txt";
 const ARCADE_SIGNAL = "ARCADE";
 const VARIANTS = ["arcade", "full"];
@@ -108,9 +108,9 @@ if (!SEARCH) {
       );
 
       run(
-        `flips.exe --create --ips ${FLIPS_TO_CONTENT_PATH}/${cleanFile} ${FLIPS_TO_CONTENT_PATH}/${patchedFile} ${FLIPS_TO_CONTENT_PATH}/${patch}.${variant}.prod.ips`,
+        `flips --create --ips ${cleanFile} ${patchedFile} ${patch}.${variant}.prod.ips`,
         {
-          cwd: FLIPS_DIR,
+          cwd: CONTENT_DIR,
         }
       );
       run(`rm ${patchedFile}`, { cwd: CONTENT_DIR });
