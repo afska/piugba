@@ -45,8 +45,6 @@ const FILE_VIDEO = (name) =>
   new RegExp(`^${REGEXP_ESCAPE(name)}\\.(${FILE_VIDEO_EXTENSIONS})$`, "i");
 const FILE_VIDEO_REGEXP_CODE = (name) =>
   `${REGEXP_ESCAPE(name)}\\.(${FILE_VIDEO_EXTENSIONS})`;
-const MODE_OPTIONS = ["auto", "manual"];
-const MODE_DEFAULT = "auto";
 const SELECTOR_PREFIXES = {
   NORMAL: "_snm_",
   HARD: "_shd_",
@@ -125,8 +123,6 @@ const opt = getopt
   .parseSystem();
 
 global.GLOBAL_OPTIONS = opt.options;
-if (!_.includes(MODE_OPTIONS, GLOBAL_OPTIONS.mode))
-  GLOBAL_OPTIONS.mode = MODE_DEFAULT;
 GLOBAL_OPTIONS.directory = $path.resolve(
   GLOBAL_OPTIONS.directory || DEFAULT_SONGS_PATH
 );
