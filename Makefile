@@ -6,6 +6,7 @@
 # --- Paths ---
 export WORKDIR = $(PWD)
 export DEVKITARM = $(DEVKITPRO)/devkitARM
+export COMPILED_SPRITES_DIR := $(WORKDIR)/src/data/content/_compiled_sprites
 
 export LIBTONC :=              $(DEVKITPRO)/libtonc
 export LIBGBA  :=              $(DEVKITPRO)/libgba
@@ -314,13 +315,15 @@ $(OUTPUT).gba	:	$(OUTPUT).elf
 
 $(OUTPUT).elf	:	$(OFILES)
 
+$(OFILES): $(COMPILED_SPRITES_DIR)/assets.stamp
+
 -include $(DEPENDS)
 
 endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: check-env clean assets start rebuild restart reimport check install
+.PHONY: check-env clean assets build start rebuild restart reimport check install
 
 check-env:
 ifndef DEVKITPRO
@@ -330,12 +333,13 @@ endif
 
 assets: check-env
 	./scripts/assets.sh
+	touch $(COMPILED_SPRITES_DIR)/assets.stamp
 
 import: check-env
 	./scripts/importer/run.sh --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
-package: check-env $(BUILD)
+package: check-env build
 	./scripts/package.sh "piugba.gba" "src/data/content/files.gbfs"
 
 start: check-env package
