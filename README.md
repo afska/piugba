@@ -74,19 +74,25 @@ Charts are converted into a format created for this project called **PIUS**. The
 ## Install - Any OS (Docker)
 
 - Install [Docker](https://www.docker.com/)
-- Run: `docker pull afska/piugba-dev`
-- Run `./dockermake.sh install`
-- Run `./dockermake.sh {makefile_action} {arguments}`
-  - For example: `./dockermake.sh rebuild ENV=production ARCADE=true`
+- Run:
+```bash
+# download docker image
+docker pull afska/piugba-dev
 
-## VSCode
+# compile game assets
+./dockermake.sh assets
 
-- Recommended plugins: `C/C++ Extensions`, `EditorConfig`, `Prettier - Code formatter`
-- Recommended settings: [here](scripts/toolchain/vscode_settings.json)
+# install importer dependencies
+./dockermake.sh install
 
-### Actions
+# run ./dockermake.sh {action} {arguments...}
+# for example, to build a clean Arcade ROM, use:
+./dockermake.sh build ENV=production ARCADE=true
+```
 
-#### Commands
+## Actions
+
+### Commands
 
 - `make clean`: Cleans build artifacts
 - `make assets`: Compiles the needed assets in `src/data/content/_compiled_sprites` (required for compiling)
@@ -100,7 +106,7 @@ Charts are converted into a format created for this project called **PIUS**. The
 - `make check`: Verifies that all the tools are installed correctly
 - `make install`: Installs the importer dependencies
 
-#### Parameters
+### Parameters
 
 | Name            | Values                                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -116,7 +122,7 @@ Charts are converted into a format created for this project called **PIUS**. The
 
 > In Docker builds, for `SONGS`, `VIDEOLIB` and `HQAUDIOLIB`, only use relative paths to folders inside your project's directory!
 
-### Install - Windows (Native)
+## Install - Windows (Native)
 
 > Advanced usage only! The code requires specific versions of tools that are difficult to obtain, and I cannot provide them. I created the Docker image so everyone can have the same environment.
 
@@ -165,30 +171,35 @@ export PATH="$PATH:$GBA_DIR/tools/devkitPro/tools/bin"
 
 - You can check if the tools are installed correctly by running `make check`
 
-### Scripts
+## VSCode
 
-#### Build sprites
+- Recommended plugins: `C/C++ Extensions`, `EditorConfig`, `Prettier - Code formatter`
+- Recommended settings: [here](scripts/toolchain/vscode_settings.json)
+
+## Scripts
+
+### Build sprites
 
 ```bash
 # use #FF00FD as transparency color
 grit *.bmp -ftc -pS -gB8 -gT ff00fd -O shared_palette.c
 ```
 
-#### Build backgrounds
+### Build backgrounds
 
 ```bash
 magick file.png -resize 240x160\! -colors 255 file.bmp
 grit file.bmp -gt -gB8 -mRtf -mLs -ftb
 ```
 
-#### Build music
+### Build music
 
 ```bash
 ffmpeg -y -i file.mp3 -ac 1 -af 'aresample=18157' -strict unofficial -c:a gsm file.gsm
 ffplay -ar 18157 file.gsm
 ```
 
-#### Build filesystem
+### Build filesystem
 
 ```bash
 gbfs files.gbfs *.pius *.gsm *.bin
@@ -196,13 +207,13 @@ gbfs files.gbfs *.pius *.gsm *.bin
 cat rom.gba files.gbfs > rom.out.gba
 ```
 
-#### Build gba-sprite-engine
+### Build gba-sprite-engine
 
 ```bash
 rm -rf cmake-build-debug ; mkdir cmake-build-debug ; cd cmake-build-debug ; cmake ../ -G "Unix Makefiles" ; make ; cp engine/libgba-sprite-engine.a ../../piugba/libs/libgba-sprite-engine/lib/libgba-sprite-engine.a ; cd ../ ; rm -rf ../piugba/libs/libgba-sprite-engine/include/ ; cp -r ./engine/include ../piugba/libs/libgba-sprite-engine/
 ```
 
-#### Build importer.exe
+### Build importer.exe
 
 ```bash
 cd scripts/importer
@@ -210,15 +221,15 @@ npm install -g pkg
 pkg --targets node14-win --config package.json -o importer.exe --public --public-packages "*" --no-bytecode --compress GZip src/importer.js
 ```
 
-### Troubleshooting
+## Troubleshooting
 
-#### How to debug
+### How to debug
 
 - In `Makefile`, replace `-Ofast` by `-Og -g` to include debug symbols in the `.elf` file
 - In mGBA, go to Tools -> Start GDB server...
 - Start debugging in VS Code
 
-#### Undefined reference to _function name_
+### Undefined reference to _function name_
 
 If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 

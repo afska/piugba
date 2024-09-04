@@ -109,7 +109,6 @@ const opt = getopt
       "hqaudioenable=HQAUDIOENABLE",
       "enable hq audio (one of: *false*|true)",
     ],
-    ["m", "mode=MODE", "how to complete missing data (one of: *auto*|manual)"],
     ["b", "boss=BOSS", "automatically add boss levels (one of: false|*true*)"],
     ["a", "arcade=ARCADE", "arcade mode only (one of: *false*|true)"],
     [
