@@ -355,7 +355,7 @@ async function run() {
       if (!GLOBAL_OPTIONS.fast) {
         console.log(
           `(${(i + 1).toString().red}${"/".red}${
-            songs.length.toString().red
+            songsToImport.length.toString().red
           }) ${"Importing".bold} ${song.name.cyan}...`
         );
       }
