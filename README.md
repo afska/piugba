@@ -137,7 +137,7 @@ docker pull afska/piugba-dev
     - **devkitPro** `r53` (with gcc `9.1.0`): The devkit for compiling GBA ROMs. It comes with:
       - _grit_: Used to convert paletted bitmaps to C arrays or raw binary files
       - _gbfs_: Used to create a package with all the game assets
-      - ⚠️ While newer versions of gcc may work, they might require some tweaks. I've noticed that with gcc 14, the code runs 5% slower, so I prefer to stick with gcc 9.
+      - ⚠️ While newer versions of gcc may work, they might require some tweaks. I've noticed that with gcc 14 the code runs 5% slower and have worse compatibility with some emulators, so I prefer to stick with gcc 9.
     - **node** `14.*`: The JS runtime
     - **make** `3.81` (compiled for `i386-pc-mingw32`): The build automation tool
   - Media Processing
