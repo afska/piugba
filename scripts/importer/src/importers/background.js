@@ -14,7 +14,7 @@ const COMMAND_MD5SUM = (input) => `md5sum "${input}" | cut -d " " -f 1`;
 const COMMAND_CLEANUP = (tmp1, tmp2) =>
   `${COMMAND_RM(tmp1)} && ${COMMAND_RM(tmp2)}`;
 const COMMAND_RM = (file) => `rm "${file}"`;
-const COMMAND_FIX = (input) => `pngfix -f "${input}`;
+const COMMAND_FIX = (input) => `pngfix -f "${input}"`;
 const RESOLUTION = "240x160!";
 const COLORS = "253";
 const EXTENSIONS_TMP = ["pal.bmp", "bmp", "h"];
