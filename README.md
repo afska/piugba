@@ -114,6 +114,8 @@ Charts are converted into a format created for this project called **PIUS**. The
 | `HQAUDIOENABLE` | **false** or true                             | Enables the conversion of HQ audio files to the `HQAUDIOLIB` folder.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `FAST`          | **false** or true                             | Uses async I/O to import songs faster. It may disrupt stdout order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
+> In Docker builds, for `SONGS`, `VIDEOLIB` and `HQAUDIOLIB`, only use relative paths to folders inside your project's directory!
+
 ### Install - Windows (Native)
 
 > Advanced usage only! The code requires specific versions of tools that are difficult to obtain, and I cannot provide them. I created the Docker image so everyone can have the same environment.

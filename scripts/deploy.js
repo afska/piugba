@@ -5,7 +5,7 @@ const $path = require("path");
 // Requires the `flips` command.
 
 const ROOT_DIR = $path.join(__dirname, "..");
-const CONTENT_DIR = $path.join(ROOT_DIR, "src/data/content");
+const CONTENT_DIR = "src/data/content";
 const SONG_PACKS_DIR = $path.join(CONTENT_DIR, "songs-pack");
 const ROM_PACKS_DIR = $path.join(CONTENT_DIR, "roms");
 const DEV_DIR = $path.join(CONTENT_DIR, "roms/#dev");
@@ -153,7 +153,8 @@ sources.forEach(({ name, path, variant }) => {
   const shortName = fs.readFileSync($path.join(path, ROMNAME)).toString();
   log(`⌚  IMPORTING: ${name} <<${shortName}>>`);
 
-  run(`${make} import SONGS="${path}" ${ARCADE_FLAG(variant)} FAST=true`, {
+  const unixPath = path.replace(/\\/g, "/");
+  run(`${make} import "SONGS=${unixPath}" ${ARCADE_FLAG(variant)} FAST=true`, {
     cwd: ROOT_DIR,
   });
 

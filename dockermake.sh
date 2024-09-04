@@ -7,10 +7,6 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-MAKE_TARGET=$1
-shift
-MAKE_ARGS="$@"
-
 cleanup() {
     docker kill "$container_id"
     docker rm "$container_id"
@@ -23,7 +19,7 @@ container_id=$(docker run -it -d \
   -v "$(pwd)":/opt/piugba \
   -e PWD=/opt/piugba \
   afska/piugba-dev \
-  make "$MAKE_TARGET" $MAKE_ARGS)
+  make "$@")
 
 docker logs -f "$container_id"
 status_code=$(docker wait "$container_id")
