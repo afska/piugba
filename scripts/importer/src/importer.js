@@ -275,7 +275,7 @@ async function run() {
   }
   await utils.report(
     async () =>
-      await utils.run(`cp ${UNIQUE_MAP_PATH} ${GLOBAL_OPTIONS.output}`),
+      await utils.run(`cp "${UNIQUE_MAP_PATH}" "${GLOBAL_OPTIONS.output}"`),
     "_unique_map.map.bin"
   );
 
