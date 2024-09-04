@@ -32,16 +32,19 @@ const run = (command, options) => {
     ...options,
   });
 };
-const getPatches = () => {
+const getBaseBranchAndPatches = () => {
   try {
     const output = run("git --no-pager branch", {
       cwd: ROOT_DIR,
       stdio: null,
-    }).toString();
-    return output
-      .split("\n")
+    }).toString().split("\n");
+
+    const baseBranch = output.find((it) => it.trim().startsWith("* ")).replace("* ", "");
+    const patches = output
       .map((it) => it.trim().replace(/^\* /, ""))
       .filter((it) => it.startsWith("patch_"));
+
+    return [baseBranch, patches];
   } catch (e) {
     console.error("Failed to get patches", e);
     process.exit(1);
@@ -53,12 +56,12 @@ const getPatches = () => {
 // -----------
 
 if (!SEARCH) {
-  const patches = getPatches();
+  const [baseBranch, patches] = getBaseBranchAndPatches();
 
   VARIANTS.forEach((variant) => {
     ENVIRONMENTS.forEach((environment) => {
       log(`⌚  COMPILING: VARIANT=${variant}, ENV=${environment}`);
-      run("git checkout master", { cwd: ROOT_DIR });
+      run(`git checkout ${baseBranch}`, { cwd: ROOT_DIR });
       run("make clean", { cwd: ROOT_DIR });
       run("make assets", { cwd: ROOT_DIR });
       run(`make build ENV="${environment}" ${ARCADE_FLAG(variant)}`, {
@@ -89,7 +92,7 @@ if (!SEARCH) {
             $path.join(ROOT_DIR, OUTPUT_EMPTY),
             $path.join(CONTENT_DIR, outputName)
           );
-          run("git checkout master", { cwd: ROOT_DIR });
+          run(`git checkout ${baseBranch}`, { cwd: ROOT_DIR });
         });
       }
     });
