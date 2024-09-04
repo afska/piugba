@@ -228,7 +228,7 @@ async function run() {
         `${$path.join(GLOBAL_OPTIONS.directory, ROM_ID_FILE_REUSE)}`.cyan
     );
   } catch (e) {}
-  await utils.run(`rm -rf ${GLOBAL_OPTIONS.output}`);
+  await utils.run(`rm -rf "${GLOBAL_OPTIONS.output}"`);
   mkdirp.sync(GLOBAL_OPTIONS.output);
   if (GLOBAL_OPTIONS.videoenable) mkdirp.sync(GLOBAL_OPTIONS.videolib);
   if (GLOBAL_OPTIONS.hqaudioenable) mkdirp.sync(GLOBAL_OPTIONS.hqaudiolib);

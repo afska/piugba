@@ -24,10 +24,7 @@ module.exports = (metadata, charts, isBonus) => {
   if (!GLOBAL_OPTIONS.arcade && !isBonus) {
     const singleCharts = charts.filter((it) => !it.header.isDouble);
     NON_NUMERIC_LEVELS.forEach((difficulty) => {
-      if (
-        !hasDifficulty(singleCharts, difficulty) &&
-        GLOBAL_OPTIONS.mode === "auto"
-      )
+      if (!hasDifficulty(singleCharts, difficulty))
         autoSetDifficulty(singleCharts, difficulty);
     });
     checkLevelOrder(singleCharts);
