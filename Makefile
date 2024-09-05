@@ -323,7 +323,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: check-env clean assets build start rebuild restart reimport check install
+.PHONY: check-env install check clean assets build import package start rebuild restart reimport
 
 check-env:
 ifndef DEVKITPRO
@@ -331,9 +331,17 @@ ifndef DEVKITPRO
 	$(error "Aborting")
 endif
 
+install: check-env
+	./scripts/importer/install.sh
+
+check: check-env
+	./scripts/toolchain/check.sh
+
 assets: check-env
 	./scripts/assets.sh
 	touch $(COMPILED_SPRITES_DIR)/assets.stamp
+
+# build: ...
 
 import: check-env
 	./scripts/importer/run.sh --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
@@ -352,11 +360,5 @@ rebuild: check-env clean package
 restart: check-env rebuild start
 
 reimport: check-env import package start
-
-check: check-env
-	./scripts/toolchain/check.sh
-
-install: check-env
-	./scripts/importer/install.sh
 
 # EOF

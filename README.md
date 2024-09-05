@@ -94,6 +94,8 @@ docker pull afska/piugba-dev
 
 ### Commands
 
+- `make install`: Installs the importer dependencies
+- `make check`: Verifies that all the tools are installed correctly
 - `make clean`: Cleans build artifacts
 - `make assets`: Compiles the needed assets in `src/data/content/_compiled_sprites` (required for compiling)
 - `make build`: Compiles and generates a `.gba` file without data
@@ -103,8 +105,6 @@ docker pull afska/piugba-dev
 - `make rebuild`: Recompiles (clean+build+package) a full ROM
 - `make restart`: Recompiles and starts the ROM
 - `make reimport`: Reimports the songs and starts the ROM without recompiling
-- `make check`: Verifies that all the tools are installed correctly
-- `make install`: Installs the importer dependencies
 
 ### Parameters
 
