@@ -96,6 +96,9 @@ typedef struct {
 
   inline u8 data() { return (timestampAndData >> 24) & 0xff; }
   inline bool isFake() { return timestampAndData & 1; }
+
+  u32 bpm() { return param & 0b1111111111111111111; }
+  u32 beatDurationFrames() { return (param >> 20) & 0b111111111111; }
 } Event;
 
 #endif  // EVENT_H

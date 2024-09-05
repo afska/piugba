@@ -131,7 +131,7 @@ CODE_IWRAM void ChartReader::processRhythmEvents() {
         if (type == EventType::SET_TEMPO) {
           u32 oldBpm = bpm;
           u32 scrollChangeFrames = event->param2 & 0xffff;
-          bpm = event->param;
+          bpm = event->bpm();
           scrollBpm = event->param2 >> 16;
           if (event->param2 == INFINITY) {
             scrollChangeFrames = 0;
@@ -143,7 +143,7 @@ CODE_IWRAM void ChartReader::processRhythmEvents() {
             lastBpmChange = event->timestamp();
             lastBeat = -1;
             lastTick = 0;
-            beatDurationFrames = -1;
+            beatDurationFrames = event->beatDurationFrames();
             beatFrame = 0;
             didSetInitialBpm = true;
           }
