@@ -105,6 +105,9 @@ static bool did_run = false;
             buffer[i] = (signed char)crossfaded_sample;                  \
           }                                                              \
         }                                                                \
+        if (src_pos >= src_len) {                                        \
+          ON_STOP;                                                       \
+        }                                                                \
       } else {                                                           \
         ON_STOP;                                                         \
       }                                                                  \
@@ -140,6 +143,9 @@ static bool did_run = false;
           *buffer++ = (last_sample + cur_sample) >> 9;                   \
           *buffer++ = cur_sample >> 8;                                   \
           last_sample = cur_sample;                                      \
+        }                                                                \
+        if (src_pos >= src_len) {                                        \
+          ON_STOP;                                                       \
         }                                                                \
       } else {                                                           \
         ON_STOP;                                                         \
