@@ -59,6 +59,10 @@ inline bool isDouble() {
 
 class Syncer {
  public:
+  std::string pendingAudio = "";
+  u32 pendingSeek = 0;
+  // ---
+
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
   int $remoteNumericLevel = -1;

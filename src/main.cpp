@@ -79,6 +79,17 @@ int main() {
 
         EFFECT_render();
         engine->render();
+
+        if (syncer->pendingAudio != "") {
+          player_play(syncer->pendingAudio.c_str(),
+                      isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
+          syncer->pendingAudio = "";
+        }
+
+        if (syncer->pendingSeek > 0) {
+          player_seek(syncer->pendingSeek);
+          syncer->pendingSeek = 0;
+        }
       },
       [](u32 current) {
         // (onAudioChunk)

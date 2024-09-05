@@ -152,7 +152,7 @@ void SelectionScene::tick(u16 keys) {
     return;
 
   if (SEQUENCE_isMultiplayerSessionDead()) {
-    player_stop();
+    stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
     return;
   }
@@ -220,17 +220,6 @@ void SelectionScene::render() {
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     init++;
-  }
-
-  if (pendingAudio != "") {
-    player_play(pendingAudio.c_str(),
-                isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
-    pendingAudio = "";
-  }
-
-  if (pendingSeek > 0) {
-    player_seek(pendingSeek);
-    pendingSeek = 0;
   }
 }
 
@@ -360,7 +349,7 @@ void SelectionScene::goToSong() {
   if (numericLevels.empty())
     return;
 
-  player_stop();
+  stop();
   confirmed = false;
 
   bool isStory = IS_STORY(SAVEFILE_getGameMode());
@@ -493,7 +482,7 @@ void SelectionScene::processMenuEvents() {
       playNow(SOUND_MOD);
       SAVEFILE_write8(SRAM->mods.multiplier, multiplier->change());
     } else if (!isCustomOffsetAdjustmentEnabled()) {
-      player_stop();
+      stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new PixelTransitionEffect());
     }
@@ -501,7 +490,7 @@ void SelectionScene::processMenuEvents() {
 
   if (isCustomOffsetAdjustmentEnabled() && multiplier->hasBeenReleasedNow()) {
     if (!multiplier->getHandledFlag()) {
-      player_stop();
+      stop();
       engine->transitionIntoScene(new ModsScene(engine, fs),
                                   new PixelTransitionEffect());
     }
@@ -512,7 +501,7 @@ void SelectionScene::processMenuEvents() {
     return;
 
   if (settingsMenuInput->hasBeenPressedNow()) {
-    player_stop();
+    stop();
     engine->transitionIntoScene(new SettingsScene(engine, fs),
                                 new PixelTransitionEffect());
   }
@@ -528,8 +517,6 @@ bool SelectionScene::onCustomOffsetChange(ArrowDirection selector, int offset) {
       unconfirm();
       updateSelection();
 
-      pendingAudio = "";
-      pendingSeek = 0;
       playNow(SOUND_MOD);
     }
 
@@ -556,7 +543,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
     pixelBlink->blink();
 
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
-    player_stop();
+    stop();
     scrollTo(lastUnlockedSongIndex);
 
     return true;
@@ -579,7 +566,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
       if (selector == ArrowDirection::UPRIGHT && !isDouble) {
         SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
                         ArcadeChartsOpts::DOUBLE);
-        player_stop();
+        stop();
         engine->transitionIntoScene(
             new SelectionScene(engine, fs, InitialLevel::FIRST_LEVEL),
             new PixelTransitionEffect());
@@ -587,7 +574,7 @@ bool SelectionScene::onNumericLevelChange(ArrowDirection selector,
       } else if (selector == ArrowDirection::UPLEFT && isDouble) {
         SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
                         ArcadeChartsOpts::SINGLE);
-        player_stop();
+        stop();
         engine->transitionIntoScene(
             new SelectionScene(engine, fs, InitialLevel::LAST_LEVEL),
             new PixelTransitionEffect());
@@ -626,7 +613,7 @@ bool SelectionScene::onSelectionChange(ArrowDirection selector,
       return true;
     }
 
-    player_stop();
+    stop();
 
     if (isOnPageEdge)
       setPage(page + direction, direction);
@@ -665,8 +652,8 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   printNumericLevel(chart);
   loadSelectedSongGrade();
   if (!isChangingLevel && initialLevel == InitialLevel::KEEP_LEVEL) {
-    pendingAudio = song->audioPath;
-    pendingSeek = song->sampleStart;
+    syncer->pendingAudio = song->audioPath;
+    syncer->pendingSeek = song->sampleStart;
   }
 
   SONG_free(song);
@@ -676,7 +663,8 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   highlighter->select(selected);
 
   if (initialLevel != InitialLevel::KEEP_LEVEL) {
-    pendingAudio = SOUND_MOD_STR;
+    syncer->pendingAudio = SOUND_MOD_STR;
+    syncer->pendingSeek = 0;
     initialLevel = InitialLevel::KEEP_LEVEL;
   }
 }
@@ -763,8 +751,8 @@ void SelectionScene::setPage(u32 page, int direction) {
 }
 
 void SelectionScene::startPageCross(int direction) {
-  pendingAudio = "";
-  pendingSeek = 0;
+  syncer->pendingAudio = "";
+  syncer->pendingSeek = 0;
   this->isCrossingPage = 1;
   this->selected = direction < 0 ? PAGE_SIZE - 1 : 0;
   pixelBlink->blink();
@@ -949,7 +937,7 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
 }
 
 void SelectionScene::quit() {
-  player_stop();
+  stop();
   engine->transitionIntoScene(SEQUENCE_getMainScene(),
                               new PixelTransitionEffect());
 }

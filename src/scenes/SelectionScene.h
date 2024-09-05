@@ -52,8 +52,6 @@ class SelectionScene : public Scene {
   std::unique_ptr<PixelBlink> pixelBlink;
   const GBFS_FILE* fs;
   InitialLevel initialLevel;
-  std::string pendingAudio = "";
-  u32 pendingSeek = 0;
   u32 animationFrame = 0;
 
   std::unique_ptr<Library> library;
@@ -81,8 +79,14 @@ class SelectionScene : public Scene {
 
   inline void playNow(const char* name) {
     player_play(name, isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
-    pendingAudio = "";
-    pendingSeek = 0;
+    syncer->pendingAudio = "";
+    syncer->pendingSeek = 0;
+  }
+
+  inline void stop() {
+    player_stop();
+    syncer->pendingAudio = "";
+    syncer->pendingSeek = 0;
   }
 
   inline SongFile* getSelectedSong() { return songs[selected].get(); }
