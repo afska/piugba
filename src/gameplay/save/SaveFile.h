@@ -98,9 +98,9 @@ inline void SAVEFILE_resetMods() {
 }
 
 inline void SAVEFILE_resetRumble() {
-  u8 rumbleOpts = RUMBLE_OPTS_BUILD(2, 5);
+  u8 rumbleOpts = RUMBLE_OPTS_BUILD(2, 0);
 
-  SAVEFILE_write8(SRAM->adminSettings.rumbleFrames, 4);
+  SAVEFILE_write8(SRAM->adminSettings.rumbleFrames, 10);
   SAVEFILE_write8(SRAM->adminSettings.rumbleOpts, rumbleOpts);
 }
 
@@ -210,8 +210,8 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   if (arcadeCharts >= 2 || rumble >= 3 || ioBlink >= 3 || sramBlink >= 3 ||
       navigationStyle >= 2 || offsetEditingEnabled >= 2 || hqMode >= 5 ||
       ewramOverclock >= 2 || ps2Input >= 2 || rumbleFrames == 0 ||
-      rumbleFrames >= 9 || RUMBLE_PREROLL(rumbleOpts) == 0 ||
-      RUMBLE_PREROLL(rumbleOpts) >= 9 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
+      rumbleFrames >= 13 || RUMBLE_PREROLL(rumbleOpts) == 0 ||
+      RUMBLE_PREROLL(rumbleOpts) >= 13 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
       globalOffset < -3000 || globalOffset > 3000 || (globalOffset & 7) != 0) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;

@@ -176,14 +176,14 @@ bool AdminScene::selectOption(u32 selected, int direction) {
     switch (selected) {
       case 0: {
         SAVEFILE_write8(SRAM->adminSettings.rumbleFrames,
-                        1 + change(rumbleFrames - 1, 8, direction));
+                        1 + change(rumbleFrames - 1, 12, direction));
         return true;
       }
       case 1: {
-        SAVEFILE_write8(
-            SRAM->adminSettings.rumbleOpts,
-            RUMBLE_OPTS_BUILD(1 + change(rumblePreRollFrames - 1, 8, direction),
-                              rumbleIdleCyclePeriod));
+        SAVEFILE_write8(SRAM->adminSettings.rumbleOpts,
+                        RUMBLE_OPTS_BUILD(
+                            1 + change(rumblePreRollFrames - 1, 12, direction),
+                            rumbleIdleCyclePeriod));
         return true;
       }
       case 2: {
