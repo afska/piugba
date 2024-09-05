@@ -355,7 +355,6 @@ CODE_ROM void player_stop() {
   rate = 0;
   rate_counter = 0;
   current_audio_chunk = 0;
-  is_pcm = false;
 }
 
 CODE_ROM bool player_isPlaying() {
