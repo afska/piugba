@@ -163,7 +163,7 @@ sources.forEach(({ name, path, variant }) => {
       $path.join(CONTENT_DIR, OUTPUT_BUILDS(variant)[environment]),
       $path.join(ROOT_DIR, OUTPUT_EMPTY)
     );
-    run(`${make} package`, { cwd: ROOT_DIR });
+    run(`${make} pkg`, { cwd: ROOT_DIR });
     const outputName = `${prefix} piuGBA - ${shortName}.gba`;
     if (environment === "production") {
       fs.copyFileSync(
