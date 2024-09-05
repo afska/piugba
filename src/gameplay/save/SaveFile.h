@@ -119,6 +119,7 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_resetRumble();
 
 #ifdef SENV_DEVELOPMENT
+  SAVEFILE_write8(SRAM->adminSettings.rumble, RumbleOpts::rNO_RUMBLE);
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::PIU);
 #endif

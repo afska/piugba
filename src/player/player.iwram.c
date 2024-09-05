@@ -259,7 +259,7 @@ INLINE void dsound_start_audio_copy(const void* source) {
                 DMA_ENABLE | 1;
 }
 
-INLINE void loadFile(const char* name, bool forceGSM) {
+INLINE void load_file(const char* name, bool forceGSM) {
   PlaybackState.msecs = 0;
   PlaybackState.hasFinished = false;
   PlaybackState.isLooping = false;
@@ -305,12 +305,12 @@ CODE_ROM void player_unload() {
 }
 
 CODE_ROM bool player_playSfx(const char* name) {
-  loadFile(name, active_flashcart == EZ_FLASH_OMEGA);
+  load_file(name, active_flashcart == EZ_FLASH_OMEGA);
   return is_pcm;
 }
 
 CODE_ROM bool player_play(const char* name, bool forceGSM) {
-  loadFile(name, forceGSM);
+  load_file(name, forceGSM);
   return is_pcm;
 }
 
