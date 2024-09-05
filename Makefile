@@ -7,6 +7,8 @@
 export WORKDIR = $(PWD)
 export DEVKITARM = $(DEVKITPRO)/devkitARM
 export COMPILED_SPRITES_DIR := $(WORKDIR)/src/data/content/_compiled_sprites
+LAST_ENV_FILE := $(WORKDIR)/.last_env
+LAST_BUILDTYPE_FILE := $(WORKDIR)/.last_buildtype
 
 export LIBTONC :=              $(DEVKITPRO)/libtonc
 export LIBGBA  :=              $(DEVKITPRO)/libgba
@@ -330,6 +332,24 @@ ifndef DEVKITPRO
 	$(warning Missing environment variable: DEVKITPRO. See README.md)
 	$(error "Aborting")
 endif
+	@if [ ! -f $(LAST_ENV_FILE) ]; then \
+			echo "Last environment unknown, running clean..."; \
+			echo $(ENV) > $(LAST_ENV_FILE); \
+			$(MAKE) clean; \
+	elif [ "$$(cat $(LAST_ENV_FILE))" != "$(ENV)" ]; then \
+			echo "Environment changed from $$(cat $(LAST_ENV_FILE)) to $(ENV), running clean..."; \
+			echo $(ENV) > $(LAST_ENV_FILE); \
+			$(MAKE) clean; \
+	fi
+	@if [ ! -f $(LAST_BUILDTYPE_FILE) ]; then \
+			echo "Last build type unknown, running clean..."; \
+			echo $(ARCADE) > $(LAST_BUILDTYPE_FILE); \
+			$(MAKE) clean; \
+	elif [ "$$(cat $(LAST_BUILDTYPE_FILE))" != "$(ARCADE)" ]; then \
+			echo "Build type changed from ARCADE=$$(cat $(LAST_BUILDTYPE_FILE)) to ARCADE=$(ARCADE), running clean..."; \
+			echo $(ARCADE) > $(LAST_BUILDTYPE_FILE); \
+			$(MAKE) clean; \
+	fi
 
 install: check-env
 	./scripts/importer/install.sh
