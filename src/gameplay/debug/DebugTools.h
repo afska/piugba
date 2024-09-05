@@ -66,7 +66,11 @@ inline void BSOD(std::string message) {
   player_stop();
   SCENE_init();
   BACKGROUND_enable(true, false, false, false);
-  TextStream::instance().setText(message, 0, -3);
+  TextStream::instance().setText(std::string("piuGBA - ") +
+                                     (ENV_ARCADE ? "arcade - " : "full - ") +
+                                     (ENV_DEVELOPMENT ? "dev" : "prod"),
+                                 0, -3);
+  TextStream::instance().setText(message, 2, -3);
   while (true)
     ;
 }
