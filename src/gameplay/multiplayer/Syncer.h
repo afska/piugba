@@ -5,6 +5,7 @@
 #include <libgba-sprite-engine/gba/tonc_memdef.h>
 #include <libgba-sprite-engine/gba/tonc_memmap.h>
 
+#include <string>
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
@@ -59,10 +60,6 @@ inline bool isDouble() {
 
 class Syncer {
  public:
-  std::string pendingAudio = "";
-  u32 pendingSeek = 0;
-  // ---
-
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
   int $remoteNumericLevel = -1;
@@ -125,6 +122,13 @@ class Syncer {
   void resetData();
   void resetGameState();
   void resetError();
+
+ public:
+  // ---
+  // HACK: This doesn't belong here.
+  // Used by SelectionScene to delay music playback until render finishes
+  std::string pendingAudio = "";
+  u32 pendingSeek = 0;
 };
 
 extern Syncer* syncer;
