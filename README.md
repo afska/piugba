@@ -96,15 +96,16 @@ docker pull afska/piugba-dev
 
 - `make install`: Installs the importer dependencies
 - `make check`: Verifies that all the tools are installed correctly
-- `make clean`: Cleans build artifacts
+- `make clean`: Cleans build artifacts (except assets)
 - `make assets`: Compiles the needed assets in `src/data/content/_compiled_sprites` (required for compiling)
 - `make build`: Compiles and generates a `.gba` file without data
 - `make import`: Imports the songs from `src/data/content/songs` to a GBFS file
-- `make package`: Compiles and appends the GBFS file to the ROM
-- `make start`: Starts the compiled ROM
-- `make rebuild`: Recompiles (clean+build+package) a full ROM
-- `make restart`: Recompiles and starts the ROM
-- `make reimport`: Reimports the songs and starts the ROM without recompiling
+- `make pkg`: Appends the GBFS file to the ROM (`piugba.gba` -> `piugba.out.gba`)
+- `make package`: Compiles and appends the GBFS file to the ROM _(build+pkg)_
+- `make start`: Packages and starts the compiled ROM _(package + launch rom)_
+- `make rebuild`: Recompiles a full ROM _(clean+package)_
+- `make restart`: Recompiles and starts the ROM _(rebuild+start)_
+- `make reimport`: Reimports the songs and starts the ROM without recompiling _(import+package+start)_
 
 ### Parameters
 

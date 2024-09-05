@@ -323,7 +323,7 @@ endif		# End BUILD switch
 
 # --- More targets ----------------------------------------------------
 
-.PHONY: check-env install check clean assets build import package start rebuild restart reimport
+.PHONY: check-env install check clean assets build import pkg package start rebuild restart reimport
 
 check-env:
 ifndef DEVKITPRO
@@ -347,8 +347,10 @@ import: check-env
 	./scripts/importer/run.sh --directory "$(SONGS)" --videolib="$(VIDEOLIB)" --hqaudiolib="$(HQAUDIOLIB)" --boss=$(BOSS) --arcade=$(ARCADE) --fast=$(FAST) --videoenable=$(VIDEOENABLE) --hqaudioenable=$(HQAUDIOENABLE)
 	cd src/data/content/_compiled_files && gbfs ../files.gbfs *
 
-package: check-env build
+pkg: check-env
 	./scripts/package.sh "piugba.gba" "src/data/content/files.gbfs"
+
+package: check-env build pkg
 
 start: check-env package
 	@if command -v start > /dev/null; then \
