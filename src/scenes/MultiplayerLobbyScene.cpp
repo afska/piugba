@@ -8,7 +8,9 @@
 #include "utils/SceneUtils.h"
 
 const std::string messages[] = {
-    "Connecting...\r\n\r\n(Press SELECT to cancel)",
+    "Connect a Link Cable or\r\na Wireless Adapter...\r\n\r\n(Press "
+    "SELECT to "
+    "cancel)",
     "ERROR:\r\nwtf?!",
     "ERROR:\r\nToo many players!",
     "ERROR:\r\nROM IDs don't match!",
