@@ -18,7 +18,8 @@
 const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
 const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
                                        472446402,  1116691497, 2319282339};
-// (0.86, 0.73, 0.47, 0, (1+)0.11, (1+)0.26, (1)+0.54)
+// (0.47, 0.73, 0.86, 0, (1+)0.11, (1+)0.26, (1)+0.54)
+// (empirical measure)
 
 class ChartReader : public TimingProvider {
  public:
