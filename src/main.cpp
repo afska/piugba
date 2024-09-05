@@ -21,8 +21,11 @@ const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
 void validateBuild();
 void setUpInterrupts();
+void startRandomSeed();
+void stopRandomSeed();
 void synchronizeSongStart();
 static std::shared_ptr<GBAEngine> engine{new GBAEngine()};
+static bool isCalculatingRandomSeed = false;
 VideoStore* videoStore = new VideoStore();
 PS2Keyboard* ps2Keyboard = new PS2Keyboard();
 LinkUniversal* linkUniversal =
@@ -55,6 +58,7 @@ int main() {
   setUpInterrupts();
   player_init();
   SEQUENCE_initialize(engine, fs);
+  startRandomSeed();
 
   engine->setScene(SEQUENCE_getInitialScene());
   player_forever(
@@ -114,6 +118,11 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
+  if (isCalculatingRandomSeed) {
+    stopRandomSeed();
+    return;
+  }
+
   if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
     return;
@@ -152,6 +161,25 @@ void setUpInterrupts() {
   REG_KEYCNT = 0b1100000000001111;
   interrupt_set_handler(INTR_KEYPAD, ISR_reset);
   interrupt_enable(INTR_KEYPAD);
+}
+
+inline void startRandomSeed() {
+  isCalculatingRandomSeed = true;
+  REG_TM2CNT_L = 0;
+  REG_TM2CNT_H = 0;
+  REG_TM2CNT_H = TM_ENABLE | TM_FREQ_1;
+  REG_KEYCNT = 0b0100001111111111;
+}
+
+inline void stopRandomSeed() {
+  // A+B+START+SELECT
+  REG_KEYCNT = 0b1100000000001111;
+  isCalculatingRandomSeed = false;
+
+  REG_TM2CNT_H = 0;
+  __qran_seed += SAVEFILE_read32(SRAM->randomSeed);
+  __qran_seed += (1 + (~REG_KEYS & KEY_ANY)) * 1664525 * REG_TM2CNT_L;
+  SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
 }
 
 void synchronizeSongStart() {

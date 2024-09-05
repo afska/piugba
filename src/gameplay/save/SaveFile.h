@@ -316,6 +316,9 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
     OFFSET_initialize();
     SAVEFILE_resetAdminSettings();
 
+    SAVEFILE_write8(SRAM->isBonusMode, false);
+    SAVEFILE_write32(SRAM->randomSeed, 0);
+
     SAVEFILE_write8(
         SRAM->deathMixProgress.completedSongs[DifficultyLevel::NORMAL], 0);
     SAVEFILE_write8(
