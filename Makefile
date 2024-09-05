@@ -230,7 +230,7 @@ endif
 
 GAMETITLE=piuGBA
 GAMEMAKER=AGB
-GAMECODE=AZCE # Megaman Zero (SRAM - 64kb)
+GAMECODE=V49E # Drill Dozer (Rumble - SRAM - 32kb)
 MODE ?= auto
 SONGS ?= src/data/content/songs
 VIDEOLIB ?= src/data/content/piuGBA_videos

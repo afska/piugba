@@ -47,6 +47,7 @@ static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
 int main() {
   linkUniversal->deactivate();
+  RUMBLE_init();
 
   REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
 

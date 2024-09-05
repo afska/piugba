@@ -211,9 +211,8 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
       navigationStyle >= 2 || offsetEditingEnabled >= 2 || hqMode >= 5 ||
       ewramOverclock >= 2 || ps2Input >= 2 || rumbleFrames == 0 ||
       rumbleFrames >= 9 || RUMBLE_PREROLL(rumbleOpts) == 0 ||
-      RUMBLE_PREROLL(rumbleOpts) >= 9 || RUMBLE_IDLE(rumbleOpts) <= 1 ||
-      RUMBLE_IDLE(rumbleOpts) >= 7 || globalOffset < -3000 ||
-      globalOffset > 3000 || (globalOffset & 7) != 0) {
+      RUMBLE_PREROLL(rumbleOpts) >= 9 || RUMBLE_IDLE(rumbleOpts) >= 7 ||
+      globalOffset < -3000 || globalOffset > 3000 || (globalOffset & 7) != 0) {
     SAVEFILE_resetAdminSettings();
     fixes |= 0b100000;
   }

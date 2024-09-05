@@ -127,7 +127,6 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   setUpGameConfig();
-  RUMBLE_init();
 
   if (isMultiplayer()) {
     syncer->resetSongState();
