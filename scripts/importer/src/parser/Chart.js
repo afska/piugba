@@ -718,7 +718,7 @@ module.exports = class Chart {
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
-const FRAME_MS = 16.67;
+const FRAME_MS = 17;
 const BEAT_UNIT = 4;
 const FAST_BPM_WARP = 999999;
 const NOTE_DATA_SINGLE = /^[\dF][\dF][\dF][\dF][\dF]$/;
