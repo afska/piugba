@@ -55,13 +55,13 @@ Playback PlaybackState;
 //           'timer =', 65536-(280896/i), '; buffer =',
 //           i, '; sample rate =', i*(1<<24)/280896, 'hz'
 //         );
-//   Playback rate can be changed by +/- 12%, 26%, or 54%.
+//   Playback rate can be changed by +/- 13%, 26%, or 53%.
 // - In PCM s8 mode:
 //   Audio is taken from the flash cart's SD card (gba-flashcartio).
 //   The sample rate is 36314hz.
 //   Each PCM chunk is 304 bytes and represents 304 samples.
 //   Two chunks are copied per frame.
-//   Playback rate can be either 1 or 1.12.
+//   Playback rate can be either 1 or 1.13.
 
 static const int rate_delays[] = {1, 2, 4, 0, 4, 2, 1};
 static signed char rate_xfade[304];

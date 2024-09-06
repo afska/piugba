@@ -16,10 +16,10 @@
 #include "utils/pool/ObjectPool.h"
 
 const u8 ARROW_MIRROR_INDEXES[] = {0, 1, 2, 3, 4, 3, 4, 2, 0, 1};
-const u32 FRACUMUL_RATE_AUDIO_LAG[] = {2018634629, 3135326125, 3693671874, 0,
-                                       472446402,  1116691497, 2319282339};
-// (0.47, 0.73, 0.86, 0, (1+)0.11, (1+)0.26, (1)+0.54)
-// (empirical measure)
+const u32 FRACUMUL_RATE_SCALE[] = {2018634629, 3178275798, 3736621547, 0,
+                                   558345748,  1116691497, 2276332666};
+// (0.47, 0.74, 0.87, 0, (1+)0.13, (1+)0.26, (1)+0.53)
+// (empirical measure, checked multiple times)
 
 class ChartReader : public TimingProvider {
  public:
@@ -56,11 +56,9 @@ class ChartReader : public TimingProvider {
   inline void syncRate(u32 base, int rate) {
     rateAudioLag = audioLag;
     if (rate > 0)
-      rateAudioLag +=
-          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+      rateAudioLag += MATH_fracumul(audioLag, FRACUMUL_RATE_SCALE[base + rate]);
     if (rate < 0)
-      rateAudioLag =
-          MATH_fracumul(audioLag, FRACUMUL_RATE_AUDIO_LAG[base + rate]);
+      rateAudioLag = MATH_fracumul(audioLag, FRACUMUL_RATE_SCALE[base + rate]);
   }
 
   inline int getJudgementOffset() {
