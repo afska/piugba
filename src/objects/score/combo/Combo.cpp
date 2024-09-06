@@ -8,19 +8,24 @@
 
 const u32 DIGITS_POSITION_X = 7;
 const u32 DIGITS_POSITION_Y = 91;
-const int OFFSET_3_DIGITS = -26;
-const int OFFSET_4_DIGITS = -13;
+const u32 NUMBER_WIDTH_3_DIGITS = 26;
+const u32 NUMBER_WIDTH_4_DIGITS = 22;
+const int OFFSET_3_DIGITS = -NUMBER_WIDTH_3_DIGITS;
+const int OFFSET_4_DIGITS = -7;
 
 Combo::Combo(u8 playerId) {
   this->playerId = playerId;
 
   title = std::unique_ptr<ComboTitle>{new ComboTitle(playerId)};
 
+  if (SAVEFILE_isUsingModernTheme())
+    offsetX = -1;
+
   for (u32 i = 0; i < COMBO_DIGITS; i++) {
     auto digit = std::unique_ptr<Digit>{new Digit(
         DigitSize::BIG,
         (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
-            DIGITS_POSITION_X + (i > 0 ? OFFSET_3_DIGITS : 0),
+            DIGITS_POSITION_X + offsetX + (i > 0 ? OFFSET_3_DIGITS : 0),
         GameState.scorePositionY + DIGITS_POSITION_Y, i, playerId > 0)};
     digits.push_back(std::move(digit));
   }
@@ -68,9 +73,11 @@ void Combo::relocate() {
   for (u32 i = 0; i < COMBO_DIGITS; i++)
     digits[i]->relocate(
         (isDouble() ? GAME_POSITION_X[1] : GameState.positionX[playerId]) +
-            DIGITS_POSITION_X + (i > 0 && !has4Digits ? OFFSET_3_DIGITS : 0) +
+            DIGITS_POSITION_X + offsetX +
+            (i > 0 && !has4Digits ? OFFSET_3_DIGITS : 0) +
             (has4Digits ? OFFSET_4_DIGITS : 0),
-        GameState.scorePositionY + DIGITS_POSITION_Y);
+        GameState.scorePositionY + DIGITS_POSITION_Y,
+        has4Digits ? NUMBER_WIDTH_4_DIGITS : NUMBER_WIDTH_3_DIGITS);
 }
 
 void Combo::disableMosaic() {

@@ -12,11 +12,10 @@ const u32 MAX_SCALE_STEP = 5;
 
 const u32 SCALE_STEPS[] = {256, 233, 213, 197, 171, 205};
 
-Score::Score(LifeBar* lifeBar, u8 playerId, bool isLocal) {
+Score::Score(LifeBar* lifeBar, u8 playerId, bool isVs, bool isLocal) {
   lifeBar->setLife(life);
   this->lifeBar = lifeBar;
   this->playerId = playerId;
-  this->isLocal = isLocal;
 
   feedback = std::unique_ptr<Feedback>{new Feedback(playerId)};
   combo = std::unique_ptr<Combo>{new Combo(playerId)};
@@ -32,9 +31,11 @@ Score::Score(LifeBar* lifeBar, u8 playerId, bool isLocal) {
     feedback->get()->setAffineId(AFFINE_BASE + playerId);
     combo->getTitle()->get()->setDoubleSize(true);
     combo->getTitle()->get()->setAffineId(AFFINE_BASE + playerId);
-    for (u32 i = 0; i < COMBO_DIGITS; i++) {
-      combo->getDigits()->at(i)->get()->setDoubleSize(true);
-      combo->getDigits()->at(i)->get()->setAffineId(AFFINE_BASE + playerId);
+    if (!isVs) {
+      for (u32 i = 0; i < COMBO_DIGITS; i++) {
+        combo->getDigits()->at(i)->get()->setDoubleSize(true);
+        combo->getDigits()->at(i)->get()->setAffineId(AFFINE_BASE + playerId);
+      }
     }
   }
 }

@@ -34,6 +34,7 @@ class Combo {
   std::unique_ptr<ComboTitle> title;
   std::vector<std::unique_ptr<Digit>> digits;
   u8 playerId;
+  int offsetX = 0;
 };
 
 #endif  // COMBO_H

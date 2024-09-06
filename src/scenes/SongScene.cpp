@@ -153,7 +153,7 @@ void SongScene::load() {
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId] = std::unique_ptr<Score>{new Score(
-        lifeBars[playerId].get(), playerId, playerId == localPlayerId)};
+        lifeBars[playerId].get(), playerId, $isVs, playerId == localPlayerId)};
 
   judge = std::unique_ptr<Judge>{
       new Judge(arrowPool.get(), &arrowHolders, &scores,

@@ -10,13 +10,13 @@
 #include "gameplay/save/SaveFile.h"
 #include "utils/SpriteUtils.h"
 
-const u32 DIGIT_WIDTHS[] = {26, 19};
+const u32 DIGIT_WIDTHS[] = {26, 19, 14};
 const u32 TOTAL_NUMBERS = 10;
 
 Digit::Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles) {
   this->size = size;
   this->currentIndex = index;
-  reloadPosition(x, y);
+  reloadPosition(x, y, DIGIT_WIDTHS[size]);
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
@@ -50,8 +50,8 @@ void Digit::set(u32 value, bool isRed) {
                        (isRed ? TOTAL_NUMBERS : 0));
 }
 
-void Digit::relocate(u32 x, u32 y) {
-  reloadPosition(x, y);
+void Digit::relocate(u32 x, u32 y, u32 spacing) {
+  reloadPosition(x, y, spacing);
 
   if (!shouldBeVisible()) {
     SPRITE_hide(get());
@@ -59,8 +59,8 @@ void Digit::relocate(u32 x, u32 y) {
   }
 }
 
-void Digit::reloadPosition(u32 x, u32 y) {
-  animationPositionX = x + currentIndex * DIGIT_WIDTHS[size];
+void Digit::reloadPosition(u32 x, u32 y, u32 spacing) {
+  animationPositionX = x + currentIndex * spacing;
   animationPositionY = y;
 }
 

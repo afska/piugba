@@ -12,8 +12,8 @@ class Digit : public AnimatedIndicator {
   Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles);
 
   void set(u32 value, bool isRed);
-  void relocate(u32 x, u32 y);
-  void reloadPosition(u32 x, u32 y);
+  void relocate(u32 x, u32 y, u32 spacing = 26);
+  void reloadPosition(u32 x, u32 y, u32 spacing = 26);
   void setSize(DigitSize newSize);
   bool shouldBeVisible() { return currentIndex != 0 || currentValue != 0; }
 
