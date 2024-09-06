@@ -25,6 +25,9 @@ class DanceGradeScene : public Scene {
                   const GBFS_FILE* fs,
                   std::unique_ptr<Evaluation> evaluation,
                   std::unique_ptr<Evaluation> remoteEvaluation,
+                  std::string songTitle,
+                  std::string songArtist,
+                  std::string songLevel,
                   bool differentCharts,
                   bool isLastSong);
 
@@ -42,6 +45,9 @@ class DanceGradeScene : public Scene {
 
   std::unique_ptr<Evaluation> evaluation;
   std::unique_ptr<Evaluation> remoteEvaluation;
+  std::string songTitle;
+  std::string songArtist;
+  std::string songLevel;
   std::unique_ptr<Grade> grade;
   std::array<std::unique_ptr<Total>, FEEDBACK_TYPES_TOTAL> totals;
   std::unique_ptr<Total> maxComboTotal;

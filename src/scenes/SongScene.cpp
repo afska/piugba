@@ -900,7 +900,8 @@ void SongScene::finishAndGoToEvaluation() {
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
-          $isVsDifferentLevels, isLastSong),
+          std::string(song->title), std::string(song->artist),
+          buildLevelString(), $isVsDifferentLevels, isLastSong),
       new PixelTransitionEffect());
 }
 
@@ -958,8 +959,8 @@ void SongScene::continueDeathMix() {
       SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
 
     engine->transitionIntoScene(
-        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, false,
-                            true),
+        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, "",
+                            "DeathMix", "", false, true),
         new PixelTransitionEffect());
   }
 }
@@ -1343,6 +1344,12 @@ bool SongScene::seek(u32 msecs) {
     return false;
   }
   return true;
+}
+
+std::string SongScene::buildLevelString() {
+  return $isVsDifferentLevels
+             ? chart->getLevelString() + " / " + remoteChart->getLevelString()
+             : chart->getLevelString();
 }
 
 void SongScene::unload() {

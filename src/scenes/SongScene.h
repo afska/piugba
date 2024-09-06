@@ -176,6 +176,8 @@ class SongScene : public Scene {
   void endSeek(u32 previousMultiplier);
   bool seek(u32 msecs);
 
+  std::string buildLevelString();
+
   void unload();
 };
 

@@ -25,7 +25,7 @@ extern "C" {
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
-const u32 TEXT_COLOR = 0x7FFF;
+const u32 TEXT_COLOR = 0b111111111111101;
 const u32 TEXT_ROW = 17;
 const u32 SCORE_DIGITS = 8;
 
@@ -41,12 +41,18 @@ DanceGradeScene::DanceGradeScene(std::shared_ptr<GBAEngine> engine,
                                  const GBFS_FILE* fs,
                                  std::unique_ptr<Evaluation> evaluation,
                                  std::unique_ptr<Evaluation> remoteEvaluation,
+                                 std::string songTitle,
+                                 std::string songArtist,
+                                 std::string songLevel,
                                  bool differentCharts,
                                  bool isLastSong)
     : Scene(engine) {
   this->fs = fs;
   this->evaluation = std::move(evaluation);
   this->remoteEvaluation = std::move(remoteEvaluation);
+  this->songTitle = songTitle;
+  this->songArtist = songArtist;
+  this->songLevel = songLevel;
   this->differentCharts = differentCharts;
   this->isLastSong = isLastSong;
 }
@@ -89,6 +95,12 @@ void DanceGradeScene::load() {
   setUpSpritesPalette();
   setUpBackground();
   printScore();
+
+  SCENE_write(songTitle, 1);
+  TextStream::instance().setText(
+      "- " + songArtist + " -", 2,
+      TEXT_MIDDLE_COL - (songArtist.length() + 4) / 2);
+  SCENE_write(songLevel, 3);
 
   bool has4Digits = evaluation->needs4Digits() ||
                     (isVs() && remoteEvaluation->needs4Digits());
