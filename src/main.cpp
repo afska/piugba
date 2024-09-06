@@ -70,6 +70,12 @@ int main() {
         syncer->update();
         engine->update();
 
+        if (isCalculatingRandomSeed) {
+          (void)qran();
+          if ((~REG_KEYS & KEY_ANY) != 0)
+            stopRandomSeed();
+        }
+
         if (syncer->$isPlayingSong && !syncer->$hasStartedAudio)
           synchronizeSongStart();
 
@@ -118,11 +124,6 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
-  if (isCalculatingRandomSeed) {
-    stopRandomSeed();
-    return;
-  }
-
   if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
     return;
@@ -168,12 +169,9 @@ inline void startRandomSeed() {
   REG_TM2CNT_L = 0;
   REG_TM2CNT_H = 0;
   REG_TM2CNT_H = TM_ENABLE | TM_FREQ_1;
-  REG_KEYCNT = 0b0100001111111111;
 }
 
 inline void stopRandomSeed() {
-  // A+B+START+SELECT
-  REG_KEYCNT = 0b1100000000001111;
   isCalculatingRandomSeed = false;
 
   REG_TM2CNT_H = 0;
