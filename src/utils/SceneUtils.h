@@ -37,7 +37,8 @@ enum ColorFilter {
   SEPIA,
   GRAYSCALE,
   MONO,
-  INVERT
+  INVERT,
+  DOUBLE
 };
 
 inline void SCENE_init() {
