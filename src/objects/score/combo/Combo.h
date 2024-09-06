@@ -8,6 +8,9 @@
 #include "ComboTitle.h"
 #include "objects/Digit.h"
 
+#define MAX_COMBO 9999
+#define COMBO_DIGITS 4
+
 class Combo {
  public:
   Combo(u8 playerId);

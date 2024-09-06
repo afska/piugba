@@ -11,10 +11,12 @@
 #include "utils/SpriteUtils.h"
 
 const u32 DIGIT_WIDTHS[] = {26, 19};
-const u32 RED_OFFSET = 10;
+const u32 TOTAL_NUMBERS = 10;
 
 Digit::Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles) {
-  relocate(size, x, y, index);
+  this->size = size;
+  this->currentIndex = index;
+  reloadPosition(x, y);
   animationDirection = -1;
 
   SpriteBuilder<Sprite> builder;
@@ -41,12 +43,29 @@ Digit::Digit(DigitSize size, u32 x, u32 y, u32 index, bool reuseTiles) {
 }
 
 void Digit::set(u32 value, bool isRed) {
-  SPRITE_goToFrame(sprite.get(), value + (isRed ? RED_OFFSET : 0));
+  currentValue = value;
+  SPRITE_goToFrame(sprite.get(),
+                   value +
+                       (size == DigitSize::MINI_NARROW ? TOTAL_NUMBERS : 0) +
+                       (isRed ? TOTAL_NUMBERS : 0));
 }
 
-void Digit::relocate(DigitSize size, u32 x, u32 y, u32 index) {
-  animationPositionX = x + index * DIGIT_WIDTHS[size];
+void Digit::relocate(u32 x, u32 y) {
+  reloadPosition(x, y);
+
+  if (!shouldBeVisible()) {
+    SPRITE_hide(get());
+    return;
+  }
+}
+
+void Digit::reloadPosition(u32 x, u32 y) {
+  animationPositionX = x + currentIndex * DIGIT_WIDTHS[size];
   animationPositionY = y;
+}
+
+void Digit::setSize(DigitSize newSize) {  // TODO: USE
+  size = newSize;
 }
 
 Sprite* Digit::get() {

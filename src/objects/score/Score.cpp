@@ -32,12 +32,10 @@ Score::Score(LifeBar* lifeBar, u8 playerId, bool isLocal) {
     feedback->get()->setAffineId(AFFINE_BASE + playerId);
     combo->getTitle()->get()->setDoubleSize(true);
     combo->getTitle()->get()->setAffineId(AFFINE_BASE + playerId);
-    combo->getDigits()->at(0)->get()->setDoubleSize(true);
-    combo->getDigits()->at(0)->get()->setAffineId(AFFINE_BASE + playerId);
-    combo->getDigits()->at(1)->get()->setDoubleSize(true);
-    combo->getDigits()->at(1)->get()->setAffineId(AFFINE_BASE + playerId);
-    combo->getDigits()->at(2)->get()->setDoubleSize(true);
-    combo->getDigits()->at(2)->get()->setAffineId(AFFINE_BASE + playerId);
+    for (u32 i = 0; i < COMBO_DIGITS; i++) {
+      combo->getDigits()->at(i)->get()->setDoubleSize(true);
+      combo->getDigits()->at(i)->get()->setAffineId(AFFINE_BASE + playerId);
+    }
   }
 }
 

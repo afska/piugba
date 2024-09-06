@@ -4,8 +4,8 @@
 
 #include "utils/SpriteUtils.h"
 
-const u32 MAX_TOTAL = 999;
-const u32 DIGITS = 3;
+const u32 MAX_TOTAL = 9999;
+const u32 DIGITS = 4;
 
 Total::Total(u32 x, u32 y, bool isFirst) {
   for (u32 i = 0; i < DIGITS; i++) {
@@ -24,9 +24,10 @@ void Total::setValue(u32 value) {
   if (value > MAX_TOTAL)
     value = MAX_TOTAL;
 
-  digits[0]->set(THREE_DIGITS_LUT[value * DIGITS], false);
-  digits[1]->set(THREE_DIGITS_LUT[value * DIGITS + 1], false);
-  digits[2]->set(THREE_DIGITS_LUT[value * DIGITS + 2], false);
+  for (int i = DIGITS - 1; i >= 0; i--) {
+    digits[i]->set(value % 10, false);
+    value /= 10;
+  }
 }
 
 void Total::render(std::vector<Sprite*>* sprites) {

@@ -39,11 +39,16 @@ extern "C" {
 
 #define CUSTOM_OFFSET_CORRECTION 8
 
+const u32 ARROW_POOL_SIZE = 78;
+// (1 lifebar + 5 holders + 5 fake heads + 1 feedback + 1 combo + 4 numbers)
+// * 2 players + 4 affines * 4/affine = 50 fixed sprites
+// maximum sprites = 128
+// => 128 - 50 = 78 sprites available for the arrow pool
+
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
 const u32 MAIN_BACKGROUND_ID = 1;
 const u32 MAIN_BACKGROUND_PRIORITY = 3;
-const u32 ARROW_POOL_SIZE = 80;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_LEVEL = 10;
@@ -102,12 +107,11 @@ std::vector<Sprite*> SongScene::sprites() {
     sprites.push_back(scores[playerId]->getFeedback()->get());
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getTitle()->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(0)->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(1)->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(2)->get());
+  for (u32 i = 0; i < COMBO_DIGITS; i++) {
+    for (u32 playerId = 0; playerId < playerCount; playerId++)
+      sprites.push_back(
+          scores[playerId]->getCombo()->getDigits()->at(i)->get());
+  }
 
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     fakeHeads[i]->index = sprites.size();
