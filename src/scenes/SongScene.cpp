@@ -959,8 +959,12 @@ void SongScene::continueDeathMix() {
       SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
 
     engine->transitionIntoScene(
-        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, "",
-                            "DeathMix", "", false, true),
+        new DanceGradeScene(
+            engine, fs, std::move(evaluation), NULL, "DeathMix",
+            chart->difficulty == DifficultyLevel::NORMAL ? "Normal"
+            : chart->difficulty == DifficultyLevel::HARD ? "Hard"
+                                                         : "Crazy",
+            "", false, true),
         new PixelTransitionEffect());
   }
 }
