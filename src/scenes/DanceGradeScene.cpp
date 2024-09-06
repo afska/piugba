@@ -90,11 +90,15 @@ void DanceGradeScene::load() {
   setUpBackground();
   printScore();
 
+  bool has4Digits = evaluation->needs4Digits() ||
+                    (isVs() && remoteEvaluation->needs4Digits());
+
   u32 totalsX = TOTALS_X[!isVs() || syncer->getLocalPlayerId() == 1];
   for (u32 i = 0; i < totals.size(); i++)
-    totals[i] = std::unique_ptr<Total>{new Total(totalsX, TOTALS_Y[i], i == 0)};
-  maxComboTotal =
-      std::unique_ptr<Total>{new Total(totalsX, TOTAL_MAX_COMBO_Y, false)};
+    totals[i] = std::unique_ptr<Total>{
+        new Total(totalsX, TOTALS_Y[i], has4Digits, i == 0)};
+  maxComboTotal = std::unique_ptr<Total>{
+      new Total(totalsX, TOTAL_MAX_COMBO_Y, has4Digits, false)};
 
   totals[FeedbackType::PERFECT]->setValue(evaluation->perfects);
   totals[FeedbackType::GREAT]->setValue(evaluation->greats);
@@ -120,9 +124,9 @@ void DanceGradeScene::load() {
 
     for (u32 i = 0; i < remoteTotals.size(); i++)
       remoteTotals[i] = std::unique_ptr<Total>{
-          new Total(TOTALS_X[remoteId], TOTALS_Y[i], false)};
+          new Total(TOTALS_X[remoteId], TOTALS_Y[i], has4Digits, false)};
     remoteMaxComboTotal = std::unique_ptr<Total>{
-        new Total(TOTALS_X[remoteId], TOTAL_MAX_COMBO_Y, false)};
+        new Total(TOTALS_X[remoteId], TOTAL_MAX_COMBO_Y, has4Digits, false)};
 
     remoteTotals[FeedbackType::PERFECT]->setValue(remoteEvaluation->perfects);
     remoteTotals[FeedbackType::GREAT]->setValue(remoteEvaluation->greats);

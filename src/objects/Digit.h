@@ -14,7 +14,6 @@ class Digit : public AnimatedIndicator {
   void set(u32 value, bool isRed);
   void relocate(u32 x, u32 y, u32 spacing = 26);
   void reloadPosition(u32 x, u32 y, u32 spacing = 26);
-  void setSize(DigitSize newSize);
   bool shouldBeVisible() { return currentIndex != 0 || currentValue != 0; }
 
   Sprite* get() override;
@@ -24,6 +23,7 @@ class Digit : public AnimatedIndicator {
   DigitSize size;
   u32 currentIndex;
   u32 currentValue = 0;
+  bool modern = false;
 };
 
 #endif  // DIGIT_H
