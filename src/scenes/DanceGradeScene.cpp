@@ -96,11 +96,13 @@ void DanceGradeScene::load() {
   setUpBackground();
   printScore();
 
-  SCENE_write(songTitle, 1);
+  u32 titleLine = isVs() ? 1 : 2;
+
+  SCENE_write(songTitle, titleLine);
   TextStream::instance().setText(
-      "- " + songArtist + " -", 2,
+      "- " + songArtist + " -", titleLine + 1,
       TEXT_MIDDLE_COL - (songArtist.length() + 4) / 2);
-  SCENE_write(songLevel, 3);
+  SCENE_write(songLevel, titleLine + 2);
 
   bool has4Digits = evaluation->needs4Digits() ||
                     (isVs() && remoteEvaluation->needs4Digits());
