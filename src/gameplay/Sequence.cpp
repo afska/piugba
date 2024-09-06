@@ -186,6 +186,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   u16 keys = ~REG_KEYS & KEY_ANY;
   bool isHoldingStart = KEY_STA(keys);
+  bool isHoldingL = keys & KEY_L;
+  bool isHoldingR = keys & KEY_R;
   bool wasBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
   bool isBonusMode = SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
   auto lastGameMode = SAVEFILE_getGameMode();
@@ -215,7 +217,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   SAVEFILE_write8(SRAM->isBonusMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
-    linkUniversal->setProtocol(isHoldingStart
+    linkUniversal->setProtocol(isHoldingL ? LinkUniversal::Protocol::CABLE
+                               : isHoldingR
                                    ? LinkUniversal::Protocol::WIRELESS_SERVER
                                    : LinkUniversal::Protocol::AUTODETECT);
 
