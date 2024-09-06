@@ -30,10 +30,10 @@ const u32 TEXT_ROW = 17;
 const u32 SCORE_DIGITS = 8;
 
 const u32 TOTALS_X[] = {11, 160};
-const u32 TOTALS_Y[] = {37, 53, 69, 85, 101};
-const u32 TOTAL_MAX_COMBO_Y = 117;
+const u32 TOTALS_Y[] = {37 - 2, 53 - 2, 69 - 2, 85 - 2, 101 - 2};
+const u32 TOTAL_MAX_COMBO_Y = 117 - 2;
 const u32 GRADE_X = 88;
-const u32 GRADE_Y = 52;
+const u32 GRADE_Y = 52 - 2;
 const u32 MINI_GRADE_X[] = {37, 187};
 const u32 MINI_GRADE_Y = 137;
 
@@ -96,13 +96,11 @@ void DanceGradeScene::load() {
   setUpBackground();
   printScore();
 
-  u32 titleLine = isVs() ? 1 : 2;
-
-  SCENE_write(songTitle, titleLine);
+  SCENE_write(songTitle, 1);
   TextStream::instance().setText(
-      "- " + songArtist + " -", titleLine + 1,
+      "- " + songArtist + " -", 2,
       TEXT_MIDDLE_COL - (songArtist.length() + 4) / 2);
-  SCENE_write(songLevel, titleLine + 2);
+  SCENE_write(songLevel, 3);
 
   bool has4Digits = evaluation->needs4Digits() ||
                     (isVs() && remoteEvaluation->needs4Digits());
