@@ -1348,7 +1348,9 @@ bool SongScene::seek(u32 msecs) {
 
 std::string SongScene::buildLevelString() {
   return $isVsDifferentLevels
-             ? chart->getLevelString() + " / " + remoteChart->getLevelString()
+             ? (localPlayerId == 0 ? chart : remoteChart)->getLevelString() +
+                   " / " +
+                   (localPlayerId == 1 ? chart : remoteChart)->getLevelString()
              : chart->getLevelString();
 }
 
