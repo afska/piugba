@@ -53,12 +53,19 @@ class ChartReader : public TimingProvider {
     return this->multiplier != oldMultiplier;
   }
 
-  inline void syncRate(u32 base, int rate) {
-    rateAudioLag = audioLag;
+  inline void syncRate(u32 rateLevels, int rate) {
+    this->currentRate = rate;
+    rateAudioLag = scaleByRate(rateLevels, audioLag, rate);
+    beatDurationFrames = -1;
+  }
+
+  inline int scaleByRate(u32 origin, int number, int rate) {
     if (rate > 0)
-      rateAudioLag += MATH_fracumul(audioLag, FRACUMUL_RATE_SCALE[base + rate]);
+      number += MATH_fracumul(number, FRACUMUL_RATE_SCALE[origin + rate]);
     if (rate < 0)
-      rateAudioLag = MATH_fracumul(audioLag, FRACUMUL_RATE_SCALE[base + rate]);
+      number = MATH_fracumul(number, FRACUMUL_RATE_SCALE[origin + rate]);
+
+    return number;
   }
 
   inline int getJudgementOffset() {
@@ -113,6 +120,7 @@ class ChartReader : public TimingProvider {
   u32 stoppedMs = 0;
   u32 asyncStoppedMs = 0;
   u32 warpedMs = 0;
+  int currentRate = 0;
 
   template <typename F>
   inline void processEvents(Event* events,

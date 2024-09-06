@@ -143,7 +143,8 @@ CODE_IWRAM void ChartReader::processRhythmEvents() {
             lastBpmChange = event->timestamp();
             lastBeat = -1;
             lastTick = 0;
-            beatDurationFrames = event->beatDurationFrames();
+            beatDurationFrames =
+                currentRate == 0 ? event->beatDurationFrames() : -1;
             beatFrame = 0;
             didSetInitialBpm = true;
           }

@@ -832,6 +832,8 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
   processModsBeat();
 
   auto localChartReader = chartReaders[localPlayerId].get();
+  if (rate != 0)
+    localChartReader->beatDurationFrames = localChartReader->beatFrame;
   localChartReader->beatFrame = 0;
 
   if (GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
