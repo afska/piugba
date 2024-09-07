@@ -30,6 +30,7 @@ struct RewindState {
   u32 rate = 1;
   bool isInitializing = false;
   bool isRewinding = false;
+  bool isSavingPoint = false;
 };
 
 class SongScene : public Scene {

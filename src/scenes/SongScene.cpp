@@ -1166,7 +1166,7 @@ void SongScene::processTrainingModeMod() {
   if ((aInput->getIsPressed() && selectInput->getIsPressed()) || PS2_DOWN()) {
     selectInput->setHandledFlag(true);
 
-    if (rewindState.rewindPoint > 0) {
+    if (rewindState.rewindPoint > 0 && !rewindState.isSavingPoint) {
       rewindState.multiplier = chartReaders[0]->getMultiplier();
       rewindState.rate = rate;
       rewindState.isInitializing = false;
@@ -1181,7 +1181,13 @@ void SongScene::processTrainingModeMod() {
       engine->transitionIntoScene(
           new SongScene(engine, fs, song, chart, NULL, NULL, rewindState),
           new PixelTransitionEffect());
+    } else if (!rewindState.isSavingPoint) {
+      rewindState.rewindPoint = PlaybackState.msecs;
+      rewindState.isSavingPoint = true;
+      pixelBlink->blink();
     }
+  } else {
+    rewindState.isSavingPoint = false;
   }
 
   // Multiplier down
