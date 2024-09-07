@@ -97,6 +97,13 @@ inline void SCENE_overclockEWRAM() {
   }
 }
 
+inline void SCENE_waitForVBlank() {
+  while (REG_VCOUNT >= 160)
+    ;  // wait till VDraw
+  while (REG_VCOUNT < 160)
+    ;  // wait till VBlank
+}
+
 inline void SCENE_softReset() {
   REG_IME = 0;
 
@@ -106,18 +113,19 @@ inline void SCENE_softReset() {
     return;
   }
 
-  while (REG_VCOUNT >= 160)
-    ;  // wait till VDraw
-  while (REG_VCOUNT < 160)
-    ;  // wait till VBlank
-
   player_stop();
   player_unload();
 
   RUMBLE_stop();
   IOPORT_low();
-  RegisterRamReset(RESET_VRAM | RESET_PALETTE | RESET_OAM | RESET_REG_SOUND |
-                   RESET_REG);
+
+  SCENE_waitForVBlank();
+  RegisterRamReset(RESET_VRAM);
+  REG_DISPCNT = REG_DISPCNT & ~(1 << 7);  // don't force blank!
+  SCENE_waitForVBlank();
+  RegisterRamReset(RESET_PALETTE | RESET_OAM | RESET_REG_SOUND | RESET_REG);
+  REG_DISPCNT = REG_DISPCNT & ~(1 << 7);  // don't force blank!
+
   SoftReset();
 }
 
