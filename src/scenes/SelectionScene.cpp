@@ -15,7 +15,6 @@
 #include "utils/SceneUtils.h"
 
 #define CONFIRM_MESSAGE "Press    to start!"
-#define DOUBLE_COLOR_FILTER ColorFilter::DOUBLE_MODE_TINT
 
 const u32 ID_HIGHLIGHTER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
@@ -152,8 +151,6 @@ void SelectionScene::tick(u16 keys) {
   if (engine->isTransitioning() || init < 2)
     return;
 
-  applyDoubleTintIfNeeded();
-
   if (SEQUENCE_isMultiplayerSessionDead()) {
     stop();
     SEQUENCE_goToMultiplayerGameMode(SAVEFILE_getGameMode());
@@ -212,15 +209,17 @@ void SelectionScene::render() {
     init++;
     return;
   } else if (init == 1) {
+    if (isDouble()) {
+      SCENE_applyColorFilter(foregroundPalette.get(), ColorFilter::ALIEN);
+      VBlankIntrWait();
+    }
+
     highlighter->initialize(selected);
     EFFECT_setBlendAlpha(blendAlpha);
     EFFECT_render();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
     init++;
-
-    if (isDouble())
-      pendingDoubleTint = 2;
   }
 }
 
@@ -767,8 +766,6 @@ void SelectionScene::stopPageCross1() {
 void SelectionScene::stopPageCross2() {
   updateSelection();
   this->isCrossingPage = false;
-  if (isDouble())
-    pendingDoubleTint = 1;
 }
 
 void SelectionScene::loadChannels() {
@@ -937,16 +934,6 @@ void SelectionScene::syncNumericLevelChanged(u8 newValue) {
     syncer->$remoteNumericLevel = -1;
   else if (syncer->$remoteNumericLevel == -1)
     syncer->$remoteNumericLevel = getSelectedNumericLevelIndex();
-}
-
-void SelectionScene::applyDoubleTintIfNeeded() {
-  if (pendingDoubleTint > 0) {
-    if (pendingDoubleTint == 2)
-      SCENE_applyColorFilter(foregroundPalette.get(), DOUBLE_COLOR_FILTER);
-    SCENE_applyColorFilter(backgroundPalette.get(), DOUBLE_COLOR_FILTER);
-    pendingDoubleTint = 0;
-    VBlankIntrWait();
-  }
 }
 
 void SelectionScene::quit() {

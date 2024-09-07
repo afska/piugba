@@ -90,12 +90,6 @@ COLOR SCENE_transformColor(COLOR color, ColorFilter filter) {
     color = luminance > threshold ? 31 | (31 << 5) | (31 << 10) : 0;
   } else if (filter == INVERT) {
     color = 0xffff - color;
-  } else if (filter == DOUBLE_MODE_TINT) {
-    u8 newR = min(31, r + 3);
-    u8 newG = max(0, g - 2);
-    u8 newB = min(31, b + 5);
-
-    color = newR | (newG << 5) | (newB << 10);
   }
 
   return color;

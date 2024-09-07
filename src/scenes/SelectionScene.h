@@ -76,7 +76,6 @@ class SelectionScene : public Scene {
   u8 isCrossingPage = false;
   u32 blendAlpha = HIGHLIGHTER_OPACITY;
   u32 blendCount = 0;
-  int pendingDoubleTint = 0;
 
   inline void playNow(const char* name) {
     player_play(name, isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
@@ -240,7 +239,6 @@ class SelectionScene : public Scene {
   void loadSelectedSongGrade();
   void processMultiplayerUpdates();
   void syncNumericLevelChanged(u8 newValue);
-  void applyDoubleTintIfNeeded();
   void quit();
 
   ~SelectionScene();
