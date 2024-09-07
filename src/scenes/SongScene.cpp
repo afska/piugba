@@ -53,6 +53,7 @@ const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
+const u32 PIXEL_BLINK_ACTION_LEVEL = 6;
 const u32 IO_BLINK_TIME = 6;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
@@ -794,7 +795,7 @@ void SongScene::processKeys(u16 keys) {
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() + 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
 
       if ($isMultiplayer)
         syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
@@ -810,7 +811,7 @@ void SongScene::processKeys(u16 keys) {
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() - 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
 
       if ($isMultiplayer)
         syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
@@ -1128,11 +1129,11 @@ void SongScene::processTrainingModeMod() {
     selectInput->setHandledFlag(true);
 
     if (setRate(rate - 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
   if (rateDownPs2Input->hasBeenPressedNow()) {
     if (setRate(rate - 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
 
   // Rate up
@@ -1141,11 +1142,11 @@ void SongScene::processTrainingModeMod() {
     startInput->setHandledFlag(true);
 
     if (setRate(rate + 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
   if (rateUpPs2Input->hasBeenPressedNow()) {
     if (setRate(rate + 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
 
   // Fast forward
@@ -1184,7 +1185,7 @@ void SongScene::processTrainingModeMod() {
     } else if (!rewindState.isSavingPoint) {
       rewindState.rewindPoint = PlaybackState.msecs;
       rewindState.isSavingPoint = true;
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
   } else {
     rewindState.isSavingPoint = false;
@@ -1194,7 +1195,7 @@ void SongScene::processTrainingModeMod() {
   if (selectInput->hasBeenReleasedNow()) {
     if (!selectInput->getHandledFlag()) {
       if (chartReaders[0]->setMultiplier(chartReaders[0]->getMultiplier() - 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
     selectInput->setHandledFlag(false);
   }
@@ -1203,7 +1204,7 @@ void SongScene::processTrainingModeMod() {
   if (startInput->hasBeenReleasedNow()) {
     if (!startInput->getHandledFlag()) {
       if (chartReaders[0]->setMultiplier(chartReaders[0]->getMultiplier() + 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
     startInput->setHandledFlag(false);
   }
@@ -1281,7 +1282,7 @@ void SongScene::processMultiplayerUpdates() {
           chartReaders[remoteId]->setMultiplier(payload);
         else {
           if (chartReaders[0]->setMultiplier(payload))
-            pixelBlink->blink();
+            pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
         }
 
         syncer->clearTimeout();
