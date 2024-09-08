@@ -179,6 +179,10 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
+#ifdef SENV_DEVELOPMENT
+  profileStart();
+#endif
+
   if (engine->isTransitioning() || init < 2)
     return;
 
@@ -242,10 +246,16 @@ void SongScene::tick(u16 keys) {
   IFTIMINGTEST {
     chartReaders[0]->logDebugInfo<CHART_DEBUG>();
   }
+
+  tsum += profileStop();
+  tcount++;
 #endif
 }
 
 void SongScene::render() {
+#ifdef SENV_DEVELOPMENT
+  profileStart();
+#endif
   if (engine->isTransitioning())
     return;
 
@@ -265,6 +275,11 @@ void SongScene::render() {
   }
 
   drawVideo();
+
+#ifdef SENV_DEVELOPMENT
+  rsum += profileStop();
+  rcount++;
+#endif
 }
 
 void SongScene::setUpPalettes() {
@@ -1368,6 +1383,13 @@ std::string SongScene::buildLevelString() {
 }
 
 void SongScene::unload() {
+#ifdef SENV_DEVELOPMENT
+  u32 tickCycles = tsum / tcount;
+  u32 renderCycles = rsum / rcount;
+  log("AVG cycles: (%d + %d) = %d", tickCycles, renderCycles,
+      tickCycles + renderCycles);
+#endif
+
   player_stop();
   RUMBLE_stop();
   videoStore->unload();
