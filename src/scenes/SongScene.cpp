@@ -179,7 +179,7 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
-#ifdef SENV_DEVELOPMENT
+#ifdef SENV_DEBUG
   profileStart();
 #endif
 
@@ -246,9 +246,10 @@ void SongScene::tick(u16 keys) {
   IFTIMINGTEST {
     chartReaders[0]->logDebugInfo<CHART_DEBUG>();
   }
+#endif
 
-  tsum += profileStop();
-  tcount++;
+#ifdef SENV_DEBUG
+  profileStop();
 #endif
 }
 
@@ -256,12 +257,7 @@ void SongScene::render() {
   if (engine->isTransitioning())
     return;
 
-#ifdef SENV_DEVELOPMENT
-  profileStart();
-#endif
-
   darkener->render();
-
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 
@@ -277,11 +273,6 @@ void SongScene::render() {
   }
 
   drawVideo();
-
-#ifdef SENV_DEVELOPMENT
-  rsum += profileStop();
-  rcount++;
-#endif
 }
 
 void SongScene::setUpPalettes() {
@@ -1385,10 +1376,7 @@ std::string SongScene::buildLevelString() {
 
 void SongScene::unload() {
 #ifdef SENV_DEVELOPMENT
-  u32 tickCycles = tsum / tcount;
-  u32 renderCycles = rsum / rcount;
-  log("AVG cycles: (%d + %d) = %d", tickCycles, renderCycles,
-      tickCycles + renderCycles);
+  profilePrint();
 #endif
 
   player_stop();

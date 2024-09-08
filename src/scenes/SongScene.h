@@ -182,10 +182,8 @@ class SongScene : public Scene {
   void unload();
 
 #ifdef SENV_DEVELOPMENT
-  u32 tsum = 0;
-  u32 tcount = 0;
-  u32 rsum = 0;
-  u32 rcount = 0;
+  u32 profsum = 0;
+  u32 profcount = 0;
   void profileStart() {
     REG_TM2CNT_L = 0;
     REG_TM3CNT_L = 0;
@@ -196,11 +194,16 @@ class SongScene : public Scene {
     REG_TM3CNT_H = TM_ENABLE | TM_CASCADE;
     REG_TM2CNT_H = TM_ENABLE | TM_FREQ_1;
   }
-  u32 profileStop() {
+  void profileStop() {
     REG_TM2CNT_H = 0;
     REG_TM3CNT_H = 0;
 
-    return (REG_TM2CNT_L | (REG_TM3CNT_L << 16));
+    profsum += (REG_TM2CNT_L | (REG_TM3CNT_L << 16));
+    profcount++;
+  }
+  void profilePrint() {
+    if (profsum > 0)
+      log("AVG cycles: %d", profsum / profcount);
   }
 #endif
 };
