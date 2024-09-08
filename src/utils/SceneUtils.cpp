@@ -97,15 +97,14 @@ COLOR SCENE_transformColor(COLOR color, ColorFilter filter) {
   return color;
 }
 
-void SCENE_applyColorFilterIndex(PaletteManager* palette,
+void SCENE_applyColorFilterIndex(PALBANK* palette,
                                  int bank,
                                  int index,
                                  ColorFilter filter) {
-  palette->change(bank, index,
-                  SCENE_transformColor(palette->get(bank, index), filter));
+  palette[bank][index] = SCENE_transformColor(palette[bank][index], filter);
 }
 
-void SCENE_applyColorFilter(PaletteManager* palette, ColorFilter colorFilter) {
+void SCENE_applyColorFilter(PALBANK* palette, ColorFilter colorFilter) {
   for (int bank = 0; bank < PALETTE_BANK_SIZE; bank++) {
     for (int index = 0; index < PALETTE_BANK_SIZE; index++) {
       SCENE_applyColorFilterIndex(palette, bank, index, colorFilter);

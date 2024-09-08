@@ -210,8 +210,7 @@ void SelectionScene::render() {
     return;
   } else if (init == 1) {
     if (isDouble()) {
-      SCENE_applyColorFilter(foregroundPalette.get(),
-                             ColorFilter::DOUBLE_FILTER);
+      SCENE_applyColorFilter(pal_obj_bank, ColorFilter::DOUBLE_FILTER);
       VBlankIntrWait();
     }
 

@@ -2,6 +2,7 @@
 #define SCENE_UTILS_H
 
 #include <libgba-sprite-engine/background/text_stream.h>
+#include <libgba-sprite-engine/gba/tonc_types.h>
 
 #include <string>
 
@@ -59,12 +60,12 @@ inline void SCENE_write(std::string text, u32 row) {
 
 COLOR SCENE_transformColor(COLOR color, ColorFilter filter);
 
-void SCENE_applyColorFilterIndex(PaletteManager* palette,
+void SCENE_applyColorFilterIndex(PALBANK* palette,
                                  int bank,
                                  int index,
                                  ColorFilter filter);
 
-void SCENE_applyColorFilter(PaletteManager* palette, ColorFilter colorFilter);
+void SCENE_applyColorFilter(PALBANK* palette, ColorFilter colorFilter);
 
 inline void SCENE_wait(u32 verticalLines) {
   u32 lines = 0;

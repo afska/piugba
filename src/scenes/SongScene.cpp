@@ -253,13 +253,15 @@ void SongScene::tick(u16 keys) {
 }
 
 void SongScene::render() {
-#ifdef SENV_DEVELOPMENT
-  profileStart();
-#endif
   if (engine->isTransitioning())
     return;
 
+#ifdef SENV_DEVELOPMENT
+  profileStart();
+#endif
+
   darkener->render();
+
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     lifeBars[playerId]->tick(foregroundPalette.get());
 
@@ -337,9 +339,8 @@ void SongScene::initializeBackground() {
 
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     if (!usesVideo)
-      SCENE_applyColorFilter(backgroundPalette.get(),
-                             GameState.mods.colorFilter);
-    SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);
+      SCENE_applyColorFilter(pal_bg_bank, GameState.mods.colorFilter);
+    SCENE_applyColorFilter(pal_obj_bank, GameState.mods.colorFilter);
   }
 
   if (!$isVs)
