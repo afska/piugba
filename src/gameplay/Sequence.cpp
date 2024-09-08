@@ -104,7 +104,6 @@ Scene* SEQUENCE_getMainScene() {
 }
 
 Scene* SEQUENCE_activateVideo(bool showSuccessMessage) {
-  SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, true);
   auto videoState = videoStore->activate();
   switch (videoState) {
     case VideoStore::NO_SUPPORTED_FLASHCART: {

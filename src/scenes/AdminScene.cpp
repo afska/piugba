@@ -25,7 +25,7 @@
 #define OPTION_RUMBLE 1
 #define OPTION_IO_BLINK 2
 #define OPTION_SRAM_BLINK 3
-#define OPTION_BACKGROUND_VIDEOS 4
+#define OPTION_HQ_MODE 4
 #define OPTION_EWRAM_OVERCLOCK 5
 #define OPTION_PS2_INPUT 6
 #define OPTION_RUMBLE_OPTS 7
@@ -147,7 +147,7 @@ void AdminScene::printOptions() {
               : sramBlink == 2 ? "ON HIT"
                                : "OFF",
               8);
-  printOption(OPTION_BACKGROUND_VIDEOS, "HQ (audio / video)",
+  printOption(OPTION_HQ_MODE, "HQ (audio / video)",
               ps2Input > 0 ? "---"
                            : (hqMode == 3   ? "VIDEO"
                               : hqMode == 4 ? "AUDIO"
@@ -155,7 +155,7 @@ void AdminScene::printOptions() {
                                             : "OFF"),
               9);
   printOption(OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
-              ewramOverclock == 1 ? (hqMode > 0 ? "*!*" : "ON") : "OFF", 10);
+              ewramOverclock == 1 ? "ON" : "OFF", 10);
   printOption(OPTION_PS2_INPUT, "PS/2 input",
               hqMode > 0 ? "---" : (ps2Input > 0 ? "ON" : "OFF"), 11);
 
@@ -334,7 +334,7 @@ bool AdminScene::selectOption(u32 selected, int direction) {
                       change(value, 3, direction));
       return true;
     }
-    case OPTION_BACKGROUND_VIDEOS: {
+    case OPTION_HQ_MODE: {
       u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
       if (ps2Input > 0)
         return true;
@@ -359,13 +359,9 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       }
     }
     case OPTION_EWRAM_OVERCLOCK: {
-      u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
       u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
 
       if (ewramOverclock > 0) {
-        if (hqMode > 0)
-          return true;
-
         player_stop();
         engine->transitionIntoScene(SEQUENCE_deactivateEWRAMOverclock(),
                                     new PixelTransitionEffect());
