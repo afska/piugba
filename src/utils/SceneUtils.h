@@ -79,6 +79,11 @@ inline void SCENE_wait(u32 verticalLines) {
 }
 
 __attribute__((section(".ewram"))) extern u32 temp;
+
+inline void SCENE_unoverclockEWRAM() {
+  *((u32*)0x4000800) = (0x0D << 24) | (1 << 5);
+}
+
 inline void SCENE_overclockEWRAM() {
   // tries to overclock EWRAM
   // but rollbacks if a GB Micro is detected to prevent crashes
@@ -91,7 +96,7 @@ inline void SCENE_overclockEWRAM() {
     *volatileTemp = testValue;
 
     if (*volatileTemp != testValue) {
-      *((u32*)0x4000800) = (0x0D << 24) | (1 << 5);
+      SCENE_unoverclockEWRAM();
       return;
     }
   }

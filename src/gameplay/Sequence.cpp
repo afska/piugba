@@ -19,6 +19,7 @@
 #include "scenes/SongScene.h"
 #include "scenes/StartScene.h"
 #include "scenes/TalkScene.h"
+#include "utils/SceneUtils.h"
 
 static std::shared_ptr<GBAEngine> _engine;
 static const GBFS_FILE* _fs;
@@ -133,6 +134,7 @@ Scene* SEQUENCE_activateEWRAMOverclock() {
 }
 
 Scene* SEQUENCE_deactivateEWRAMOverclock() {
+  SCENE_unoverclockEWRAM();
   SAVEFILE_write8(SRAM->adminSettings.ewramOverclock, false);
   return SEQUENCE_halt(EWRAM_OVERCLOCK_DISABLED);
 }
