@@ -219,7 +219,6 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
       SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
       SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
     }
-    SAVEFILE_write8(SRAM->adminSettings.arcadeCharts, ArcadeChartsOpts::SINGLE);
   }
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
