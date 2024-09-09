@@ -340,10 +340,13 @@ void SelectionScene::scrollTo(u32 page, u32 selected) {
 }
 
 void SelectionScene::setNumericLevel(u8 numericLevelIndex) {
-  if (numericLevelIndex == getSelectedNumericLevelIndex())
+  if (numericLevelIndex == getSelectedNumericLevelIndex()) {
+    updateLastNumericLevel();
     return;
+  }
 
   SAVEFILE_write8(SRAM->memory.numericLevel, numericLevelIndex);
+  updateLastNumericLevel();
   updateSelection(true);
   pixelBlink->blink();
 }
@@ -390,6 +393,7 @@ void SelectionScene::goToSong() {
     remoteChart->levelIndex = (u8)syncer->$remoteNumericLevel;
   }
 
+  updateLastNumericLevel();
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
@@ -670,25 +674,20 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
     syncer->pendingAudio = SOUND_MOD_STR;
     syncer->pendingSeek = 0;
     initialLevel = InitialLevel::KEEP_LEVEL;
+    updateLastNumericLevel();
   }
 }
 
 void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
-  bool canUpdateLevel = false;
-  u8 currentLevel = 0;
-
-  if (!numericLevels.empty()) {
-    canUpdateLevel = true;
-    currentLevel = getSelectedNumericLevel();
+  if (!numericLevels.empty())
     numericLevels.clear();
-  }
 
   for (u32 i = 0; i < song->chartCount; i++)
     if (song->charts[i].isDouble == isDouble())
       numericLevels.push_back(song->charts[i].level);
 
-  if (canUpdateLevel && !isChangingLevel)
-    setClosestNumericLevel(currentLevel);
+  if (!isChangingLevel)
+    setClosestNumericLevel(getLastNumericLevel());
   if (getSelectedNumericLevelIndex() > numericLevels.size() - 1)
     setClosestNumericLevel(0);
 

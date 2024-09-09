@@ -35,8 +35,9 @@ typedef struct __attribute__((__packed__)) {
   u32 romId;
 
   Settings settings;
-  char padding[5];
-  u32 globalOffset;  // (*) (adminSettings)
+  char padding[4];
+  u8 lastNumericLevel;  // (*) (memory)
+  u32 globalOffset;     // (*) (adminSettings)
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -266,9 +267,13 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
     fixes |= 0b1000000000;
   }
 
+  // quick fixes
+  u8 lastNumericLevel = SAVEFILE_read8(SRAM->lastNumericLevel);
   u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
   if (isBonusMode >= 2)
     SAVEFILE_write8(SRAM->isBonusMode, false);
+  if (lastNumericLevel > 99)
+    SAVEFILE_write8(SRAM->lastNumericLevel, 0);
 
   if (fixes > 0) {
     // if something was fixed, reset custom offset, just in case
@@ -319,6 +324,7 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
     OFFSET_initialize();
     SAVEFILE_resetAdminSettings();
 
+    SAVEFILE_write8(SRAM->lastNumericLevel, 0);
     SAVEFILE_write8(SRAM->isBonusMode, false);
     SAVEFILE_write32(SRAM->randomSeed, 0);
 

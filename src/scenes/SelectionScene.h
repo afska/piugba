@@ -132,6 +132,10 @@ class SelectionScene : public Scene {
     return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
 
+  inline u8 getLastNumericLevel() {
+    return SAVEFILE_read8(SRAM->lastNumericLevel);
+  }
+
   inline void setClosestNumericLevel(u8 level) {
     if (numericLevels.empty()) {
       SAVEFILE_write8(SRAM->memory.numericLevel, 0);
@@ -157,6 +161,10 @@ class SelectionScene : public Scene {
     }
 
     SAVEFILE_write8(SRAM->memory.numericLevel, min);
+  }
+
+  void updateLastNumericLevel() {
+    SAVEFILE_write8(SRAM->lastNumericLevel, getSelectedNumericLevel());
   }
 
   inline DifficultyLevel getLibraryType() {
