@@ -344,8 +344,7 @@ class LinkWireless {
     isEnabled = true;
 
     // [!]
-    if (success)
-      wasActivated = true;
+    wasActivated = true;
 
     return success;
   }
@@ -1093,8 +1092,9 @@ class LinkWireless {
     switch (asyncCommand.type) {
       case COMMAND_ACCEPT_CONNECTIONS: {
         // AcceptConnections (end)
-        sessionState.playerCount = Link::_min(
-            1 + asyncCommand.result.responsesSize, config.maxPlayers);
+        sessionState.playerCount =
+            Link::_min(1 + asyncCommand.result.responsesSize,
+                       2 /*config.maxPlayers*/);  // [!]
 
         break;
       }
@@ -1150,7 +1150,7 @@ class LinkWireless {
 
   void acceptConnectionsOrTransferData() {  // (irq only)
     if (state == SERVING && !sessionState.acceptCalled &&
-        sessionState.playerCount < config.maxPlayers) {
+        sessionState.playerCount < 2 /*config.maxPlayers*/) {  // [!]
       // AcceptConnections (start)
       if (sendCommandAsync(COMMAND_ACCEPT_CONNECTIONS))
         sessionState.acceptCalled = true;
@@ -1174,9 +1174,13 @@ class LinkWireless {
 
   void sendPendingData() {  // (irq only)
     copyOutgoingState();
-    int lastPacketId = setDataFromOutgoingMessages();
-    if (sendCommandAsync(COMMAND_SEND_DATA, true))
-      clearOutgoingMessagesIfNeeded(lastPacketId);
+    /*int lastPacketId = */ setDataFromOutgoingMessages();  // [!]
+
+    // [!]
+    // if (sendCommandAsync(COMMAND_SEND_DATA, true))
+    //   clearOutgoingMessagesIfNeeded(lastPacketId);
+
+    sendCommandAsync(COMMAND_SEND_DATA, true);
   }
 
   int setDataFromOutgoingMessages() {  // (irq only)
@@ -1184,10 +1188,11 @@ class LinkWireless {
 
     addAsyncData(0, true);
 
-    if (config.retransmission)
-      addConfirmations();
-    else
-      addPingMessageIfNeeded();
+    // [!]
+    // if (config.retransmission)
+    addConfirmations();
+    // else
+    // addPingMessageIfNeeded();
 
     int lastPacketId = -1;
 
@@ -1229,7 +1234,8 @@ class LinkWireless {
       MessageHeader header = serializer.asStruct;
       u32 partialPacketId = header.partialPacketId;
       bool isConfirmation = header.isConfirmation;
-      u8 remotePlayerId = Link::_min(header.playerId, config.maxPlayers - 1);
+      u8 remotePlayerId =
+          Link::_min(header.playerId, /*config.maxPlayers*/ 2 - 1);  // [!]
 #ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
       QUICK_RECEIVE = header.quickData;
       u8 remotePlayerCount = 2;
@@ -1255,7 +1261,7 @@ class LinkWireless {
       if (!acceptMessage(message, isConfirmation, remotePlayerCount) || isPing)
         continue;
 
-      if (config.retransmission && isConfirmation) {
+      if (/*config.retransmission && */ isConfirmation) {  // [!]
         if (!handleConfirmation(message))
           continue;
       } else {
@@ -1273,8 +1279,8 @@ class LinkWireless {
           (sessionState.lastPacketIdFromClients[message.playerId] + 1) %
           MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
-          message.packetId != expectedPacketId)
+      if (/*config.retransmission && */ !isConfirmation &&
+          message.packetId != expectedPacketId)  // [!]
         return false;
 
       if (!isConfirmation)
@@ -1284,8 +1290,8 @@ class LinkWireless {
       u32 expectedPacketId =
           (sessionState.lastPacketIdFromServer + 1) % MAX_PACKET_IDS;
 
-      if (config.retransmission && !isConfirmation &&
-          message.packetId != expectedPacketId)
+      if (/*config.retransmission && */ !isConfirmation &&
+          message.packetId != expectedPacketId)  // [!]
         return false;
 
       sessionState.playerCount = remotePlayerCount;
@@ -1300,10 +1306,11 @@ class LinkWireless {
     return !isMessageFromCurrentPlayer;
   }
 
-  void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
-    if (!config.retransmission && lastPacketId > -1)
-      removeConfirmedMessages(lastPacketId);
-  }
+  // [!]
+  // void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
+  //   if (!config.retransmission && lastPacketId > -1)
+  //     removeConfirmedMessages(lastPacketId);
+  // }
 
   void addPingMessageIfNeeded() {  // (irq only)
     if (sessionState.outgoingMessages.isEmpty() && !sessionState.pingSent) {
@@ -1331,7 +1338,7 @@ class LinkWireless {
       }
 #endif
 
-      for (int i = 0; i < config.maxPlayers - 1; i++) {
+      for (int i = 0; i < /*config.maxPlayers*/ 2 - 1; i++) {  // [!]
         u32 confirmationData = sessionState.lastPacketIdFromClients[1 + i];
         u16 header = buildConfirmationHeader(1 + i, confirmationData);
         u32 rawMessage = buildU32(header, confirmationData & 0xffff);
@@ -1376,7 +1383,7 @@ class LinkWireless {
     sessionState.lastConfirmationFromClients[playerId] = confirmationData;
 
     u32 min = 0xffffffff;
-    for (int i = 0; i < config.maxPlayers - 1; i++) {
+    for (int i = 0; i < /*config.maxPlayers*/ 2 - 1; i++) {  // [!]
       u32 _confirmationData = sessionState.lastConfirmationFromClients[1 + i];
       if (_confirmationData > 0 && _confirmationData < min)
         min = _confirmationData;

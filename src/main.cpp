@@ -126,7 +126,7 @@ CODE_EWRAM void ISR_reset() {
     syncer->$resetFlag = true;
     return;
   }
-  if (syncer->isPlaying())
+  if (syncer->isOnline())
     return;
 
   SCENE_softReset();

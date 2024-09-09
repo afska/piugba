@@ -84,6 +84,7 @@ class Syncer {
   }
 
   inline SyncMode getMode() { return mode; }
+  inline bool isOnline() { return mode > SyncMode::SYNC_MODE_OFFLINE; }
 
   void initialize(SyncMode mode);
   void update();
