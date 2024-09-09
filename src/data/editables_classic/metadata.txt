@@ -91,6 +91,9 @@ This screen uses colors from:
 screen_selection:
 	Image -> Mode -> Indexed...
 		-> 251 colors
+
+selector_bns: ^^^<<< Filters -> Edge-Detect -> Sobel...
+
 screen_controls:
 	Image -> Mode -> Indexed...
 		-> 254 colors

@@ -646,6 +646,7 @@ void SelectionScene::updateSelection(bool isChangingLevel) {
   selectedSongId = song->id;
 
   updateLevel(song, isChangingLevel);
+  progress->setValue(getSelectedSongIndex() + 1, count);
   setNames(song->title, song->artist);
   Chart* chart = SONG_findChartByNumericLevelIndex(
       song, getSelectedNumericLevelIndex(), isDouble());
@@ -780,7 +781,7 @@ void SelectionScene::loadChannels() {
 }
 
 void SelectionScene::loadProgress() {
-  progress->setValue(getCompletedSongs(), count);
+  progress->setValue(getSelectedSongIndex() + 1, count);
 
   for (u32 i = 0; i < PAGE_SIZE; i++) {
     auto songIndex = page * PAGE_SIZE + i;
