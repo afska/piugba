@@ -83,7 +83,8 @@ int main() {
       },
       []() {
         // (onRender)
-        if (ps2Keyboard->softReset)
+        ps2Keyboard->update();
+        if (ps2Keyboard->keys.softReset)
           SCENE_softReset();
 
         EFFECT_render();
