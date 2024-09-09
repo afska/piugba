@@ -189,31 +189,33 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool isHoldingStart = KEY_STA(keys);
   bool isHoldingL = keys & KEY_L;
   bool isHoldingR = keys & KEY_R;
-  bool wasBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
-  bool isBonusMode = SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
   auto lastGameMode = SAVEFILE_getGameMode();
+  bool wasBonusMode =
+      lastGameMode == GameMode::ARCADE && SAVEFILE_read8(SRAM->isBonusMode);
+  bool isBonusMode = gameMode == GameMode::ARCADE &&
+                     SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
 
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
       (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
   bool isTransitioningBetweenArcadeAndNonArcadeModes =
       lastGameMode != gameMode && !isTransitioningBetweenCampaignAndChallenges;
-  bool isTransitioningBetweenRegularArcadeAndBonusArcade =
-      gameMode == GameMode::ARCADE && lastGameMode == GameMode::ARCADE &&
+  bool isTransitioningBetweenBonusArcadeAndOtherMode =
       wasBonusMode != isBonusMode;
 
   if (isTransitioningBetweenArcadeAndNonArcadeModes ||
-      isTransitioningBetweenRegularArcadeAndBonusArcade) {
-    bool shouldResetCursor =
-        !(IS_STORY(lastGameMode) && gameMode == GameMode::ARCADE &&
-          SAVEFILE_getMaxLibraryType() ==
-              static_cast<DifficultyLevel>(
-                  SAVEFILE_read8(SRAM->memory.difficultyLevel)) &&
-          !isBonusMode);
+      isTransitioningBetweenBonusArcadeAndOtherMode) {
+    bool arcadeAndCampaignUseTheSameLibrary =
+        SAVEFILE_getMaxLibraryType() ==
+        static_cast<DifficultyLevel>(
+            SAVEFILE_read8(SRAM->memory.difficultyLevel));
+    bool shouldKeepCursor = !isTransitioningBetweenBonusArcadeAndOtherMode &&
+                            arcadeAndCampaignUseTheSameLibrary;
 
-    auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
+    bool shouldResetCursor = !shouldKeepCursor;
     SAVEFILE_write8(SRAM->memory.numericLevel, 0);
     if (shouldResetCursor) {
+      auto songIndex = IS_STORY(gameMode) ? SAVEFILE_getLibrarySize() - 1 : 0;
       SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
       SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
     }
