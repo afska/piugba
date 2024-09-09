@@ -199,6 +199,9 @@ void SelectionScene::tick(u16 keys) {
   animationFrame++;
   if (animationFrame >= BREATH_STEPS)
     animationFrame = 0;
+
+  for (auto& channelBadge : channelBadges)
+    channelBadge->tick();
 }
 
 void SelectionScene::render() {
