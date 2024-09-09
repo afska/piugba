@@ -508,6 +508,10 @@ inline bool SAVEFILE_setGradeOf(u8 songIndex,
         if (firstTime || grade < currentGrade)
           SAVEFILE_write8(SRAM->progress[index].grades[songIndex], grade);
 
+        u8 currentArcadeGrade = ARCADE_readSingle(songId, numericLevelIndex);
+        if (grade < currentArcadeGrade)
+          ARCADE_writeSingle(songId, numericLevelIndex, grade);
+
         return songIndex == SAVEFILE_getLibrarySize() - 1;
     }
     {
