@@ -20,10 +20,6 @@
 // Number of timer ticks (61.04μs) between messages (100 = 6,104ms)
 #define SYNC_SEND_INTERVAL 100
 
-// Max 0xFFFF messages before marking remote player as disconnected
-// (Not relevant for 2-player games)
-#define SYNC_REMOTE_TIMEOUT 16
-
 enum SyncState {
   SYNC_STATE_SEND_ROM_ID,
   SYNC_STATE_SEND_PROGRESS,

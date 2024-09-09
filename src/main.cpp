@@ -34,17 +34,15 @@ LinkUniversal* linkUniversal =
                       (LinkUniversal::CableOptions){
                           .baudRate = LinkCable::BAUD_RATE_1,
                           .timeout = SYNC_IRQ_TIMEOUT,
-                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
                       (LinkUniversal::WirelessOptions){
                           .retransmission = true,
                           .maxPlayers = 2,
                           .timeout = SYNC_IRQ_TIMEOUT,
-                          .remoteTimeout = SYNC_REMOTE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
-                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
-                          .asyncACKTimerId = 2});
+                          .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID},
+                      __qran_seed);
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
@@ -153,10 +151,6 @@ void setUpInterrupts() {
   interrupt_enable(INTR_SERIAL);
   interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
   interrupt_enable(INTR_TIMER3);
-
-  // LinkWireless async-ACK
-  interrupt_set_handler(INTR_TIMER2, LINK_UNIVERSAL_ISR_ACK_TIMER);
-  interrupt_enable(INTR_TIMER2);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;

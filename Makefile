@@ -193,7 +193,15 @@ CFLAGS		+= -Wall
 CFLAGS		+= $(INCLUDE)
 CFLAGS		+= -ffast-math -fno-strict-aliasing
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -std=c++17
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -std=c++17 \
+	-DLINK_CABLE_QUEUE_SIZE=10 \
+	-DLINK_WIRELESS_QUEUE_SIZE=10 \
+	-DLINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH=6 \
+	-DLINK_WIRELESS_PUT_ISR_IN_IWRAM=1 \
+	-DLINK_WIRELESS_ENABLE_NESTED_IRQ=1 \
+	-DLINK_WIRELESS_USE_SEND_RECEIVE_LATCH=1 \
+	-DLINK_WIRELESS_TWO_PLAYERS_ONLY=1 \
+	-DLINK_DEVELOPMENT # (so gba-link-connection headers are not 'system headers' and partial builds include them)
 
 ASFLAGS		:= $(ARCH) $(INCLUDE)
 LDFLAGS 	:= $(ARCH) -Wl,--print-memory-usage,-Map,$(PROJ).map,--gc-sections

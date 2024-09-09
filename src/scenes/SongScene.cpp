@@ -1232,7 +1232,7 @@ void SongScene::processMultiplayerUpdates() {
 
   if (syncer->isPlaying() &&
       linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS)
-    linkUniversal->linkWireless->SEND_ARROWS = keys;
+    linkUniversal->linkWireless->QUICK_SEND = keys;
   else
     syncer->send(SYNC_EVENT_KEYS, keys);
 
@@ -1245,7 +1245,7 @@ void SongScene::processMultiplayerUpdates() {
 
   if (syncer->isPlaying() &&
       linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS) {
-    u16 keys = linkUniversal->linkWireless->RECEIVE_ARROWS;
+    u16 keys = linkUniversal->linkWireless->QUICK_RECEIVE;
     for (u32 i = 0; i < ARROWS_TOTAL; i++)
       remoteArrows[i] = SYNC_MSG_KEYS_DIRECTION(keys, i);
   }
