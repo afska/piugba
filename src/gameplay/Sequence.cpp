@@ -192,13 +192,18 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   bool wasBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
   bool isBonusMode = SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
   auto lastGameMode = SAVEFILE_getGameMode();
+
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
       (IS_CHALLENGE(lastGameMode) && gameMode == GameMode::CAMPAIGN);
-  if ((lastGameMode != gameMode &&
-       !isTransitioningBetweenCampaignAndChallenges) ||
-      (gameMode == GameMode::ARCADE && lastGameMode == GameMode::ARCADE &&
-       wasBonusMode != isBonusMode)) {
+  bool isTransitioningBetweenArcadeAndNonArcadeModes =
+      lastGameMode != gameMode && !isTransitioningBetweenCampaignAndChallenges;
+  bool isTransitioningBetweenRegularArcadeAndBonusArcade =
+      gameMode == GameMode::ARCADE && lastGameMode == GameMode::ARCADE &&
+      wasBonusMode != isBonusMode;
+
+  if (isTransitioningBetweenArcadeAndNonArcadeModes ||
+      isTransitioningBetweenRegularArcadeAndBonusArcade) {
     bool shouldResetCursor =
         !(IS_STORY(lastGameMode) && gameMode == GameMode::ARCADE &&
           SAVEFILE_getMaxLibraryType() ==
