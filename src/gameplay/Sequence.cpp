@@ -206,7 +206,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   if (isTransitioningBetweenArcadeAndNonArcadeModes ||
       isTransitioningBetweenBonusArcadeAndOtherMode) {
     bool arcadeAndCampaignUseTheSameLibrary =
-        SAVEFILE_getMaxLibraryType() ==
+        SAVEFILE_getMaxLibraryType(true) ==
         static_cast<DifficultyLevel>(
             SAVEFILE_read8(SRAM->memory.difficultyLevel));
     bool shouldKeepCursor = !isTransitioningBetweenBonusArcadeAndOtherMode &&

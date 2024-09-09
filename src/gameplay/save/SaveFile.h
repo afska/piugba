@@ -416,13 +416,16 @@ inline bool SAVEFILE_didComplete(GameMode gameMode,
   return completedSongs >= librarySize;
 }
 
-inline DifficultyLevel SAVEFILE_getMaxLibraryType() {
+inline DifficultyLevel SAVEFILE_getMaxLibraryType(bool campaignOnly = false) {
   DifficultyLevel maxLevel = DifficultyLevel::NORMAL;
   u32 max = 0;
 
   for (u32 i = 0; i < MAX_DIFFICULTY + 1; i++) {
     auto difficultyLevel = static_cast<DifficultyLevel>(i);
-    auto completedSongs = SAVEFILE_getCompletedSongsOf(difficultyLevel);
+    auto completedSongs =
+        campaignOnly
+            ? SAVEFILE_getCompletedSongsOf(GameMode::CAMPAIGN, difficultyLevel)
+            : SAVEFILE_getCompletedSongsOf(difficultyLevel);
 
     if (completedSongs >= max) {
       maxLevel = difficultyLevel;
