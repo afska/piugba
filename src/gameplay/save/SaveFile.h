@@ -36,7 +36,7 @@ typedef struct __attribute__((__packed__)) {
 
   Settings settings;
   char padding[5];
-  u32 globalOffset;
+  u32 globalOffset;  // (*) (adminSettings)
   Memory memory;
   Progress progress[PROGRESS_REGISTERS];
 
@@ -47,8 +47,8 @@ typedef struct __attribute__((__packed__)) {
 
   AdminSettings adminSettings;
 
-  bool isBonusMode;
-  u32 randomSeed;
+  bool isBonusMode;  // (*) state
+  u32 randomSeed;    // (*) state
   u8 beat;
 
   Mods mods;
@@ -57,6 +57,9 @@ typedef struct __attribute__((__packed__)) {
   DeathMixProgress deathMixProgress;
 
   s8 customOffsets[CUSTOM_OFFSET_TABLE_TOTAL_SIZE];
+
+  // (*) these properties shouldn't be at the root level, but we'll leave them
+  // there because it's important to maintain save file compatibility
 } SaveFile;
 
 #define SRAM ((SaveFile*)sram_mem)
