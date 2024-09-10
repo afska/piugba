@@ -185,6 +185,10 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
     return;
   }
 
+  u32 lastNumericLevel = SAVEFILE_read32(SRAM->lastNumericLevel);
+  SAVEFILE_write8(SRAM->adminSettings.arcadeCharts,
+                  ((lastNumericLevel >> 16) & 0xff) > 0);
+
   u16 keys = ~REG_KEYS & KEY_ANY;
   bool isHoldingStart = KEY_STA(keys);
   bool isHoldingL = keys & KEY_L;

@@ -552,6 +552,7 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
     stop();
     scrollTo(lastUnlockedSongIndex);
+    updateLastNumericLevel();
 
     return true;
   }
