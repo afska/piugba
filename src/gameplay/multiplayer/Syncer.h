@@ -58,7 +58,9 @@ class Syncer {
  public:
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
+  int $remoteNumericLevelIndex = -1;
   int $remoteNumericLevel = -1;
+  int $remoteLastNumericLevel = 0;
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;
@@ -93,6 +95,11 @@ class Syncer {
   void registerTimeout();
   void clearTimeout();
   void resetSongState();
+
+  void setRemoteNumericLevel(int newIndex, int newLevel) {
+    $remoteNumericLevelIndex = newIndex;
+    $remoteNumericLevel = newLevel;
+  }
 
  private:
   SyncState state = SyncState::SYNC_STATE_SEND_ROM_ID;

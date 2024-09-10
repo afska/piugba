@@ -31,6 +31,22 @@ typedef struct {
   int customOffset;
   u8 levelIndex;
 
+  std::string getArcadeLevelString() {
+    if (difficulty == DifficultyLevel::NORMAL)
+      return "NM";
+
+    if (difficulty == DifficultyLevel::HARD)
+      return "HD";
+
+    if (difficulty == DifficultyLevel::CRAZY)
+      return "CZ";
+
+    if (type == ChartType::DOUBLE_COOP_CHART)
+      return ";)";
+
+    return "";
+  }
+
   std::string getLevelString() {
     if (type == ChartType::DOUBLE_COOP_CHART)
       return ";)";

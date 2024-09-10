@@ -224,7 +224,6 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   SAVEFILE_write8(SRAM->isBonusMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
-    SAVEFILE_write32(SRAM->lastNumericLevel, 0);
     linkUniversal->setProtocol(isHoldingL ? LinkUniversal::Protocol::CABLE
                                : isHoldingR
                                    ? LinkUniversal::Protocol::WIRELESS_SERVER
