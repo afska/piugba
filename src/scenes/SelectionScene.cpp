@@ -212,10 +212,8 @@ void SelectionScene::render() {
     init++;
     return;
   } else if (init == 1) {
-    if (isDouble()) {
+    if (isDouble())
       SCENE_applyColorFilter(pal_obj_bank, ColorFilter::DOUBLE_FILTER);
-      VBlankIntrWait();
-    }
 
     highlighter->initialize(selected);
     EFFECT_setBlendAlpha(blendAlpha);
