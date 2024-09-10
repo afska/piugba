@@ -33,6 +33,10 @@ extern "C" {
 
 enum InitialLevel { KEEP_LEVEL, FIRST_LEVEL, LAST_LEVEL };
 
+#define NUMERIC_LEVEL_BADGE_MARGIN (8 * (((3))))
+#define NUMERIC_LEVEL_BADGE_SEPARATOR "    "
+#define NUMERIC_LEVEL_BADGE_SEPARATOR_MINUS_ONE_SPACE "   "
+
 class SelectionScene : public Scene {
  public:
   SelectionScene(std::shared_ptr<GBAEngine> engine,
@@ -263,7 +267,8 @@ class SelectionScene : public Scene {
   std::string combineLevels(
       std::string localLevel,
       std::string remoteLevel,
-      std::string separator = "    ");  // (tied to NUMERIC_LEVEL_BADGE_MARGIN)
+      std::string separator = NUMERIC_LEVEL_BADGE_SEPARATOR);
+  std::string formatNumericLevel(int numericLevel);
   void loadSelectedSongGrade();
   void processMultiplayerUpdates();
   void syncNumericLevelChanged(u8 newValue);

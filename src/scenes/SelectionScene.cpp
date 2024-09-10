@@ -42,7 +42,6 @@ const u32 LOCK_X[] = {22, 82, 142, 202};
 const u32 LOCK_Y = 71;
 const u32 NUMERIC_LEVEL_BADGE_X = 104;
 const u32 NUMERIC_LEVEL_BADGE_Y = 19;
-const u32 NUMERIC_LEVEL_BADGE_MARGIN = 24;
 const u32 NUMERIC_LEVEL_ROW = 3;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_Y = 43;
 const u32 NUMERIC_LEVEL_BADGE_OFFSET_ROW = 5;
@@ -858,9 +857,8 @@ void SelectionScene::printNumericLevel(Chart* chart,
     return;
 
   if (numericLevels.empty()) {
-    SCENE_write(
-        isVs() ? "--   --" : "--",  // (tied to NUMERIC_LEVEL_BADGE_MARGIN)
-        NUMERIC_LEVEL_ROW + offsetY);
+    SCENE_write(isVs() ? combineLevels("--", "--") : "--",
+                NUMERIC_LEVEL_ROW + offsetY);
     return;
   }
 
@@ -882,7 +880,7 @@ void SelectionScene::printNumericLevel(Chart* chart,
           remoteVariant = std::string("  ") + remoteChart->variant;
         variant = combineLevels(variant.empty() ? "   " : variant,
                                 remoteVariant.empty() ? "   " : remoteVariant,
-                                "   ");  // (tied to NUMERIC_LEVEL_BADGE_MARGIN)
+                                NUMERIC_LEVEL_BADGE_SEPARATOR_MINUS_ONE_SPACE);
       }
       if (!variant.empty())
         SCENE_write(variant, NUMERIC_LEVEL_ROW + 2 - isVs());
@@ -897,22 +895,11 @@ void SelectionScene::printNumericLevel(Chart* chart,
   if (remoteChart != NULL)
     remoteArcadeLevelString = remoteChart->getArcadeLevelString();
 
-  if (arcadeLevelString.empty()) {
-    auto numericLevel = getSelectedNumericLevel();
-    arcadeLevelString =
-        numericLevel == 99 ? "??" : std::to_string(numericLevel);
-    if (arcadeLevelString.size() == 1)
-      arcadeLevelString = "0" + arcadeLevelString;
-  }
+  if (arcadeLevelString.empty())
+    arcadeLevelString = formatNumericLevel(getSelectedNumericLevel());
   if (isVs() && syncer->$remoteNumericLevelIndex != -1) {
-    if (remoteArcadeLevelString.empty()) {
-      auto remoteNumericLevel = syncer->$remoteNumericLevel;
-      remoteArcadeLevelString =
-          remoteNumericLevel == 99 ? "??" : std::to_string(remoteNumericLevel);
-      if (remoteArcadeLevelString.size() == 1)
-        remoteArcadeLevelString = "0" + remoteArcadeLevelString;
-    }
-
+    if (remoteArcadeLevelString.empty())
+      remoteArcadeLevelString = formatNumericLevel(syncer->$remoteNumericLevel);
     arcadeLevelString =
         combineLevels(arcadeLevelString, remoteArcadeLevelString);
   }
@@ -925,6 +912,14 @@ std::string SelectionScene::combineLevels(std::string localLevel,
                                           std::string separator) {
   return syncer->getLocalPlayerId() == 1 ? remoteLevel + separator + localLevel
                                          : localLevel + separator + remoteLevel;
+}
+
+std::string SelectionScene::formatNumericLevel(int numericLevel) {
+  std::string levelText =
+      numericLevel == 99 ? "??" : std::to_string(numericLevel);
+  if (levelText.size() == 1)
+    levelText = "0" + levelText;
+  return levelText;
 }
 
 void SelectionScene::loadSelectedSongGrade() {
