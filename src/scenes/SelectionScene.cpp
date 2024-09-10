@@ -259,6 +259,7 @@ void SelectionScene::setUpBackground() {
   bg->persist();
 
   TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
 
   loadChannels();
   loadProgress();

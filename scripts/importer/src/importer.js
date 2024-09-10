@@ -269,7 +269,7 @@ async function run() {
     const path = $path.join(IMAGES_PATH, imageFile);
 
     await utils.report(
-      () => importers.background(name, path, GLOBAL_OPTIONS.output),
+      () => importers.background(name, path, GLOBAL_OPTIONS.output, null, 253), // (UI backgrounds need 3 extra colors: 1 for darkener + 2 for text)
       imageFile
     );
   }

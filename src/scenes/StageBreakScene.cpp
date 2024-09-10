@@ -146,6 +146,7 @@ void StageBreakScene::animate() {
 
   TextStream::instance().setFontColor(msecs >= 2110 ? TEXT_COLOR_END
                                                     : TEXT_COLOR_START);
+  TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
 
   WRITE(1500, "H", heyRow, heyCol + 0, -1, 2, 228, 228);
   WRITE(1525, "e", heyRow, heyCol + 1, 3, -3, 205, -205);

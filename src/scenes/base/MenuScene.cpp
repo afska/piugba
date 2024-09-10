@@ -189,6 +189,7 @@ void MenuScene::processSelection() {
 
 void MenuScene::printMenu() {
   TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
   TextStream::instance().clear();
 
   printOptions();

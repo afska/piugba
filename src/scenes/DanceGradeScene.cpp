@@ -254,6 +254,7 @@ void DanceGradeScene::finish() {
 
 void DanceGradeScene::printScore() {
   TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
 
   if (isVs()) {
     TextStream::instance().scrollNow(0, -1);

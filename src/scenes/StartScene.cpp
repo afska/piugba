@@ -33,6 +33,7 @@ const u32 ID_DARKENER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 20;
+const u32 DARKENER_COLOR_INDEX = 253;
 const u32 TEXT_COLOR = 0x6DEF;
 const u32 TEXT_ROW = 12;
 const int TEXT_OFFSET_Y = -4;
@@ -132,7 +133,7 @@ void StartScene::render() {
     return;
 
   if (!hasStarted) {
-    darkener->initialize(BackgroundType::FULL_BGA_DARK, 254);
+    darkener->initialize(BackgroundType::FULL_BGA_DARK, DARKENER_COLOR_INDEX);
     printTitle();
     BACKGROUND_enable(true, true, true, false);
     SPRITE_enable();
@@ -320,6 +321,7 @@ void StartScene::updateExpandedOrCollapsedButtons() {
 
 void StartScene::printTitle() {
   TextStream::instance().setFontColor(TEXT_COLOR);
+  TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
   TextStream::instance().clear();
 
   SCENE_write(std::string((char*)gbfs_get_obj(fs, ROM_NAME_FILE, NULL)), 0);

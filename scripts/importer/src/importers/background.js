@@ -2,8 +2,8 @@ const utils = require("../utils");
 const $path = require("path");
 const _ = require("lodash");
 
-const COMMAND_BUILD = (input, output) =>
-  `magick "${input}" -resize ${RESOLUTION} -colors 254 "${output}"`;
+const COMMAND_BUILD = (input, output, colors = 254) =>
+  `magick "${input}" -resize ${RESOLUTION} -colors ${colors} "${output}"`;
 const COMMAND_BUILD_REMAP = (input, firstColorPalette, tempPalette, output) =>
   `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -unique-colors "${tempPalette}" && ` +
   `magick "${firstColorPalette}" "${tempPalette}" +append "${tempPalette}" && ` +
@@ -29,7 +29,8 @@ module.exports = async (
   name,
   filePath,
   outputPath,
-  transparentColor = null
+  transparentColor = null,
+  colors = 254
 ) => {
   const tempFiles = EXTENSIONS_TMP.map((it) =>
     $path.join(outputPath, `${name}.${it}`)
@@ -44,7 +45,7 @@ module.exports = async (
             tempFiles[0],
             tempFiles[1]
           )
-        : COMMAND_BUILD(filePath, tempFiles[1])
+        : COMMAND_BUILD(filePath, tempFiles[1], colors)
     );
   } catch (originalException) {
     try {
