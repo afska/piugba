@@ -393,7 +393,9 @@ void SelectionScene::goToSong() {
     remoteChart->levelIndex = (u8)syncer->$remoteNumericLevel;
   }
 
-  updateLastNumericLevel();
+  if (!IS_STORY(SAVEFILE_getGameMode()))
+    updateLastNumericLevel();
+
   SEQUENCE_goToMessageOrSong(song, chart, remoteChart);
 }
 
@@ -552,7 +554,6 @@ bool SelectionScene::onDifficultyLevelChange(ArrowDirection selector,
     u32 lastUnlockedSongIndex = getLastUnlockedSongIndex();
     stop();
     scrollTo(lastUnlockedSongIndex);
-    updateLastNumericLevel();
 
     return true;
   }
