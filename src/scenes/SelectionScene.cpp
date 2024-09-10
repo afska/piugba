@@ -684,7 +684,8 @@ void SelectionScene::updateLevel(Song* song, bool isChangingLevel) {
 
   for (u32 i = 0; i < song->chartCount; i++)
     if (song->charts[i].isDouble == isDouble())
-      numericLevels.push_back(song->charts[i].level);
+      numericLevels.push_back((song->charts[i].type << 16) |
+                              song->charts[i].level);
 
   if (!isChangingLevel)
     setClosestNumericLevel(getLastNumericLevel());

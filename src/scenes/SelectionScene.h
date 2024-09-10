@@ -67,7 +67,7 @@ class SelectionScene : public Scene {
   std::unique_ptr<Button> numericLevelBadge;
   std::unique_ptr<Explosion> loadingIndicator1;
   std::unique_ptr<Explosion> loadingIndicator2;
-  std::vector<u8> numericLevels;
+  std::vector<u32> numericLevels;
   u32 page = 0;
   u32 selected = 0;
   u32 count = 0;
@@ -118,11 +118,15 @@ class SelectionScene : public Scene {
     return min(completed, SAVEFILE_getLibrarySize());
   }
 
-  inline u8 getSelectedNumericLevel() {
+  inline u32 getSelectedRawNumericLevel() {
     if (numericLevels.empty())
       return 0;
 
     return numericLevels[getSelectedNumericLevelIndex()];
+  }
+
+  inline u8 getSelectedNumericLevel() {
+    return getSelectedRawNumericLevel() & 0xff;
   }
 
   inline u8 getSelectedNumericLevelIndex() {
@@ -132,11 +136,11 @@ class SelectionScene : public Scene {
     return SAVEFILE_read8(SRAM->memory.numericLevel);
   }
 
-  inline u8 getLastNumericLevel() {
-    return SAVEFILE_read8(SRAM->lastNumericLevel);
+  inline u32 getLastNumericLevel() {
+    return SAVEFILE_read32(SRAM->lastNumericLevel);
   }
 
-  inline void setClosestNumericLevel(u8 level) {
+  inline void setClosestNumericLevel(u32 level) {
     if (numericLevels.empty()) {
       SAVEFILE_write8(SRAM->memory.numericLevel, 0);
       return;
@@ -164,7 +168,7 @@ class SelectionScene : public Scene {
   }
 
   void updateLastNumericLevel() {
-    SAVEFILE_write8(SRAM->lastNumericLevel, getSelectedNumericLevel());
+    SAVEFILE_write32(SRAM->lastNumericLevel, getSelectedRawNumericLevel());
   }
 
   inline DifficultyLevel getLibraryType() {
