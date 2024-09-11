@@ -246,7 +246,9 @@ const buildBPM = (normalizedBpm) => {
 
 const normalizeInt = (number) => {
   if (number === Infinity || number > INFINITY) return INFINITY;
-  return Math.round(number);
+  const array = new Uint32Array(1);
+  array[0] = Math.round(number);
+  return array[0];
 };
 
 const TITLE_LEN = 30 + 1; // +1 = \0;
