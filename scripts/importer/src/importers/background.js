@@ -9,7 +9,8 @@ const COMMAND_BUILD_REMAP = (input, firstColorPalette, tempPalette, output) =>
   `magick "${firstColorPalette}" "${tempPalette}" +append "${tempPalette}" && ` +
   `magick "${input}" -resize ${RESOLUTION} -colors ${COLORS} -remap "${tempPalette}" "${output}" && ` +
   `rm "${tempPalette}"`;
-const COMMAND_ENCODE = (input) => `grit "${input}" -gt -gB8 -mRtf -mLs -ftb`;
+const COMMAND_ENCODE = (input) =>
+  `grit "${input}" -gzl -gt -gB8 -mRtf -mLs -ftb`;
 const COMMAND_MD5SUM = (input) => `md5sum "${input}" | cut -d " " -f 1`;
 const COMMAND_CLEANUP = (tmp1, tmp2) =>
   `${COMMAND_RM(tmp1)} && ${COMMAND_RM(tmp2)}`;

@@ -236,10 +236,12 @@ If you've added new folders, ensure they're in `Makefile`'s `SRCDIRS` list!
 
 ## Open-source projects involved
 
-- [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019
+- Sprite engine by [wgroeneveld/gba-sprite-engine](https://github.com/wgroeneveld/gba-sprite-engine): Dec 18, 2019
   - Forked at: [afska/gba-sprite-engine](https://github.com/afska/gba-sprite-engine)
-- [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
-- [AntonioND/libugba](https://github.com/AntonioND/libugba): Nov 14, 2022
-- [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v7.0.0
-- [afska/gba-flashcartio](https://github.com/afska/gba-flashcartio): v1.0.5 + fixes
-- [FatFS](http://elm-chan.org/fsw/ff/): R0.15
+- GBA hardware access by [tonclib](https://github.com/gbadev-org/libtonc)
+- GSM playback by [pinobatch/gsmplayer-gba](https://github.com/pinobatch/gsmplayer-gba): Feb 9, 2020
+- Interrupt handler by [AntonioND/libugba](https://github.com/AntonioND/libugba): Nov 14, 2022
+- LZ77 decompression by [Cult-of-GBA/BIOS](https://github.com/Cult-of-GBA/BIOS): Sep 11, 2024
+- Multiplayer support by [afska/gba-link-connection](https://github.com/afska/gba-link-connection): v7.0.0
+- microSD reading by [afska/gba-flashcartio](https://github.com/afska/gba-flashcartio): v1.0.5 + fixes
+- FAT parsing by [FatFS](http://elm-chan.org/fsw/ff/): R0.15
