@@ -46,9 +46,9 @@
 
 #define MODE_IMPOSSIBLE         \
   "In IMPOSSIBLE MODE:\r\n"     \
-  "- Songs run FASTER\r\n"      \
+  "- Songs play FASTER\r\n"     \
   "- Patterns are MIRRORED\r\n" \
-  "- Screen has visual MODS"
+  "- There are visual MODS"
 
 #define MODE_DEATH_MIX            \
   "In DEATHMIX MODE, you'll\r\n"  \
@@ -93,7 +93,7 @@
   "  legend. Amazing work!"
 
 #define WIN_DEATHMIX            \
-  " WOAH, congratulations!\r\n" \
+  " WHOA, congratulations!\r\n" \
   "  Ok, here's a secret:\r\n"  \
   "Try holding START when\r\n"  \
   "opening the ARCADE MODE!"
