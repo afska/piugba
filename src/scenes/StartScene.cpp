@@ -177,12 +177,12 @@ void StartScene::setUpButtons() {
       new Button(ButtonType::BLUE, BUTTONS_X[0], BUTTONS_Y[0], false)});
   buttons.push_back(std::unique_ptr<Button>{
       new Button(ButtonType::GRAY, BUTTONS_X[1], BUTTONS_Y[1], true)});
-  buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[2], BUTTONS_Y[2], false)});
-  buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[3], BUTTONS_Y[3], true)});
-  buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::SUB_BUTTON, BUTTONS_X[4], BUTTONS_Y[4], true)});
+  buttons.push_back(std::unique_ptr<Button>{new Button(
+      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[2], BUTTONS_Y[2], false)});
+  buttons.push_back(std::unique_ptr<Button>{new Button(
+      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[3], BUTTONS_Y[3], true)});
+  buttons.push_back(std::unique_ptr<Button>{new Button(
+      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[4], BUTTONS_Y[4], true)});
   buttons.push_back(std::unique_ptr<Button>{
       new Button(ButtonType::ORANGE, BUTTONS_X[5], BUTTONS_Y[5], true)});
   buttons.push_back(std::unique_ptr<Button>{new Button(
