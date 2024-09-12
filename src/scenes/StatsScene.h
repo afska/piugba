@@ -28,6 +28,11 @@ class StatsScene : public Scene {
   void render() override;
 
  private:
+  struct ArcadePercentages {
+    std::string singleProgress;
+    std::string doubleProgress;
+  };
+
   bool hasStarted = false;
   std::unique_ptr<PixelBlink> pixelBlink;
   std::unique_ptr<Background> bg;
@@ -46,7 +51,7 @@ class StatsScene : public Scene {
   std::string getHighestLevel();
   std::string getCampaignProgress(GameMode gameMode);
   std::string getCampaignSClearProgress();
-  std::string getArcadeProgress();
+  ArcadePercentages getArcadeProgress();
   std::string getDeathMixProgress();
   std::string getPercentage(u32 current, u32 total);
 

@@ -228,20 +228,28 @@ void StartScene::setUpButtons() {
   buttons[SUBBUTTON_DEATHMIX]->hide();
 
   if (ENV_ARCADE) {
+    isPlayExpanded = true;
     isArcadeExpanded = true;
+    isChallengesExpanded = true;
     buttons[BUTTON_PLAY]->hide();
     buttons[SUBBUTTON_CAMPAIGN]->hide();
-    buttons[SUBBUTTON_STATS]->hide();
+    buttons[SUBBUTTON_STATS]->show();
     buttons[BUTTON_ARCADE]->hide();
     buttons[SUBBUTTON_MULTI_VS]->show();
     buttons[SUBBUTTON_SINGLE]->show();
     buttons[SUBBUTTON_MULTI_COOP]->show();
     buttons[BUTTON_CHALLENGES]->hide();
     buttons[SUBBUTTON_IMPOSSIBLE]->hide();
-    buttons[SUBBUTTON_DEATHMIX]->hide();
+    buttons[SUBBUTTON_DEATHMIX]->show();
+    buttons[SUBBUTTON_STATS]->get()->moveTo(
+        buttons[SUBBUTTON_STATS]->get()->getX() + 3 + 26 - 13,
+        buttons[SUBBUTTON_STATS]->get()->getY() + 2);
     for (u32 i = SUBBUTTON_MULTI_VS; i <= SUBBUTTON_MULTI_COOP; i++)
-      buttons[i]->get()->moveTo(buttons[i]->get()->getX() + 26,
+      buttons[i]->get()->moveTo(buttons[i]->get()->getX() + 26 - 13,
                                 buttons[i]->get()->getY() + 2);
+    buttons[SUBBUTTON_DEATHMIX]->get()->moveTo(
+        buttons[SUBBUTTON_DEATHMIX]->get()->getX(),
+        buttons[SUBBUTTON_DEATHMIX]->get()->getY() + 2);
     selectedMode = SUBBUTTON_SINGLE;
     buttons[SUBBUTTON_SINGLE]->setSelected(true);
   } else
@@ -385,10 +393,13 @@ void StartScene::processSelectionChange() {
   bool canGoLeft =
       (!ENV_ARCADE && ((isPlayExpanded && selectedMode > SUBBUTTON_CAMPAIGN) ||
                        (!isPlayExpanded && selectedMode > BUTTON_PLAY))) ||
-      (ENV_ARCADE && selectedMode > SUBBUTTON_MULTI_VS);
+      (ENV_ARCADE && selectedMode >= SUBBUTTON_MULTI_VS);
 
   if (inputs[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
+
+    if (ENV_ARCADE && selectedMode == SUBBUTTON_IMPOSSIBLE)
+      selectedMode = SUBBUTTON_MULTI_COOP;
 
     if (selectedMode == BUTTON_CHALLENGES && isChallengesExpanded)
       selectedMode--;
@@ -408,9 +419,12 @@ void StartScene::processSelectionChange() {
       (!ENV_ARCADE &&
        ((isChallengesExpanded && selectedMode < SUBBUTTON_DEATHMIX) ||
         (!isChallengesExpanded && selectedMode < BUTTON_CHALLENGES))) ||
-      (ENV_ARCADE && selectedMode < SUBBUTTON_MULTI_COOP);
+      (ENV_ARCADE && selectedMode <= SUBBUTTON_MULTI_COOP);
   if (inputs[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
+
+    if (ENV_ARCADE && selectedMode == BUTTON_CHALLENGES)
+      selectedMode = SUBBUTTON_DEATHMIX;
 
     if (selectedMode == SUBBUTTON_CAMPAIGN && !isPlayExpanded)
       selectedMode += 2;

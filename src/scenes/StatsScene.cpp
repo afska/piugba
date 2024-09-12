@@ -132,7 +132,7 @@ void StatsScene::printStats() {
       !ENV_ARCADE ? getCampaignProgress(GameMode::CAMPAIGN) : "";
   std::string campaignSClearProgress =
       !ENV_ARCADE ? getCampaignSClearProgress() : "";
-  std::string arcadeProgress = getArcadeProgress();
+  auto arcadeProgress = getArcadeProgress();
   std::string impossibleProgress =
       hasImpossible ? getCampaignProgress(GameMode::IMPOSSIBLE) : "";
   std::string deathMixProgress = hasDeathMix ? getDeathMixProgress() : "";
@@ -150,12 +150,20 @@ void StatsScene::printStats() {
     printFixedLine("Campaign\\", campaignProgress, 11);
     printFixedLine("Campaign\\ (S)", campaignSClearProgress, 12);
   }
-  printFixedLine("Arcade\\", arcadeProgress, 13);
+  if (ENV_ARCADE) {
+    printFixedLine("Arcade\\ (single)", arcadeProgress.singleProgress, 11, 2);
+    printFixedLine("Arcade\\ (double)", arcadeProgress.doubleProgress, 12, 2);
+  } else {
+    printFixedLine(
+        "Arcade\\",
+        arcadeProgress.singleProgress + "/" + arcadeProgress.doubleProgress,
+        13);
+  }
   if (hasImpossible)
     printFixedLine("Impossible\\", impossibleProgress, 14);
   if (hasDeathMix)
     printFixedLine("DeathMix\\", deathMixProgress, 15);
-  printFixedLine("Calories burned", "0 kcal", 16, 1);
+  printFixedLine("Calories burned", "0 kcal", ENV_ARCADE ? 13 : 16, 1);
 }
 
 std::string StatsScene::getPlayTime() {
@@ -232,7 +240,7 @@ std::string StatsScene::getCampaignSClearProgress() {
          getPercentage(completedCrazy, librarySize);
 }
 
-std::string StatsScene::getArcadeProgress() {
+StatsScene::ArcadePercentages StatsScene::getArcadeProgress() {
   std::vector<std::unique_ptr<SongFile>> songFiles;
   auto library = std::unique_ptr<Library>{new Library(fs)};
   u32 librarySize = SAVEFILE_getLibrarySize();
@@ -262,8 +270,10 @@ std::string StatsScene::getArcadeProgress() {
     SONG_free(song);
   }
 
-  return getPercentage(completedSingle, totalSingle) + "/" +
-         getPercentage(completedDouble, totalDouble);
+  StatsScene::ArcadePercentages percentages;
+  percentages.singleProgress = getPercentage(completedSingle, totalSingle);
+  percentages.doubleProgress = getPercentage(completedDouble, totalDouble);
+  return percentages;
 }
 
 std::string StatsScene::getDeathMixProgress() {
