@@ -74,7 +74,9 @@ void StageBreakScene::load() {
   EFFECT_setBlendAlpha(TEXT_BLEND_ALPHA);
 
   instructor = std::unique_ptr<Instructor>{
-      new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
+      new Instructor(SAVEFILE_isUsingModernTheme() ? InstructorType::AngryGirl2
+                                                   : InstructorType::AngryGirl1,
+                     INSTRUCTOR_X, INSTRUCTOR_Y)};
   instructor->get()->setDoubleSize(true);
   instructor->get()->setAffineId(AFFINE_BASE);
 
