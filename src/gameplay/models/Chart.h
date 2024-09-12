@@ -48,10 +48,9 @@ typedef struct {
   }
 
   std::string getLevelString() {
-    if (type == ChartType::DOUBLE_COOP_CHART)
-      return ";)";
-
-    return (type == ChartType::SINGLE_CHART ? "s" : "d") +
+    return (type == ChartType::SINGLE_CHART   ? "s"
+            : type == ChartType::DOUBLE_CHART ? "d"
+                                              : "m") +
            (level == 99 ? "??" : std::to_string(level));
   }
 } Chart;

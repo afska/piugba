@@ -77,6 +77,8 @@ void StageBreakScene::load() {
       new Instructor(InstructorType::AngryGirl, INSTRUCTOR_X, INSTRUCTOR_Y)};
   instructor->get()->setDoubleSize(true);
   instructor->get()->setAffineId(AFFINE_BASE);
+
+  updateStats();
 }
 
 void StageBreakScene::tick(u16 keys) {
@@ -136,6 +138,11 @@ void StageBreakScene::setUpBackground() {
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
+}
+
+void StageBreakScene::updateStats() {
+  u32 breaks = SAVEFILE_read32(SRAM->stats.stageBreaks);
+  SAVEFILE_write32(SRAM->stats.stageBreaks, breaks + 1);
 }
 
 void StageBreakScene::animate() {

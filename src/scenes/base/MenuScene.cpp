@@ -7,6 +7,7 @@
 #include "player/PlaybackState.h"
 #include "scenes/SelectionScene.h"
 #include "utils/SceneUtils.h"
+#include "utils/StringUtils.h"
 
 extern "C" {
 #include "player/player.h"

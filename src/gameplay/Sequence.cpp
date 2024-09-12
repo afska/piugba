@@ -18,6 +18,7 @@
 #include "scenes/SelectionScene.h"
 #include "scenes/SongScene.h"
 #include "scenes/StartScene.h"
+#include "scenes/StatsScene.h"
 #include "scenes/TalkScene.h"
 #include "utils/SceneUtils.h"
 

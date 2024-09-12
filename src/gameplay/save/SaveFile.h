@@ -13,6 +13,7 @@
 #include "Progress.h"
 #include "Settings.h"
 #include "State.h"
+#include "Stats.h"
 #include "assets.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/models/Chart.h"
@@ -59,6 +60,9 @@ typedef struct __attribute__((__packed__)) {
 
   s8 customOffsets[CUSTOM_OFFSET_TABLE_TOTAL_SIZE];
 
+  char padding4[10];
+  Stats stats;
+
   // (*) these properties shouldn't be at the root level, but we'll leave them
   // there because it's important to maintain save file compatibility
 } SaveFile;
@@ -72,11 +76,13 @@ typedef struct __attribute__((__packed__)) {
          (*(((volatile char*)&TARGET) + 1) << 8) +  \
          (*(((volatile char*)&TARGET) + 2) << 16) + \
          (*(((volatile char*)&TARGET) + 3) << 24)))
-#define SAVEFILE_write32(DEST, VALUE)                                   \
-  *(((volatile char*)&DEST) + 0) = (((u32)(VALUE)) & 0x000000ff) >> 0;  \
-  *(((volatile char*)&DEST) + 1) = (((u32)(VALUE)) & 0x0000ff00) >> 8;  \
-  *(((volatile char*)&DEST) + 2) = (((u32)(VALUE)) & 0x00ff0000) >> 16; \
-  *(((volatile char*)&DEST) + 3) = (((u32)(VALUE)) & 0xff000000) >> 24;
+#define SAVEFILE_write32(DEST, VALUE)                                     \
+  do {                                                                    \
+    *(((volatile char*)&DEST) + 0) = (((u32)(VALUE)) & 0x000000ff) >> 0;  \
+    *(((volatile char*)&DEST) + 1) = (((u32)(VALUE)) & 0x0000ff00) >> 8;  \
+    *(((volatile char*)&DEST) + 2) = (((u32)(VALUE)) & 0x00ff0000) >> 16; \
+    *(((volatile char*)&DEST) + 3) = (((u32)(VALUE)) & 0xff000000) >> 24; \
+  } while (false);
 
 inline void SAVEFILE_resetSettings() {
   SAVEFILE_write32(SRAM->settings.audioLag, 0);
@@ -127,6 +133,15 @@ inline void SAVEFILE_resetAdminSettings() {
   SAVEFILE_write8(SRAM->adminSettings.navigationStyle,
                   NavigationStyleOpts::PIU);
 #endif
+}
+
+inline void SAVEFILE_resetStats() {
+  SAVEFILE_write32(SRAM->stats.playTimeSeconds, 0);
+  SAVEFILE_write32(SRAM->stats.stagePasses, 0);
+  SAVEFILE_write32(SRAM->stats.stageBreaks, 0);
+  SAVEFILE_write32(SRAM->stats.sGrades, 0);
+  SAVEFILE_write32(SRAM->stats.maxCombo, 0);
+  SAVEFILE_write32(SRAM->stats.highestLevel, 0);
 }
 
 inline u32 SAVEFILE_normalize(u32 librarySize) {
@@ -267,6 +282,15 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
     fixes |= 0b1000000000;
   }
 
+  // validate stats
+  u32 maxCombo = SAVEFILE_read32(SRAM->stats.maxCombo);
+  u32 highestLevel = SAVEFILE_read32(SRAM->stats.highestLevel);
+  if (maxCombo > 9999 || (highestLevel & 0xff) >= 99 ||
+      ((highestLevel >> 16) & 0xff) > 2) {
+    SAVEFILE_resetStats();
+    fixes |= 0b10000000000;
+  }
+
   // quick fixes
   u32 lastNumericLevel = SAVEFILE_read32(SRAM->lastNumericLevel);
   u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
@@ -324,6 +348,7 @@ inline u32 SAVEFILE_initialize(const GBFS_FILE* fs) {
     ARCADE_initialize();
     OFFSET_initialize();
     SAVEFILE_resetAdminSettings();
+    SAVEFILE_resetStats();
 
     SAVEFILE_write32(SRAM->lastNumericLevel, 0);
     SAVEFILE_write8(SRAM->isBonusMode, false);
@@ -400,7 +425,7 @@ inline bool SAVEFILE_isModeUnlocked(GameMode gameMode) {
       gameMode == GameMode::MULTI_COOP)
     return maxCompletedSongs >= 1;
 
-  if (gameMode == GameMode::IMPOSSIBLE)
+  if (gameMode == GameMode::IMPOSSIBLE || gameMode == GameMode::DEATH_MIX)
     return maxCompletedSongs >= SAVEFILE_getLibrarySize();
 
   return true;
@@ -446,9 +471,9 @@ inline DifficultyLevel SAVEFILE_getMaxLibraryType(bool campaignOnly = false) {
   return maxLevel;
 }
 
-inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
-  auto gameMode = SAVEFILE_getGameMode();
-
+inline GradeType SAVEFILE_getStoryGradeOf(GameMode gameMode,
+                                          u8 songIndex,
+                                          DifficultyLevel level) {
   u32 index = (gameMode == GameMode::IMPOSSIBLE) * PROGRESS_IMPOSSIBLE + level;
   int lastIndex = SAVEFILE_read8(SRAM->progress[index].completedSongs) - 1;
   if (songIndex > lastIndex)
@@ -456,6 +481,11 @@ inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
 
   return static_cast<GradeType>(
       SAVEFILE_read8(SRAM->progress[index].grades[songIndex]));
+}
+
+inline GradeType SAVEFILE_getStoryGradeOf(u8 songIndex, DifficultyLevel level) {
+  auto gameMode = SAVEFILE_getGameMode();
+  return SAVEFILE_getStoryGradeOf(gameMode, songIndex, level);
 }
 
 inline GradeType SAVEFILE_getArcadeGradeOf(u8 songId, u8 numericLevelIndex) {

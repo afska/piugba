@@ -163,6 +163,7 @@ class SongScene : public Scene {
   void onStagePass();
   void onAbort();
   void breakStage();
+  void updateHighestLevel();
   void finishAndGoToEvaluation();
   void continueDeathMix();
 

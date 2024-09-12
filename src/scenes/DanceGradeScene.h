@@ -66,6 +66,7 @@ class DanceGradeScene : public Scene {
   void printScore();
   std::string pointsToString(u32 points);
   u32 getMultiplayerPointsOf(Evaluation* evaluation);
+  void updateStats();
 
   void playSound();
   void processMultiplayerUpdates();

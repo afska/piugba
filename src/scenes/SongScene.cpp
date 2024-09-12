@@ -893,6 +893,18 @@ void SongScene::breakStage() {
                               new PixelTransitionEffect());
 }
 
+void SongScene::updateHighestLevel() {
+  u32 rawHighestLevel = SAVEFILE_read32(SRAM->stats.highestLevel);
+  u32 highestLevel = rawHighestLevel & 0xff;
+  u32 highestType = (rawHighestLevel >> 16) & 0xff;
+  u32 newLevel = chart->level;
+  if (newLevel != 99 &&
+      (newLevel > highestLevel ||
+       (newLevel == highestLevel && chart->type > highestType))) {
+    SAVEFILE_write32(SRAM->stats.highestLevel, (chart->type << 16) | newLevel);
+  }
+}
+
 void SongScene::finishAndGoToEvaluation() {
   unload();
 
@@ -906,6 +918,7 @@ void SongScene::finishAndGoToEvaluation() {
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
                           chart->levelIndex, evaluation->getGrade());
 
+  updateHighestLevel();
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
@@ -1382,6 +1395,14 @@ void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
   videoStore->unload();
+
+  u32 playTimeSeconds = SAVEFILE_read32(SRAM->stats.playTimeSeconds);
+  u32 addedPlayTime =
+      PlaybackState.msecs > 0 ? Div(PlaybackState.msecs, 1000) : 0;
+  if (addedPlayTime > 0) {
+    SAVEFILE_write32(SRAM->stats.playTimeSeconds,
+                     playTimeSeconds + addedPlayTime);
+  }
 
   if ($isMultiplayer)
     syncer->resetSongState();

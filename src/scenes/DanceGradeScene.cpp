@@ -6,6 +6,7 @@
 #include "gameplay/Key.h"
 #include "gameplay/Sequence.h"
 #include "gameplay/multiplayer/Syncer.h"
+#include "objects/score/combo/Combo.h"
 #include "player/PlaybackState.h"
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
@@ -152,6 +153,8 @@ void DanceGradeScene::load() {
     grade->get()->setDoubleSize(true);
     grade->get()->setAffineId(AFFINE_BASE);
   }
+
+  updateStats();
 }
 
 void DanceGradeScene::tick(u16 keys) {
@@ -309,6 +312,25 @@ std::string DanceGradeScene::pointsToString(u32 points) {
 
 u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
   return differentCharts ? evaluation->percent : evaluation->points;
+}
+
+void DanceGradeScene::updateStats() {
+  u32 passes = SAVEFILE_read32(SRAM->stats.stagePasses);
+  SAVEFILE_write32(SRAM->stats.stagePasses, passes + 1);
+
+  GradeType gradeType = isVs() ? miniGrades[0]->getType() : grade->getType();
+  if (gradeType == GradeType::S) {
+    u32 sGrades = SAVEFILE_read32(SRAM->stats.sGrades);
+    SAVEFILE_write32(SRAM->stats.sGrades, sGrades + 1);
+  }
+
+  u32 newCombo = evaluation->maxCombo;
+  if (newCombo > MAX_COMBO)
+    newCombo = MAX_COMBO;
+  u32 maxCombo = SAVEFILE_read32(SRAM->stats.maxCombo);
+  if (newCombo > maxCombo) {
+    SAVEFILE_write32(SRAM->stats.maxCombo, newCombo);
+  }
 }
 
 void DanceGradeScene::playSound() {
