@@ -250,11 +250,11 @@ std::string StatsScene::getArcadeProgress() {
     for (u32 j = 0; j < song->chartCount; j++) {
       if (song->charts[j].type == ChartType::SINGLE_CHART) {
         totalSingle++;
-        if (ARCADE_readSingle(song->id, j) != GradeType::UNPLAYED)
+        if (ARCADE_readSingle(song->id, j) < GradeType::UNPLAYED)
           completedSingle++;
       } else {
         totalDouble++;
-        if (ARCADE_readDouble(song->id, j) != GradeType::UNPLAYED)
+        if (ARCADE_readDouble(song->id, j) < GradeType::UNPLAYED)
           completedDouble++;
       }
     }
@@ -282,7 +282,8 @@ std::string StatsScene::getDeathMixProgress() {
 }
 
 std::string StatsScene::getPercentage(u32 current, u32 total) {
-  auto str = std::to_string(Div(current * 100, total)) + "\\";
+  u32 percentage = Div(current * 100, total);
+  auto str = percentage >= 100 ? "!!!" : std::to_string(percentage) + "\\";
   STRING_padLeft(str, 3, '0');
   return str;
 }
