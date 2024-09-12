@@ -17,6 +17,7 @@ const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 16;
 const u32 TEXT_COLOR = 0x7FFF;
 const u32 BUTTON_MARGIN = 3;
+const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 SELECT_BUTTON_X = 112;
 const int TEXT_COL_UNSELECTED = -2;
 const int TEXT_COL_VALUE_MIDDLE = 20;
@@ -44,6 +45,8 @@ void StatsScene::load() {
   setUpSpritesPalette();
   setUpBackground();
 
+  pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
+
   selectButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::CENTER, false, true, true, true)};
 
@@ -53,6 +56,7 @@ void StatsScene::load() {
   TextStream::instance().setFontColor(TEXT_COLOR);
   TextStream::instance().setFontSubcolor(text_bg_palette_default_subcolor);
   TextStream::instance().scrollNow(0, 2);
+  TextStream::instance().setMosaic(true);
   SCENE_write(TITLE, 1);
   printFixedLine("Loading...", "", 3);
 }
@@ -64,6 +68,7 @@ void StatsScene::tick(u16 keys) {
   processKeys(keys);
 
   selectButton->tick();
+  pixelBlink->tick();
 }
 
 void StatsScene::render() {
@@ -133,6 +138,7 @@ void StatsScene::printStats() {
   std::string deathMixProgress = hasDeathMix ? getDeathMixProgress() : "";
 
   VBlankIntrWait();
+  pixelBlink->blink();
   printFixedLine("Play time", playTime, 3);
   printFixedLine("Songs played", std::to_string(stagePasses + stageBreaks), 4);
   printFixedLine("Stage breaks", std::to_string(stageBreaks), 5);

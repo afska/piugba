@@ -14,20 +14,32 @@
 #include "gameplay/save/SaveFile.h"
 #include "player/PlaybackState.h"
 #include "scenes/AdminScene.h"
+#include "scenes/StatsScene.h"
 #include "utils/SceneUtils.h"
 
 extern "C" {
 #include "player/player.h"
 }
 
-const std::string TITLES[] = {"Campaign",   "Arcade",     "Multi VS",
-                              "Single",     "Multi COOP", "Challenges",
-                              "Impossible", "DeathMix"};
+const std::string TITLES[] = {
+    "Play",   "Campaign",   "Stats",      "Arcade",     "Multi VS",
+    "Single", "Multi COOP", "Challenges", "Impossible", "DeathMix"};
+
+#define BUTTON_PLAY 0
+#define SUBBUTTON_CAMPAIGN 1
+#define SUBBUTTON_STATS 2
+#define BUTTON_ARCADE 3
+#define SUBBUTTON_MULTI_VS 4
+#define SUBBUTTON_SINGLE 5
+#define SUBBUTTON_MULTI_COOP 6
+#define BUTTON_CHALLENGES 7
+#define SUBBUTTON_IMPOSSIBLE 8
+#define SUBBUTTON_DEATHMIX 9
 
 const u32 BPM = 145;
 const u32 ARROW_POOL_SIZE = 10;
 const u32 DEMO_ARROW_INITIAL_Y = 78;
-const u32 BUTTONS_TOTAL = 8;
+const u32 BUTTONS_TOTAL = 10;
 
 const u32 ID_DARKENER = 1;
 const u32 ID_MAIN_BACKGROUND = 2;
@@ -39,8 +51,8 @@ const u32 TEXT_ROW = 12;
 const int TEXT_OFFSET_Y = -4;
 const u32 PIXEL_BLINK_LEVEL = 4;
 const u32 ALPHA_BLINK_LEVEL = 8;
-const u32 BUTTONS_X[] = {141, 175, 170, 183, 196, 209, 209, 222};
-const u32 BUTTONS_Y[] = {128, 128, 136, 136, 136, 128, 136, 136};
+const u32 BUTTONS_X[] = {141, 141, 154, 175, 170, 183, 196, 209, 209, 222};
+const u32 BUTTONS_Y[] = {128, 136, 136, 128, 136, 136, 136, 128, 136, 136};
 const u32 BOUNCE_STEPS[] = {0, 6, 10, 13, 11, 9, 6, 3, 1, 0};
 const u32 INPUT_LEFT = 0;
 const u32 INPUT_RIGHT = 1;
@@ -64,14 +76,16 @@ std::vector<Background*> StartScene::backgrounds() {
 std::vector<Sprite*> StartScene::sprites() {
   std::vector<Sprite*> sprites;
 
-  sprites.push_back(buttons[0]->get());
-  sprites.push_back(buttons[1]->get());
-  sprites.push_back(buttons[5]->get());
-  sprites.push_back(buttons[2]->get());
-  sprites.push_back(buttons[3]->get());
-  sprites.push_back(buttons[4]->get());
-  sprites.push_back(buttons[6]->get());
-  sprites.push_back(buttons[7]->get());
+  sprites.push_back(buttons[BUTTON_PLAY]->get());
+  sprites.push_back(buttons[BUTTON_ARCADE]->get());
+  sprites.push_back(buttons[BUTTON_CHALLENGES]->get());
+  sprites.push_back(buttons[SUBBUTTON_CAMPAIGN]->get());
+  sprites.push_back(buttons[SUBBUTTON_STATS]->get());
+  sprites.push_back(buttons[SUBBUTTON_MULTI_VS]->get());
+  sprites.push_back(buttons[SUBBUTTON_SINGLE]->get());
+  sprites.push_back(buttons[SUBBUTTON_MULTI_COOP]->get());
+  sprites.push_back(buttons[SUBBUTTON_IMPOSSIBLE]->get());
+  sprites.push_back(buttons[SUBBUTTON_DEATHMIX]->get());
 
   sprites.push_back(inputs[INPUT_LEFT]->get());
   sprites.push_back(inputs[INPUT_RIGHT]->get());
@@ -95,6 +109,7 @@ void StartScene::load() {
 
   setUpSpritesPalette();
   setUpBackground();
+
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
 
   setUpInputs();
@@ -174,45 +189,63 @@ void StartScene::setUpInputs() {
 
 void StartScene::setUpButtons() {
   buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::BLUE, BUTTONS_X[0], BUTTONS_Y[0], false)});
+      new Button(ButtonType::BLUE, BUTTONS_X[BUTTON_PLAY],
+                 BUTTONS_Y[BUTTON_PLAY], false)});
   buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::GRAY, BUTTONS_X[1], BUTTONS_Y[1], true)});
-  buttons.push_back(std::unique_ptr<Button>{new Button(
-      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[2], BUTTONS_Y[2], false)});
-  buttons.push_back(std::unique_ptr<Button>{new Button(
-      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[3], BUTTONS_Y[3], true)});
-  buttons.push_back(std::unique_ptr<Button>{new Button(
-      ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[4], BUTTONS_Y[4], true)});
+      new Button(ButtonType::SUB_BUTTON_BLUE, BUTTONS_X[SUBBUTTON_CAMPAIGN],
+                 BUTTONS_Y[SUBBUTTON_CAMPAIGN], false)});
   buttons.push_back(std::unique_ptr<Button>{
-      new Button(ButtonType::ORANGE, BUTTONS_X[5], BUTTONS_Y[5], true)});
-  buttons.push_back(std::unique_ptr<Button>{new Button(
-      ButtonType::SUB_BUTTON_ORANGE, BUTTONS_X[6], BUTTONS_Y[6], true)});
-  buttons.push_back(std::unique_ptr<Button>{new Button(
-      ButtonType::SUB_BUTTON_ORANGE, BUTTONS_X[7], BUTTONS_Y[7], true)});
+      new Button(ButtonType::SUB_BUTTON_BLUE, BUTTONS_X[SUBBUTTON_STATS],
+                 BUTTONS_Y[SUBBUTTON_STATS], false)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::GRAY, BUTTONS_X[BUTTON_ARCADE],
+                 BUTTONS_Y[BUTTON_ARCADE], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[SUBBUTTON_MULTI_VS],
+                 BUTTONS_Y[SUBBUTTON_MULTI_VS], false)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[SUBBUTTON_SINGLE],
+                 BUTTONS_Y[SUBBUTTON_SINGLE], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON_GRAY, BUTTONS_X[SUBBUTTON_MULTI_COOP],
+                 BUTTONS_Y[SUBBUTTON_MULTI_COOP], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::ORANGE, BUTTONS_X[BUTTON_CHALLENGES],
+                 BUTTONS_Y[BUTTON_CHALLENGES], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON_ORANGE, BUTTONS_X[SUBBUTTON_IMPOSSIBLE],
+                 BUTTONS_Y[SUBBUTTON_IMPOSSIBLE], true)});
+  buttons.push_back(std::unique_ptr<Button>{
+      new Button(ButtonType::SUB_BUTTON_ORANGE, BUTTONS_X[SUBBUTTON_DEATHMIX],
+                 BUTTONS_Y[SUBBUTTON_DEATHMIX], true)});
 
-  buttons[2]->hide();
-  buttons[3]->hide();
-  buttons[4]->hide();
-  buttons[6]->hide();
-  buttons[7]->hide();
+  buttons[SUBBUTTON_CAMPAIGN]->hide();
+  buttons[SUBBUTTON_STATS]->hide();
+  buttons[SUBBUTTON_MULTI_VS]->hide();
+  buttons[SUBBUTTON_SINGLE]->hide();
+  buttons[SUBBUTTON_MULTI_COOP]->hide();
+  buttons[SUBBUTTON_IMPOSSIBLE]->hide();
+  buttons[SUBBUTTON_DEATHMIX]->hide();
 
   if (ENV_ARCADE) {
     isArcadeExpanded = true;
-    buttons[0]->hide();
-    buttons[1]->hide();
-    buttons[2]->show();
-    buttons[3]->show();
-    buttons[4]->show();
-    buttons[5]->hide();
-    buttons[6]->hide();
-    buttons[7]->hide();
-    for (u32 i = 2; i <= 4; i++)
+    buttons[BUTTON_PLAY]->hide();
+    buttons[SUBBUTTON_CAMPAIGN]->hide();
+    buttons[SUBBUTTON_STATS]->hide();
+    buttons[BUTTON_ARCADE]->hide();
+    buttons[SUBBUTTON_MULTI_VS]->show();
+    buttons[SUBBUTTON_SINGLE]->show();
+    buttons[SUBBUTTON_MULTI_COOP]->show();
+    buttons[BUTTON_CHALLENGES]->hide();
+    buttons[SUBBUTTON_IMPOSSIBLE]->hide();
+    buttons[SUBBUTTON_DEATHMIX]->hide();
+    for (u32 i = SUBBUTTON_MULTI_VS; i <= SUBBUTTON_MULTI_COOP; i++)
       buttons[i]->get()->moveTo(buttons[i]->get()->getX() + 26,
                                 buttons[i]->get()->getY() + 2);
-    selectedMode = 3;
-    buttons[3]->setSelected(true);
+    selectedMode = SUBBUTTON_SINGLE;
+    buttons[SUBBUTTON_SINGLE]->setSelected(true);
   } else
-    buttons[ButtonType::BLUE]->setSelected(true);
+    buttons[BUTTON_PLAY]->setSelected(true);
 }
 
 void StartScene::setUpGameAnimation() {
@@ -293,29 +326,42 @@ void StartScene::updateExpandedOrCollapsedButtons() {
   if (ENV_ARCADE)
     return;
 
-  isArcadeExpanded = selectedMode >= 2 && selectedMode <= 4;
-  isChallengesExpanded = selectedMode >= 6;
+  isPlayExpanded =
+      selectedMode >= SUBBUTTON_CAMPAIGN && selectedMode <= SUBBUTTON_STATS;
+  isArcadeExpanded = selectedMode >= SUBBUTTON_MULTI_VS &&
+                     selectedMode <= SUBBUTTON_MULTI_COOP;
+  isChallengesExpanded = selectedMode >= SUBBUTTON_IMPOSSIBLE;
+
+  if (isPlayExpanded) {
+    buttons[BUTTON_PLAY]->hide();
+    buttons[SUBBUTTON_CAMPAIGN]->show();
+    buttons[SUBBUTTON_STATS]->show();
+  } else {
+    buttons[BUTTON_PLAY]->show();
+    buttons[SUBBUTTON_CAMPAIGN]->hide();
+    buttons[SUBBUTTON_STATS]->hide();
+  }
 
   if (isArcadeExpanded) {
-    buttons[1]->hide();
-    buttons[2]->show();
-    buttons[3]->show();
-    buttons[4]->show();
+    buttons[BUTTON_ARCADE]->hide();
+    buttons[SUBBUTTON_MULTI_VS]->show();
+    buttons[SUBBUTTON_SINGLE]->show();
+    buttons[SUBBUTTON_MULTI_COOP]->show();
   } else {
-    buttons[1]->show();
-    buttons[2]->hide();
-    buttons[3]->hide();
-    buttons[4]->hide();
+    buttons[BUTTON_ARCADE]->show();
+    buttons[SUBBUTTON_MULTI_VS]->hide();
+    buttons[SUBBUTTON_SINGLE]->hide();
+    buttons[SUBBUTTON_MULTI_COOP]->hide();
   }
 
   if (isChallengesExpanded) {
-    buttons[5]->hide();
-    buttons[6]->show();
-    buttons[7]->show();
+    buttons[BUTTON_CHALLENGES]->hide();
+    buttons[SUBBUTTON_IMPOSSIBLE]->show();
+    buttons[SUBBUTTON_DEATHMIX]->show();
   } else {
-    buttons[5]->show();
-    buttons[6]->hide();
-    buttons[7]->hide();
+    buttons[BUTTON_CHALLENGES]->show();
+    buttons[SUBBUTTON_IMPOSSIBLE]->hide();
+    buttons[SUBBUTTON_DEATHMIX]->hide();
   }
 }
 
@@ -337,16 +383,21 @@ void StartScene::processKeys(u16 keys) {
 
 void StartScene::processSelectionChange() {
   bool canGoLeft =
-      (!ENV_ARCADE && selectedMode > 0) || (ENV_ARCADE && selectedMode > 2);
+      (!ENV_ARCADE && ((isPlayExpanded && selectedMode > SUBBUTTON_CAMPAIGN) ||
+                       (!isPlayExpanded && selectedMode > BUTTON_PLAY))) ||
+      (ENV_ARCADE && selectedMode > SUBBUTTON_MULTI_VS);
+
   if (inputs[INPUT_LEFT]->hasBeenPressedNow() && canGoLeft) {
     selectedMode--;
 
-    if (selectedMode == 5 && isChallengesExpanded)
+    if (selectedMode == BUTTON_CHALLENGES && isChallengesExpanded)
       selectedMode--;
-    if (selectedMode == 4 && !isArcadeExpanded)
+    if (selectedMode == SUBBUTTON_MULTI_COOP && !isArcadeExpanded)
       selectedMode -= 3;
-    if (selectedMode == 1 && isArcadeExpanded)
+    if (selectedMode == BUTTON_ARCADE && isArcadeExpanded)
       selectedMode--;
+    if (selectedMode == SUBBUTTON_STATS && !isPlayExpanded)
+      selectedMode -= 2;
 
     updateExpandedOrCollapsedButtons();
     pixelBlink->blink();
@@ -354,17 +405,20 @@ void StartScene::processSelectionChange() {
   }
 
   bool canGoRight =
-      (!ENV_ARCADE && ((isChallengesExpanded && selectedMode < 7) ||
-                       (!isChallengesExpanded && selectedMode < 5))) ||
-      (ENV_ARCADE && selectedMode < 4);
+      (!ENV_ARCADE &&
+       ((isChallengesExpanded && selectedMode < SUBBUTTON_DEATHMIX) ||
+        (!isChallengesExpanded && selectedMode < BUTTON_CHALLENGES))) ||
+      (ENV_ARCADE && selectedMode < SUBBUTTON_MULTI_COOP);
   if (inputs[INPUT_RIGHT]->hasBeenPressedNow() && canGoRight) {
     selectedMode++;
 
-    if (selectedMode == 2 && !isArcadeExpanded)
-      selectedMode += 3;
-    if (selectedMode == 1 && isArcadeExpanded)
+    if (selectedMode == SUBBUTTON_CAMPAIGN && !isPlayExpanded)
+      selectedMode += 2;
+    if (selectedMode == BUTTON_ARCADE && isArcadeExpanded)
       selectedMode++;
-    if (selectedMode == 5 && isChallengesExpanded)
+    if (selectedMode == SUBBUTTON_MULTI_VS && !isArcadeExpanded)
+      selectedMode += 3;
+    if (selectedMode == BUTTON_CHALLENGES && isChallengesExpanded)
       selectedMode++;
 
     updateExpandedOrCollapsedButtons();
@@ -396,46 +450,59 @@ bool StartScene::isPressingAdminCombo(u16 keys) {
 }
 
 void StartScene::goToGame() {
-  if (selectedMode == 1) {
-    selectedMode = 3;
+  if (selectedMode == BUTTON_PLAY) {
+    selectedMode = SUBBUTTON_CAMPAIGN;
     updateExpandedOrCollapsedButtons();
     pixelBlink->blink();
     printTitle();
     return;
   }
-  if (selectedMode == 5) {
+  if (selectedMode == BUTTON_ARCADE) {
+    selectedMode = SUBBUTTON_SINGLE;
+    updateExpandedOrCollapsedButtons();
+    pixelBlink->blink();
+    printTitle();
+    return;
+  }
+  if (selectedMode == BUTTON_CHALLENGES) {
     bool isImpossibleModeUnlocked =
         SAVEFILE_isModeUnlocked(GameMode::IMPOSSIBLE);
     if (isImpossibleModeUnlocked) {
       isChallengesExpanded = true;
-      selectedMode = 6;
+      selectedMode = SUBBUTTON_IMPOSSIBLE;
       updateExpandedOrCollapsedButtons();
       pixelBlink->blink();
       printTitle();
       return;
     }
   }
+  if (selectedMode == SUBBUTTON_STATS) {
+    player_stop();
+    engine->transitionIntoScene(new StatsScene(engine, fs),
+                                new PixelTransitionEffect());
+    return;
+  }
 
   GameMode gameMode;
   switch (selectedMode) {
-    case 2: {
+    case SUBBUTTON_MULTI_VS: {
       gameMode = GameMode::MULTI_VS;
       break;
     }
-    case 3: {
+    case SUBBUTTON_SINGLE: {
       gameMode = GameMode::ARCADE;
       break;
     }
-    case 4: {
+    case SUBBUTTON_MULTI_COOP: {
       gameMode = GameMode::MULTI_COOP;
       break;
     }
-    case 5:
-    case 6: {
+    case BUTTON_CHALLENGES:
+    case SUBBUTTON_IMPOSSIBLE: {
       gameMode = GameMode::IMPOSSIBLE;
       break;
     }
-    case 7: {
+    case SUBBUTTON_DEATHMIX: {
       gameMode = GameMode::DEATH_MIX;
       break;
     }
