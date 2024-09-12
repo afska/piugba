@@ -1392,10 +1392,6 @@ void SongScene::unload() {
   profilePrint();
 #endif
 
-  player_stop();
-  RUMBLE_stop();
-  videoStore->unload();
-
   u32 playTimeSeconds = SAVEFILE_read32(SRAM->stats.playTimeSeconds);
   u32 addedPlayTime =
       PlaybackState.msecs > 0 ? Div(PlaybackState.msecs, 1000) : 0;
@@ -1403,6 +1399,10 @@ void SongScene::unload() {
     SAVEFILE_write32(SRAM->stats.playTimeSeconds,
                      playTimeSeconds + addedPlayTime);
   }
+
+  player_stop();
+  RUMBLE_stop();
+  videoStore->unload();
 
   if ($isMultiplayer)
     syncer->resetSongState();
