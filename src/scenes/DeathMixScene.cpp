@@ -8,6 +8,7 @@
 #include "data/content/_compiled_sprites/palette_selection.h"
 #include "gameplay/DifficultyLevelDeathMix.h"
 #include "gameplay/Key.h"
+#include "gameplay/NumericLevelDeathMix.h"
 #include "gameplay/SequenceMessages.h"
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
@@ -254,14 +255,17 @@ void DeathMixScene::printNumericLevel() {
 void DeathMixScene::confirm(u16 keys) {
   bool isPressed = KEY_CONFIRM(keys);
 
-  // TODO: IMPLEMENT
-
   if (isPressed) {
     SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
 
-    auto deathMix = std::unique_ptr<DeathMix>{
-        new DifficultyLevelDeathMix(fs, difficulty->getValue())};
+    auto deathMix =
+        mixMode == MixMode::DEATH
+            ? std::unique_ptr<DeathMix>{new DifficultyLevelDeathMix(
+                  fs, difficulty->getValue())}
+            : std::unique_ptr<DeathMix>{new NumericLevelDeathMix(
+                  fs, SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff)};
     auto songChart = deathMix->getNextSongChart();
+    // TODO: UNDERSTAND CRASH
 
     SAVEFILE_write8(SRAM->state.isPlaying, true);
     STATE_setup(songChart.song, songChart.chart);

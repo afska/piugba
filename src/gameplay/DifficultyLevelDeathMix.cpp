@@ -3,7 +3,7 @@
 DifficultyLevelDeathMix::DifficultyLevelDeathMix(
     const GBFS_FILE* fs,
     DifficultyLevel difficultyLevel)
-    : DeathMix(fs) {
+    : DeathMix(fs, MixMode::DEATH) {
   this->difficultyLevel = difficultyLevel;
 }
 

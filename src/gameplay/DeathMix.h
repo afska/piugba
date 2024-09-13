@@ -18,6 +18,7 @@ typedef struct {
 
 class DeathMix {
  public:
+  MixMode mixMode;
   bool didStartScroll = false;
   u32 multiplier = 1;
   u32 combo = 0;
@@ -29,7 +30,7 @@ class DeathMix {
   u32 points = 0;
   u32 longNotes = 0;
 
-  DeathMix(const GBFS_FILE* fs);
+  DeathMix(const GBFS_FILE* fs, MixMode mixMode);
 
   bool isInitialSong() { return next == 1; }
   SongChart getNextSongChart();

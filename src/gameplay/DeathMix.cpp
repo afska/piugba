@@ -4,7 +4,9 @@
 
 #include "save/SaveFile.h"
 
-DeathMix::DeathMix(const GBFS_FILE* fs) {
+DeathMix::DeathMix(const GBFS_FILE* fs, MixMode mixMode) {
+  this->mixMode = mixMode;
+
   auto library = std::unique_ptr<Library>{new Library(fs)};
   u32 librarySize = SAVEFILE_getLibrarySize();
   u32 pages =

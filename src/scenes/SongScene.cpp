@@ -76,7 +76,7 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      Song* song,
                      Chart* chart,
                      Chart* remoteChart,
-                     std::unique_ptr<DeathMix> deathMix,
+                     std::unique_ptr<DeathMix> deathMix,  // TODO: CHECK USAGES
                      RewindState rewindState)
     : Scene(engine) {
   this->fs = fs;
