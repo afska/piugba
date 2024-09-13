@@ -379,7 +379,10 @@ void StartScene::printTitle() {
   TextStream::instance().clear();
 
   SCENE_write(std::string((char*)gbfs_get_obj(fs, ROM_NAME_FILE, NULL)), 0);
-  SCENE_write(TITLES[selectedMode], TEXT_ROW);
+  SCENE_write(ENV_ARCADE && selectedMode == SUBBUTTON_DEATHMIX
+                  ? "Shuffle"
+                  : TITLES[selectedMode],
+              TEXT_ROW);
 }
 
 void StartScene::processKeys(u16 keys) {
