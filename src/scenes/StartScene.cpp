@@ -22,7 +22,7 @@ extern "C" {
 }
 
 const std::string TITLES[] = {
-    "Play",   "Campaign",   "Stats",      "Arcade",     "Multi VS",
+    "Play",   "Campaign",   "Progress",   "Arcade",     "Multi VS",
     "Single", "Multi COOP", "Challenges", "Impossible", "DeathMix"};
 
 #define BUTTON_PLAY 0
@@ -380,7 +380,7 @@ void StartScene::printTitle() {
 
   SCENE_write(std::string((char*)gbfs_get_obj(fs, ROM_NAME_FILE, NULL)), 0);
   SCENE_write(ENV_ARCADE && selectedMode == SUBBUTTON_DEATHMIX
-                  ? "Shuffle"
+                  ? "Random"
                   : TITLES[selectedMode],
               TEXT_ROW);
 }

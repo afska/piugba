@@ -10,7 +10,7 @@
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
 
-#define TITLE "STATS"
+#define TITLE "PROGRESS"
 
 const u32 ID_MAIN_BACKGROUND = 1;
 const u32 BANK_BACKGROUND_TILES = 0;
