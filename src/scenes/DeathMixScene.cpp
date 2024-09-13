@@ -133,6 +133,7 @@ void DeathMixScene::tick(u16 keys) {
     printNumericLevel();
     didRenderText = true;
   }
+  wasConfirming = KEY_CONFIRM(keys);
 }
 
 void DeathMixScene::setUpSpritesPalette() {
@@ -254,8 +255,9 @@ void DeathMixScene::printNumericLevel() {
 
 void DeathMixScene::confirm(u16 keys) {
   bool isPressed = KEY_CONFIRM(keys);
+  bool hasBeenPressedNow = isPressed && !wasConfirming;
 
-  if (isPressed) {
+  if (hasBeenPressedNow) {
     SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
 
     player_stop();

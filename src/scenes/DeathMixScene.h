@@ -46,6 +46,7 @@ class DeathMixScene : public TalkScene {
   std::unique_ptr<Button> numericLevelBadge;
   u32 animationFrame = 0;
   bool didRenderText = false;
+  bool wasConfirming = false;
 
   void setUpSpritesPalette();
 

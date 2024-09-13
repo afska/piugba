@@ -76,7 +76,7 @@ SongScene::SongScene(std::shared_ptr<GBAEngine> engine,
                      Song* song,
                      Chart* chart,
                      Chart* remoteChart,
-                     std::unique_ptr<DeathMix> deathMix,  // TODO: CHECK USAGES
+                     std::unique_ptr<DeathMix> deathMix,
                      RewindState rewindState)
     : Scene(engine) {
   this->fs = fs;
@@ -934,7 +934,8 @@ void SongScene::continueDeathMix() {
       1;
   u8 librarySize = SAVEFILE_getLibrarySize();
   bool firstTime = (int)song->index > lastIndex;
-  if (firstTime) {
+
+  if (firstTime && deathMix->mixMode == MixMode::DEATH) {
     auto completedSongs = (u8)min(song->index + 1, librarySize);
     SAVEFILE_write8(SRAM->deathMixProgress.completedSongs[chart->difficulty],
                     completedSongs);
@@ -976,17 +977,23 @@ void SongScene::continueDeathMix() {
   } else {
     auto evaluation = scores[localPlayerId]->evaluate();
     auto grade = evaluation->getGrade();
-    u8 currentGrade =
-        SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
-    if (firstTime || grade < currentGrade)
-      SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
+
+    if (deathMix->mixMode == MixMode::DEATH) {
+      u8 currentGrade =
+          SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
+      if (firstTime || grade < currentGrade)
+        SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty],
+                        grade);
+    }
 
     engine->transitionIntoScene(
         new DanceGradeScene(
             engine, fs, std::move(evaluation), NULL, "DeathMix",
-            chart->difficulty == DifficultyLevel::NORMAL ? "Normal"
-            : chart->difficulty == DifficultyLevel::HARD ? "Hard"
-                                                         : "Crazy",
+            deathMix->mixMode == MixMode::DEATH
+                ? (chart->difficulty == DifficultyLevel::NORMAL ? "Normal"
+                   : chart->difficulty == DifficultyLevel::HARD ? "Hard"
+                                                                : "Crazy")
+                : chart->getLevelString(),
             "", false, true),
         new PixelTransitionEffect());
   }

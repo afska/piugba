@@ -339,6 +339,12 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
 void SEQUENCE_goToWinOrSelection(bool isLastSong) {
   auto gameMode = SAVEFILE_getGameMode();
 
+  if (gameMode == GameMode::DEATH_MIX && GameState.isShuffleMode &&
+      isLastSong) {
+    goTo(new DeathMixScene(_engine, _fs, MixMode::SHUFFLE));
+    return;
+  }
+
   if ((IS_STORY(gameMode) || gameMode == GameMode::DEATH_MIX) && isLastSong)
     goTo(new TalkScene(
         _engine, _fs,

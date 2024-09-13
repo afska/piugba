@@ -90,8 +90,8 @@ bool Score::updateLife(FeedbackType feedbackType) {
     return true;
   if (GameState.mods.stageBreak == StageBreakOpts::sSUDDEN_DEATH)
     return feedbackType != FeedbackType::MISS;
-  if (GameState.mode == GameMode::DEATH_MIX &&
-      feedbackType != FeedbackType::MISS)  // TODO: CHECK MIX MODE
+  if (GameState.mode == GameMode::DEATH_MIX && !GameState.isShuffleMode &&
+      feedbackType != FeedbackType::MISS)
     return true;
 
   u32 bonus = 0;
