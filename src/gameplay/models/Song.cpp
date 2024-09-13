@@ -166,6 +166,16 @@ u32 SONG_findChartIndexByDifficultyLevel(Song* song,
   return 0;
 }
 
+int SONG_findSingleChartIndexByNumericLevel(Song* song, u8 numericLevel) {
+  for (u32 i = 0; i < song->chartCount; i++) {
+    if (song->charts[i].type == ChartType::SINGLE_CHART &&
+        song->charts[i].level == numericLevel)
+      return i;
+  }
+
+  return -1;
+}
+
 Chart* SONG_findChartByDifficultyLevel(Song* song,
                                        DifficultyLevel difficultyLevel) {
   u32 index = SONG_findChartIndexByDifficultyLevel(song, difficultyLevel);

@@ -54,8 +54,8 @@ typedef struct __attribute__((__packed__)) {
   u8 beat;
 
   Mods mods;
-  char padding3[4];
-
+  char padding3[3];
+  bool isShuffleMode;  // (*) state
   DeathMixProgress deathMixProgress;
 
   s8 customOffsets[CUSTOM_OFFSET_TABLE_TOTAL_SIZE];
@@ -294,8 +294,11 @@ inline u32 SAVEFILE_normalize(u32 librarySize) {
   // quick fixes
   u32 lastNumericLevel = SAVEFILE_read32(SRAM->lastNumericLevel);
   u8 isBonusMode = SAVEFILE_read8(SRAM->isBonusMode);
+  u8 isShuffleMode = SAVEFILE_read8(SRAM->isShuffleMode);
   if (isBonusMode >= 2)
     SAVEFILE_write8(SRAM->isBonusMode, false);
+  if (isShuffleMode >= 2)
+    SAVEFILE_write8(SRAM->isShuffleMode, false);
   if ((lastNumericLevel & 0xff) > 99 || ((lastNumericLevel >> 16) & 0xff) > 2) {
     SAVEFILE_write32(SRAM->lastNumericLevel, 0);
   }

@@ -6,10 +6,11 @@
 #include "SongScene.h"
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_selection.h"
-#include "gameplay/DeathMix.h"
+#include "gameplay/DifficultyLevelDeathMix.h"
 #include "gameplay/Key.h"
 #include "gameplay/SequenceMessages.h"
 #include "utils/SceneUtils.h"
+#include "utils/StringUtils.h"
 
 extern "C" {
 #include "player/player.h"
@@ -28,15 +29,27 @@ const u32 NEXT_X = 198;
 const u32 NEXT_Y = 112;
 const u32 MULTIPLIER_X = 143;
 const u32 MULTIPLIER_Y = 93;
+const u32 NUMERIC_LEVEL_X = 134;
+const u32 NUMERIC_LEVEL_Y = 112;
+const u32 NUMERIC_BUTTON_OFFSET_X = 24;
+const u32 NUMERIC_BUTTON_OFFSET_Y = 7;
+const u32 TEXT_ROW = 15;
+const u32 TEXT_COL = 15;
+const u32 MIN_LEVEL = 1;
+const u32 MAX_LEVEL = 30;
 
 std::vector<Sprite*> DeathMixScene::sprites() {
   auto sprites = TalkScene::sprites();
 
   sprites.push_back(backButton->get());
   sprites.push_back(nextButton->get());
-  difficulty->render(&sprites);
-  progress->render(&sprites);
-  sprites.push_back(gradeBadge->get());
+  if (mixMode == MixMode::DEATH) {
+    difficulty->render(&sprites);
+    progress->render(&sprites);
+    sprites.push_back(gradeBadge->get());
+  } else {
+    sprites.push_back(numericLevelBadge->get());
+  }
   sprites.push_back(multiplier->get());
 
   return sprites;
@@ -51,13 +64,19 @@ void DeathMixScene::load() {
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
   multiplier = std::unique_ptr<Multiplier>{new Multiplier(
       MULTIPLIER_X, MULTIPLIER_Y, SAVEFILE_read8(SRAM->mods.multiplier))};
-  difficulty =
-      std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
-  progress = std::unique_ptr<NumericProgress>{
-      new NumericProgress(PROGRESS_X, PROGRESS_Y)};
-  gradeBadge = std::unique_ptr<GradeBadge>{
-      new GradeBadge(GRADE_X, GRADE_Y, false, false)};
-  gradeBadge->setType(GradeType::UNPLAYED);
+  if (mixMode == MixMode::DEATH) {
+    difficulty =
+        std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
+    progress = std::unique_ptr<NumericProgress>{
+        new NumericProgress(PROGRESS_X, PROGRESS_Y)};
+    gradeBadge = std::unique_ptr<GradeBadge>{
+        new GradeBadge(GRADE_X, GRADE_Y, false, false)};
+    gradeBadge->setType(GradeType::UNPLAYED);
+  } else {
+    numericLevelBadge = std::unique_ptr<Button>{new Button(
+        ButtonType::LEVEL_METER, NUMERIC_LEVEL_X, NUMERIC_LEVEL_Y, false)};
+    numericLevelBadge->get()->setPriority(1);
+  }
   backButton = std::unique_ptr<ArrowSelector>{
       new ArrowSelector(ArrowDirection::UPLEFT, true, true)};
   nextButton = std::unique_ptr<ArrowSelector>{
@@ -66,10 +85,21 @@ void DeathMixScene::load() {
   nextButton->get()->moveTo(NEXT_X, NEXT_Y);
   settingsMenuInput = std::unique_ptr<InputHandler>{new InputHandler()};
 
-  auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
-  difficulty->setValue(static_cast<DifficultyLevel>(level));
+  if (mixMode == MixMode::DEATH) {
+    auto level = SAVEFILE_read8(SRAM->memory.difficultyLevel);
+    difficulty->setValue(static_cast<DifficultyLevel>(level));
 
-  loadProgress();
+    loadProgress();
+  } else {
+    backButton->get()->moveTo(BACK_X + NUMERIC_BUTTON_OFFSET_X,
+                              BACK_Y + NUMERIC_BUTTON_OFFSET_Y);
+    nextButton->get()->moveTo(NEXT_X - NUMERIC_BUTTON_OFFSET_X,
+                              NEXT_Y + NUMERIC_BUTTON_OFFSET_Y);
+
+    // (force single mode)
+    u32 lastNumericLevel = SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff;
+    updateNumericLevel(lastNumericLevel);
+  }
 }
 
 void DeathMixScene::tick(u16 keys) {
@@ -89,12 +119,19 @@ void DeathMixScene::tick(u16 keys) {
   processDifficultyChangeEvents();
   processMenuEvents();
 
-  if (gradeBadge->getType() == GradeType::S)
-    EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
-                    BREATH_SCALE_LUT[animationFrame]);
-  animationFrame++;
-  if (animationFrame >= BREATH_STEPS)
-    animationFrame = 0;
+  if (mixMode == MixMode::DEATH) {
+    if (gradeBadge->getType() == GradeType::S)
+      EFFECT_setScale(0, BREATH_SCALE_LUT[animationFrame],
+                      BREATH_SCALE_LUT[animationFrame]);
+    animationFrame++;
+    if (animationFrame >= BREATH_STEPS)
+      animationFrame = 0;
+  }
+
+  if (hasStarted && mixMode == MixMode::SHUFFLE && !didRenderText) {
+    printNumericLevel();
+    didRenderText = true;
+  }
 }
 
 void DeathMixScene::setUpSpritesPalette() {
@@ -111,15 +148,44 @@ void DeathMixScene::processKeys(u16 keys) {
 }
 
 void DeathMixScene::processDifficultyChangeEvents() {
-  if (onDifficultyLevelChange(
-          nextButton.get(),
-          static_cast<DifficultyLevel>(
-              min((int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
-    return;
+  if (mixMode == MixMode::DEATH) {
+    if (onDifficultyLevelChange(
+            nextButton.get(),
+            static_cast<DifficultyLevel>(
+                min((int)difficulty->getValue() + 1, MAX_DIFFICULTY))))
+      return;
 
-  onDifficultyLevelChange(
-      backButton.get(),
-      static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+    onDifficultyLevelChange(
+        backButton.get(),
+        static_cast<DifficultyLevel>(max((int)difficulty->getValue() - 1, 0)));
+  } else {
+    if (nextButton->shouldFireEvent()) {
+      player_playSfx(SOUND_STEP);
+      pixelBlink->blink();
+      u32 newNumericLevel =
+          (SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff) + 1;
+      updateNumericLevel(newNumericLevel);
+      printNumericLevel();
+      return;
+    }
+
+    if (backButton->shouldFireEvent()) {
+      player_playSfx(SOUND_STEP);
+      pixelBlink->blink();
+      u32 newNumericLevel =
+          (SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff) - 1;
+      updateNumericLevel(newNumericLevel);
+      printNumericLevel();
+    }
+  }
+}
+
+void DeathMixScene::updateNumericLevel(u32 newNumericLevel) {
+  if (newNumericLevel < MIN_LEVEL)
+    newNumericLevel = MIN_LEVEL;
+  if (newNumericLevel > MAX_LEVEL)
+    newNumericLevel = MAX_LEVEL;
+  SAVEFILE_write32(SRAM->lastNumericLevel, newNumericLevel);
 }
 
 void DeathMixScene::processMenuEvents() {
@@ -178,14 +244,23 @@ void DeathMixScene::loadProgress() {
   EFFECT_clearAffine();
 }
 
+void DeathMixScene::printNumericLevel() {
+  u32 lastNumericLevel = SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff;
+  std::string level = std::to_string(lastNumericLevel);
+  STRING_padLeft(level, 2, '0');
+  TextStream::instance().setText(level, TEXT_ROW, TEXT_COL);
+}
+
 void DeathMixScene::confirm(u16 keys) {
   bool isPressed = KEY_CONFIRM(keys);
+
+  // TODO: IMPLEMENT
 
   if (isPressed) {
     SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
 
-    auto deathMix =
-        std::unique_ptr<DeathMix>{new DeathMix(fs, difficulty->getValue())};
+    auto deathMix = std::unique_ptr<DeathMix>{
+        new DifficultyLevelDeathMix(fs, difficulty->getValue())};
     auto songChart = deathMix->getNextSongChart();
 
     SAVEFILE_write8(SRAM->state.isPlaying, true);

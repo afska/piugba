@@ -65,11 +65,12 @@ Scene* SEQUENCE_getInitialScene() {
   }
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+  bool isShuffleMode = ENV_ARCADE || (SAVEFILE_read8(SRAM->isShuffleMode) == 1);
   auto gameMode = SAVEFILE_getGameMode();
   SAVEFILE_write8(SRAM->state.isPlaying, false);
 
   if (isPlaying && gameMode == GameMode::DEATH_MIX)
-    return new DeathMixScene(_engine, _fs);
+    return new DeathMixScene(_engine, _fs, static_cast<MixMode>(isShuffleMode));
 
   if (isPlaying && !IS_MULTIPLAYER(gameMode))
     return new SelectionScene(_engine, _fs);
@@ -195,6 +196,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
       lastGameMode == GameMode::ARCADE && SAVEFILE_read8(SRAM->isBonusMode);
   bool isBonusMode = gameMode == GameMode::ARCADE &&
                      SAVEFILE_bonusCount(_fs) > 0 && isHoldingStart;
+  bool isShuffleMode =
+      gameMode == GameMode::DEATH_MIX && (ENV_ARCADE || isHoldingStart);
 
   bool isTransitioningBetweenCampaignAndChallenges =
       (lastGameMode == GameMode::CAMPAIGN && IS_CHALLENGE(gameMode)) ||
@@ -224,6 +227,7 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
   SAVEFILE_write8(SRAM->state.gameMode, gameMode);
   SAVEFILE_write8(SRAM->isBonusMode, false);
+  SAVEFILE_write8(SRAM->isShuffleMode, false);
   if (IS_MULTIPLAYER(gameMode)) {
     linkUniversal->setProtocol(isHoldingL ? LinkUniversal::Protocol::CABLE
                                : isHoldingR
@@ -232,7 +236,8 @@ void SEQUENCE_goToGameMode(GameMode gameMode) {
 
     SEQUENCE_goToMultiplayerGameMode(gameMode);
   } else if (gameMode == GameMode::DEATH_MIX) {
-    goTo(new DeathMixScene(_engine, _fs));
+    SAVEFILE_write8(SRAM->isShuffleMode, isShuffleMode);
+    goTo(new DeathMixScene(_engine, _fs, static_cast<MixMode>(isShuffleMode)));
   } else {
     SAVEFILE_write8(SRAM->isBonusMode, isBonusMode);
 

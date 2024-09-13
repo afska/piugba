@@ -56,6 +56,12 @@
   "Life can't be recovered,\r\n"  \
   "so try not to MISS!"
 
+#define MODE_SHUFFLE              \
+  "In SHUFFLE MODE, you'll\r\n"   \
+  "play a mixed nonstop set.\r\n" \
+  "Pick a difficulty level\r\n"   \
+  "and have fun!"
+
 #define KEYS_HINT                 \
   "To change the speed, use:\r\n" \
   "      START/SELECT\r\n"        \

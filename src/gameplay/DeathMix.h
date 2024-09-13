@@ -9,6 +9,8 @@
 #include "models/Song.h"
 #include "objects/score/Score.h"
 
+enum MixMode { DEATH, SHUFFLE };
+
 typedef struct {
   Song* song;
   Chart* chart;
@@ -27,15 +29,17 @@ class DeathMix {
   u32 points = 0;
   u32 longNotes = 0;
 
-  DeathMix(const GBFS_FILE* fs, DifficultyLevel difficultyLevel);
+  DeathMix(const GBFS_FILE* fs);
 
   bool isInitialSong() { return next == 1; }
   SongChart getNextSongChart();
   u32 getCurrentSongNumber() { return next - 1; }
 
+ protected:
+  virtual int getNextChartIndex(Song* tempSong) = 0;
+
  private:
   const GBFS_FILE* fs;
-  DifficultyLevel difficultyLevel;
   std::vector<std::unique_ptr<SongFile>> songFiles;
   u32 next;
   u32 total;
