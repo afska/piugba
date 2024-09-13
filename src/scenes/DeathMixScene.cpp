@@ -37,7 +37,7 @@ const u32 NUMERIC_BUTTON_OFFSET_Y = 7;
 const u32 TEXT_ROW = 15;
 const u32 TEXT_COL = 15;
 const u32 MIN_LEVEL = 1;
-const u32 MAX_LEVEL = 30;
+const u32 MAX_LEVEL = 25;
 
 std::vector<Sprite*> DeathMixScene::sprites() {
   auto sprites = TalkScene::sprites();
