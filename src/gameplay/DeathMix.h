@@ -35,15 +35,16 @@ class DeathMix {
   bool isInitialSong() { return next == 1; }
   SongChart getNextSongChart();
   u32 getCurrentSongNumber() { return next - 1; }
+  bool isEmpty() { return songFiles.empty(); }
 
  protected:
   virtual int getNextChartIndex(Song* tempSong) = 0;
-
- private:
-  const GBFS_FILE* fs;
   std::vector<std::unique_ptr<SongFile>> songFiles;
   u32 next;
   u32 total;
+
+ private:
+  const GBFS_FILE* fs;
 };
 
 #endif  // DEATH_MIX_H

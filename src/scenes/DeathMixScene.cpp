@@ -258,19 +258,23 @@ void DeathMixScene::confirm(u16 keys) {
   if (isPressed) {
     SAVEFILE_write32(SRAM->randomSeed, __qran_seed);
 
+    player_stop();
     auto deathMix =
         mixMode == MixMode::DEATH
             ? std::unique_ptr<DeathMix>{new DifficultyLevelDeathMix(
                   fs, difficulty->getValue())}
             : std::unique_ptr<DeathMix>{new NumericLevelDeathMix(
                   fs, SAVEFILE_read32(SRAM->lastNumericLevel) & 0xff)};
+    if (deathMix->isEmpty()) {
+      player_playSfx(SOUND_MOD);
+      pixelBlink->blink();
+      return;
+    }
     auto songChart = deathMix->getNextSongChart();
-    // TODO: UNDERSTAND CRASH
 
     SAVEFILE_write8(SRAM->state.isPlaying, true);
     STATE_setup(songChart.song, songChart.chart);
     deathMix->multiplier = GameState.mods.multiplier;
-    player_stop();
     engine->transitionIntoScene(
         new SongScene(engine, fs, songChart.song, songChart.chart, NULL,
                       std::move(deathMix)),
