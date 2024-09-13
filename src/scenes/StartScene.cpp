@@ -380,7 +380,7 @@ void StartScene::printTitle() {
 
   SCENE_write(std::string((char*)gbfs_get_obj(fs, ROM_NAME_FILE, NULL)), 0);
   SCENE_write(ENV_ARCADE && selectedMode == SUBBUTTON_DEATHMIX
-                  ? "Random"
+                  ? "Shuffle!"
                   : TITLES[selectedMode],
               TEXT_ROW);
 }
