@@ -31,6 +31,10 @@ class StatsScene : public Scene {
   struct ArcadePercentages {
     std::string singleProgress;
     std::string doubleProgress;
+    u32 completedSingle;
+    u32 totalSingle;
+    u32 completedDouble;
+    u32 totalDouble;
   };
 
   bool hasStarted = false;

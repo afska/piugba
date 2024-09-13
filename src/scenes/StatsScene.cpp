@@ -151,8 +151,16 @@ void StatsScene::printStats() {
     printFixedLine("Campaign\\ (S)", campaignSClearProgress, 12);
   }
   if (ENV_ARCADE) {
-    printFixedLine("Arcade\\ (single)", arcadeProgress.singleProgress, 11, 2);
-    printFixedLine("Arcade\\ (double)", arcadeProgress.doubleProgress, 12, 2);
+    printFixedLine("Arcade\\ (s)",
+                   std::to_string(arcadeProgress.completedSingle) + "/" +
+                       std::to_string(arcadeProgress.totalSingle) + " (" +
+                       arcadeProgress.singleProgress + ")",
+                   11, 2);
+    printFixedLine("Arcade\\ (d)",
+                   std::to_string(arcadeProgress.completedDouble) + "/" +
+                       std::to_string(arcadeProgress.totalDouble) + " (" +
+                       arcadeProgress.doubleProgress + ")",
+                   12, 2);
   } else {
     printFixedLine(
         "Arcade\\",
@@ -273,6 +281,10 @@ StatsScene::ArcadePercentages StatsScene::getArcadeProgress() {
   StatsScene::ArcadePercentages percentages;
   percentages.singleProgress = getPercentage(completedSingle, totalSingle);
   percentages.doubleProgress = getPercentage(completedDouble, totalDouble);
+  percentages.totalSingle = totalSingle;
+  percentages.completedSingle = completedSingle;
+  percentages.totalDouble = totalDouble;
+  percentages.completedDouble = completedDouble;
   return percentages;
 }
 
