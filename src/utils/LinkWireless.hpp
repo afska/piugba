@@ -144,7 +144,7 @@
 // #define LINK_WIRELESS_TWO_PLAYERS_ONLY
 #endif
 
-static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v7.0.0";
+static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v7.0.1";
 
 #define LINK_WIRELESS_MAX_PLAYERS 5
 #define LINK_WIRELESS_MIN_PLAYERS 2
@@ -664,7 +664,7 @@ class LinkWireless {
    * @param messages The array to be filled with data.
    */
   bool receive(Message messages[]) {
-    if (!isEnabled || state == NEEDS_RESET || !isSessionActive())
+    if (!isSessionActive())
       return false;
 
     LINK_WIRELESS_BARRIER;
@@ -969,7 +969,7 @@ class LinkWireless {
     bool acceptCalled = false;
     bool pingSent = false;
 #ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
-    bool sendReceiveLatch = false;
+    bool sendReceiveLatch = false;  // true = send ; false = receive
     bool shouldWaitForServer = false;
 #endif
 
@@ -1064,6 +1064,7 @@ class LinkWireless {
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   void irqEnd() {
+    Link::_REG_IME = 0;
     interrupt = false;
     LINK_WIRELESS_BARRIER;
     if (pendingVBlank) {
@@ -1473,7 +1474,7 @@ class LinkWireless {
   }
 
   void copyIncomingState() {  // (irq only)
-    if (sessionState.newIncomingMessages.isReading())
+    if (sessionState.incomingMessages.isReading())
       return;
 
     while (!sessionState.newIncomingMessages.isEmpty()) {
