@@ -39,15 +39,21 @@ extern "C" {
 
 #define CUSTOM_OFFSET_CORRECTION 8
 
+const u32 ARROW_POOL_SIZE = 78;
+// (1 lifebar + 5 holders + 5 fake heads + 1 feedback + 1 combo + 4 numbers)
+// * 2 players + 4 affines * 4/affine = 50 fixed sprites
+// maximum sprites = 128
+// => 128 - 50 = 78 sprites available for the arrow pool
+
 const u32 DARKENER_ID = 0;
 const u32 DARKENER_PRIORITY = 2;
 const u32 MAIN_BACKGROUND_ID = 1;
 const u32 MAIN_BACKGROUND_PRIORITY = 3;
-const u32 ARROW_POOL_SIZE = 80;
 const u32 BANK_BACKGROUND_TILES = 0;
 const u32 BANK_BACKGROUND_MAP = 24;
 const u32 ALPHA_BLINK_LEVEL = 10;
 const u32 PIXEL_BLINK_LEVEL = 2;
+const u32 PIXEL_BLINK_ACTION_LEVEL = 6;
 const u32 IO_BLINK_TIME = 6;
 const u32 LIFEBAR_CHARBLOCK = 4;
 const u32 LIFEBAR_TILE_START = 0;
@@ -102,12 +108,11 @@ std::vector<Sprite*> SongScene::sprites() {
     sprites.push_back(scores[playerId]->getFeedback()->get());
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     sprites.push_back(scores[playerId]->getCombo()->getTitle()->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(0)->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(1)->get());
-  for (u32 playerId = 0; playerId < playerCount; playerId++)
-    sprites.push_back(scores[playerId]->getCombo()->getDigits()->at(2)->get());
+  for (u32 i = 0; i < COMBO_DIGITS; i++) {
+    for (u32 playerId = 0; playerId < playerCount; playerId++)
+      sprites.push_back(
+          scores[playerId]->getCombo()->getDigits()->at(i)->get());
+  }
 
   for (u32 i = 0; i < fakeHeads.size(); i++) {
     fakeHeads[i]->index = sprites.size();
@@ -127,7 +132,6 @@ std::vector<Sprite*> SongScene::sprites() {
 
 void SongScene::load() {
   setUpGameConfig();
-  RUMBLE_init();
 
   if (isMultiplayer()) {
     syncer->resetSongState();
@@ -150,7 +154,7 @@ void SongScene::load() {
 
   for (u32 playerId = 0; playerId < playerCount; playerId++)
     scores[playerId] = std::unique_ptr<Score>{new Score(
-        lifeBars[playerId].get(), playerId, playerId == localPlayerId)};
+        lifeBars[playerId].get(), playerId, $isVs, playerId == localPlayerId)};
 
   judge = std::unique_ptr<Judge>{
       new Judge(arrowPool.get(), &arrowHolders, &scores,
@@ -175,6 +179,10 @@ void SongScene::load() {
 }
 
 void SongScene::tick(u16 keys) {
+  // #ifdef SENV_DEVELOPMENT
+  //   profileStart();
+  // #endif
+
   if (engine->isTransitioning() || init < 2)
     return;
 
@@ -231,6 +239,8 @@ void SongScene::tick(u16 keys) {
   updateScoresAndLifebars();
   updateRumble();
 
+  totalFrames++;
+
 #ifdef SENV_DEVELOPMENT
   if (chartReaders[0]->customOffset)
     scores[0]->log(chartReaders[0]->customOffset);
@@ -239,6 +249,10 @@ void SongScene::tick(u16 keys) {
     chartReaders[0]->logDebugInfo<CHART_DEBUG>();
   }
 #endif
+
+  // #ifdef SENV_DEVELOPMENT
+  //   profileStop();
+  // #endif
 }
 
 void SongScene::render() {
@@ -318,9 +332,8 @@ void SongScene::initializeBackground() {
 
   if (GameState.mods.colorFilter != ColorFilter::NO_FILTER) {
     if (!usesVideo)
-      SCENE_applyColorFilter(backgroundPalette.get(),
-                             GameState.mods.colorFilter);
-    SCENE_applyColorFilter(foregroundPalette.get(), GameState.mods.colorFilter);
+      SCENE_applyColorFilter(pal_bg_bank, GameState.mods.colorFilter);
+    SCENE_applyColorFilter(pal_obj_bank, GameState.mods.colorFilter);
   }
 
   if (!$isVs)
@@ -791,7 +804,7 @@ void SongScene::processKeys(u16 keys) {
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() + 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
 
       if ($isMultiplayer)
         syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
@@ -807,7 +820,7 @@ void SongScene::processKeys(u16 keys) {
     } else if (GameState.mods.speedHack != SpeedHackOpts::hRANDOM) {
       if (chartReaders[localPlayerId]->setMultiplier(
               chartReaders[localPlayerId]->getMultiplier() - 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
 
       if ($isMultiplayer)
         syncer->send(SYNC_EVENT_MULTIPLIER_CHANGE,
@@ -829,7 +842,8 @@ void SongScene::onNewBeat(bool isAnyKeyPressed) {
   processModsBeat();
 
   auto localChartReader = chartReaders[localPlayerId].get();
-  localChartReader->beatDurationFrames = localChartReader->beatFrame;
+  if (rate != 0)
+    localChartReader->beatDurationFrames = localChartReader->beatFrame;
   localChartReader->beatFrame = 0;
 
   if (GameState.adminSettings.sramBlink == SRAMBlinkOpts::SRAM_BLINK_ON_BEAT)
@@ -881,6 +895,18 @@ void SongScene::breakStage() {
                               new PixelTransitionEffect());
 }
 
+void SongScene::updateHighestLevel() {
+  u32 rawHighestLevel = SAVEFILE_read32(SRAM->stats.highestLevel);
+  u32 highestLevel = rawHighestLevel & 0xff;
+  u32 highestType = (rawHighestLevel >> 16) & 0xff;
+  u32 newLevel = chart->level;
+  if (newLevel != 99 &&
+      (newLevel > highestLevel ||
+       (newLevel == highestLevel && chart->type > highestType))) {
+    SAVEFILE_write32(SRAM->stats.highestLevel, (chart->type << 16) | newLevel);
+  }
+}
+
 void SongScene::finishAndGoToEvaluation() {
   unload();
 
@@ -894,11 +920,13 @@ void SongScene::finishAndGoToEvaluation() {
       SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
                           chart->levelIndex, evaluation->getGrade());
 
+  updateHighestLevel();
   engine->transitionIntoScene(
       new DanceGradeScene(
           engine, fs, std::move(evaluation),
           $isVs ? scores[syncer->getRemotePlayerId()]->evaluate() : NULL,
-          $isVsDifferentLevels, isLastSong),
+          std::string(song->title), std::string(song->artist),
+          buildLevelString(), $isVsDifferentLevels, isLastSong),
       new PixelTransitionEffect());
 }
 
@@ -908,7 +936,8 @@ void SongScene::continueDeathMix() {
       1;
   u8 librarySize = SAVEFILE_getLibrarySize();
   bool firstTime = (int)song->index > lastIndex;
-  if (firstTime) {
+
+  if (firstTime && deathMix->mixMode == MixMode::DEATH) {
     auto completedSongs = (u8)min(song->index + 1, librarySize);
     SAVEFILE_write8(SRAM->deathMixProgress.completedSongs[chart->difficulty],
                     completedSongs);
@@ -950,14 +979,25 @@ void SongScene::continueDeathMix() {
   } else {
     auto evaluation = scores[localPlayerId]->evaluate();
     auto grade = evaluation->getGrade();
-    u8 currentGrade =
-        SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
-    if (firstTime || grade < currentGrade)
-      SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty], grade);
+
+    if (deathMix->mixMode == MixMode::DEATH) {
+      u8 currentGrade =
+          SAVEFILE_read8(SRAM->deathMixProgress.grades[chart->difficulty]);
+      if (firstTime || grade < currentGrade)
+        SAVEFILE_write8(SRAM->deathMixProgress.grades[chart->difficulty],
+                        grade);
+    }
 
     engine->transitionIntoScene(
-        new DanceGradeScene(engine, fs, std::move(evaluation), NULL, false,
-                            true),
+        new DanceGradeScene(
+            engine, fs, std::move(evaluation), NULL,
+            deathMix->mixMode == MixMode::DEATH ? "DeathMix" : "Shuffle!",
+            deathMix->mixMode == MixMode::DEATH
+                ? (chart->difficulty == DifficultyLevel::NORMAL ? "Normal"
+                   : chart->difficulty == DifficultyLevel::HARD ? "Hard"
+                                                                : "Crazy")
+                : chart->getLevelString(),
+            "", false, true),
         new PixelTransitionEffect());
   }
 }
@@ -1119,11 +1159,11 @@ void SongScene::processTrainingModeMod() {
     selectInput->setHandledFlag(true);
 
     if (setRate(rate - 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
   if (rateDownPs2Input->hasBeenPressedNow()) {
     if (setRate(rate - 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
 
   // Rate up
@@ -1132,11 +1172,11 @@ void SongScene::processTrainingModeMod() {
     startInput->setHandledFlag(true);
 
     if (setRate(rate + 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
   if (rateUpPs2Input->hasBeenPressedNow()) {
     if (setRate(rate + 1))
-      pixelBlink->blink();
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
   }
 
   // Fast forward
@@ -1157,7 +1197,7 @@ void SongScene::processTrainingModeMod() {
   if ((aInput->getIsPressed() && selectInput->getIsPressed()) || PS2_DOWN()) {
     selectInput->setHandledFlag(true);
 
-    if (rewindState.rewindPoint > 0) {
+    if (rewindState.rewindPoint > 0 && !rewindState.isSavingPoint) {
       rewindState.multiplier = chartReaders[0]->getMultiplier();
       rewindState.rate = rate;
       rewindState.isInitializing = false;
@@ -1172,14 +1212,20 @@ void SongScene::processTrainingModeMod() {
       engine->transitionIntoScene(
           new SongScene(engine, fs, song, chart, NULL, NULL, rewindState),
           new PixelTransitionEffect());
+    } else if (!rewindState.isSavingPoint) {
+      rewindState.rewindPoint = PlaybackState.msecs;
+      rewindState.isSavingPoint = true;
+      pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
+  } else {
+    rewindState.isSavingPoint = false;
   }
 
   // Multiplier down
   if (selectInput->hasBeenReleasedNow()) {
     if (!selectInput->getHandledFlag()) {
       if (chartReaders[0]->setMultiplier(chartReaders[0]->getMultiplier() - 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
     selectInput->setHandledFlag(false);
   }
@@ -1188,7 +1234,7 @@ void SongScene::processTrainingModeMod() {
   if (startInput->hasBeenReleasedNow()) {
     if (!startInput->getHandledFlag()) {
       if (chartReaders[0]->setMultiplier(chartReaders[0]->getMultiplier() + 1))
-        pixelBlink->blink();
+        pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
     }
     startInput->setHandledFlag(false);
   }
@@ -1209,7 +1255,7 @@ void SongScene::processMultiplayerUpdates() {
 
   if (syncer->isPlaying() &&
       linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS)
-    linkUniversal->linkWireless->SEND_ARROWS = keys;
+    linkUniversal->linkWireless->QUICK_SEND = keys;
   else
     syncer->send(SYNC_EVENT_KEYS, keys);
 
@@ -1222,7 +1268,7 @@ void SongScene::processMultiplayerUpdates() {
 
   if (syncer->isPlaying() &&
       linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS) {
-    u16 keys = linkUniversal->linkWireless->RECEIVE_ARROWS;
+    u16 keys = linkUniversal->linkWireless->QUICK_RECEIVE;
     for (u32 i = 0; i < ARROWS_TOTAL; i++)
       remoteArrows[i] = SYNC_MSG_KEYS_DIRECTION(keys, i);
   }
@@ -1266,7 +1312,7 @@ void SongScene::processMultiplayerUpdates() {
           chartReaders[remoteId]->setMultiplier(payload);
         else {
           if (chartReaders[0]->setMultiplier(payload))
-            pixelBlink->blink();
+            pixelBlink->blink(PIXEL_BLINK_ACTION_LEVEL);
         }
 
         syncer->clearTimeout();
@@ -1343,7 +1389,24 @@ bool SongScene::seek(u32 msecs) {
   return true;
 }
 
+std::string SongScene::buildLevelString() {
+  return $isVsDifferentLevels
+             ? (localPlayerId == 0 ? chart : remoteChart)->getLevelString() +
+                   " / " +
+                   (localPlayerId == 1 ? chart : remoteChart)->getLevelString()
+             : chart->getLevelString();
+}
+
 void SongScene::unload() {
+#ifdef SENV_DEVELOPMENT
+  profilePrint();
+#endif
+
+  u32 playTimeSeconds = SAVEFILE_read32(SRAM->stats.playTimeSeconds);
+  u32 addedPlayTime = Div(totalFrames, 60);
+  SAVEFILE_write32(SRAM->stats.playTimeSeconds,
+                   playTimeSeconds + addedPlayTime);
+
   player_stop();
   RUMBLE_stop();
   videoStore->unload();

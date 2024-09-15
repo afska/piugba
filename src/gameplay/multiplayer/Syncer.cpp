@@ -74,7 +74,12 @@ void Syncer::send(u8 event, u16 payload) {
 }
 
 void Syncer::directSend(u16 data) {
-  linkUniversal->send(data);
+  if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
+    return;
+
+  bool success = false;
+  while (!success && linkUniversal->isConnectedAny())
+    success = linkUniversal->send(data);
 }
 
 void Syncer::registerTimeout() {
@@ -209,10 +214,16 @@ void Syncer::resetGameState() {
   $libraryType = 0;
   $completedSongs = 0;
 
+  $remoteNumericLevelIndex = -1;
   $remoteNumericLevel = -1;
+  $remoteLastNumericLevel = 0;
   SAVEFILE_write8(SRAM->memory.numericLevel, 0);
   SAVEFILE_write8(SRAM->memory.pageIndex, 0);
   SAVEFILE_write8(SRAM->memory.songIndex, 0);
+  SAVEFILE_write32(SRAM->lastNumericLevel, 0);
+  SAVEFILE_write8(
+      SRAM->adminSettings.arcadeCharts,
+      isCoop() ? ArcadeChartsOpts::DOUBLE : ArcadeChartsOpts::SINGLE);
 
   resetSongState();
 }
