@@ -315,7 +315,7 @@ u32 DanceGradeScene::getMultiplayerPointsOf(Evaluation* evaluation) {
 }
 
 void DanceGradeScene::updateStats() {
-  if (!GameState.mods.isGradeSavingDisabled()) {
+  if (!GameState.isStatUpdatingDisabled()) {
     u32 passes = SAVEFILE_read32(SRAM->stats.stagePasses);
     SAVEFILE_write32(SRAM->stats.stagePasses, passes + 1);
 
@@ -326,7 +326,7 @@ void DanceGradeScene::updateStats() {
     }
   }
 
-  if (!GameState.mods.isGradeSavingDisabled() ||
+  if (!GameState.isStatUpdatingDisabled() ||
       GameState.mode == GameMode::DEATH_MIX) {
     u32 newCombo = evaluation->maxCombo;
     if (newCombo > MAX_COMBO)

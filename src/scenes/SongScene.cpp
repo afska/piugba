@@ -896,7 +896,7 @@ void SongScene::breakStage() {
 }
 
 void SongScene::updateHighestLevel() {
-  if (GameState.mods.isGradeSavingDisabled())
+  if (GameState.isStatUpdatingDisabled())
     return;
 
   u32 rawHighestLevel = SAVEFILE_read32(SRAM->stats.highestLevel);

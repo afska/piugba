@@ -143,7 +143,7 @@ void StageBreakScene::setUpBackground() {
 }
 
 void StageBreakScene::updateStats() {
-  if (GameState.mods.isGradeSavingDisabled())
+  if (GameState.isStatUpdatingDisabled())
     return;
 
   u32 breaks = SAVEFILE_read32(SRAM->stats.stageBreaks);
