@@ -919,9 +919,11 @@ void SongScene::finishAndGoToEvaluation() {
   }
 
   auto evaluation = scores[localPlayerId]->evaluate();
-  bool isLastSong =
-      SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
-                          chart->levelIndex, evaluation->getGrade());
+  bool isLastSong = false;
+
+  if (!$isMultiplayer || !lifeBars[localPlayerId]->getIsDead())
+    isLastSong = SAVEFILE_setGradeOf(song->index, chart->difficulty, song->id,
+                                     chart->levelIndex, evaluation->getGrade());
 
   updateHighestLevel();
   engine->transitionIntoScene(
