@@ -146,6 +146,7 @@ void StatsScene::printStats() {
   printFixedLine("S grades", std::to_string(sGrades), 7);
   printFixedLine("Max combo", std::to_string(maxCombo), 8);
   printFixedLine("Highest level", highestLevel, 9);
+
   if (!ENV_ARCADE) {
     printFixedLine("Campaign\\", campaignProgress, 11);
     printFixedLine("Campaign\\ (S)", campaignSClearProgress, 12);
