@@ -252,7 +252,7 @@ void SelectionScene::setUpBackground() {
   backgroundPalette->persist();
   bg = BACKGROUND_loadBackgroundFiles(fs, backgroundTilesFile.c_str(),
                                       backgroundMapFile.c_str(),
-                                      ID_MAIN_BACKGROUND);
+                                      ID_MAIN_BACKGROUND, false);
   bg->useCharBlock(BANK_BACKGROUND_TILES);
   bg->useMapScreenBlock(BANK_BACKGROUND_MAP);
   bg->setMosaic(true);
@@ -808,6 +808,7 @@ void SelectionScene::startPageCross(int direction) {
 
 void SelectionScene::stopPageCross1() {
   setUpBackground();
+  highlighter->select(selected);
   this->isCrossingPage = 2;
 }
 
