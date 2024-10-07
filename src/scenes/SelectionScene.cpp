@@ -808,7 +808,6 @@ void SelectionScene::startPageCross(int direction) {
 
 void SelectionScene::stopPageCross1() {
   setUpBackground();
-  highlighter->select(selected);
   this->isCrossingPage = 2;
 }
 
