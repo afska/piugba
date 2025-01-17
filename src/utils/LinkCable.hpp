@@ -12,10 +12,10 @@
 // - 1) Include this header in your main.cpp file and add:
 //       LinkCable* linkCable = new LinkCable();
 // - 2) Add the required interrupt service routines: (*)
-//       irq_init(NULL);
-//       irq_add(II_VBLANK, LINK_CABLE_ISR_VBLANK);
-//       irq_add(II_SERIAL, LINK_CABLE_ISR_SERIAL);
-//       irq_add(II_TIMER3, LINK_CABLE_ISR_TIMER);
+//       interrupt_init();
+//       interrupt_add(INTR_VBLANK, LINK_CABLE_ISR_VBLANK);
+//       interrupt_add(INTR_SERIAL, LINK_CABLE_ISR_SERIAL);
+//       interrupt_add(INTR_TIMER3, LINK_CABLE_ISR_TIMER);
 // - 3) Initialize the library with:
 //       linkCable->activate();
 // - 4) Sync:
@@ -52,6 +52,8 @@
 
 #include "_link_common.hpp"
 
+#include "LinkRawCable.hpp"
+
 #ifndef LINK_CABLE_QUEUE_SIZE
 /**
  * @brief Buffer size (how many incoming and outgoing messages the queues can
@@ -59,53 +61,39 @@
  * most games.
  * \warning This affects how much memory is allocated. With the default value,
  * it's around `390` bytes. There's a double-buffered pending queue (to avoid
- * data races), 1 incoming queue and 1 outgoing queue. \warning You can
- * approximate the usage with `LINK_CABLE_QUEUE_SIZE * 26`.
+ * data races), 1 incoming queue and 1 outgoing queue.
+ * \warning You can approximate the usage with `LINK_CABLE_QUEUE_SIZE * 26`.
  */
 #define LINK_CABLE_QUEUE_SIZE 15
 #endif
 
-static volatile char LINK_CABLE_VERSION[] = "LinkCable/v7.0.1";
+static volatile char LINK_CABLE_VERSION[] = "LinkCable/v8.0.0";
 
-#define LINK_CABLE_MAX_PLAYERS 4
+#define LINK_CABLE_MAX_PLAYERS LINK_RAW_CABLE_MAX_PLAYERS
 #define LINK_CABLE_DEFAULT_TIMEOUT 3
 #define LINK_CABLE_DEFAULT_INTERVAL 50
 #define LINK_CABLE_DEFAULT_SEND_TIMER_ID 3
-#define LINK_CABLE_DISCONNECTED 0xffff
+#define LINK_CABLE_DISCONNECTED LINK_RAW_CABLE_DISCONNECTED
 #define LINK_CABLE_NO_DATA 0x0
-#define LINK_CABLE_BARRIER asm volatile("" ::: "memory")
 
 /**
  * @brief A Link Cable connection for Multi-Play mode.
  */
 class LinkCable {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
-  using vu32 = volatile unsigned int;
-  using vs32 = volatile signed int;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
+  using vu32 = Link::vu32;
+  using vs32 = Link::vs32;
+  using vu8 = Link::vu8;
   using U16Queue = Link::Queue<u16, LINK_CABLE_QUEUE_SIZE>;
 
   static constexpr auto BASE_FREQUENCY = Link::_TM_FREQ_1024;
   static constexpr int REMOTE_TIMEOUT_OFFLINE = -1;
-  static constexpr int BIT_SLAVE = 2;
-  static constexpr int BIT_READY = 3;
-  static constexpr int BITS_PLAYER_ID = 4;
-  static constexpr int BIT_ERROR = 6;
-  static constexpr int BIT_START = 7;
-  static constexpr int BIT_MULTIPLAYER = 13;
-  static constexpr int BIT_IRQ = 14;
-  static constexpr int BIT_GENERAL_PURPOSE_LOW = 14;
-  static constexpr int BIT_GENERAL_PURPOSE_HIGH = 15;
 
  public:
-  enum BaudRate {
-    BAUD_RATE_0,  // 9600 bps
-    BAUD_RATE_1,  // 38400 bps
-    BAUD_RATE_2,  // 57600 bps
-    BAUD_RATE_3   // 115200 bps
-  };
+  using BaudRate = LinkRawCable::BaudRate;
 
   /**
    * @brief Constructs a new LinkCable object.
@@ -119,7 +107,7 @@ class LinkCable {
    * \warning You can use `Link::perFrame(...)` to convert from *packets per
    * frame* to *interval values*.
    */
-  explicit LinkCable(BaudRate baudRate = BAUD_RATE_1,
+  explicit LinkCable(BaudRate baudRate = BaudRate::BAUD_RATE_1,
                      u32 timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                      u16 interval = LINK_CABLE_DEFAULT_INTERVAL,
                      u8 sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID) {
@@ -138,25 +126,25 @@ class LinkCable {
    * @brief Activates the library.
    */
   void activate() {
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
     isEnabled = false;
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
 
     reset();
     clearIncomingMessages();
 
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
     isEnabled = true;
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
   }
 
   /**
    * @brief Deactivates the library.
    */
   void deactivate() {
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
     isEnabled = false;
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
 
     resetState();
     stop();
@@ -181,22 +169,23 @@ class LinkCable {
   [[nodiscard]] u8 currentPlayerId() { return state.currentPlayerId; }
 
   /**
-   * @brief Call this method every time you need to fetch new data.
+   * @brief Collects available messages from interrupts for later processing
+   * with `read(...)`. Call this method whenever you need to fetch new data.
    */
   void sync() {
     if (!isEnabled)
       return;
 
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
     isReadingMessages = true;
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
 
     for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++)
       move(_state.readyToSyncMessages[i], state.syncedIncomingMessages[i]);
 
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
     isReadingMessages = false;
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
 
     if (!isConnected())
       clearIncomingMessages();
@@ -262,12 +251,51 @@ class LinkCable {
   /**
    * @brief Sends `data` to all connected players.
    * @param data The value to be sent.
+   * \warning If `data` is invalid or the send queue is full, a `false` will be
+   * returned.
    */
-  void send(u16 data) {
-    if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
-      return;
+  bool send(u16 data) {
+    if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA ||
+        _state.outgoingMessages.isFull())
+      return false;
 
     _state.outgoingMessages.syncPush(data);
+    return true;
+  }
+
+  /**
+   * @brief Returns whether the internal receive queue lost messages at some
+   * point due to being full. This can happen if your queue size is too low, if
+   * you receive too much data without calling `sync(...)` enough times, or if
+   * you don't `read(...)` enough messages before the next `sync()` call. After
+   * this call, the overflow flag is cleared if `clear` is `true` (default
+   * behavior).
+   */
+  [[nodiscard]] bool didQueueOverflow(bool clear = true) {
+    bool overflow = false;
+
+    for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++) {
+      overflow = overflow || _state.newMessages[i].overflow ||
+                 _state.readyToSyncMessages[i].overflow;
+      if (clear) {
+        _state.newMessages[i].overflow = false;
+        state.syncedIncomingMessages[i].overflow = false;
+      }
+    }
+
+    return overflow;
+  }
+
+  /**
+   * @brief Restarts the send timer without disconnecting.
+   * \warning Call this if you changed `config.interval`.
+   */
+  void resetTimer() {
+    if (!isEnabled)
+      return;
+
+    stopTimer();
+    startTimer();
   }
 
   /**
@@ -306,17 +334,20 @@ class LinkCable {
     if (!isEnabled)
       return;
 
-    if (!isReady() || hasError()) {
+    if (!LinkRawCable::allReady() || LinkRawCable::hasError()) {
       reset();
       return;
     }
+
+    auto response = LinkRawCable::getData();
+    state.currentPlayerId = response.playerId;
 
     _state.IRQFlag = true;
     _state.IRQTimeout = 0;
 
     u8 newPlayerCount = 0;
     for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++) {
-      u16 data = Link::_REG_SIOMULTI[i];
+      u16 data = response.data[i];
 
       if (data != LINK_CABLE_DISCONNECTED) {
         if (data != LINK_CABLE_NO_DATA && i != state.currentPlayerId)
@@ -334,12 +365,10 @@ class LinkCable {
     }
 
     state.playerCount = newPlayerCount;
-    state.currentPlayerId =
-        (Link::_REG_SIOCNT & (0b11 << BITS_PLAYER_ID)) >> BITS_PLAYER_ID;
 
-    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
+    LinkRawCable::setData(LINK_CABLE_NO_DATA);
 
-    if (!isMaster())
+    if (!LinkRawCable::isMasterNode())
       sendPendingData();
 
     copyState();
@@ -359,7 +388,8 @@ class LinkCable {
       return;
     }
 
-    if (isMaster() && isReady() && !isSending())
+    if (LinkRawCable::isMasterNode() && LinkRawCable::allReady() &&
+        !LinkRawCable::isSending())
       sendPendingData();
 
     copyState();
@@ -367,8 +397,8 @@ class LinkCable {
 
   struct Config {
     BaudRate baudRate;
-    u32 timeout;
-    u32 interval;
+    u32 timeout;   // can be changed in realtime
+    u16 interval;  // can be changed in realtime, but call `resetTimer()`
     u8 sendTimerId;
   };
 
@@ -381,8 +411,8 @@ class LinkCable {
  private:
   struct ExternalState {
     U16Queue syncedIncomingMessages[LINK_CABLE_MAX_PLAYERS];
-    u8 playerCount;
-    u8 currentPlayerId;
+    vu8 playerCount;
+    vu8 currentPlayerId;
   };
 
   struct InternalState {
@@ -395,31 +425,28 @@ class LinkCable {
     bool IRQFlag;
   };
 
+  LinkRawCable linkRawCable;
   ExternalState state;
   InternalState _state;
   volatile bool isEnabled = false;
   volatile bool isReadingMessages = false;
 
-  bool isMaster() { return !isBitHigh(BIT_SLAVE); }
-  bool isReady() { return isBitHigh(BIT_READY); }
-  bool hasError() { return isBitHigh(BIT_ERROR); }
-  bool isSending() { return isBitHigh(BIT_START); }
   bool didTimeout() { return _state.IRQTimeout >= config.timeout; }
 
   void sendPendingData() {
     if (_state.outgoingMessages.isWriting())
       return;
 
-    LINK_CABLE_BARRIER;
+    LINK_BARRIER;
 
     transfer(_state.outgoingMessages.pop());
   }
 
   void transfer(u16 data) {
-    Link::_REG_SIOMLT_SEND = data;
+    LinkRawCable::setData(data);
 
-    if (isMaster())
-      setBitHigh(BIT_START);
+    if (LinkRawCable::isMasterNode())
+      LinkRawCable::startTransfer();
   }
 
   void reset() {
@@ -440,21 +467,23 @@ class LinkCable {
 
       _state.newMessages[i].clear();
       setOffline(i);
+
+      _state.newMessages[i].overflow = false;
+      state.syncedIncomingMessages[i].overflow = false;
     }
     _state.IRQFlag = false;
     _state.IRQTimeout = 0;
   }
 
   void stop() {
-    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
     stopTimer();
-    setGeneralPurposeMode();
+    linkRawCable.deactivate();
   }
 
   void start() {
     startTimer();
-    setMultiPlayMode();
-    setInterruptsOn();
+    linkRawCable.activate(config.baudRate);
+    LinkRawCable::setInterruptsOn();
   }
 
   void stopTimer() {
@@ -486,7 +515,7 @@ class LinkCable {
   }
 
   void move(U16Queue& src, U16Queue& dst) {
-    while (!src.isEmpty())
+    while (!src.isEmpty() && !dst.isFull())
       dst.push(src.pop());
   }
 
@@ -503,29 +532,6 @@ class LinkCable {
     _state.msgTimeouts[playerId] = REMOTE_TIMEOUT_OFFLINE;
     _state.msgFlags[playerId] = false;
   }
-
-  void setInterruptsOn() { setBitHigh(BIT_IRQ); }
-
-  void setMultiPlayMode() {
-    Link::_REG_RCNT = Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_HIGH);
-    Link::_REG_SIOCNT = (1 << BIT_MULTIPLAYER);
-    Link::_REG_SIOCNT |= config.baudRate;
-    Link::_REG_SIOMLT_SEND = 0;
-  }
-
-  void setGeneralPurposeMode() {
-    // [!]
-    // Link::_REG_RCNT = (Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_LOW)) |
-    //                   (1 << BIT_GENERAL_PURPOSE_HIGH);
-
-    // [!]
-    Link::_REG_RCNT = (1 << 15) | 0b100110000;
-    Link::_REG_SIOCNT = 0;
-  }
-
-  bool isBitHigh(u8 bit) { return (Link::_REG_SIOCNT >> bit) & 1; }
-  void setBitHigh(u8 bit) { Link::_REG_SIOCNT |= 1 << bit; }
-  void setBitLow(u8 bit) { Link::_REG_SIOCNT &= ~(1 << bit); }
 };
 
 extern LinkCable* linkCable;

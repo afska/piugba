@@ -21,7 +21,7 @@
 // --------------------------------------------------------------------------
 // considerations:
 // - always set the SI terminal to an input!
-// - call reset() when you finish doing GPIO stuff!
+// - call `reset()` when you finish doing GPIO stuff!
 // --------------------------------------------------------------------------
 
 #ifndef LINK_DEVELOPMENT
@@ -35,11 +35,11 @@
  */
 class LinkGPIO {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
 
-  static constexpr int RCNT_GENERAL_PURPOSE = (1 << 15);
+  static constexpr int RCNT_GENERAL_PURPOSE = 1 << 15;
   static constexpr int SIOCNT_GENERAL_PURPOSE = 0;
   static constexpr int BIT_SI_INTERRUPT = 8;
   static constexpr u8 DATA_BITS[] = {2, 3, 1, 0};
@@ -50,7 +50,8 @@ class LinkGPIO {
   enum Direction { INPUT, OUTPUT };
 
   /**
-   * @brief Resets communication mode to General Purpose.
+   * @brief Resets communication mode to General Purpose (same as
+   * `Link::reset()`).
    * \warning Required to initialize the library!
    */
   void reset() {

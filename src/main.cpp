@@ -32,7 +32,7 @@ LinkUniversal* linkUniversal =
     new LinkUniversal(LinkUniversal::Protocol::AUTODETECT,
                       "piuGBA",
                       (LinkUniversal::CableOptions){
-                          .baudRate = LinkCable::BAUD_RATE_1,
+                          .baudRate = LinkCable::BaudRate::BAUD_RATE_1,
                           .timeout = SYNC_IRQ_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},

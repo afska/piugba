@@ -12,8 +12,8 @@
 // - 1) Include this header in your main.cpp file and add:
 //       LinkSPI* linkSPI = new LinkSPI();
 // - 2) (Optional) Add the interrupt service routines: (*)
-//       irq_init(NULL);
-//       irq_add(II_SERIAL, LINK_SPI_ISR_SERIAL);
+//       interrupt_init();
+//       interrupt_add(INTR_SERIAL, LINK_SPI_ISR_SERIAL);
 //       // (this is only required for `transferAsync`)
 // - 3) Initialize the library with:
 //       linkSPI->activate(LinkSPI::Mode::MASTER_256KBPS);
@@ -50,7 +50,7 @@
 
 #include "_link_common.hpp"
 
-static volatile char LINK_SPI_VERSION[] = "LinkSPI/v7.0.1";
+static volatile char LINK_SPI_VERSION[] = "LinkSPI/v8.0.0";
 
 #define LINK_SPI_NO_DATA_32 0xffffffff
 #define LINK_SPI_NO_DATA_8 0xff
@@ -61,9 +61,9 @@ static volatile char LINK_SPI_VERSION[] = "LinkSPI/v7.0.1";
  */
 class LinkSPI {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
 
   static constexpr int BIT_CLOCK = 0;
   static constexpr int BIT_CLOCK_SPEED = 1;
@@ -299,8 +299,8 @@ class LinkSPI {
   Mode mode = Mode::SLAVE;
   DataSize dataSize = DataSize::SIZE_32BIT;
   bool waitMode = false;
-  AsyncState asyncState = IDLE;
-  u32 asyncData = 0;
+  volatile AsyncState asyncState = IDLE;
+  volatile u32 asyncData = 0;
   volatile bool isEnabled = false;
 
   void setNormalMode() {
