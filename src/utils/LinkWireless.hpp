@@ -26,8 +26,9 @@
 //       // `playerCount()` should return the number of active consoles
 // - 5) Connect to a server:
 //       LinkWireless::Server servers[LINK_WIRELESS_MAX_SERVERS];
-//       linkWireless->getServers(servers);
-//       if (servers[0].id == LINK_WIRELESS_END) return;
+//       u32 serverCount;
+//       linkWireless->getServers(servers, serverCount);
+//       if (serverCount == 0) return;
 //
 //       linkWireless->connect(servers[0].id);
 //       while (linkWireless->getState() == LinkWireless::State::CONNECTING)
@@ -40,10 +41,8 @@
 //       linkWireless->send(0x1234);
 // - 7) Receive data:
 //       LinkWireless::Message messages[LINK_WIRELESS_QUEUE_SIZE];
-//       linkWireless->receive(messages);
-//       if (messages[0].packetId != LINK_WIRELESS_END) {
-//         // ...
-//       }
+//       u32 receivedCount;
+//       linkWireless->receive(messages, receivedCount);
 // - 8) Disconnect:
 //       linkWireless->activate();
 //       // (resets the adapter)
@@ -51,9 +50,6 @@
 // (*) libtonc's interrupt handler sometimes ignores interrupts due to a bug.
 //     That causes packet loss. You REALLY want to use libugba's instead.
 //     (see examples)
-// --------------------------------------------------------------------------
-// `send(...)` restrictions:
-// - 0xFFFF is a reserved value, so don't send it!
 // --------------------------------------------------------------------------
 
 #ifndef LINK_DEVELOPMENT
@@ -67,11 +63,12 @@
 #ifndef LINK_WIRELESS_QUEUE_SIZE
 /**
  * @brief Buffer size (how many incoming and outgoing messages the queues can
- * store at max). The default value is `30`, which seems fine for most games.
+ * store at max **per player**). The default value is `30`, which seems fine for
+ * most games.
  * \warning This affects how much memory is allocated. With the default value,
- * it's around `960` bytes. There's a double-buffered incoming queue and a
+ * it's around `480` bytes. There's a double-buffered incoming queue and a
  * double-buffered outgoing queue (to avoid data races).
- * \warning You can approximate the usage with `LINK_WIRELESS_QUEUE_SIZE * 32`.
+ * \warning You can approximate the usage with `LINK_WIRELESS_QUEUE_SIZE * 16`.
  */
 #define LINK_WIRELESS_QUEUE_SIZE 30
 #endif
@@ -79,10 +76,12 @@
 #ifndef LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
 /**
  * @brief Max server transfer length per timer tick. Must be in the range
- * `[6;20]`. The default value is `20`, but you might want to set it a bit lower
- * to reduce CPU usage.
+ * `[6;21]`. The default value is `11`. Higher values will use the bandwidth
+ * more efficiently but also consume more CPU!
+ * \warning This is measured in words (1 message = 1 halfword). One word is used
+ * as a header, so a max transfer length of 11 could transfer up to 20 messages.
  */
-#define LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH 20
+#define LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH 11
 #endif
 
 #ifndef LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH
@@ -90,6 +89,9 @@
  * @brief Max client transfer length per timer tick. Must be in the range
  * `[2;4]`. The default value is `4`. Changing this is not recommended, it's
  * already too low.
+ * \warning This is measured in words (1 message = 1 halfword). One halfword is
+ * used as a header, so a max transfer length of 4 could transfer up to 7
+ * messages.
  */
 #define LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH 4
 #endif
@@ -118,34 +120,12 @@
 // #define LINK_WIRELESS_ENABLE_NESTED_IRQ
 #endif
 
-#ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
-/**
- * @brief Use send/receive latch (uncomment to enable).
- * This makes it alternate between sends and receives on each timer tick
- * (instead of doing both things). Enabling it will introduce some latency but
- * also reduce overall CPU usage.
- */
-// #define LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
-#endif
-
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-/**
- * @brief Optimize the library for two players (uncomment to enable).
- * This will make the code smaller and use less CPU. It will also let you
- * "misuse" 5 bits from the packet header to send small packets really fast
- * (e.g. pressed keys) without confirmation, using the `QUICK_SEND` and
- * `QUICK_RECEIVE` properties.
- */
-// #define LINK_WIRELESS_TWO_PLAYERS_ONLY
-#endif
-
-static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v8.0.0";
+LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 
 #define LINK_WIRELESS_MAX_PLAYERS LINK_RAW_WIRELESS_MAX_PLAYERS
 #define LINK_WIRELESS_MIN_PLAYERS 2
-#define LINK_WIRELESS_END 0
 #define LINK_WIRELESS_MAX_SERVERS LINK_RAW_WIRELESS_MAX_SERVERS
-#define LINK_WIRELESS_MAX_GAME_ID 0x7fff
+#define LINK_WIRELESS_MAX_GAME_ID 0x7FFF
 #define LINK_WIRELESS_MAX_GAME_NAME_LENGTH 14
 #define LINK_WIRELESS_MAX_USER_NAME_LENGTH 8
 #define LINK_WIRELESS_DEFAULT_TIMEOUT 10
@@ -167,29 +147,25 @@ class LinkWireless {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
-  using s8 = Link::s8;
-  using vu32 = Link::vu32;
-  using vs32 = Link::vs32;
   using vu8 = Link::vu8;
 
   static constexpr auto BASE_FREQUENCY = Link::_TM_FREQ_1024;
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-  static constexpr int PACKET_ID_BITS = 5;
-#else
-  static constexpr int PACKET_ID_BITS = 6;
-#endif
-  static constexpr int MAX_PACKET_IDS = 1 << PACKET_ID_BITS;
-  static constexpr int PACKET_ID_MASK = MAX_PACKET_IDS - 1;
-  static constexpr int MSG_PING = 0xffff;
   static constexpr int BROADCAST_SEARCH_WAIT_FRAMES = 60;
-  static constexpr int MAX_COMMAND_TRANSFER_LENGTH = 22;
+  static constexpr int MAX_PACKET_IDS_SERVER = 1 << 6;
+  static constexpr int MAX_PACKET_IDS_CLIENT = 1 << 4;
+  static constexpr int MAX_INFLIGHT_PACKETS_SERVER =
+      MAX_PACKET_IDS_SERVER / 2 - 1;
+  static constexpr int MAX_INFLIGHT_PACKETS_CLIENT =
+      MAX_PACKET_IDS_CLIENT / 2 - 1;
+  static constexpr int NO_ID_ASSIGNED_YET = 0xFF;
+  static constexpr u32 NO_ACK_RECEIVED_YET = 0xFFFFFFFF;
+  static constexpr int HAS_FIRST_MSG_MASK = 0b10000;
+  static constexpr int MAX_PLAYER_BITMAP_ENTRIES = 5;
+  static constexpr int PLAYER_ID_BITS = 3;
+  static constexpr int PLAYER_ID_MASK = 0b111;
+  static constexpr int BIT_HAS_MORE = 15;
 
  public:
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-  u32 QUICK_SEND = 0;
-  u32 QUICK_RECEIVE = 0;
-#endif
-
 // #define LINK_WIRELESS_PROFILING_ENABLED
 #ifdef LINK_WIRELESS_PROFILING_ENABLED
   u32 vblankTime = 0;
@@ -203,7 +179,7 @@ class LinkWireless {
   using State = LinkRawWireless::State;
   using SignalLevelResponse = LinkRawWireless::SignalLevelResponse;
 
-  enum Error {
+  enum class Error {
     // User errors
     NONE = 0,
     WRONG_STATE = 1,
@@ -222,10 +198,9 @@ class LinkWireless {
   };
 
   struct Message {
-    u32 packetId = 0;
-
-    u16 data;
+    u16 data = 0;
     u8 playerId = 0;
+    u8 packetId = NO_ID_ASSIGNED_YET;
   };
 
   struct Server {
@@ -245,15 +220,13 @@ class LinkWireless {
    * (ignoring other peers).
    * @param retransmission If `true`, the library handles retransmission for
    * you, so there should be no packet loss.
-   * @param maxPlayers Maximum number of allowed players. If your game only
-   * supports -for example- two players, set this to `2` as it will make
-   * transfers faster.
+   * @param maxPlayers `(2~5)` Maximum number of allowed players.
    * @param timeout Number of *frames* without receiving *any* data to reset the
    * connection.
    * @param interval Number of *1024-cycle ticks* (61.04μs) between transfers
    * *(50 = 3.052ms)*. It's the interval of Timer #`sendTimerId`. Lower values
    * will transfer faster but also consume more CPU.
-   * @param sendTimerId GBA Timer to use for sending.
+   * @param sendTimerId `(0~3)` GBA Timer to use for sending.
    * \warning You can use `Link::perFrame(...)` to convert from *packets per
    * frame* to *interval values*.
    */
@@ -263,16 +236,12 @@ class LinkWireless {
                         u32 timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                         u16 interval = LINK_WIRELESS_DEFAULT_INTERVAL,
                         u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID) {
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-    maxPlayers = 2;
-#endif
-
-    this->config.forwarding = forwarding;
-    this->config.retransmission = retransmission;
-    this->config.maxPlayers = maxPlayers;
-    this->config.timeout = timeout;
-    this->config.interval = interval;
-    this->config.sendTimerId = sendTimerId;
+    config.forwarding = forwarding;
+    config.retransmission = retransmission;
+    config.maxPlayers = maxPlayers;
+    config.timeout = timeout;
+    config.interval = interval;
+    config.sendTimerId = sendTimerId;
   }
 
   /**
@@ -286,7 +255,14 @@ class LinkWireless {
    * adapter.
    */
   bool activate() {
-    lastError = NONE;
+    LINK_READ_TAG(LINK_WIRELESS_VERSION);
+    static_assert(LINK_WIRELESS_QUEUE_SIZE >= 1);
+    static_assert(LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH >= 6 &&
+                  LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH <= 21);
+    static_assert(LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH >= 2 &&
+                  LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH <= 4);
+
+    lastError = Error::NONE;
     isEnabled = false;
 
     LINK_BARRIER;
@@ -339,7 +315,7 @@ class LinkWireless {
     if (turnOff && wasActivated)  // [!]
       success = activate() && linkRawWireless.bye();
 
-    lastError = NONE;
+    lastError = Error::NONE;
     isEnabled = false;
     resetState();
     stop();
@@ -364,19 +340,19 @@ class LinkWireless {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::AUTHENTICATED &&
         linkRawWireless.getState() != State::SERVING)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
     if (Link::strlen(gameName) > LINK_WIRELESS_MAX_GAME_NAME_LENGTH)
-      return badRequest(GAME_NAME_TOO_LONG);
+      return badRequest(Error::GAME_NAME_TOO_LONG);
     if (Link::strlen(userName) > LINK_WIRELESS_MAX_USER_NAME_LENGTH)
-      return badRequest(USER_NAME_TOO_LONG);
+      return badRequest(Error::USER_NAME_TOO_LONG);
 
     isSendingSyncCommand = true;
     if (isAsyncCommandActive())
-      return badRequest(BUSY_TRY_AGAIN);
+      return badRequest(Error::BUSY_TRY_AGAIN);
 
     if (linkRawWireless.getState() != State::SERVING) {
       if (!setup(config.maxPlayers))
-        return abort(COMMAND_FAILED);
+        return abort(Error::COMMAND_FAILED);
     }
 
     bool success = linkRawWireless.broadcast(gameName, userName, gameId, false);
@@ -385,7 +361,7 @@ class LinkWireless {
       success = success && linkRawWireless.startHost(false);
 
     if (!success)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     LINK_BARRIER;
     isSendingSyncCommand = false;
@@ -404,17 +380,17 @@ class LinkWireless {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::SERVING ||
         linkRawWireless.sessionState.isServerClosed)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     isSendingSyncCommand = true;
     if (isAsyncCommandActive())
-      return badRequest(BUSY_TRY_AGAIN);
+      return badRequest(Error::BUSY_TRY_AGAIN);
 
-    LinkRawWireless::AcceptConnectionsResponse response;
+    LinkRawWireless::PollConnectionsResponse response;
     bool success = linkRawWireless.endHost(response);
 
     if (!success)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     LINK_BARRIER;
     isSendingSyncCommand = false;
@@ -429,14 +405,14 @@ class LinkWireless {
    * clients, it will only include the index corresponding to the
    * `currentPlayerId()`.
    * @param response A structure that will be filled with the signal levels.
-   * \warning On clients, this action can fail if the adapter is busy. In that
+   * \warning For clients, this action can fail if the adapter is busy. In that
    * case, this will return `false` and `getLastError()` will be
-   * `BUSY_TRY_AGAIN`.
+   * `BUSY_TRY_AGAIN`. For hosts, you already have this data, so it's free!
    */
   bool getSignalLevel(SignalLevelResponse& response) {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (!isSessionActive())
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     if (linkRawWireless.getState() == LinkRawWireless::State::SERVING) {
       for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++)
@@ -446,12 +422,12 @@ class LinkWireless {
 
     isSendingSyncCommand = true;
     if (isAsyncCommandActive())
-      return badRequest(BUSY_TRY_AGAIN);
+      return badRequest(Error::BUSY_TRY_AGAIN);
 
     bool success = linkRawWireless.getSignalLevel(response);
 
     if (!success)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     LINK_BARRIER;
     isSendingSyncCommand = false;
@@ -464,29 +440,35 @@ class LinkWireless {
    * @brief Fills the `servers` array with all the currently broadcasting
    * servers.
    * @param servers The array to be filled with data.
+   * @param serverCount The number to be filled with the number of found
+   * servers.
    * \warning This action takes 1 second to complete.
    * \warning For an async version, see `getServersAsyncStart()`.
    */
-  bool getServers(Server servers[]) {
-    return getServers(servers, []() {});
+  bool getServers(Server servers[], u32& serverCount) {
+    return getServers(servers, serverCount, []() {});
   }
 
   /**
    * @brief Fills the `servers` array with all the currently broadcasting
    * servers.
    * @param servers The array to be filled with data.
+   * @param serverCount The number to be filled with the number of found
+   * servers.
    * @param onWait A function which will be invoked each time VBlank starts.
    * \warning This action takes 1 second to complete.
    * \warning For an async version, see `getServersAsyncStart()`.
    */
   template <typename F>
-  bool getServers(Server servers[], F onWait) {
+  bool getServers(Server servers[], u32& serverCount, F onWait) {
+    serverCount = 0;
+
     if (!getServersAsyncStart())
       return false;
 
     waitVBlanks(BROADCAST_SEARCH_WAIT_FRAMES, onWait);
 
-    if (!getServersAsyncEnd(servers))
+    if (!getServersAsyncEnd(servers, serverCount))
       return false;
 
     return true;
@@ -499,12 +481,12 @@ class LinkWireless {
   bool getServersAsyncStart() {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::AUTHENTICATED)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     bool success = linkRawWireless.broadcastReadStart();
 
     if (!success)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     return true;
   }
@@ -513,22 +495,26 @@ class LinkWireless {
    * @brief Fills the `servers` array with all the currently broadcasting
    * servers. Changes the state to `AUTHENTICATED` again.
    * @param servers The array to be filled with data.
+   * @param serverCount The number to be filled with the number of found
+   * servers.
    */
-  bool getServersAsyncEnd(Server servers[]) {
+  bool getServersAsyncEnd(Server servers[], u32& serverCount) {
+    serverCount = 0;
+
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::SEARCHING)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     LinkRawWireless::BroadcastReadPollResponse response;
     bool success1 = linkRawWireless.broadcastReadPoll(response);
 
     if (!success1)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     bool success2 = linkRawWireless.broadcastReadEnd();
 
     if (!success2)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     auto foundServers = response.servers;
     for (u32 i = 0; i < response.serversSize; i++) {
@@ -541,9 +527,10 @@ class LinkWireless {
         server.userName[j] = foundServers[i].userName[j];
       u8 nextClientNumber = foundServers[i].nextClientNumber;
       server.currentPlayerCount =
-          nextClientNumber == 0xff ? 0 : 1 + nextClientNumber;
+          nextClientNumber == 0xFF ? 0 : 1 + nextClientNumber;
       servers[i] = server;
     }
+    serverCount = response.serversSize;
 
     return true;
   }
@@ -556,12 +543,12 @@ class LinkWireless {
   bool connect(u16 serverId) {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::AUTHENTICATED)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     bool success = linkRawWireless.connect(serverId);
 
     if (!success)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     return true;
   }
@@ -575,44 +562,48 @@ class LinkWireless {
   bool keepConnecting() {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (linkRawWireless.getState() != State::CONNECTING)
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
     LinkRawWireless::ConnectionStatus response;
     bool success1 = linkRawWireless.keepConnecting(response);
 
     if (!success1)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     if (response.phase == LinkRawWireless::ConnectionPhase::STILL_CONNECTING)
       return true;
     else if (response.phase == LinkRawWireless::ConnectionPhase::ERROR)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     auto success2 = linkRawWireless.finishConnection();
     if (!success2)
-      return abort(COMMAND_FAILED);
+      return abort(Error::COMMAND_FAILED);
 
     return true;
   }
 
   /**
+   * @brief Returns if a `send(...)` call would fail due to the queue being
+   * full.
+   */
+  bool canSend() { return !sessionState.newOutgoingMessages.isFull(); }
+
+  /**
    * @brief Enqueues `data` to be sent to other nodes.
    * @param data The value to be sent.
    */
-  bool send(u16 data, int _author = -1) {
+  bool send(u16 data) {
     LINK_WIRELESS_RESET_IF_NEEDED
     if (!isSessionActive())
-      return badRequest(WRONG_STATE);
+      return badRequest(Error::WRONG_STATE);
 
-    if (!canAddNewMessage()) {
-      if (_author < 0)
-        lastError = BUFFER_IS_FULL;
+    if (!canSend()) {
+      lastError = Error::BUFFER_IS_FULL;
       return false;
     }
 
     Message message;
-    message.playerId =
-        _author >= 0 ? _author : linkRawWireless.sessionState.currentPlayerId;
+    message.playerId = linkRawWireless.sessionState.currentPlayerId;
     message.data = data;
 
     sessionState.newOutgoingMessages.syncPush(message);
@@ -621,11 +612,14 @@ class LinkWireless {
   }
 
   /**
-   * @brief Fills the `messages` array with incoming messages, forwarding if
-   * needed.
+   * @brief Fills the `messages` array with incoming messages.
    * @param messages The array to be filled with data.
+   * @param receivedCount The number to be filled with the number of received
+   * messages.
    */
-  bool receive(Message messages[]) {
+  bool receive(Message messages[], u32& receivedCount) {
+    receivedCount = 0;
+
     if (!isSessionActive())
       return false;
 
@@ -633,14 +627,11 @@ class LinkWireless {
     sessionState.incomingMessages.startReading();
     LINK_BARRIER;
 
-    u32 i = 0;
+    receivedCount = 0;
     while (!sessionState.incomingMessages.isEmpty()) {
       auto message = sessionState.incomingMessages.pop();
-      messages[i] = message;
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-      forwardMessageIfNeeded(message);
-#endif
-      i++;
+      messages[receivedCount] = message;
+      receivedCount++;
     }
 
     LINK_BARRIER;
@@ -679,45 +670,48 @@ class LinkWireless {
   }
 
   /**
-   * @brief Returns the number of connected players.
+   * @brief Returns the number of connected players (`1~5`).
    */
   [[nodiscard]] u8 playerCount() {
     return linkRawWireless.sessionState.playerCount;
   }
 
   /**
-   * @brief Returns the current player ID.
+   * @brief Returns the current player ID (`0~4`).
    */
   [[nodiscard]] u8 currentPlayerId() {
     return linkRawWireless.sessionState.currentPlayerId;
   }
 
   /**
-   * @brief Returns whether the internal receive queue lost messages at some
-   * point due to being full. This can happen if your queue size is too low, if
-   * you receive too much data without calling `receive(...)` enough times, or
-   * if excessive `receive(...)` calls prevent the ISR from copying data. After
+   * @brief Returns whether the internal queue lost messages at some point due
+   * to being full. This can happen if your queue size is too low, if you
+   * receive too much data without calling `receive(...)` enough times, or if
+   * excessive `receive(...)` calls prevent the ISR from copying data. After
    * this call, the overflow flag is cleared if `clear` is `true` (default
    * behavior).
    */
-  [[nodiscard]] bool didQueueOverflow(bool clear = true) {
-    bool overflow = sessionState.newIncomingMessages.overflow;
-    if (clear)
+  bool didQueueOverflow(bool clear = true) {
+    bool overflowReceive = sessionState.newIncomingMessages.overflow;
+    bool overflowForwardedMessage = sessionState.outgoingMessages.overflow;
+    if (clear) {
       sessionState.newIncomingMessages.overflow = false;
-    return overflow;
+      sessionState.outgoingMessages.overflow = false;
+    }
+    return overflowReceive || overflowForwardedMessage;
   }
 
   /**
-   * @brief If one of the other methods returns `false`, you can inspect this to
-   * know the cause. After this call, the last error is cleared if `clear` is
-   * `true` (default behavior).
-   * @param clear Whether it should clear the error or not.
+   * @brief Resets other players' timeout count to `0`.
+   * \warning Call this if you changed `config.timeout`.
    */
-  Error getLastError(bool clear = true) {
-    Error error = lastError;
-    if (clear)
-      lastError = NONE;
-    return error;
+  void resetTimeout() {
+    if (!isEnabled)
+      return;
+
+    LINK_BARRIER;
+    sessionState.isResetTimeoutPending = true;
+    LINK_BARRIER;
   }
 
   /**
@@ -733,12 +727,37 @@ class LinkWireless {
   }
 
   /**
-   * @brief Returns the number of pending outgoing messages.
+   * @brief If one of the other methods returns `false`, you can inspect this to
+   * know the cause. After this call, the last error is cleared if `clear` is
+   * `true` (default behavior).
+   * @param clear Whether it should clear the error or not.
+   */
+  Error getLastError(bool clear = true) {
+    Error error = lastError;
+    if (clear)
+      lastError = Error::NONE;
+    return error;
+  }
+
+  /**
+   * @brief Returns the number of total outgoing messages.
    * \warning This is internal API!
    */
   [[nodiscard]] u32 _getPendingCount() {
     return sessionState.outgoingMessages.size();
   }
+
+  /**
+   * @brief Returns the number of inflight outgoing messages.
+   * \warning This is internal API!
+   */
+  [[nodiscard]] u32 _getInflightCount() { return sessionState.inflightCount; }
+
+  /**
+   * @brief Returns the number of forwarded outgoing messages.
+   * \warning This is internal API!
+   */
+  [[nodiscard]] u32 _getForwardedCount() { return sessionState.forwardedCount; }
 
   /**
    * @brief Returns the last packet ID.
@@ -747,11 +766,11 @@ class LinkWireless {
   [[nodiscard]] u32 _lastPacketId() { return sessionState.lastPacketId; }
 
   /**
-   * @brief Returns the last confirmation received from player ID 1.
+   * @brief Returns the last ACK received from player ID 1.
    * \warning This is internal API!
    */
-  [[nodiscard]] u32 _lastConfirmationFromClient1() {
-    return sessionState.lastConfirmationFromClients[1];
+  [[nodiscard]] u32 _lastACKFromClient1() {
+    return sessionState.lastACKFromClients[1];
   }
 
   /**
@@ -763,11 +782,11 @@ class LinkWireless {
   }
 
   /**
-   * @brief Returns the last confirmation received from the server.
+   * @brief Returns the last ACK received from the server.
    * \warning This is internal API!
    */
-  [[nodiscard]] u32 _lastConfirmationFromServer() {
-    return sessionState.lastConfirmationFromServer;
+  [[nodiscard]] u32 _lastACKFromServer() {
+    return sessionState.lastACKFromServer;
   }
 
   /**
@@ -825,20 +844,23 @@ class LinkWireless {
     if (!isSessionActive())
       return;
 
+    if (sessionState.isResetTimeoutPending) {
+      sessionState.recvTimeout = 0;
+      for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++)
+        sessionState.msgTimeouts[i] = 0;
+      sessionState.isResetTimeoutPending = false;
+    }
+
     if (isConnected() && !sessionState.recvFlag)
       sessionState.recvTimeout++;
     if (sessionState.recvTimeout >= config.timeout)
-      return (void)abort(TIMEOUT);
+      return (void)abort(Error::TIMEOUT);
 
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-    trackRemoteTimeouts();
     if (!checkRemoteTimeouts())
-      return (void)abort(REMOTE_TIMEOUT);
-#endif
+      return (void)abort(Error::REMOTE_TIMEOUT);
 
     sessionState.recvFlag = false;
     sessionState.signalLevelCalled = false;
-    sessionState.pingSent = false;
 
 #ifdef LINK_WIRELESS_PROFILING_ENABLED
     vblankTime += profileStop();
@@ -868,7 +890,7 @@ class LinkWireless {
 
     int status = linkRawWireless._onSerial(false);
     if (status <= -4) {
-      return (void)abort(ACKNOWLEDGE_FAILED);
+      return (void)abort(Error::ACKNOWLEDGE_FAILED);
     } else if (status > 0) {
       auto result = linkRawWireless._getAsyncCommandResultRef();
       processAsyncCommand(result);
@@ -908,7 +930,7 @@ class LinkWireless {
     bool forwarding;
     bool retransmission;
     u8 maxPlayers;
-    u32 timeout;   // can be changed in realtime
+    u32 timeout;   // can be changed in realtime, but call `resetTimeout()`
     u16 interval;  // can be changed in realtime, but call `resetTimer()`
     u8 sendTimerId;
   };
@@ -919,7 +941,9 @@ class LinkWireless {
    */
   Config config;
 
+#ifndef LINK_WIRELESS_DEBUG_MODE
  private:
+#endif
   using MessageQueue = Link::Queue<Message, LINK_WIRELESS_QUEUE_SIZE>;
 
   struct SignalLevel {
@@ -939,61 +963,113 @@ class LinkWireless {
     bool msgFlags[LINK_WIRELESS_MAX_PLAYERS];    // (~= LinkCable::msgFlags)
 
     bool signalLevelCalled = false;
-    bool pingSent = false;
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
     bool sendReceiveLatch = false;  // true = send ; false = receive
     bool shouldWaitForServer = false;
-#endif
 
-    bool didReceiveLastPacketIdFromServer = false;
+    bool didReceiveFirstPacketFromServer = false;
+    u32 inflightCount = 0;
+    u32 forwardedCount = 0;
     u32 lastPacketId = 0;
     u32 lastPacketIdFromServer = 0;
-    u32 lastConfirmationFromServer = 0;
+    u32 lastACKFromServer = 0;
     u32 lastPacketIdFromClients[LINK_WIRELESS_MAX_PLAYERS];
-    u32 lastConfirmationFromClients[LINK_WIRELESS_MAX_PLAYERS];
+    u32 lastACKFromClients[LINK_WIRELESS_MAX_PLAYERS];
+    int lastHeartbeatFromClients[LINK_WIRELESS_MAX_PLAYERS];
+    int localHeartbeat = -1;
+    volatile bool isResetTimeoutPending = false;
   };
 
-  struct MessageHeader {
-    unsigned int partialPacketId : PACKET_ID_BITS;
-    unsigned int isConfirmation : 1;
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-    unsigned int playerId : 1;
-    unsigned int quickData : 5;
-#else
-    unsigned int playerId : 3;
-    unsigned int clientCount : 2;
-#endif
-    unsigned int dataChecksum : 4;
+  struct TransferHeader {
+    // - This header is appended as the first word of every transfer.
+    // - Packets ("messages") are 16-bit.
+    // - Packet IDs are 0~63 (server) and 0~15 (clients).
+    // - They wrap around, so 31 and 7 are the maximum number of inflight
+    //   packets as per the N/2-1 rule.
+    // - Messages are sent in order and retransmitted until their ACK. e.g.:
+    //   * >> 1, 2, 3
+    //   * >> 1, 2, 3, 4, 5
+    //   * << ack=3
+    //   * >> 4, 5, 6
+    //   This wastes bandwidth but reduces latency, since waiting for a
+    //   retransmission until not receiving an ACK takes time, and games usually
+    //   care more about latency than bandwidth.
+    // - The first message can be in the header itself (bits 0~15) when:
+    //   * (there *is* something to send) && (it's from a client)
+    //   * -> this is indicated with a 1 in `firstPacketId`'s bit 4
+    // - Each of the next words in the transfer contain two 16-bit messages.
+    //   * Low part first, high part last
+    //   * The last word can contain 1 or 2 messages depending on `hasLastMsg`
+    // - When `forwarding` is enabled, the server can forward messages from
+    //   other clients. If the stream includes forwarded messages, this header
+    //   contains `hasPlayerBitMap`=1, and the next halfword is a
+    //   `PlayerBitMap`.
+    unsigned int _reserved_ : 4;  // unused (or first msg!)
+    unsigned int ack4 : 4;        // server: player 4 ACK (or first msg!)
+    unsigned int ack3 : 4;        // server: player 3 ACK (or first msg!)
+    unsigned int ack2 : 4;        // server: player 2 ACK (or first msg!)
+    unsigned int ack1 : 6;        // server: player 1 ACK
+                                  // clients: server ACK
+    unsigned int hasLastMsg : 1;  // there's a msg in last word's high part
+    unsigned int
+        hasPlayerBitMap : 1;         // server: next halfword is a PlayerBitMap
+    unsigned int firstPacketId : 6;  // next packets are assumed consecutive
+                                     // clients only use 4 bits here!
+                                     // `hasFirstMsg` is an imaginary flag
+                                     // living in `firstPacketId`'s bit 4
+    unsigned int playerCount : 2;    // server: playerCount (0 = 2; ...; 3 = 5)
+                                     // clients: heartbeat (0~3)
   };
 
-  union MessageHeaderSerializer {
-    MessageHeader asStruct;
-    u16 asInt;
+  struct PlayerBitMap {
+    // - This halfword is appended after the `TransferHeader` if the stream
+    // contains messages from multiple users (when `forwarding` is enabled).
+    // - `playerIds` is a bit-packed array of 5 3-bit entries, representing the
+    //    owners of the next 5 messages (bits 0~2 = first message's player ID).
+    // - `hasMore` indicates whether there are more messages owned by player IDs
+    //   greater than 0, which adds another `PlayerBitMap` after the messages.
+    // - Each `PlayerBitMap` occupies the space of a regular message, but
+    //   doesn't affect the packet ID sequence. By design, they are always
+    //   placed in the low part.
+    // ---
+    // Example: Let's say there's a stream with 12 packets (p1~pC).
+    // Before pB, some of the packets are forwarded from other clients.
+    // So, the transfer header (THD) takes the first word and sets
+    // `hasPlayerBitMap=1`. The low part of the next word is a `PlayerBitMap`
+    // (PB) and describes the owners of the following 5 messages (p1~p5). Since
+    // there are more forwarded messages (last PB had `hasMore`=1), a new PB is
+    // added describing p6~pA. The last two messages (pB~pC) are server
+    // messages, so there's no need for a new PB (last PB had `hasMore`=0).
+    //   w00    w01    w02    w03    w04    w05    w06    w07
+    // |-----||--|--||--|--||--|--||--|--||--|--||--|--||--|--|
+    // | THD ||p1|PB||p3|p2||p5|p4||p6|PB||p8|p7||pA|p9||pC|pB|
+    // |-----||--|--||--|--||--|--||--|--||--|--||--|--||--|--|
+    // ---
+    unsigned int playerIds : 15;  // 5 entries, 3 bits per player
+    unsigned int hasMore : 1;  // if true, there's another `PlayerBitMap` after
+                               // the next 5 messages
+  };
+
+  template <typename H>
+  union U32Packer {
+    H asStruct;
+    u32 asInt;
   };
 
   using CommandResult = LinkRawWireless::CommandResult;
 
   LinkRawWireless linkRawWireless;
   SessionState sessionState;
-  u32 nextAsyncCommandData[MAX_COMMAND_TRANSFER_LENGTH];
+  u32 nextAsyncCommandData[LINK_RAW_WIRELESS_MAX_COMMAND_TRANSFER_LENGTH];
   u32 nextAsyncCommandDataSize = 0;
   volatile bool isSendingSyncCommand = false;
-  volatile Error lastError = NONE;
+  volatile Error lastError = Error::NONE;
   volatile bool isEnabled = false;
-  bool wasActivated = false;  // [!]
+  volatile bool wasActivated = false;  // [!]
 
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   volatile bool interrupt = false, pendingVBlank = false;
 #endif
-#endif
-
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-  void forwardMessageIfNeeded(Message& message) {
-    if (linkRawWireless.getState() == State::SERVING && config.forwarding &&
-        linkRawWireless.sessionState.playerCount > 2)
-      send(message.data, message.playerId);
-  }
 #endif
 
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
@@ -1010,17 +1086,15 @@ class LinkWireless {
 #endif
 #endif
 
-  bool canAddNewMessage() { return !sessionState.newOutgoingMessages.isFull(); }
-
   LINK_INLINE void processAsyncCommand(
       const LinkRawWireless::CommandResult* commandResult) {  // (irq only)
     if (!commandResult->success) {
       return (void)abort(
           commandResult->commandId == LinkRawWireless::COMMAND_SEND_DATA
-              ? SEND_DATA_FAILED
+              ? Error::SEND_DATA_FAILED
           : commandResult->commandId == LinkRawWireless::COMMAND_RECEIVE_DATA
-              ? RECEIVE_DATA_FAILED
-              : COMMAND_FAILED);
+              ? Error::RECEIVE_DATA_FAILED
+              : Error::COMMAND_FAILED);
     }
 
     switch (commandResult->commandId) {
@@ -1029,15 +1103,17 @@ class LinkWireless {
         u32 levels = commandResult->dataSize > 0 ? commandResult->data[0] : 0;
         u32 players = 1;
         for (u32 i = 1; i < LINK_WIRELESS_MAX_PLAYERS; i++) {
-          u32 level = (levels >> ((i - 1) * 8)) & 0xff;
+          u32 level = (levels >> ((i - 1) * 8)) & 0xFF;
           sessionState.signalLevel.level[i] = level;
           if (level > 0)
             players++;
         }
 
         if (players > linkRawWireless.sessionState.playerCount) {
+          LINK_BARRIER;
           linkRawWireless.sessionState.playerCount =
-              Link::_min(players, /*config.maxPlayers*/ 2);  // [!]
+              Link::_min(players, config.maxPlayers);
+          LINK_BARRIER;
         }
 
         break;
@@ -1045,26 +1121,17 @@ class LinkWireless {
       case LinkRawWireless::COMMAND_SEND_DATA: {
         // SendData (end)
 
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         if (linkRawWireless.getState() == State::CONNECTED)
           sessionState.shouldWaitForServer = true;
         sessionState.sendReceiveLatch = !sessionState.sendReceiveLatch;
-#else
-        if (linkRawWireless.getState() == State::SERVING) {
-          // ReceiveData (start)
-          sendCommandAsync(LinkRawWireless::COMMAND_RECEIVE_DATA);
-        }
-#endif
 
         break;
       }
       case LinkRawWireless::COMMAND_RECEIVE_DATA: {
         // ReceiveData (end)
 
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         sessionState.sendReceiveLatch =
             sessionState.shouldWaitForServer || !sessionState.sendReceiveLatch;
-#endif
 
         if (commandResult->dataSize == 0)
           break;
@@ -1072,18 +1139,9 @@ class LinkWireless {
         sessionState.recvFlag = true;
         sessionState.recvTimeout = 0;
 
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
         sessionState.shouldWaitForServer = false;
-#endif
 
         addIncomingMessagesFromData(commandResult);
-
-#ifndef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
-        if (linkRawWireless.getState() == State::CONNECTED) {
-          // SendData (start)
-          sendPendingData();
-        }
-#endif
 
         break;
       }
@@ -1092,7 +1150,7 @@ class LinkWireless {
     }
   }
 
-  LINK_INLINE void checkConnectionsOrTransferData() {  // (irq only)
+  void checkConnectionsOrTransferData() {  // (irq only)
     if (linkRawWireless.getState() == State::SERVING &&
         !sessionState.signalLevelCalled) {
       // SignalLevel (start)
@@ -1100,12 +1158,8 @@ class LinkWireless {
         sessionState.signalLevelCalled = true;
     } else if (linkRawWireless.getState() == State::CONNECTED ||
                isConnected()) {
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
       bool shouldReceive =
           !sessionState.sendReceiveLatch || sessionState.shouldWaitForServer;
-#else
-      bool shouldReceive = linkRawWireless.getState() == State::CONNECTED;
-#endif
 
       if (shouldReceive) {
         // ReceiveData (start)
@@ -1119,284 +1173,446 @@ class LinkWireless {
 
   void sendPendingData() {  // (irq only)
     copyOutgoingState();
-    /*int lastPacketId = */ setDataFromOutgoingMessages();  // [!]
 
-    // [!]
-    // if (sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true))
-    //   clearOutgoingMessagesIfNeeded(lastPacketId);
-    sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true);
+    setDataFromOutgoingMessages();
+    if (sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true))
+      clearInflightMessagesIfNeeded();
   }
 
-  int setDataFromOutgoingMessages() {  // (irq only)
-    u32 maxTransferLength = getDeviceTransferLength();
+  void setDataFromOutgoingMessages() {  // (irq only)
+    addAsyncData(0, true);              // SendData header (filled later)
+    addAsyncData(0);                    // Transfer header (filled later)
 
-    addAsyncData(0, true);
+    bool isServer = linkRawWireless.getState() == State::SERVING;
+    u32 maxPacketIds = isServer ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT;
+    u32 maxInflightPackets =
+        isServer ? MAX_INFLIGHT_PACKETS_SERVER : MAX_INFLIGHT_PACKETS_CLIENT;
+    u32 maxTransferLength = 1 + getDeviceTransferLength();
+    // (+1 for SendData header)
 
-    // [!]
-    // if (config.retransmission)
-    addConfirmations();
-    // else
-    //   addPingMessageIfNeeded();
-
-    int lastPacketId = -1;
-
+    u32 firstPacketId = NO_ID_ASSIGNED_YET;
+    u32 firstMsg = 0;
+    u32 msgCount = 0;
+    bool highPart = false;
+    u32 pendingForwardedCount = sessionState.forwardedCount;
+    int currentPlayerBitMapIndex = -1;
+    u32 playerBitMapCount = 0;
     sessionState.outgoingMessages.forEach(
-        [this, maxTransferLength, &lastPacketId](Message message) {
-          u16 header = buildMessageHeader(message.playerId, message.packetId,
-                                          buildChecksum(message.data));
-          u32 rawMessage = Link::buildU32(header, message.data);
+        [this, isServer, maxPacketIds, maxInflightPackets, maxTransferLength,
+         &firstPacketId, &firstMsg, &msgCount, &highPart,
+         &pendingForwardedCount, &currentPlayerBitMapIndex,
+         &playerBitMapCount](Message* message) {
+          // create packet ID if the packet can be sent
+          if (message->packetId == NO_ID_ASSIGNED_YET) {
+            if (sessionState.inflightCount < maxInflightPackets) {
+              message->packetId = newPacketId(maxPacketIds);
+              sessionState.inflightCount++;
+            } else {
+              return false;
+            }
+          }
 
-          addAsyncData(rawMessage);
-          lastPacketId = message.packetId;
+          // get first added packet ID and add first msg if needed
+          if (firstPacketId == NO_ID_ASSIGNED_YET) {
+            firstPacketId = message->packetId;
+            if (!isServer) {
+              msgCount++;
+              firstMsg = message->data;
+              return true;
+            }
+          }
 
-          if (nextAsyncCommandDataSize > maxTransferLength)
-            return false;
+          // add a new PlayerBitMap if needed
+          if (pendingForwardedCount > 0 &&
+              (currentPlayerBitMapIndex < 0 ||
+               playerBitMapCount == MAX_PLAYER_BITMAP_ENTRIES)) {
+            if (playerBitMapCount == MAX_PLAYER_BITMAP_ENTRIES)
+              addToAsyncDataShifted(currentPlayerBitMapIndex, 1, BIT_HAS_MORE);
 
-          return true;
+            // `highPart` should always be false here!
+            currentPlayerBitMapIndex = nextAsyncCommandDataSize;
+            playerBitMapCount = 0;
+            addAsyncData(0);
+            highPart = true;
+          }
+
+          // add to the correct part of the u32
+          if (highPart)
+            addToLastAsyncDataHalfword(message->data);
+          else
+            addAsyncData(message->data);
+          highPart = !highPart;
+
+          // update player bitmap if needed
+          if (currentPlayerBitMapIndex >= 0) {
+            addToAsyncDataShifted(currentPlayerBitMapIndex, message->playerId,
+                                  PLAYER_ID_BITS * playerBitMapCount);
+            playerBitMapCount++;
+
+            if (message->playerId > 0) {
+              pendingForwardedCount--;
+              if (pendingForwardedCount == 0)
+                currentPlayerBitMapIndex = -1;
+            }
+          }
+
+          msgCount++;
+
+          // only continue if we have available halfwords
+          return nextAsyncCommandDataSize < maxTransferLength || highPart;
         });
 
-    // (add wireless header)
+    // fill Transfer header
+    nextAsyncCommandData[1] = buildTransferHeader(isServer, firstPacketId,
+                                                  firstMsg, msgCount, highPart);
+
+    // fill SendData header
     u32 bytes = (nextAsyncCommandDataSize - 1) * 4;
     nextAsyncCommandData[0] = linkRawWireless.getSendDataHeaderFor(bytes);
-
-    return lastPacketId;
   }
 
-  void addIncomingMessagesFromData(const CommandResult* result) {  // (irq only)
-    for (u32 i = 1; i < result->dataSize; i++) {
-      u32 rawMessage = result->data[i];
-      u16 headerInt = Link::msB32(rawMessage);
-      u16 data = Link::lsB32(rawMessage);
+  u32 buildTransferHeader(bool isServer,
+                          u32 firstPacketId,
+                          u32 firstMsg,
+                          u32 msgCount,
+                          bool highPart) {
+    TransferHeader transferHeader = {};
 
-      MessageHeaderSerializer serializer;
-      serializer.asInt = headerInt;
-
-      MessageHeader header = serializer.asStruct;
-      u32 partialPacketId = header.partialPacketId;
-      bool isConfirmation = header.isConfirmation;
-      u8 remotePlayerId =
-          Link::_min(header.playerId, /*config.maxPlayers*/ 2 - 1);  // [!]
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-      QUICK_RECEIVE = header.quickData;
-      u8 remotePlayerCount = 2;
-#else
-      u8 remotePlayerCount = LINK_WIRELESS_MIN_PLAYERS + header.clientCount;
-#endif
-      u32 checksum = header.dataChecksum;
-      bool isPing = data == MSG_PING;
-
-      if (checksum != buildChecksum(data))
-        continue;
-
-      Message message;
-      message.packetId = partialPacketId;
-      message.data = data;
-      message.playerId = remotePlayerId;
-      if (!acceptMessage(message, isConfirmation, remotePlayerCount))
-        continue;
-      if (/*config.retransmission && */ isConfirmation &&  // [!]
-          !handleConfirmation(message))
-        continue;
-
-      sessionState.msgTimeouts[0] = 0;
-      sessionState.msgTimeouts[remotePlayerId] = 0;
-      sessionState.msgFlags[0] = true;
-      sessionState.msgFlags[remotePlayerId] = true;
-
-      if (!isPing && !isConfirmation)
-        sessionState.newIncomingMessages.push(message);
+    // player count / client heartbeat
+    if (isServer) {
+      transferHeader.playerCount =
+          linkRawWireless.sessionState.playerCount - LINK_WIRELESS_MIN_PLAYERS;
+    } else {
+      sessionState.localHeartbeat = (sessionState.localHeartbeat + 1) % 4;
+      transferHeader.playerCount = sessionState.localHeartbeat;
     }
+
+    // first packet ID, or 0 if there are no messages
+    if (msgCount > 0)
+      transferHeader.firstPacketId = firstPacketId;
+
+    // the last word has a message in its high part if there are messages and we
+    // fully used all words
+    transferHeader.hasLastMsg = msgCount > 0 && !highPart;
+
+    // the transfer contains player bitmaps if there are forwarded messages
+    transferHeader.hasPlayerBitMap = sessionState.forwardedCount > 0;
+
+    // `ack1` is used by both server and clients
+    transferHeader.ack1 = isServer ? sessionState.lastPacketIdFromClients[1]
+                                   : sessionState.lastPacketIdFromServer;
+
+    if (isServer) {
+      // server use `ack2`, `ack3` and `ack4` for acknowledging P2, P3, P4
+      transferHeader.ack2 = sessionState.lastPacketIdFromClients[2];
+      transferHeader.ack3 = sessionState.lastPacketIdFromClients[3];
+      transferHeader.ack4 = sessionState.lastPacketIdFromClients[4];
+    } else if (msgCount > 0) {
+      // but clients can use this area for storing the first message (*)
+      transferHeader.firstPacketId |= HAS_FIRST_MSG_MASK;
+    }
+
+    // interpret the whole thing as u32
+    U32Packer<TransferHeader> packer = {};
+    packer.asStruct = transferHeader;
+    if (!isServer)
+      packer.asInt |= firstMsg;  // (*)
+    return packer.asInt;
+  }
+
+  void clearInflightMessagesIfNeeded() {  // (irq only)
+    if (config.retransmission)
+      return;
+
+    while (!sessionState.outgoingMessages.isEmpty()) {
+      u32 packetId = sessionState.outgoingMessages.peek().packetId;
+      if (packetId == NO_ID_ASSIGNED_YET)
+        break;
+
+      auto message = sessionState.outgoingMessages.pop();
+      if (linkRawWireless.getState() == State::SERVING && message.playerId > 0)
+        sessionState.forwardedCount--;
+    }
+
+    sessionState.inflightCount = 0;
+  }
+
+  LINK_INLINE void addIncomingMessagesFromData(
+      const CommandResult* result) {  // (irq only)
+    // parse ReceiveData header
+    u32 sentBytes[LINK_WIRELESS_MAX_PLAYERS] = {0, 0, 0, 0, 0};
+    u32 receiveDataHeader = result->data[0];
+    sentBytes[0] = receiveDataHeader & 0b1111111;
+    sentBytes[1] = (receiveDataHeader >> 8) & 0b11111;
+    sentBytes[2] = (receiveDataHeader >> 13) & 0b11111;
+    sentBytes[3] = (receiveDataHeader >> 18) & 0b11111;
+    sentBytes[4] = (receiveDataHeader >> 23) & 0b11111;
+
+    bool isServer = linkRawWireless.getState() == State::SERVING;
+    u32 cursor = 1;
+    u32 startPlayerId = isServer ? 1 : 0;
+    u32 endPlayerId = isServer ? linkRawWireless.sessionState.playerCount : 1;
+
+    // server reads from indexes 1~4, clients read from index 0
+    for (u32 i = startPlayerId; i < endPlayerId; i++) {
+      if (sentBytes[i] % 4 != 0)
+        return;  // in our protocol, we always send whole words!
+
+      u32 remainingWords = sentBytes[i] / 4;
+      if (remainingWords == 0)
+        continue;
+
+      // parse TransferHeader
+      U32Packer<TransferHeader> packer;
+      packer.asInt = result->data[cursor++];
+      remainingWords--;
+      TransferHeader header = packer.asStruct;
+
+      // if retransmission is enabled, we update the confirmations based on the
+      // ACKs found in the header
+      if (config.retransmission) {
+        if (isServer) {
+          sessionState.lastACKFromClients[i] = header.ack1;
+        } else {
+          u32 currentPlayerId = linkRawWireless.sessionState.currentPlayerId;
+          sessionState.lastACKFromServer = currentPlayerId == 1   ? header.ack1
+                                           : currentPlayerId == 2 ? header.ack2
+                                           : currentPlayerId == 3 ? header.ack3
+                                                                  : header.ack4;
+        }
+      }
+
+      // clients update their player count based on the transfer header
+      if (!isServer) {
+        LINK_BARRIER;
+        linkRawWireless.sessionState.playerCount =
+            LINK_WIRELESS_MIN_PLAYERS + header.playerCount;
+        LINK_BARRIER;
+      }
+
+      // clients can send their first message in the header itself
+      u32 currentPacketId = header.firstPacketId;
+      bool hasFirstMsg =
+          isServer && (currentPacketId & HAS_FIRST_MSG_MASK) != 0;
+      if (hasFirstMsg) {
+        currentPacketId &= ~HAS_FIRST_MSG_MASK;
+        u32 playerBitMap = 0;
+        int playerBitMapCount = -1;
+        processMessage(i, Link::lsB32(packer.asInt), currentPacketId,
+                       playerBitMap, playerBitMapCount);
+      }
+
+      // process the remaining words as message pairs
+      u32 playerBitMap = 0;
+      int playerBitMapCount =
+          !isServer && header.hasPlayerBitMap ? MAX_PLAYER_BITMAP_ENTRIES : -1;
+      while (remainingWords > 0) {
+        bool hasHighPart = remainingWords > 1 || header.hasLastMsg;
+
+        u32 word = result->data[cursor];
+        u32 lowPart = Link::lsB32(word);
+        if (playerBitMapCount >= MAX_PLAYER_BITMAP_ENTRIES) {
+          playerBitMap = lowPart;
+          playerBitMapCount = 0;
+        } else
+          processMessage(i, lowPart, currentPacketId, playerBitMap,
+                         playerBitMapCount);
+
+        if (hasHighPart) {
+          u32 highPart = Link::msB32(word);
+          processMessage(i, highPart, currentPacketId, playerBitMap,
+                         playerBitMapCount);
+        }
+
+        cursor++;
+        remainingWords--;
+      }
+
+      bool shouldResetTimeouts = true;
+      if (isServer) {
+        // reset timeouts, only if the heartbeat from the clients changed (*)
+        int heartbeat = header.playerCount;
+        shouldResetTimeouts =
+            heartbeat != sessionState.lastHeartbeatFromClients[i];
+        sessionState.lastHeartbeatFromClients[i] = heartbeat;
+        // (*) sometimes, when a client is disconnected, the Wireless Adapter
+        // keeps repeating old data in its slot! we use this heartbeat to verify
+        // that the client is still generating packets actively!
+      }
+
+      if (shouldResetTimeouts) {
+        sessionState.msgTimeouts[0] = 0;
+        sessionState.msgTimeouts[i] = 0;
+        sessionState.msgFlags[0] = true;
+        sessionState.msgFlags[i] = true;
+      }
+    }
+
+    // remove confirmed messages based on the updated ACKs
+    if (config.retransmission) {
+      if (isServer)
+        removeConfirmedMessagesFromClients();
+      else
+        removeConfirmedMessagesFromServer();
+    }
+
+    // copy data from the interrupt world to the main world
     copyIncomingState();
   }
 
-  bool acceptMessage(Message& message,
-                     bool isConfirmation,
-                     u32 remotePlayerCount) {  // (irq only)
-    if (linkRawWireless.getState() == State::SERVING) {
-      u32 expectedPacketId =
-          (sessionState.lastPacketIdFromClients[message.playerId] + 1) %
-          MAX_PACKET_IDS;
-      // if message.packetId > expectedPacketId = packet loss (gap)
-      // if message.packetId < expectedPacketId = retransmission of old packet
+  LINK_INLINE void processMessage(u32 playerId,
+                                  u32 data,
+                                  u32& currentPacketId,
+                                  u32& playerBitMap,
+                                  int& playerBitMapCount) {  // (irq only)
+    // store the packet ID and increment (msgs are consecutive inside transfers)
+    u32 packetId = currentPacketId;
+    currentPacketId =
+        (currentPacketId + 1) %
+        (playerId == 0 ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT);
 
-      if (/*config.retransmission && */ !isConfirmation &&
-          message.packetId != expectedPacketId)  // [!]
-        return false;
+    // get msg player ID based on player bitmap
+    u32 msgPlayerId = playerId;
+    if (playerBitMapCount >= 0) {
+      msgPlayerId =
+          (playerBitMap >> PLAYER_ID_BITS * playerBitMapCount) & PLAYER_ID_MASK;
+      playerBitMapCount++;
 
-      if (!isConfirmation)
-        message.packetId =
-            ++sessionState.lastPacketIdFromClients[message.playerId];
+      if (playerBitMapCount >= MAX_PLAYER_BITMAP_ENTRIES &&
+          !((playerBitMap >> BIT_HAS_MORE) & 1))
+        playerBitMapCount = -1;
+    }
+
+    if (playerId == 0 && !sessionState.didReceiveFirstPacketFromServer) {
+      // the first time clients receive something from the server,
+      // they shouldn't have any expectations (since they can join at any time)
+      sessionState.lastPacketIdFromServer = packetId;
+      sessionState.didReceiveFirstPacketFromServer = true;
     } else {
-      u32 expectedPacketId =
-          (sessionState.lastPacketIdFromServer + 1) % MAX_PACKET_IDS;
+      // if retransmission is enabled, the packet ID needs to be expected
+      if (config.retransmission) {
+        u32 expectedPacketId =
+            playerId > 0
+                ? (sessionState.lastPacketIdFromClients[playerId] + 1) %
+                      MAX_PACKET_IDS_CLIENT
+                : (sessionState.lastPacketIdFromServer + 1) %
+                      MAX_PACKET_IDS_SERVER;
 
-      if (/*config.retransmission && */ !isConfirmation &&  // [!]
-          message.packetId != expectedPacketId)
-        return false;
+        if (packetId != expectedPacketId)
+          return;
 
-      linkRawWireless.sessionState.playerCount = remotePlayerCount;
-
-      if (!isConfirmation)
-        message.packetId = ++sessionState.lastPacketIdFromServer;
-    }
-
-    bool isMessageFromCurrentPlayer =
-        !isConfirmation &&
-        message.playerId == linkRawWireless.sessionState.currentPlayerId;
-
-    return !isMessageFromCurrentPlayer;
-  }
-
-  // [!]
-  // void clearOutgoingMessagesIfNeeded(int lastPacketId) {  // (irq only)
-  //   if (!config.retransmission && lastPacketId > -1)
-  //     removeConfirmedMessages(lastPacketId);
-  // }
-
-  void addPingMessageIfNeeded() {  // (irq only)
-    if (sessionState.outgoingMessages.isEmpty() && !sessionState.pingSent) {
-      Message pingMessage;
-      pingMessage.packetId = newPacketId();
-      pingMessage.playerId = linkRawWireless.sessionState.currentPlayerId;
-      pingMessage.data = MSG_PING;
-      sessionState.outgoingMessages.push(pingMessage);
-      sessionState.pingSent = true;
-    }
-  }
-
-  void addConfirmations() {  // (irq only)
-    if (linkRawWireless.getState() == State::SERVING) {
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-      if (config.maxPlayers > 2 &&
-          (sessionState.lastPacketIdFromClients[1] == 0 ||
-           sessionState.lastPacketIdFromClients[2] == 0 ||
-           sessionState.lastPacketIdFromClients[3] == 0 ||
-           sessionState.lastPacketIdFromClients[4] == 0)) {
-        u32 lastPacketId = sessionState.lastPacketId;
-        u16 header = buildConfirmationHeader(0, lastPacketId);
-        u32 rawMessage = Link::buildU32(header, lastPacketId & 0xffff);
-        addAsyncData(rawMessage);
+        if (playerId > 0)
+          sessionState.lastPacketIdFromClients[playerId] = expectedPacketId;
+        else
+          sessionState.lastPacketIdFromServer = expectedPacketId;
       }
-#endif
-
-      for (int i = 0; i < /*linkRawWireless.sessionState.playerCount*/ 2 - 1;
-           i++) {  // [!]
-        u32 confirmationData = sessionState.lastPacketIdFromClients[1 + i];
-        u16 header = buildConfirmationHeader(1 + i, confirmationData);
-        u32 rawMessage = Link::buildU32(header, confirmationData & 0xffff);
-        addAsyncData(rawMessage);
-      }
-    } else {
-      u32 confirmationData = sessionState.lastPacketIdFromServer;
-      u16 header = buildConfirmationHeader(
-          linkRawWireless.sessionState.currentPlayerId, confirmationData);
-      u32 rawMessage = Link::buildU32(header, confirmationData & 0xffff);
-      addAsyncData(rawMessage);
     }
+
+    // ignore messages from myself
+    if (msgPlayerId == linkRawWireless.sessionState.currentPlayerId)
+      return;
+
+    // add new message
+    Message message;
+    message.playerId = msgPlayerId;
+    message.data = data;
+    message.packetId = packetId;
+    sessionState.newIncomingMessages.push(message);
+
+    // forward to other clients if needed
+    if (playerId > 0 && config.forwarding &&
+        linkRawWireless.sessionState.playerCount > 2)
+      forwardMessage(message);
   }
 
-  bool handleConfirmation(Message confirmation) {  // (irq only)
-    u32 confirmationData = (confirmation.packetId << 16) | confirmation.data;
+  LINK_INLINE void forwardMessage(Message& message) {  // (irq only)
+    Message forwardedMessage;
+    forwardedMessage.data = message.data;
+    forwardedMessage.playerId = message.playerId;
+    if (!sessionState.outgoingMessages.isFull()) {
+      sessionState.outgoingMessages.push(forwardedMessage);
+      sessionState.forwardedCount++;
+    } else
+      sessionState.outgoingMessages.overflow = true;
+  }
 
-    if (linkRawWireless.getState() == State::CONNECTED) {
-      if (confirmation.playerId == 0 &&
-          !sessionState.didReceiveLastPacketIdFromServer) {
-        sessionState.lastPacketIdFromServer = confirmationData;
-        sessionState.didReceiveLastPacketIdFromServer = true;
-      } else if (confirmation.playerId ==
-                 linkRawWireless.sessionState.currentPlayerId) {
-        handleServerConfirmation(confirmationData);
+  LINK_INLINE void removeConfirmedMessagesFromServer() {  // (irq only)
+    removeConfirmedMessages(sessionState.lastACKFromServer,
+                            MAX_PACKET_IDS_CLIENT, MAX_INFLIGHT_PACKETS_CLIENT);
+  }
+
+  LINK_INLINE void removeConfirmedMessagesFromClients() {  // (irq only)
+    u32 ringMinAck = 0xFFFFFFFF;
+    for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
+      u32 ack = sessionState.lastACKFromClients[i];
+
+      // ignore clients that didn't confirm anything yet
+      if (ack == NO_ACK_RECEIVED_YET)
+        continue;
+
+      if (ringMinAck == 0xFFFFFFFF) {
+        // on first time, we set `ringMinAck`
+        ringMinAck = ack;
       } else {
-        return false;
+        // we compare `ringMinAck` vs `ack` in circular space
+        // (0..MAX_PACKET_IDS_CLIENT-1):
+        //   -> how many steps it is from `ringMinAck` down to `ack`?
+        u32 dist = (ringMinAck - ack) & (MAX_PACKET_IDS_CLIENT - 1);
+
+        // if dist >= MAX_INFLIGHT_PACKETS_CLIENT => `ack` is "behind"
+        // `ringMinAck`, so we replace it!
+        if (dist >= MAX_INFLIGHT_PACKETS_CLIENT)
+          ringMinAck = ack;
       }
-    } else {
-      handleClientConfirmation(confirmationData, confirmation.playerId);
     }
 
-    return true;
+    // if we found a valid minimum ack across all clients, we remove!
+    if (ringMinAck != 0xFFFFFFFF)
+      removeConfirmedMessages(ringMinAck, MAX_PACKET_IDS_SERVER,
+                              MAX_INFLIGHT_PACKETS_SERVER);
   }
 
-  void handleServerConfirmation(u32 confirmationData) {  // (irq only)
-    sessionState.lastConfirmationFromServer = confirmationData;
-    removeConfirmedMessages(confirmationData);
-  }
+  LINK_INLINE void removeConfirmedMessages(
+      u32 ack,
+      const u32 maxPacketIds,
+      const u32 maxInflightPackets) {  // (irq only)
+    while (!sessionState.outgoingMessages.isEmpty()) {
+      u32 packetId = sessionState.outgoingMessages.peek().packetId;
 
-  void handleClientConfirmation(u32 confirmationData,
-                                u8 playerId) {  // (irq only)
-    sessionState.lastConfirmationFromClients[playerId] = confirmationData;
+      // if the current message is not inflight, we've entered the section of
+      // 'new' messages (with no ID assigned), so we quit!
+      if (packetId == NO_ID_ASSIGNED_YET)
+        break;
 
-    u32 min = 0xffffffff;
-    for (int i = 0; i < /*config.maxPlayers*/ 2 - 1; i++) {  // [!]
-      u32 _confirmationData = sessionState.lastConfirmationFromClients[1 + i];
-      if (_confirmationData > 0 && _confirmationData < min)
-        min = _confirmationData;
-    }
-    if (min < 0xffffffff)
-      removeConfirmedMessages(min);
-  }
-
-  void removeConfirmedMessages(u32 confirmationData) {  // (irq only)
-    while (!sessionState.outgoingMessages.isEmpty() &&
-           sessionState.outgoingMessages.peek().packetId <= confirmationData)
-      sessionState.outgoingMessages.pop();
-  }
-
-  u16 buildConfirmationHeader(u8 playerId,
-                              u32 confirmationData) {  // (irq only)
-    // confirmation messages "repurpose" some message header fields:
-    //     packetId => high 6 bits of confirmation
-    //     data     => low 16 bits of confirmation
-    u8 highPart = (confirmationData >> 16) & PACKET_ID_MASK;
-    u16 lowPart = confirmationData & 0xffff;
-    return buildMessageHeader(playerId, highPart, buildChecksum(lowPart), true);
-  }
-
-  u16 buildMessageHeader(u8 playerId,
-                         u32 packetId,
-                         u8 dataChecksum,
-                         bool isConfirmation = false) {  // (irq only)
-    MessageHeader header;
-    header.partialPacketId = packetId % MAX_PACKET_IDS;
-    header.isConfirmation = isConfirmation;
-    header.playerId = playerId;
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-    header.quickData = QUICK_SEND;
-#else
-    header.clientCount =
-        linkRawWireless.sessionState.playerCount - LINK_WIRELESS_MIN_PLAYERS;
-#endif
-    header.dataChecksum = dataChecksum;
-
-    MessageHeaderSerializer serializer;
-    serializer.asStruct = header;
-    return serializer.asInt;
-  }
-
-  u32 buildChecksum(u16 data) {  // (irq only)
-    // (hamming weight)
-    return __builtin_popcount(data) % 16;
-  }
-
-#ifndef LINK_WIRELESS_TWO_PLAYERS_ONLY
-  void trackRemoteTimeouts() {  // (irq only)
-    for (u32 i = 0; i < linkRawWireless.sessionState.playerCount; i++) {
-      if (i != linkRawWireless.sessionState.currentPlayerId &&
-          !sessionState.msgFlags[i])
-        sessionState.msgTimeouts[i]++;
-      sessionState.msgFlags[i] = false;
+      // we release the packet if it was confirmed (aka inside the send window)
+      // example with maxPacketIds=16, maxInflightPackets=7, ack=4:
+      //   => we would be releasing packets 4,3,2,1,15,14,13
+      if (((ack - packetId) & (maxPacketIds - 1)) <= maxInflightPackets) {
+        auto message = sessionState.outgoingMessages.pop();
+        sessionState.inflightCount--;
+        if (maxPacketIds == MAX_PACKET_IDS_SERVER && message.playerId > 0)
+          sessionState.forwardedCount--;
+      } else
+        break;
     }
   }
 
   bool checkRemoteTimeouts() {  // (irq only)
-    for (u32 i = 0; i < linkRawWireless.sessionState.playerCount; i++) {
-      if ((i == 0 || linkRawWireless.getState() == State::SERVING) &&
-          sessionState.msgTimeouts[i] > config.timeout)
-        return false;
+    bool isServer = linkRawWireless.getState() == State::SERVING;
+    u32 startPlayerId = isServer ? 1 : 0;
+    u32 endPlayerId = isServer ? linkRawWireless.sessionState.playerCount : 1;
+
+    for (u32 i = startPlayerId; i < endPlayerId; i++) {
+      if (!sessionState.msgFlags[i]) {
+        sessionState.msgTimeouts[i]++;
+        if (sessionState.msgTimeouts[i] > config.timeout)
+          return false;
+      }
+      sessionState.msgFlags[i] = false;
     }
 
     return true;
   }
-#endif
 
   u32 getDeviceTransferLength() {  // (irq only)
     return linkRawWireless.getState() == State::SERVING
@@ -1411,12 +1627,11 @@ class LinkWireless {
     while (!sessionState.newOutgoingMessages.isEmpty() &&
            !sessionState.outgoingMessages.isFull()) {
       auto message = sessionState.newOutgoingMessages.pop();
-      message.packetId = newPacketId();
       sessionState.outgoingMessages.push(message);
     }
   }
 
-  void copyIncomingState() {  // (irq only)
+  LINK_INLINE void copyIncomingState() {  // (irq only)
     if (sessionState.incomingMessages.isReading())
       return;
 
@@ -1427,8 +1642,24 @@ class LinkWireless {
     }
   }
 
-  u32 newPacketId() {  // (irq only)
-    return ++sessionState.lastPacketId;
+  u32 newPacketId(u32 maxPacketIds) {  // irq only
+    return (sessionState.lastPacketId =
+                (sessionState.lastPacketId + 1) % maxPacketIds);
+  }
+
+  void addToLastAsyncDataHalfword(u16 value) {  // (irq only)
+    addToAsyncDataShifted(nextAsyncCommandDataSize - 1, value, 16);
+  }
+
+  void addToAsyncDataShifted(u32 index, u16 value, u32 shift) {  // (irq only)
+    nextAsyncCommandData[index] |= value << shift;
+  }
+
+  void addAsyncData(u32 value, bool start = false) {  // (irq only)
+    if (start)
+      nextAsyncCommandDataSize = 0;
+    nextAsyncCommandData[nextAsyncCommandDataSize] = value;
+    nextAsyncCommandDataSize++;
   }
 
   bool sendCommandAsync(u8 type, bool withData = false) {  // (irq only)
@@ -1438,13 +1669,6 @@ class LinkWireless {
     u32 size = withData ? nextAsyncCommandDataSize : 0;
     return linkRawWireless.sendCommandAsync(type, nextAsyncCommandData, size,
                                             false, true);
-  }
-
-  void addAsyncData(u32 value, bool start = false) {  // (irq only)
-    if (start)
-      nextAsyncCommandDataSize = 0;
-    nextAsyncCommandData[nextAsyncCommandDataSize] = value;
-    nextAsyncCommandDataSize++;
   }
 
   bool isAsyncCommandActive() {
@@ -1483,29 +1707,28 @@ class LinkWireless {
   }
 
   void resetState() {
+    LINK_BARRIER;
     linkRawWireless._resetState();
 
-#ifdef LINK_WIRELESS_TWO_PLAYERS_ONLY
-    QUICK_SEND = 0;
-    QUICK_RECEIVE = 0;
-#endif
     sessionState.recvFlag = false;
     sessionState.recvTimeout = 0;
     sessionState.signalLevelCalled = false;
-    sessionState.pingSent = false;
-#ifdef LINK_WIRELESS_USE_SEND_RECEIVE_LATCH
     sessionState.sendReceiveLatch = false;
     sessionState.shouldWaitForServer = false;
-#endif
-    sessionState.didReceiveLastPacketIdFromServer = false;
+    sessionState.didReceiveFirstPacketFromServer = false;
+    sessionState.inflightCount = 0;
+    sessionState.forwardedCount = 0;
     sessionState.lastPacketId = 0;
     sessionState.lastPacketIdFromServer = 0;
-    sessionState.lastConfirmationFromServer = 0;
+    sessionState.lastACKFromServer = 0;
+    sessionState.localHeartbeat = -1;
+    sessionState.isResetTimeoutPending = false;
     for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++) {
       sessionState.msgTimeouts[i] = 0;
       sessionState.msgFlags[i] = false;
       sessionState.lastPacketIdFromClients[i] = 0;
-      sessionState.lastConfirmationFromClients[i] = 0;
+      sessionState.lastACKFromClients[i] = NO_ACK_RECEIVED_YET;
+      sessionState.lastHeartbeatFromClients[i] = -1;
     }
     nextAsyncCommandDataSize = 0;
 
@@ -1519,6 +1742,7 @@ class LinkWireless {
     sessionState.signalLevel = SignalLevel{};
 
     isSendingSyncCommand = false;
+    LINK_BARRIER;
   }
 
   void stop() {

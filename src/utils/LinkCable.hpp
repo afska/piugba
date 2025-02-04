@@ -67,7 +67,7 @@
 #define LINK_CABLE_QUEUE_SIZE 15
 #endif
 
-static volatile char LINK_CABLE_VERSION[] = "LinkCable/v8.0.0";
+LINK_VERSION_TAG LINK_CABLE_VERSION = "vLinkCable/v8.0.0";
 
 #define LINK_CABLE_MAX_PLAYERS LINK_RAW_CABLE_MAX_PLAYERS
 #define LINK_CABLE_DEFAULT_TIMEOUT 3
@@ -84,13 +84,11 @@ class LinkCable {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
-  using vu32 = Link::vu32;
-  using vs32 = Link::vs32;
   using vu8 = Link::vu8;
   using U16Queue = Link::Queue<u16, LINK_CABLE_QUEUE_SIZE>;
 
   static constexpr auto BASE_FREQUENCY = Link::_TM_FREQ_1024;
-  static constexpr int REMOTE_TIMEOUT_OFFLINE = -1;
+  static constexpr int MSG_TIMEOUT_OFFLINE = -1;
 
  public:
   using BaudRate = LinkRawCable::BaudRate;
@@ -111,10 +109,10 @@ class LinkCable {
                      u32 timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                      u16 interval = LINK_CABLE_DEFAULT_INTERVAL,
                      u8 sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID) {
-    this->config.baudRate = baudRate;
-    this->config.timeout = timeout;
-    this->config.interval = interval;
-    this->config.sendTimerId = sendTimerId;
+    config.baudRate = baudRate;
+    config.timeout = timeout;
+    config.interval = interval;
+    config.sendTimerId = sendTimerId;
   }
 
   /**
@@ -126,6 +124,9 @@ class LinkCable {
    * @brief Activates the library.
    */
   void activate() {
+    LINK_READ_TAG(LINK_CABLE_VERSION);
+    static_assert(LINK_CABLE_QUEUE_SIZE >= 1);
+
     LINK_BARRIER;
     isEnabled = false;
     LINK_BARRIER;
@@ -159,7 +160,7 @@ class LinkCable {
   }
 
   /**
-   * @brief Returns the number of connected players (`0~4`).
+   * @brief Returns the number of connected players (`1~4`).
    */
   [[nodiscard]] u8 playerCount() { return state.playerCount; }
 
@@ -170,7 +171,8 @@ class LinkCable {
 
   /**
    * @brief Collects available messages from interrupts for later processing
-   * with `read(...)`. Call this method whenever you need to fetch new data.
+   * with `read(...)`. Call this method whenever you need to fetch new data, and
+   * always process all messages before calling it again.
    */
   void sync() {
     if (!isEnabled)
@@ -256,7 +258,7 @@ class LinkCable {
    */
   bool send(u16 data) {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA ||
-        _state.outgoingMessages.isFull())
+        !canSend())
       return false;
 
     _state.outgoingMessages.syncPush(data);
@@ -264,14 +266,19 @@ class LinkCable {
   }
 
   /**
-   * @brief Returns whether the internal receive queue lost messages at some
-   * point due to being full. This can happen if your queue size is too low, if
-   * you receive too much data without calling `sync(...)` enough times, or if
-   * you don't `read(...)` enough messages before the next `sync()` call. After
-   * this call, the overflow flag is cleared if `clear` is `true` (default
-   * behavior).
+   * @brief Returns if a `send(...)` call would fail due to the queue being
+   * full.
    */
-  [[nodiscard]] bool didQueueOverflow(bool clear = true) {
+  bool canSend() { return !_state.outgoingMessages.isFull(); }
+
+  /**
+   * @brief Returns whether the internal queue lost messages at some point due
+   * to being full. This can happen if your queue size is too low, if you
+   * receive too much data without calling `sync(...)` enough times, or if you
+   * don't `read(...)` enough messages before the next `sync()` call. After this
+   * call, the overflow flag is cleared if `clear` is `true` (default behavior).
+   */
+  bool didQueueOverflow(bool clear = true) {
     bool overflow = false;
 
     for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++) {
@@ -284,6 +291,19 @@ class LinkCable {
     }
 
     return overflow;
+  }
+
+  /**
+   * @brief Resets other players' timeout count to `0`.
+   * \warning Call this if you changed `config.timeout`.
+   */
+  void resetTimeout() {
+    if (!isEnabled)
+      return;
+
+    LINK_BARRIER;
+    _state.isResetTimeoutPending = true;
+    LINK_BARRIER;
   }
 
   /**
@@ -305,6 +325,14 @@ class LinkCable {
   void _onVBlank() {
     if (!isEnabled)
       return;
+
+    // [!]
+    // if (_state.isResetTimeoutPending) {
+    //   _state.IRQTimeout = 0;
+    //   for (u32 i = 0; i < LINK_CABLE_MAX_PLAYERS; i++)
+    //     _state.msgTimeouts[i] = 0;
+    //   _state.isResetTimeoutPending = false;
+    // }
 
     if (!_state.IRQFlag)
       _state.IRQTimeout++;
@@ -340,7 +368,10 @@ class LinkCable {
     }
 
     auto response = LinkRawCable::getData();
+
+    LINK_BARRIER;
     state.currentPlayerId = response.playerId;
+    LINK_BARRIER;
 
     _state.IRQFlag = true;
     _state.IRQTimeout = 0;
@@ -364,7 +395,9 @@ class LinkCable {
       }
     }
 
+    LINK_BARRIER;
     state.playerCount = newPlayerCount;
+    LINK_BARRIER;
 
     LinkRawCable::setData(LINK_CABLE_NO_DATA);
 
@@ -397,7 +430,7 @@ class LinkCable {
 
   struct Config {
     BaudRate baudRate;
-    u32 timeout;   // can be changed in realtime
+    u32 timeout;   // can be changed in realtime, but call `resetTimeout()`
     u16 interval;  // can be changed in realtime, but call `resetTimer()`
     u8 sendTimerId;
   };
@@ -408,21 +441,24 @@ class LinkCable {
    */
   Config config;
 
+#ifndef LINK_CABLE_DEBUG_MODE
  private:
+#endif
   struct ExternalState {
     U16Queue syncedIncomingMessages[LINK_CABLE_MAX_PLAYERS];
-    vu8 playerCount;
-    vu8 currentPlayerId;
+    vu8 playerCount = 1;
+    vu8 currentPlayerId = 0;
   };
 
   struct InternalState {
     U16Queue outgoingMessages;
     U16Queue readyToSyncMessages[LINK_CABLE_MAX_PLAYERS];
     U16Queue newMessages[LINK_CABLE_MAX_PLAYERS];
-    u32 IRQTimeout;
+    u32 IRQTimeout = 0;
     int msgTimeouts[LINK_CABLE_MAX_PLAYERS];
     bool msgFlags[LINK_CABLE_MAX_PLAYERS];
-    bool IRQFlag;
+    bool IRQFlag = false;
+    volatile bool isResetTimeoutPending = false;
   };
 
   LinkRawCable linkRawCable;
@@ -456,7 +492,8 @@ class LinkCable {
   }
 
   void resetState() {
-    state.playerCount = 0;
+    LINK_BARRIER;
+    state.playerCount = 1;
     state.currentPlayerId = 0;
 
     _state.outgoingMessages.syncClear();
@@ -473,6 +510,8 @@ class LinkCable {
     }
     _state.IRQFlag = false;
     _state.IRQTimeout = 0;
+    _state.isResetTimeoutPending = false;
+    LINK_BARRIER;
   }
 
   void stop() {
@@ -520,7 +559,7 @@ class LinkCable {
   }
 
   bool isOnline(u8 playerId) {
-    return _state.msgTimeouts[playerId] != REMOTE_TIMEOUT_OFFLINE;
+    return _state.msgTimeouts[playerId] != MSG_TIMEOUT_OFFLINE;
   }
 
   void setOnline(u8 playerId) {
@@ -529,7 +568,7 @@ class LinkCable {
   }
 
   void setOffline(u8 playerId) {
-    _state.msgTimeouts[playerId] = REMOTE_TIMEOUT_OFFLINE;
+    _state.msgTimeouts[playerId] = MSG_TIMEOUT_OFFLINE;
     _state.msgFlags[playerId] = false;
   }
 };

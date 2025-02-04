@@ -2,7 +2,7 @@
 
 // [!]
 // This library has some tweaks (marked with "[!]") for piuGBA.
-// You should check out the gba-link-connection's original code instead of this
+// You should check out the gba-link-connection's original code instead of this.
 
 // [!]
 #pragma GCC push_options
@@ -14,7 +14,7 @@ LINK_CODE_IWRAM void LinkWireless::_onSerial() {
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   interrupt = true;
   LINK_BARRIER;
-  Link::_REG_IME = 1;
+  // (nested interrupts are enabled by LinkRawWireless::_onSerial(...))
 #endif
 
   __onSerial();
@@ -23,7 +23,7 @@ LINK_CODE_IWRAM void LinkWireless::_onSerial() {
   irqEnd();
 #endif
 }
-LINK_CODE_IWRAM void LinkWireless::_onTimer() {
+void LinkWireless::_onTimer() {
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   if (interrupt)
     return;

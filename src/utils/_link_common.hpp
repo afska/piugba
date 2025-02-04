@@ -22,6 +22,11 @@
   __attribute__((section(".iwram"), target("arm"), noinline))
 #define LINK_INLINE inline __attribute__((always_inline))
 #define LINK_NOINLINE __attribute__((noinline))
+#define LINK_PACKED __attribute__((packed))
+#define LINK_WORDALIGNED __attribute__((aligned(4)))
+#define LINK_UNUSED __attribute__((unused))
+#define LINK_VERSION_TAG inline const char*
+#define LINK_READ_TAG(TAG) (void)*((volatile const char*)TAG)
 
 /**
  * @brief This namespace contains shared code between all libraries.
@@ -45,16 +50,20 @@ using vs16 = volatile signed short;
 using vu8 = volatile unsigned char;
 using vs8 = volatile signed char;
 
+// Globals
+
+inline u32 randomSeed = 123;
+
 // Structs
 
 struct _TMR_REC {
   union {
     u16 start;
     u16 count;
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   u16 cnt;
-} __attribute__((aligned(4)));
+} LINK_WORDALIGNED;
 
 typedef struct {
   u32 reserved1[5];
@@ -99,7 +108,7 @@ inline vu16& _REG_KEYS = *reinterpret_cast<vu16*>(_REG_BASE + 0x0130);
 inline vu16& _REG_TM1CNT_L = *reinterpret_cast<vu16*>(_REG_BASE + 0x0104);
 inline vu16& _REG_TM1CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x0106);
 inline vu16& _REG_TM2CNT_L = *reinterpret_cast<vu16*>(_REG_BASE + 0x0108);
-inline vu16& _REG_TM2CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x010a);
+inline vu16& _REG_TM2CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x010A);
 inline vu16& _REG_IME = *reinterpret_cast<vu16*>(_REG_BASE + 0x0208);
 
 inline volatile _TMR_REC* const _REG_TM =
@@ -145,42 +154,53 @@ static LINK_INLINE auto _MultiBoot(const _MultiBootParam* param,
   return r0.res;
 }
 
+// Random
+
+static inline int _qran() {
+  randomSeed = 1664525 * randomSeed + 1013904223;
+  return (randomSeed >> 16) & 0x7FFF;
+}
+
+static inline int _qran_range(int min, int max) {
+  return (_qran() * (max - min) >> 15) + min;
+}
+
 // Helpers
 
-static inline u32 buildU32(u16 msB, u16 lsB) {
+static LINK_INLINE u32 buildU32(u16 msB, u16 lsB) {
   return (msB << 16) | lsB;
 }
 
-static inline u32 buildU32(u8 msB, u8 byte2, u8 byte3, u8 lsB) {
+static LINK_INLINE u32 buildU32(u8 msB, u8 byte2, u8 byte3, u8 lsB) {
   return ((msB & 0xFF) << 24) | ((byte2 & 0xFF) << 16) | ((byte3 & 0xFF) << 8) |
          (lsB & 0xFF);
 }
 
-static inline u16 buildU16(u8 msB, u8 lsB) {
+static LINK_INLINE u16 buildU16(u8 msB, u8 lsB) {
   return (msB << 8) | lsB;
 }
 
-static inline u16 msB32(u32 value) {
+static LINK_INLINE u16 msB32(u32 value) {
   return value >> 16;
 }
 
-static inline u16 lsB32(u32 value) {
-  return value & 0xffff;
+static LINK_INLINE u16 lsB32(u32 value) {
+  return value & 0xFFFF;
 }
 
-static inline u8 msB16(u16 value) {
+static LINK_INLINE u8 msB16(u16 value) {
   return value >> 8;
 }
 
-static inline u8 lsB16(u16 value) {
-  return value & 0xff;
+static LINK_INLINE u8 lsB16(u16 value) {
+  return value & 0xFF;
 }
 
-static inline int _max(int a, int b) {
+static LINK_INLINE int _max(int a, int b) {
   return (a > b) ? (a) : (b);
 }
 
-static inline int _min(int a, int b) {
+static LINK_INLINE int _min(int a, int b) {
   return (a < b) ? (a) : (b);
 }
 
@@ -224,9 +244,33 @@ static inline void intToStr5(char* buf, int num) {
   buf[j] = '\0';
 }
 
+// Interfaces
+
+class AsyncMultiboot {
+ public:
+  enum class Result {
+    NONE = -1,
+    SUCCESS = 0,
+    INVALID_DATA = 1,
+    INIT_FAILED = 2,
+    FAILURE = 3
+  };
+
+  virtual bool sendRom(const u8* rom, u32 romSize) = 0;
+  virtual bool reset() = 0;
+  [[nodiscard]] virtual bool isSending() = 0;
+  virtual Result getResult(bool clear = true) = 0;
+  [[nodiscard]] virtual u8 playerCount() = 0;
+  [[nodiscard]] virtual u8 getPercentage() = 0;
+  [[nodiscard]] virtual bool isReady() = 0;
+  virtual void markReady() = 0;
+
+  virtual ~AsyncMultiboot() = default;
+};
+
 // Queue
 
-template <typename T, u32 Size, bool Overwrite = true>
+template <typename T, u32 Size>
 class Queue {
  public:
   void push(T item) {
@@ -264,11 +308,11 @@ class Queue {
   }
 
   template <typename F>
-  void forEach(F action) {
+  LINK_INLINE void forEach(F action) {
     vs32 currentFront = front;
 
     for (u32 i = 0; i < count; i++) {
-      if (!action(arr[currentFront]))
+      if (!action(&arr[currentFront]))
         return;
       currentFront = (currentFront + 1) % Size;
     }

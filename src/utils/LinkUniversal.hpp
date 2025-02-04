@@ -66,14 +66,14 @@
 
 #ifndef LINK_UNIVERSAL_GAME_ID_FILTER
 /**
- * @brief Game ID Filter (`0x0000` ~ `0x7fff`). Default = 0 (no filter)
+ * @brief Game ID Filter (`0x0000` ~ `0x7FFF`). Default = 0 (no filter)
  * This restricts wireless connections to rooms with a specific game ID.
- * When disabled, it connects to any game ID and uses `0x7fff` when serving.
+ * When disabled, it connects to any game ID and uses `0x7FFF` when serving.
  */
 #define LINK_UNIVERSAL_GAME_ID_FILTER 0
 #endif
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v8.0.0";
+LINK_VERSION_TAG LINK_UNIVERSAL_VERSION = "vLinkUniversal/v8.0.0";
 
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
 #define LINK_UNIVERSAL_NO_DATA LINK_CABLE_NO_DATA
@@ -98,9 +98,9 @@ class LinkUniversal {
   static constexpr int SERVE_WAIT_FRAMES_RANDOM = 30;
 
  public:
-  enum State { INITIALIZING, WAITING, CONNECTED };
-  enum Mode { LINK_CABLE, LINK_WIRELESS };
-  enum Protocol {
+  enum class State { INITIALIZING = 0, WAITING = 1, CONNECTED = 2 };
+  enum class Mode { LINK_CABLE, LINK_WIRELESS };
+  enum class Protocol {
     AUTODETECT,
     CABLE,
     WIRELESS_AUTO,
@@ -117,6 +117,7 @@ class LinkUniversal {
   };
 
   struct WirelessOptions {
+    bool forwarding;
     bool retransmission;
     u32 maxPlayers;
     u32 timeout;
@@ -133,10 +134,8 @@ class LinkUniversal {
    * @param cableOptions All the LinkCable constructor parameters in one struct.
    * @param wirelessOptions All the LinkWireless constructor parameters in one
    * struct.
-   * @param randomSeed Random seed used for waits to prevent livelocks. If you
-   * use _libtonc_, pass `__qran_seed`.
    */
-  explicit LinkUniversal(Protocol protocol = AUTODETECT,
+  explicit LinkUniversal(Protocol protocol = Protocol::AUTODETECT,
                          const char* gameName = "",
                          CableOptions cableOptions =
                              CableOptions{LinkCable::BaudRate::BAUD_RATE_1,
@@ -145,25 +144,23 @@ class LinkUniversal {
                                           LINK_CABLE_DEFAULT_SEND_TIMER_ID},
                          WirelessOptions wirelessOptions =
                              WirelessOptions{
-                                 true, LINK_UNIVERSAL_MAX_PLAYERS,
+                                 true, true, LINK_UNIVERSAL_MAX_PLAYERS,
                                  LINK_WIRELESS_DEFAULT_TIMEOUT,
                                  LINK_WIRELESS_DEFAULT_INTERVAL,
-                                 LINK_WIRELESS_DEFAULT_SEND_TIMER_ID},
-                         int randomSeed = 123)
+                                 LINK_WIRELESS_DEFAULT_SEND_TIMER_ID})
       : linkCable(cableOptions.baudRate,
                   cableOptions.timeout,
                   cableOptions.interval,
                   cableOptions.sendTimerId),
         linkWireless(
+            wirelessOptions.forwarding,
             wirelessOptions.retransmission,
-            true,
             Link::_min(wirelessOptions.maxPlayers, LINK_UNIVERSAL_MAX_PLAYERS),
             wirelessOptions.timeout,
             wirelessOptions.interval,
             wirelessOptions.sendTimerId) {
-    this->config.protocol = protocol;
-    this->config.gameName = gameName;
-    this->randomSeed = randomSeed;
+    config.protocol = protocol;
+    config.gameName = gameName;
   }
 
   /**
@@ -175,6 +172,8 @@ class LinkUniversal {
    * @brief Activates the library.
    */
   void activate() {
+    LINK_READ_TAG(LINK_UNIVERSAL_VERSION);
+
     reset();
     isEnabled = true;
   }
@@ -197,66 +196,68 @@ class LinkUniversal {
   /**
    * @brief Returns `true` if there are at least 2 connected players.
    */
-  [[nodiscard]] bool isConnected() { return state == CONNECTED; }
+  [[nodiscard]] bool isConnected() { return state == State::CONNECTED; }
 
   // [!]
   [[nodiscard]] bool isConnectedAny() {
-    return mode == LINK_CABLE ? linkCable.isConnected()
-                              : linkWireless.isConnected();
+    return mode == Mode::LINK_CABLE ? linkCable.isConnected()
+                                    : linkWireless.isConnected();
   }
 
   /**
-   * @brief Returns the number of connected players (`0~5`).
+   * @brief Returns the number of connected players (`1~5`).
    */
   [[nodiscard]] u8 playerCount() {
-    return mode == LINK_CABLE ? linkCable.playerCount()
-                              : linkWireless.playerCount();
+    return Link::_min(mode == Mode::LINK_CABLE ? linkCable.playerCount()
+                                               : linkWireless.playerCount(),
+                      LINK_UNIVERSAL_MAX_PLAYERS);
   }
 
   /**
    * @brief Returns the current player ID (`0~4`).
    */
   [[nodiscard]] u8 currentPlayerId() {
-    return mode == LINK_CABLE ? linkCable.currentPlayerId()
-                              : linkWireless.currentPlayerId();
+    return mode == Mode::LINK_CABLE ? linkCable.currentPlayerId()
+                                    : linkWireless.currentPlayerId();
   }
 
   /**
    * @brief Collects available messages from interrupts for later processing
    * with `read(...)`. Call this method whenever you need to fetch new data, and
    * at least once per frame, as it also manages connection state, auto-pairing,
-   * and protocol switching.
+   * and protocol switching. Always process all messages before calling it
+   * again.
    */
   void sync() {
     if (!isEnabled)
       return;
 
     u16 keys = ~Link::_REG_KEYS & Link::_KEY_ANY;
-    randomSeed += keys;
-    randomSeed += Link::_REG_RCNT;
-    randomSeed += Link::_REG_SIOCNT;
+    Link::randomSeed += keys;
+    Link::randomSeed += Link::_REG_RCNT;
+    Link::randomSeed += Link::_REG_SIOCNT;
 
-    if (mode == LINK_CABLE)
+    if (mode == Mode::LINK_CABLE)
       linkCable.sync();
 
     switch (state) {
-      case INITIALIZING: {
+      case State::INITIALIZING: {
         waitCount++;
         if (waitCount > INIT_WAIT_FRAMES)
           start();
         break;
       };
-      case WAITING: {
-        if (mode == LINK_CABLE) {
+      case State::WAITING: {
+        if (mode == Mode::LINK_CABLE) {
           // Cable, waiting...
           if (isConnectedCable()) {
-            state = CONNECTED;
+            state = State::CONNECTED;
             goto connected;
           }
         } else {
           // Wireless, waiting...
           if (isConnectedWireless()) {
-            state = CONNECTED;
+            state = State::CONNECTED;
             goto connected;
           } else {
             if (!autoDiscoverWirelessConnections())
@@ -272,9 +273,9 @@ class LinkUniversal {
 
         break;
       }
-      case CONNECTED: {
+      case State::CONNECTED: {
       connected:
-        if (mode == LINK_CABLE) {
+        if (mode == Mode::LINK_CABLE) {
           // Cable, connected...
           if (!isConnectedCable()) {
             toggleMode();
@@ -319,8 +320,8 @@ class LinkUniversal {
   bool waitFor(u8 playerId, F cancel) {
     sync();
 
-    u8 timerId = mode == LINK_CABLE ? linkCable.config.sendTimerId
-                                    : linkWireless.config.sendTimerId;
+    u8 timerId = mode == Mode::LINK_CABLE ? linkCable.config.sendTimerId
+                                          : linkWireless.config.sendTimerId;
 
     while (isConnected() && !canRead(playerId) && !cancel()) {
       Link::_IntrWait(1, Link::_IRQ_SERIAL | Link::_TIMER_IRQ_IDS[timerId]);
@@ -359,6 +360,15 @@ class LinkUniversal {
   }
 
   /**
+   * @brief Returns if a `send(...)` call would fail due to the queue being
+   * full.
+   */
+  bool canSend() {
+    return mode == Mode::LINK_CABLE ? linkCable.canSend()
+                                    : linkWireless.canSend();
+  }
+
+  /**
    * @brief Sends `data` to all connected players.
    * @param data The value to be sent.
    * \warning If `data` is invalid or the send queue is full, a `false` will be
@@ -368,20 +378,21 @@ class LinkUniversal {
     if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
       return false;
 
-    return mode == LINK_CABLE ? linkCable.send(data) : linkWireless.send(data);
+    return mode == Mode::LINK_CABLE ? linkCable.send(data)
+                                    : linkWireless.send(data);
   }
 
   /**
-   * @brief Returns whether the internal receive queue lost messages at some
-   * point due to being full. This can happen if your queue size is too low, if
-   * you receive too much data without calling `sync(...)` enough times, or if
-   * you don't `read(...)` enough messages before the next `sync()` call. After
-   * this call, the overflow flag is cleared if `clear` is `true` (default
-   * behavior).
+   * @brief Returns whether the internal queue lost messages at some point due
+   * to being full. This can happen if your queue size is too low, if you
+   * receive too much data without calling `sync(...)` enough times, or if you
+   * don't `read(...)` enough messages before the next `sync()` call. After this
+   * call, the overflow flag is cleared if `clear` is `true` (default behavior).
    */
-  [[nodiscard]] bool didQueueOverflow(bool clear = true) {
-    bool overflow = mode == LINK_CABLE ? linkCable.didQueueOverflow()
-                                       : linkWireless.didQueueOverflow();
+  bool didQueueOverflow(bool clear = true) {
+    bool overflow = mode == Mode::LINK_CABLE
+                        ? linkCable.didQueueOverflow(clear)
+                        : linkWireless.didQueueOverflow(clear);
 
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
       overflow = overflow || incomingMessages[i].overflow;
@@ -390,6 +401,20 @@ class LinkUniversal {
     }
 
     return overflow;
+  }
+
+  /**
+   * @brief Resets other players' timeout count to `0`.
+   * \warning Call this if you changed `config.timeout`.
+   */
+  void resetTimeout() {
+    if (!isEnabled)
+      return;
+
+    if (linkCable.isActive())
+      linkCable.resetTimeout();
+    if (linkWireless.isActive())
+      linkWireless.resetTimeout();
   }
 
   /**
@@ -464,7 +489,7 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onVBlank() {
-    if (mode == LINK_CABLE)
+    if (mode == Mode::LINK_CABLE)
       linkCable._onVBlank();
     else
       linkWireless._onVBlank();
@@ -475,7 +500,7 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onSerial() {
-    if (mode == LINK_CABLE)
+    if (mode == Mode::LINK_CABLE)
       linkCable._onSerial();
     else
       linkWireless._onSerial();
@@ -486,7 +511,7 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onTimer() {
-    if (mode == LINK_CABLE)
+    if (mode == Mode::LINK_CABLE)
       linkCable._onTimer();
     else
       linkWireless._onTimer();
@@ -502,13 +527,12 @@ class LinkUniversal {
   LinkWireless linkWireless;
   U16Queue incomingMessages[LINK_UNIVERSAL_MAX_PLAYERS];
   Config config;
-  State state = INITIALIZING;
-  Mode mode = LINK_CABLE;
+  State state = State::INITIALIZING;
+  Mode mode = Mode::LINK_CABLE;
   u32 waitCount = 0;
   u32 switchWait = 0;
   u32 subWaitCount = 0;
   u32 serveWait = 0;
-  int randomSeed = 0;
   volatile bool isEnabled = false;
 
   void receiveCableMessages() {
@@ -525,12 +549,11 @@ class LinkUniversal {
 
   void receiveWirelessMessages() {
     LinkWireless::Message messages[LINK_WIRELESS_QUEUE_SIZE];
-    linkWireless.receive(messages);
+    u32 receivedCount;
+    linkWireless.receive(messages, receivedCount);
 
-    for (u32 i = 0; i < LINK_WIRELESS_QUEUE_SIZE; i++) {
+    for (u32 i = 0; i < receivedCount; i++) {
       auto message = messages[i];
-      if (message.packetId == LINK_WIRELESS_END)
-        break;
 
       if (message.playerId < LINK_UNIVERSAL_MAX_PLAYERS)
         incomingMessages[message.playerId].push(message.data);
@@ -583,15 +606,14 @@ class LinkUniversal {
 
   bool tryConnectOrServeWirelessSession() {
     LinkWireless::Server servers[LINK_WIRELESS_MAX_SERVERS];
-    if (!linkWireless.getServersAsyncEnd(servers))
+    u32 serverCount;
+    if (!linkWireless.getServersAsyncEnd(servers, serverCount))
       return false;
 
     u32 maxRandomNumber = 0;
     u32 serverIndex = 0;
-    for (u32 i = 0; i < LINK_WIRELESS_MAX_SERVERS; i++) {
+    for (u32 i = 0; i < serverCount; i++) {
       auto server = servers[i];
-      if (server.id == LINK_WIRELESS_END)
-        break;
 
       if (!server.isFull() &&
           Link::areStrEqual(server.gameName, config.gameName) &&
@@ -605,16 +627,17 @@ class LinkUniversal {
       }
     }
 
-    if (maxRandomNumber > 0 && config.protocol != WIRELESS_SERVER) {
+    if (maxRandomNumber > 0 && config.protocol != Protocol::WIRELESS_SERVER) {
       if (!linkWireless.connect(servers[serverIndex].id))
         return false;
     } else {
-      if (config.protocol == WIRELESS_CLIENT)
+      if (config.protocol == Protocol::WIRELESS_CLIENT)
         return false;
 
       subWaitCount = 0;
-      serveWait = SERVE_WAIT_FRAMES + _qran_range(1, SERVE_WAIT_FRAMES_RANDOM);
-      u32 randomNumber = _qran_range(1, MAX_ROOM_NUMBER);
+      serveWait =
+          SERVE_WAIT_FRAMES + Link::_qran_range(1, SERVE_WAIT_FRAMES_RANDOM);
+      u32 randomNumber = Link::_qran_range(1, MAX_ROOM_NUMBER);
       char randomNumberStr[6];
       Link::intToStr5(randomNumberStr, randomNumber);
       if (!linkWireless.serve(config.gameName, randomNumberStr,
@@ -632,16 +655,16 @@ class LinkUniversal {
 
   void reset() {
     switch (config.protocol) {
-      case AUTODETECT:
-      case CABLE: {
-        setMode(LINK_CABLE);
+      case Protocol::AUTODETECT:
+      case Protocol::CABLE: {
+        setMode(Mode::LINK_CABLE);
         break;
       }
-      case WIRELESS_AUTO:
-      case WIRELESS_SERVER:
-      case WIRELESS_CLIENT:
-      case WIRELESS_RESTORE_EXISTING: {
-        setMode(LINK_WIRELESS);
+      case Protocol::WIRELESS_AUTO:
+      case Protocol::WIRELESS_SERVER:
+      case Protocol::WIRELESS_CLIENT:
+      case Protocol::WIRELESS_RESTORE_EXISTING: {
+        setMode(Mode::LINK_WIRELESS);
         break;
       }
       default: {
@@ -650,27 +673,28 @@ class LinkUniversal {
   }
 
   void stop() {
-    if (mode == LINK_CABLE)
+    if (mode == Mode::LINK_CABLE)
       linkCable.deactivate();
-    else if (config.protocol != WIRELESS_RESTORE_EXISTING)
+    else if (config.protocol != Protocol::WIRELESS_RESTORE_EXISTING)
       linkWireless.deactivate(false);
   }
 
   void toggleMode() {
     switch (config.protocol) {
-      case AUTODETECT: {
-        setMode(mode == LINK_CABLE ? LINK_WIRELESS : LINK_CABLE);
+      case Protocol::AUTODETECT: {
+        setMode(mode == Mode::LINK_CABLE ? Mode::LINK_WIRELESS
+                                         : Mode::LINK_CABLE);
         break;
       }
-      case CABLE: {
-        setMode(LINK_CABLE);
+      case Protocol::CABLE: {
+        setMode(Mode::LINK_CABLE);
         break;
       }
-      case WIRELESS_AUTO:
-      case WIRELESS_SERVER:
-      case WIRELESS_CLIENT:
-      case WIRELESS_RESTORE_EXISTING: {
-        setMode(LINK_WIRELESS);
+      case Protocol::WIRELESS_AUTO:
+      case Protocol::WIRELESS_SERVER:
+      case Protocol::WIRELESS_CLIENT:
+      case Protocol::WIRELESS_RESTORE_EXISTING: {
+        setMode(Mode::LINK_WIRELESS);
         break;
       }
       default: {
@@ -680,16 +704,16 @@ class LinkUniversal {
 
   void setMode(Mode mode) {
     stop();
-    this->state = INITIALIZING;
+    this->state = State::INITIALIZING;
     this->mode = mode;
     resetState();
   }
 
   void start() {
-    if (mode == LINK_CABLE) {
+    if (mode == Mode::LINK_CABLE) {
       linkCable.activate();
     } else {
-      bool success = config.protocol == WIRELESS_RESTORE_EXISTING
+      bool success = config.protocol == Protocol::WIRELESS_RESTORE_EXISTING
                          ? linkWireless.restoreExistingConnection()
                          : linkWireless.activate();
       if (!success) {
@@ -698,19 +722,22 @@ class LinkUniversal {
       }
     }
 
-    state = WAITING;
+    state = State::WAITING;
     resetState();
   }
 
   void resetState() {
+    LINK_BARRIER;
     waitCount = 0;
-    switchWait = SWITCH_WAIT_FRAMES + _qran_range(1, SWITCH_WAIT_FRAMES_RANDOM);
+    switchWait =
+        SWITCH_WAIT_FRAMES + Link::_qran_range(1, SWITCH_WAIT_FRAMES_RANDOM);
     subWaitCount = 0;
     serveWait = 0;
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
       incomingMessages[i].clear();
       incomingMessages[i].overflow = false;
     }
+    LINK_BARRIER;
   }
 
   u32 safeStoi(const char* str) {
@@ -726,15 +753,6 @@ class LinkUniversal {
 
     return num;
   }
-
-  int _qran() {
-    randomSeed = 1664525 * randomSeed + 1013904223;
-    return (randomSeed >> 16) & 0x7FFF;
-  }
-
-  int _qran_range(int min, int max) {
-    return (_qran() * (max - min) >> 15) + min;
-  }
 };
 
 extern LinkUniversal* linkUniversal;
@@ -746,7 +764,6 @@ inline void LINK_UNIVERSAL_ISR_VBLANK() {
   linkUniversal->_onVBlank();
 }
 
-// [!]
 // /**
 //  * @brief SERIAL interrupt handler.
 //  */

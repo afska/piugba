@@ -49,10 +49,10 @@
 
 #include "_link_common.hpp"
 
-static volatile char LINK_RAW_CABLE_VERSION[] = "LinkRawCable/v8.0.0";
+LINK_VERSION_TAG LINK_RAW_CABLE_VERSION = "vLinkRawCable/v8.0.0";
 
 #define LINK_RAW_CABLE_MAX_PLAYERS 4
-#define LINK_RAW_CABLE_DISCONNECTED 0xffff
+#define LINK_RAW_CABLE_DISCONNECTED 0xFFFF
 
 /**
  * @brief A low level handler for the Link Port (Multi-Play Mode).
@@ -74,7 +74,7 @@ class LinkRawCable {
   static constexpr int BIT_GENERAL_PURPOSE_HIGH = 15;
 
  public:
-  enum BaudRate {
+  enum class BaudRate {
     BAUD_RATE_0,  // 9600 bps
     BAUD_RATE_1,  // 38400 bps
     BAUD_RATE_2,  // 57600 bps
@@ -84,7 +84,7 @@ class LinkRawCable {
     u16 data[LINK_RAW_CABLE_MAX_PLAYERS];
     int playerId = -1;  // (-1 = unknown)
   };
-  enum AsyncState { IDLE, WAITING, READY };
+  enum class AsyncState { IDLE, WAITING, READY };
 
  private:
   static constexpr Response EMPTY_RESPONSE = {
@@ -104,8 +104,10 @@ class LinkRawCable {
    * Defaults to `LinkRawCable::BaudRate::BAUD_RATE_1` (38400 bps).
    */
   void activate(BaudRate baudRate = BaudRate::BAUD_RATE_1) {
+    LINK_READ_TAG(LINK_RAW_CABLE_VERSION);
+
     this->baudRate = baudRate;
-    this->asyncState = IDLE;
+    this->asyncState = AsyncState::IDLE;
     this->asyncData = EMPTY_RESPONSE;
 
     setMultiPlayMode();
@@ -120,7 +122,7 @@ class LinkRawCable {
     setGeneralPurposeMode();
 
     baudRate = BaudRate::BAUD_RATE_1;
-    asyncState = IDLE;
+    asyncState = AsyncState::IDLE;
     asyncData = EMPTY_RESPONSE;
   }
 
@@ -144,13 +146,13 @@ class LinkRawCable {
    */
   template <typename F>
   Response transfer(u16 data, F cancel, bool _async = false) {
-    if (asyncState != IDLE)
+    if (asyncState != AsyncState::IDLE)
       return EMPTY_RESPONSE;
 
     setData(data);
 
     if (_async) {
-      asyncState = WAITING;
+      asyncState = AsyncState::WAITING;
       setInterruptsOn();
     } else {
       setInterruptsOff();
@@ -194,11 +196,11 @@ class LinkRawCable {
    * the state back to `IDLE`. If not, returns an empty response.
    */
   [[nodiscard]] Response getAsyncData() {
-    if (asyncState != READY)
+    if (asyncState != AsyncState::READY)
       return EMPTY_RESPONSE;
 
     Response data = asyncData;
-    asyncState = IDLE;
+    asyncState = AsyncState::IDLE;
     return data;
   }
 
@@ -224,11 +226,11 @@ class LinkRawCable {
    * \warning This is internal API!
    */
   void _onSerial() {
-    if (!isEnabled || asyncState != WAITING)
+    if (!isEnabled || asyncState != AsyncState::WAITING)
       return;
 
     setInterruptsOff();
-    asyncState = READY;
+    asyncState = AsyncState::READY;
     asyncData = EMPTY_RESPONSE;
     if (isReady() && !hasError())
       asyncData = getData();
@@ -261,14 +263,14 @@ class LinkRawCable {
 
  private:
   BaudRate baudRate = BaudRate::BAUD_RATE_1;
-  volatile AsyncState asyncState = IDLE;
+  volatile AsyncState asyncState = AsyncState::IDLE;
   Response asyncData = EMPTY_RESPONSE;
   volatile bool isEnabled = false;
 
   void setMultiPlayMode() {
     Link::_REG_RCNT = Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_HIGH);
     Link::_REG_SIOCNT = 1 << BIT_MULTIPLAYER;
-    Link::_REG_SIOCNT |= baudRate;
+    Link::_REG_SIOCNT |= (int)baudRate;
     Link::_REG_SIOMLT_SEND = 0;
   }
 
