@@ -15,7 +15,7 @@ LINK_CODE_IWRAM void LINK_UNIVERSAL_ISR_SERIAL() {
     ps2Keyboard->_onSerial();
 }
 
-LINK_CODE_IWRAM void LINK_UNIVERSAL_ISR_TIMER() {
+void LINK_UNIVERSAL_ISR_TIMER() {
   linkUniversal->_onTimer();
 }
 
