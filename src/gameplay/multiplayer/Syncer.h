@@ -9,7 +9,7 @@
 #include "Protocol.h"
 #include "gameplay/debug/DebugTools.h"
 #include "gameplay/save/SaveFile.h"
-#include "utils/LinkUniversal.hpp"
+#include "utils/gba-link-connection/LinkUniversal.hpp"
 
 // Max invalid messages
 #define SYNC_TIMEOUT 50
