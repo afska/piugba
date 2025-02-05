@@ -6,9 +6,29 @@
 // You should check out the gba-link-connection's original code instead of this.
 
 // [!]
-// Example:
-// if (config.retransmission) => if (true /*config.retransmission // [!]*/)
-// config.maxPlayers => 2 /*config.maxPlayers // [!]*/
+// Patches:
+// isEnabled = true; =>
+//   isEnabled = true; wasActivated = true; // [!]
+// if (turnOff) =>
+//   if (turnOff && wasActivated) // [!]
+// volatile bool isEnabled = false; =>
+//   volatile bool isEnabled = false; volatile bool wasActivated = false; // [!]
+// if (config.retransmission) =>
+//   if (true /*config.retransmission // [!]*/)
+// config.maxPlayers =>
+//   2 /*config.maxPlayers // [!]*/
+// clearInflightMessagesIfNeeded(); =>
+//   ;  // [!]
+// forwardMessage(message); =>
+//   ; // [!]
+// transferHeader.ack2 = =>
+//   // transferHeader.ack2 = // [!]
+// transferHeader.ack3 = =>
+//   // transferHeader.ack3 = // [!]
+// transferHeader.ack4 = =>
+//   // transferHeader.ack4 = // [!]
+// // get msg player ID based on player bitmap =>
+//   /* disable manually */
 
 // --------------------------------------------------------------------------
 // A high level driver for the GBA Wireless Adapter.
@@ -123,6 +143,21 @@
 // #define LINK_WIRELESS_ENABLE_NESTED_IRQ
 #endif
 
+// --- LINK_WIRELESS_PUT_ISR_IN_IWRAM knobs ---
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL 1
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER 1
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL "-Ofast"
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL "-Ofast"
+#endif
+//---
+
 LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 
 #define LINK_WIRELESS_MAX_PLAYERS LINK_RAW_WIRELESS_MAX_PLAYERS
@@ -132,7 +167,7 @@ LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 #define LINK_WIRELESS_MAX_GAME_NAME_LENGTH 14
 #define LINK_WIRELESS_MAX_USER_NAME_LENGTH 8
 #define LINK_WIRELESS_DEFAULT_TIMEOUT 10
-#define LINK_WIRELESS_DEFAULT_INTERVAL 50
+#define LINK_WIRELESS_DEFAULT_INTERVAL 75
 #define LINK_WIRELESS_DEFAULT_SEND_TIMER_ID 3
 
 #define LINK_WIRELESS_RESET_IF_NEEDED                   \
@@ -142,40 +177,30 @@ LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
     if (!reset())                                       \
       return false;
 
-// --- LINK_WIRELESS_PUT_ISR_IN_IWRAM knobs ---
-#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL
-#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL 1
-#endif
-#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER
-#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER 0
-#endif
-#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL
-#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL "-Ofast"
-#endif
-#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL
-#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL "-Ofast"
-#endif
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #if LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL == 1
-// [!]
-#define LINK_WIRELESS_SERIAL_ISR(SEC) /*LINK_INLINE*/             \
-  __attribute__((section(".iwram_" SEC), target("arm"), noinline, \
-                 optimize(LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL)))
+#define LINK_WIRELESS_SERIAL_ISR LINK_INLINE
 #else
-#define LINK_WIRELESS_SERIAL_ISR(SEC)
+#define LINK_WIRELESS_SERIAL_ISR
 #endif
 #if LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER == 1
 #define LINK_WIRELESS_TIMER_ISR LINK_INLINE
 #else
 #define LINK_WIRELESS_TIMER_ISR
 #endif
+
+#define LINK_WIRELESS_ISR_FUNC(name, params, args, body) \
+  void name params;                                      \
+  LINK_INLINE void _##name params body
 #else
-// [!]
-#define LINK_WIRELESS_SERIAL_ISR(SEC) \
-  __attribute__((section(".iwram_" SEC), target("arm"), noinline))
+#define LINK_WIRELESS_SERIAL_ISR
 #define LINK_WIRELESS_TIMER_ISR
+#define LINK_WIRELESS_ISR_FUNC(name, params, args, body) \
+  void name params {                                     \
+    _##name args;                                        \
+  }                                                      \
+  LINK_INLINE void _##name params body
 #endif
-// ---
 
 /**
  * @brief A high level driver for the GBA Wireless Adapter.
@@ -262,7 +287,7 @@ class LinkWireless {
    * @param timeout Number of *frames* without receiving *any* data to reset the
    * connection.
    * @param interval Number of *1024-cycle ticks* (61.04μs) between transfers
-   * *(50 = 3.052ms)*. It's the interval of Timer #`sendTimerId`. Lower values
+   * *(75 = 4.578ms)*. It's the interval of Timer #`sendTimerId`. Lower values
    * will transfer faster but also consume more CPU.
    * @param sendTimerId `(0~3)` GBA Timer to use for sending.
    * \warning You can use `Link::perFrame(...)` to convert from *packets per
@@ -308,10 +333,7 @@ class LinkWireless {
     LINK_BARRIER;
 
     isEnabled = true;
-
-    // [!]
-    wasActivated = true;
-
+    wasActivated = true;  // [!]
     return success;
   }
 
@@ -331,12 +353,14 @@ class LinkWireless {
     startTimer();
 
     if (!linkRawWireless.restoreExistingConnection() ||
-        linkRawWireless.sessionState.playerCount > config.maxPlayers) {
+        linkRawWireless.sessionState.playerCount >
+            2 /*config.maxPlayers // [!]*/) {
       deactivate();
       return false;
     }
 
     isEnabled = true;
+    wasActivated = true;  // [!]
     return true;
   }
 
@@ -389,7 +413,7 @@ class LinkWireless {
       return badRequest(Error::BUSY_TRY_AGAIN);
 
     if (linkRawWireless.getState() != State::SERVING) {
-      if (!setup(config.maxPlayers))
+      if (!setup(2 /*config.maxPlayers // [!]*/))
         return abort(Error::COMMAND_FAILED);
     }
 
@@ -904,64 +928,44 @@ class LinkWireless {
 #endif
   }
 
-#if defined(LINK_WIRELESS_PUT_ISR_IN_IWRAM) || \
-    defined(LINK_WIRELESS_ENABLE_NESTED_IRQ)
-  void _onSerial();
-  void _onTimer();
-#else
-  void _onSerial() { __onSerial(); }
-  void _onTimer() { __onTimer(); }
-#endif
-
   /**
    * @brief This method is called by the SERIAL interrupt handler.
    * \warning This is internal API!
    */
-  LINK_INLINE void __onSerial() {
-    if (!isEnabled)
-      return;
-
-#ifdef LINK_WIRELESS_PROFILING_ENABLED
-    profileStart();
+  LINK_WIRELESS_ISR_FUNC(_onSerial, (), (), {
+#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
+    interrupt = true;
+    LINK_BARRIER;
+    // (nested interrupts are enabled by LinkRawWireless::_onSerial(...))
 #endif
 
-    int status = linkRawWireless._onSerial(false);
-    if (status <= -4) {
-      return (void)abort(Error::ACKNOWLEDGE_FAILED);
-    } else if (status > 0) {
-      auto result = linkRawWireless._getAsyncCommandResultRef();
-      processAsyncCommand(result);
-    }
+    ___onSerial();
 
-#ifdef LINK_WIRELESS_PROFILING_ENABLED
-    serialTime += profileStop();
-    serialIRQs++;
+#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
+    irqEnd();
 #endif
-  }
+  })
 
   /**
    * @brief This method is called by the TIMER interrupt handler.
    * \warning This is internal API!
    */
-  LINK_INLINE void __onTimer() {
-    if (!isEnabled)
+  LINK_WIRELESS_ISR_FUNC(_onTimer, (), (), {
+#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
+    if (interrupt)
       return;
 
-#ifdef LINK_WIRELESS_PROFILING_ENABLED
-    profileStart();
+    interrupt = true;
+    LINK_BARRIER;
+    Link::_REG_IME = 1;
 #endif
 
-    if (!isSessionActive())
-      return;
+    ___onTimer();
 
-    if (!isAsyncCommandActive())
-      checkConnectionsOrTransferData();
-
-#ifdef LINK_WIRELESS_PROFILING_ENABLED
-    timerTime += profileStop();
-    timerIRQs++;
+#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
+    irqEnd();
 #endif
-  }
+  })
 
   struct Config {
     bool forwarding;
@@ -1105,10 +1109,8 @@ class LinkWireless {
 
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   volatile bool interrupt = false, pendingVBlank = false;
-#endif
 
-#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
-  void irqEnd() {
+  LINK_INLINE void irqEnd() {
     Link::_REG_IME = 0;
     interrupt = false;
     LINK_BARRIER;
@@ -1118,6 +1120,48 @@ class LinkWireless {
     }
   }
 #endif
+
+  LINK_INLINE void ___onSerial() {
+    if (!isEnabled)
+      return;
+
+#ifdef LINK_WIRELESS_PROFILING_ENABLED
+    profileStart();
+#endif
+
+    int status = linkRawWireless._onSerial(false);
+    if (status <= -4) {
+      return (void)abort(Error::ACKNOWLEDGE_FAILED);
+    } else if (status > 0) {
+      auto result = linkRawWireless._getAsyncCommandResultRef();
+      processAsyncCommand(result);
+    }
+
+#ifdef LINK_WIRELESS_PROFILING_ENABLED
+    serialTime += profileStop();
+    serialIRQs++;
+#endif
+  }
+
+  LINK_INLINE void ___onTimer() {
+    if (!isEnabled)
+      return;
+
+#ifdef LINK_WIRELESS_PROFILING_ENABLED
+    profileStart();
+#endif
+
+    if (!isSessionActive())
+      return;
+
+    if (!isAsyncCommandActive())
+      checkConnectionsOrTransferData();
+
+#ifdef LINK_WIRELESS_PROFILING_ENABLED
+    timerTime += profileStop();
+    timerIRQs++;
+#endif
+  }
 
   LINK_INLINE void processAsyncCommand(
       const LinkRawWireless::CommandResult* commandResult) {  // (irq only)
@@ -1145,7 +1189,7 @@ class LinkWireless {
         if (players > linkRawWireless.sessionState.playerCount) {
           LINK_BARRIER;
           linkRawWireless.sessionState.playerCount =
-              Link::_min(players, config.maxPlayers);
+              Link::_min(players, 2 /*config.maxPlayers // [!]*/);
           LINK_BARRIER;
         }
 
@@ -1183,7 +1227,7 @@ class LinkWireless {
     }
   }
 
-  LINK_WIRELESS_TIMER_ISR void checkConnectionsOrTransferData() {  // (irq only)
+  void checkConnectionsOrTransferData() {  // (irq only)
     if (linkRawWireless.getState() == State::SERVING &&
         !sessionState.signalLevelCalled) {
       // SignalLevel (start)
@@ -1204,17 +1248,16 @@ class LinkWireless {
     }
   }
 
-  LINK_WIRELESS_TIMER_ISR void sendPendingData() {  // (irq only)
+  void sendPendingData() {  // (irq only)
     copyOutgoingState();
 
     setDataFromOutgoingMessages();
-    if (sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true))
-      ;  // clearInflightMessagesIfNeeded(); // [!]
+    sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true);  // [!]
   }
 
-  LINK_WIRELESS_TIMER_ISR void setDataFromOutgoingMessages() {  // (irq only)
-    addAsyncData(0, true);  // SendData header (filled later)
-    addAsyncData(0);        // Transfer header (filled later)
+  void setDataFromOutgoingMessages() {  // (irq only)
+    addAsyncData(0, true);              // SendData header (filled later)
+    addAsyncData(0);                    // Transfer header (filled later)
 
     bool isServer = linkRawWireless.getState() == State::SERVING;
     u32 maxPacketIds = isServer ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT;
@@ -1304,12 +1347,11 @@ class LinkWireless {
     nextAsyncCommandData[0] = linkRawWireless.getSendDataHeaderFor(bytes);
   }
 
-  LINK_WIRELESS_TIMER_ISR u32
-  buildTransferHeader(bool isServer,
-                      u32 firstPacketId,
-                      u32 firstMsg,
-                      u32 msgCount,
-                      bool highPart) {  // (irq only)
+  u32 buildTransferHeader(bool isServer,
+                          u32 firstPacketId,
+                          u32 firstMsg,
+                          u32 msgCount,
+                          bool highPart) {  // (irq only)
     TransferHeader transferHeader = {};
 
     // player count / client heartbeat
@@ -1338,9 +1380,9 @@ class LinkWireless {
 
     if (isServer) {
       // server use `ack2`, `ack3` and `ack4` for acknowledging P2, P3, P4
-      transferHeader.ack2 = sessionState.lastPacketIdFromClients[2];
-      transferHeader.ack3 = sessionState.lastPacketIdFromClients[3];
-      transferHeader.ack4 = sessionState.lastPacketIdFromClients[4];
+      // transferHeader.ack2 = // [!] sessionState.lastPacketIdFromClients[2];
+      // transferHeader.ack3 = // [!] sessionState.lastPacketIdFromClients[3];
+      // transferHeader.ack4 = // [!] sessionState.lastPacketIdFromClients[4];
     } else if (msgCount > 0) {
       // but clients can use this area for storing the first message (*)
       transferHeader.firstPacketId |= HAS_FIRST_MSG_MASK;
@@ -1354,9 +1396,7 @@ class LinkWireless {
     return packer.asInt;
   }
 
-  // [!]
-  // LINK_WIRELESS_TIMER_ISR void clearInflightMessagesIfNeeded() {  // (irq
-  // only)
+  // void clearInflightMessagesIfNeeded() {  // (irq only)
   //   if (true /*config.retransmission // [!]*/)
   //     return;
 
@@ -1374,9 +1414,8 @@ class LinkWireless {
   //   sessionState.inflightCount = 0;
   // }
 
-  // [!]
-  LINK_WIRELESS_SERIAL_ISR("addIncomingMessagesFromData")
-  void addIncomingMessagesFromData(const CommandResult* result) {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void addIncomingMessagesFromData(
+      const CommandResult* result) {  // (irq only)
     // parse ReceiveData header
     u32 sentBytes[LINK_WIRELESS_MAX_PLAYERS] = {0, 0, 0, 0, 0};
     u32 receiveDataHeader = result->data[0];
@@ -1498,76 +1537,81 @@ class LinkWireless {
     copyIncomingState();
   }
 
-  // [!]
-  LINK_WIRELESS_SERIAL_ISR("processMessage")
-  void processMessage(u32 playerId,
-                      u32 data,
-                      u32& currentPacketId,
-                      u32& playerBitMap,
-                      int& playerBitMapCount) {  // (irq only)
-    // store the packet ID and increment (msgs are consecutive inside transfers)
-    u32 packetId = currentPacketId;
-    currentPacketId =
-        (currentPacketId + 1) %
-        (playerId == 0 ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT);
+  LINK_WIRELESS_ISR_FUNC(
+      processMessage,
+      (u32 playerId,
+       u32 data,
+       u32& currentPacketId,
+       u32& playerBitMap,
+       int& playerBitMapCount),
+      (playerId, data, currentPacketId, playerBitMap, playerBitMapCount),
+      {
+        // (irq only)
+        // store the packet ID and increment (msgs are consecutive inside
+        // transfers)
+        u32 packetId = currentPacketId;
+        currentPacketId =
+            (currentPacketId + 1) %
+            (playerId == 0 ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT);
 
-    // get msg player ID based on player bitmap
-    u32 msgPlayerId = playerId;
-    if (playerBitMapCount >= 0) {
-      msgPlayerId =
-          (playerBitMap >> PLAYER_ID_BITS * playerBitMapCount) & PLAYER_ID_MASK;
-      playerBitMapCount++;
+        // get msg player ID based on player bitmap
+        u32 msgPlayerId = playerId;
+        // if (playerBitMapCount >= 0) { // [!]
+        //   msgPlayerId = (playerBitMap >> PLAYER_ID_BITS * playerBitMapCount)
+        //   &
+        //                 PLAYER_ID_MASK;
+        //   playerBitMapCount++;
 
-      if (playerBitMapCount >= MAX_PLAYER_BITMAP_ENTRIES &&
-          !((playerBitMap >> BIT_HAS_MORE) & 1))
-        playerBitMapCount = -1;
-    }
+        //   if (playerBitMapCount >= MAX_PLAYER_BITMAP_ENTRIES &&
+        //       !((playerBitMap >> BIT_HAS_MORE) & 1))
+        //     playerBitMapCount = -1;
+        // }
 
-    if (playerId == 0 && !sessionState.didReceiveFirstPacketFromServer) {
-      // the first time clients receive something from the server,
-      // they shouldn't have any expectations (since they can join at any time)
-      sessionState.lastPacketIdFromServer = packetId;
-      sessionState.didReceiveFirstPacketFromServer = true;
-    } else {
-      // if retransmission is enabled, the packet ID needs to be expected
-      if (true /*config.retransmission // [!]*/) {
-        u32 expectedPacketId =
-            playerId > 0
-                ? (sessionState.lastPacketIdFromClients[playerId] + 1) %
-                      MAX_PACKET_IDS_CLIENT
-                : (sessionState.lastPacketIdFromServer + 1) %
-                      MAX_PACKET_IDS_SERVER;
+        if (playerId == 0 && !sessionState.didReceiveFirstPacketFromServer) {
+          // the first time clients receive something from the server,
+          // they shouldn't have any expectations (since they can join at any
+          // time)
+          sessionState.lastPacketIdFromServer = packetId;
+          sessionState.didReceiveFirstPacketFromServer = true;
+        } else {
+          // if retransmission is enabled, the packet ID needs to be expected
+          if (true /*config.retransmission // [!]*/) {
+            u32 expectedPacketId =
+                playerId > 0
+                    ? (sessionState.lastPacketIdFromClients[playerId] + 1) %
+                          MAX_PACKET_IDS_CLIENT
+                    : (sessionState.lastPacketIdFromServer + 1) %
+                          MAX_PACKET_IDS_SERVER;
 
-        if (packetId != expectedPacketId)
+            if (packetId != expectedPacketId)
+              return;
+
+            if (playerId > 0)
+              sessionState.lastPacketIdFromClients[playerId] = expectedPacketId;
+            else
+              sessionState.lastPacketIdFromServer = expectedPacketId;
+          }
+        }
+
+        // ignore messages from myself
+        if (msgPlayerId == linkRawWireless.sessionState.currentPlayerId)
           return;
 
-        if (playerId > 0)
-          sessionState.lastPacketIdFromClients[playerId] = expectedPacketId;
-        else
-          sessionState.lastPacketIdFromServer = expectedPacketId;
-      }
-    }
+        // add new message
+        Message message;
+        message.playerId = msgPlayerId;
+        message.data = data;
+        message.packetId = packetId;
+        sessionState.newIncomingMessages.push(message);
 
-    // ignore messages from myself
-    if (msgPlayerId == linkRawWireless.sessionState.currentPlayerId)
-      return;
+        // // forward to other clients if needed
+        // if (playerId > 0 && config.forwarding &&
+        //     linkRawWireless.sessionState.playerCount > 2)
+        //   ;  // [!]
+      })
 
-    // add new message
-    Message message;
-    message.playerId = msgPlayerId;
-    message.data = data;
-    message.packetId = packetId;
-    sessionState.newIncomingMessages.push(message);
-
-    // forward to other clients if needed
-    // if (playerId > 0 && config.forwarding &&
-    //     linkRawWireless.sessionState.playerCount > 2)
-    //   forwardMessage(message);
-  }
-
-  // [!]
-  // LINK_WIRELESS_SERIAL_ISR("forwardMessage")
-  // void forwardMessage(Message& message) {  // (irq only)
+  // LINK_WIRELESS_SERIAL_ISR void forwardMessage(
+  //     Message& message) {  // (irq only)
   //   Message forwardedMessage;
   //   forwardedMessage.data = message.data;
   //   forwardedMessage.playerId = message.playerId;
@@ -1578,16 +1622,14 @@ class LinkWireless {
   //     sessionState.outgoingMessages.overflow = true;
   // }
 
-  // [!]
-  LINK_WIRELESS_SERIAL_ISR("removeConfirmedMessagesFromServer")
-  void removeConfirmedMessagesFromServer() {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void
+  removeConfirmedMessagesFromServer() {  // (irq only)
     removeConfirmedMessages(sessionState.lastACKFromServer,
                             MAX_PACKET_IDS_CLIENT, MAX_INFLIGHT_PACKETS_CLIENT);
   }
 
-  // [!]
-  LINK_WIRELESS_SERIAL_ISR("removeConfirmedMessagesFromClients")
-  void removeConfirmedMessagesFromClients() {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void
+  removeConfirmedMessagesFromClients() {  // (irq only)
     u32 ringMinAck = 0xFFFFFFFF;
     for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
       u32 ack = sessionState.lastACKFromClients[i];
@@ -1618,8 +1660,7 @@ class LinkWireless {
                               MAX_INFLIGHT_PACKETS_SERVER);
   }
 
-  // [!]
-  LINK_INLINE void removeConfirmedMessages(
+  LINK_WIRELESS_SERIAL_ISR void removeConfirmedMessages(
       u32 ack,
       const u32 maxPacketIds,
       const u32 maxInflightPackets) {  // (irq only)
@@ -1661,9 +1702,7 @@ class LinkWireless {
     }
   }
 
-  // [!]
-  LINK_WIRELESS_SERIAL_ISR("copyIncomingState")
-  void copyIncomingState() {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void copyIncomingState() {  // (irq only)
     if (sessionState.incomingMessages.isReading())
       return;
 
@@ -1691,22 +1730,24 @@ class LinkWireless {
     return true;
   }
 
-  LINK_INLINE u32 newPacketId(u32 maxPacketIds) {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR u32 newPacketId(u32 maxPacketIds) {  // (irq only)
     return (sessionState.lastPacketId =
                 (sessionState.lastPacketId + 1) % maxPacketIds);
   }
 
-  LINK_INLINE void addToLastAsyncDataHalfword(u16 value) {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void addToLastAsyncDataHalfword(
+      u16 value) {  // (irq only)
     addToAsyncDataShifted(nextAsyncCommandDataSize - 1, value, 16);
   }
 
-  LINK_INLINE void addToAsyncDataShifted(u32 index,
-                                         u16 value,
-                                         u32 shift) {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void addToAsyncDataShifted(u32 index,
+                                                     u16 value,
+                                                     u32 shift) {  // (irq only)
     nextAsyncCommandData[index] |= value << shift;
   }
 
-  LINK_INLINE void addAsyncData(u32 value, bool start = false) {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void addAsyncData(u32 value,
+                                            bool start = false) {  // (irq only)
     if (start)
       nextAsyncCommandDataSize = 0;
     nextAsyncCommandData[nextAsyncCommandDataSize] = value;
