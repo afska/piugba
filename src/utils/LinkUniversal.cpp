@@ -16,7 +16,8 @@ LINK_CODE_IWRAM void LINK_UNIVERSAL_ISR_SERIAL() {
 }
 
 LINK_CODE_IWRAM void LINK_UNIVERSAL_ISR_TIMER() {
-  linkUniversal->_onTimer();
+  if (linkUniversal->isActive())
+    linkUniversal->_onTimer();
 }
 
 #pragma GCC pop_options

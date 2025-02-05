@@ -114,8 +114,6 @@
  * enable).
  * This can be useful, for example, if your audio engine requires calling a
  * VBlank handler with precise timing.
- * \warning This won't produce any effect if `LINK_WIRELESS_PUT_ISR_IN_IWRAM` is
- * disabled.
  */
 // #define LINK_WIRELESS_ENABLE_NESTED_IRQ
 #endif
@@ -138,6 +136,36 @@ LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
   if (linkRawWireless.getState() == State::NEEDS_RESET) \
     if (!reset())                                       \
       return false;
+
+// --- LINK_WIRELESS_PUT_ISR_IN_IWRAM knobs ---
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL 1
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER 0
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL "-Ofast"
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL "-Ofast"
+#endif
+#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+#if LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL == 1
+#define LINK_WIRELESS_SERIAL_ISR LINK_INLINE
+#else
+#define LINK_WIRELESS_SERIAL_ISR
+#endif
+#if LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER == 1
+#define LINK_WIRELESS_TIMER_ISR LINK_INLINE
+#else
+#define LINK_WIRELESS_TIMER_ISR
+#endif
+#else
+#define LINK_WIRELESS_SERIAL_ISR
+#define LINK_WIRELESS_TIMER_ISR
+#endif
+// ---
 
 /**
  * @brief A high level driver for the GBA Wireless Adapter.
@@ -828,13 +856,11 @@ class LinkWireless {
     if (!isEnabled)
       return;
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
     if (interrupt) {
       pendingVBlank = true;
       return;
     }
-#endif
 #endif
 
 #ifdef LINK_WIRELESS_PROFILING_ENABLED
@@ -868,7 +894,8 @@ class LinkWireless {
 #endif
   }
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+#if defined(LINK_WIRELESS_PUT_ISR_IN_IWRAM) || \
+    defined(LINK_WIRELESS_ENABLE_NESTED_IRQ)
   void _onSerial();
   void _onTimer();
 #else
@@ -1066,13 +1093,10 @@ class LinkWireless {
   volatile bool isEnabled = false;
   volatile bool wasActivated = false;  // [!]
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   volatile bool interrupt = false, pendingVBlank = false;
 #endif
-#endif
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   void irqEnd() {
     Link::_REG_IME = 0;
@@ -1083,7 +1107,6 @@ class LinkWireless {
       pendingVBlank = false;
     }
   }
-#endif
 #endif
 
   LINK_INLINE void processAsyncCommand(
@@ -1150,7 +1173,7 @@ class LinkWireless {
     }
   }
 
-  void checkConnectionsOrTransferData() {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void checkConnectionsOrTransferData() {  // (irq only)
     if (linkRawWireless.getState() == State::SERVING &&
         !sessionState.signalLevelCalled) {
       // SignalLevel (start)
@@ -1171,7 +1194,7 @@ class LinkWireless {
     }
   }
 
-  void sendPendingData() {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void sendPendingData() {  // (irq only)
     copyOutgoingState();
 
     setDataFromOutgoingMessages();
@@ -1179,9 +1202,9 @@ class LinkWireless {
       clearInflightMessagesIfNeeded();
   }
 
-  void setDataFromOutgoingMessages() {  // (irq only)
-    addAsyncData(0, true);              // SendData header (filled later)
-    addAsyncData(0);                    // Transfer header (filled later)
+  LINK_WIRELESS_TIMER_ISR void setDataFromOutgoingMessages() {  // (irq only)
+    addAsyncData(0, true);  // SendData header (filled later)
+    addAsyncData(0);        // Transfer header (filled later)
 
     bool isServer = linkRawWireless.getState() == State::SERVING;
     u32 maxPacketIds = isServer ? MAX_PACKET_IDS_SERVER : MAX_PACKET_IDS_CLIENT;
@@ -1271,11 +1294,12 @@ class LinkWireless {
     nextAsyncCommandData[0] = linkRawWireless.getSendDataHeaderFor(bytes);
   }
 
-  u32 buildTransferHeader(bool isServer,
-                          u32 firstPacketId,
-                          u32 firstMsg,
-                          u32 msgCount,
-                          bool highPart) {
+  LINK_WIRELESS_TIMER_ISR u32
+  buildTransferHeader(bool isServer,
+                      u32 firstPacketId,
+                      u32 firstMsg,
+                      u32 msgCount,
+                      bool highPart) {  // (irq only)
     TransferHeader transferHeader = {};
 
     // player count / client heartbeat
@@ -1320,7 +1344,7 @@ class LinkWireless {
     return packer.asInt;
   }
 
-  void clearInflightMessagesIfNeeded() {  // (irq only)
+  LINK_WIRELESS_TIMER_ISR void clearInflightMessagesIfNeeded() {  // (irq only)
     if (config.retransmission)
       return;
 
@@ -1337,7 +1361,7 @@ class LinkWireless {
     sessionState.inflightCount = 0;
   }
 
-  LINK_INLINE void addIncomingMessagesFromData(
+  LINK_WIRELESS_SERIAL_ISR void addIncomingMessagesFromData(
       const CommandResult* result) {  // (irq only)
     // parse ReceiveData header
     u32 sentBytes[LINK_WIRELESS_MAX_PLAYERS] = {0, 0, 0, 0, 0};
@@ -1460,11 +1484,12 @@ class LinkWireless {
     copyIncomingState();
   }
 
-  LINK_INLINE void processMessage(u32 playerId,
-                                  u32 data,
-                                  u32& currentPacketId,
-                                  u32& playerBitMap,
-                                  int& playerBitMapCount) {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void processMessage(
+      u32 playerId,
+      u32 data,
+      u32& currentPacketId,
+      u32& playerBitMap,
+      int& playerBitMapCount) {  // (irq only)
     // store the packet ID and increment (msgs are consecutive inside transfers)
     u32 packetId = currentPacketId;
     currentPacketId =
@@ -1525,7 +1550,8 @@ class LinkWireless {
       forwardMessage(message);
   }
 
-  LINK_INLINE void forwardMessage(Message& message) {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void forwardMessage(
+      Message& message) {  // (irq only)
     Message forwardedMessage;
     forwardedMessage.data = message.data;
     forwardedMessage.playerId = message.playerId;
@@ -1536,12 +1562,14 @@ class LinkWireless {
       sessionState.outgoingMessages.overflow = true;
   }
 
-  LINK_INLINE void removeConfirmedMessagesFromServer() {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void
+  removeConfirmedMessagesFromServer() {  // (irq only)
     removeConfirmedMessages(sessionState.lastACKFromServer,
                             MAX_PACKET_IDS_CLIENT, MAX_INFLIGHT_PACKETS_CLIENT);
   }
 
-  LINK_INLINE void removeConfirmedMessagesFromClients() {  // (irq only)
+  LINK_WIRELESS_SERIAL_ISR void
+  removeConfirmedMessagesFromClients() {  // (irq only)
     u32 ringMinAck = 0xFFFFFFFF;
     for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
       u32 ack = sessionState.lastACKFromClients[i];
@@ -1572,7 +1600,7 @@ class LinkWireless {
                               MAX_INFLIGHT_PACKETS_SERVER);
   }
 
-  LINK_INLINE void removeConfirmedMessages(
+  LINK_WIRELESS_SERIAL_ISR void removeConfirmedMessages(
       u32 ack,
       const u32 maxPacketIds,
       const u32 maxInflightPackets) {  // (irq only)
@@ -1597,6 +1625,34 @@ class LinkWireless {
     }
   }
 
+  LINK_WIRELESS_TIMER_ISR u32 getDeviceTransferLength() {  // (irq only)
+    return linkRawWireless.getState() == State::SERVING
+               ? LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
+               : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
+  }
+
+  LINK_WIRELESS_TIMER_ISR void copyOutgoingState() {  // (irq only)
+    if (sessionState.newOutgoingMessages.isWriting())
+      return;
+
+    while (!sessionState.newOutgoingMessages.isEmpty() &&
+           !sessionState.outgoingMessages.isFull()) {
+      auto message = sessionState.newOutgoingMessages.pop();
+      sessionState.outgoingMessages.push(message);
+    }
+  }
+
+  LINK_WIRELESS_SERIAL_ISR void copyIncomingState() {  // (irq only)
+    if (sessionState.incomingMessages.isReading())
+      return;
+
+    while (!sessionState.newIncomingMessages.isEmpty() &&
+           !sessionState.incomingMessages.isFull()) {
+      auto message = sessionState.newIncomingMessages.pop();
+      sessionState.incomingMessages.push(message);
+    }
+  }
+
   bool checkRemoteTimeouts() {  // (irq only)
     bool isServer = linkRawWireless.getState() == State::SERVING;
     u32 startPlayerId = isServer ? 1 : 0;
@@ -1614,55 +1670,30 @@ class LinkWireless {
     return true;
   }
 
-  u32 getDeviceTransferLength() {  // (irq only)
-    return linkRawWireless.getState() == State::SERVING
-               ? LINK_WIRELESS_MAX_SERVER_TRANSFER_LENGTH
-               : LINK_WIRELESS_MAX_CLIENT_TRANSFER_LENGTH;
-  }
-
-  void copyOutgoingState() {  // (irq only)
-    if (sessionState.newOutgoingMessages.isWriting())
-      return;
-
-    while (!sessionState.newOutgoingMessages.isEmpty() &&
-           !sessionState.outgoingMessages.isFull()) {
-      auto message = sessionState.newOutgoingMessages.pop();
-      sessionState.outgoingMessages.push(message);
-    }
-  }
-
-  LINK_INLINE void copyIncomingState() {  // (irq only)
-    if (sessionState.incomingMessages.isReading())
-      return;
-
-    while (!sessionState.newIncomingMessages.isEmpty() &&
-           !sessionState.incomingMessages.isFull()) {
-      auto message = sessionState.newIncomingMessages.pop();
-      sessionState.incomingMessages.push(message);
-    }
-  }
-
-  u32 newPacketId(u32 maxPacketIds) {  // irq only
+  LINK_INLINE u32 newPacketId(u32 maxPacketIds) {  // (irq only)
     return (sessionState.lastPacketId =
                 (sessionState.lastPacketId + 1) % maxPacketIds);
   }
 
-  void addToLastAsyncDataHalfword(u16 value) {  // (irq only)
+  LINK_INLINE void addToLastAsyncDataHalfword(u16 value) {  // (irq only)
     addToAsyncDataShifted(nextAsyncCommandDataSize - 1, value, 16);
   }
 
-  void addToAsyncDataShifted(u32 index, u16 value, u32 shift) {  // (irq only)
+  LINK_INLINE void addToAsyncDataShifted(u32 index,
+                                         u16 value,
+                                         u32 shift) {  // (irq only)
     nextAsyncCommandData[index] |= value << shift;
   }
 
-  void addAsyncData(u32 value, bool start = false) {  // (irq only)
+  LINK_INLINE void addAsyncData(u32 value, bool start = false) {  // (irq only)
     if (start)
       nextAsyncCommandDataSize = 0;
     nextAsyncCommandData[nextAsyncCommandDataSize] = value;
     nextAsyncCommandDataSize++;
   }
 
-  bool sendCommandAsync(u8 type, bool withData = false) {  // (irq only)
+  bool sendCommandAsync(u8 type,
+                        bool withData = false) {  // (irq only)
     if (isSendingSyncCommand)
       return false;
 

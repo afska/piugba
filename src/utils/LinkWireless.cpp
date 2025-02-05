@@ -1,16 +1,29 @@
 #include "LinkWireless.hpp"
 
-// [!]
-// This library has some tweaks (marked with "[!]") for piuGBA.
-// You should check out the gba-link-connection's original code instead of this.
-
-// [!]
-#pragma GCC push_options
-#pragma GCC optimize("Os")
+#if defined(LINK_WIRELESS_PUT_ISR_IN_IWRAM) || \
+    defined(LINK_WIRELESS_ENABLE_NESTED_IRQ)
 
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 
-LINK_CODE_IWRAM void LinkWireless::_onSerial() {
+#if LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL == 1
+#define _LINK_SERIAL_ISR \
+  LINK_CODE_IWRAM        \
+  __attribute__((optimize(LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL)))
+#else
+#define _LINK_SERIAL_ISR
+#endif
+
+#if LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER == 1
+#define _LINK_TIMER_ISR \
+  LINK_CODE_IWRAM       \
+  __attribute__((optimize(LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL)))
+#else
+#define _LINK_TIMER_ISR
+#endif
+
+#endif
+
+_LINK_SERIAL_ISR void LinkWireless::_onSerial() {
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   interrupt = true;
   LINK_BARRIER;
@@ -23,7 +36,8 @@ LINK_CODE_IWRAM void LinkWireless::_onSerial() {
   irqEnd();
 #endif
 }
-void LinkWireless::_onTimer() {
+
+_LINK_TIMER_ISR void LinkWireless::_onTimer() {
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   if (interrupt)
     return;
@@ -56,6 +70,3 @@ void LinkWireless::_onTimer() {
  */
 
 #endif
-
-// [!]
-#pragma GCC pop_options
