@@ -152,9 +152,12 @@ LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 #endif
 #ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #if LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL == 1
-#define LINK_WIRELESS_SERIAL_ISR LINK_INLINE
+// [!]
+#define LINK_WIRELESS_SERIAL_ISR(SEC) /*LINK_INLINE*/             \
+  __attribute__((section(".iwram_" SEC), target("arm"), noinline, \
+                 optimize(LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL)))
 #else
-#define LINK_WIRELESS_SERIAL_ISR
+#define LINK_WIRELESS_SERIAL_ISR(SEC)
 #endif
 #if LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER == 1
 #define LINK_WIRELESS_TIMER_ISR LINK_INLINE
@@ -162,7 +165,9 @@ LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 #define LINK_WIRELESS_TIMER_ISR
 #endif
 #else
-#define LINK_WIRELESS_SERIAL_ISR
+// [!]
+#define LINK_WIRELESS_SERIAL_ISR(SEC) \
+  __attribute__((section(".iwram_" SEC), target("arm"), noinline))
 #define LINK_WIRELESS_TIMER_ISR
 #endif
 // ---
@@ -1361,8 +1366,9 @@ class LinkWireless {
     sessionState.inflightCount = 0;
   }
 
-  LINK_WIRELESS_SERIAL_ISR void addIncomingMessagesFromData(
-      const CommandResult* result) {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("addIncomingMessagesFromData")
+  void addIncomingMessagesFromData(const CommandResult* result) {  // (irq only)
     // parse ReceiveData header
     u32 sentBytes[LINK_WIRELESS_MAX_PLAYERS] = {0, 0, 0, 0, 0};
     u32 receiveDataHeader = result->data[0];
@@ -1484,12 +1490,13 @@ class LinkWireless {
     copyIncomingState();
   }
 
-  LINK_WIRELESS_SERIAL_ISR void processMessage(
-      u32 playerId,
-      u32 data,
-      u32& currentPacketId,
-      u32& playerBitMap,
-      int& playerBitMapCount) {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("processMessage")
+  void processMessage(u32 playerId,
+                      u32 data,
+                      u32& currentPacketId,
+                      u32& playerBitMap,
+                      int& playerBitMapCount) {  // (irq only)
     // store the packet ID and increment (msgs are consecutive inside transfers)
     u32 packetId = currentPacketId;
     currentPacketId =
@@ -1550,8 +1557,9 @@ class LinkWireless {
       forwardMessage(message);
   }
 
-  LINK_WIRELESS_SERIAL_ISR void forwardMessage(
-      Message& message) {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("forwardMessage")
+  void forwardMessage(Message& message) {  // (irq only)
     Message forwardedMessage;
     forwardedMessage.data = message.data;
     forwardedMessage.playerId = message.playerId;
@@ -1562,14 +1570,16 @@ class LinkWireless {
       sessionState.outgoingMessages.overflow = true;
   }
 
-  LINK_WIRELESS_SERIAL_ISR void
-  removeConfirmedMessagesFromServer() {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("removeConfirmedMessagesFromServer")
+  void removeConfirmedMessagesFromServer() {  // (irq only)
     removeConfirmedMessages(sessionState.lastACKFromServer,
                             MAX_PACKET_IDS_CLIENT, MAX_INFLIGHT_PACKETS_CLIENT);
   }
 
-  LINK_WIRELESS_SERIAL_ISR void
-  removeConfirmedMessagesFromClients() {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("removeConfirmedMessagesFromClients")
+  void removeConfirmedMessagesFromClients() {  // (irq only)
     u32 ringMinAck = 0xFFFFFFFF;
     for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
       u32 ack = sessionState.lastACKFromClients[i];
@@ -1600,7 +1610,8 @@ class LinkWireless {
                               MAX_INFLIGHT_PACKETS_SERVER);
   }
 
-  LINK_WIRELESS_SERIAL_ISR void removeConfirmedMessages(
+  // [!]
+  LINK_INLINE void removeConfirmedMessages(
       u32 ack,
       const u32 maxPacketIds,
       const u32 maxInflightPackets) {  // (irq only)
@@ -1642,7 +1653,9 @@ class LinkWireless {
     }
   }
 
-  LINK_WIRELESS_SERIAL_ISR void copyIncomingState() {  // (irq only)
+  // [!]
+  LINK_WIRELESS_SERIAL_ISR("copyIncomingState")
+  void copyIncomingState() {  // (irq only)
     if (sessionState.incomingMessages.isReading())
       return;
 
