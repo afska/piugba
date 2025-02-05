@@ -445,7 +445,7 @@ void SongScene::updateArrowHolders() {
     it->tick(bounceOffset);
 }
 
-CODE_IWRAM void SongScene::updateArrows() {
+void SongScene::updateArrows() {
   std::array<Arrow*, ARROWS_TOTAL * GAME_MAX_PLAYERS> nextArrows;
   for (u32 i = 0; i < ARROWS_TOTAL * GAME_MAX_PLAYERS; i++)
     nextArrows[i] = NULL;
