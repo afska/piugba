@@ -5,6 +5,11 @@
 // This library has some tweaks (marked with "[!]") for piuGBA.
 // You should check out the gba-link-connection's original code instead of this.
 
+// [!]
+// Example:
+// if (config.retransmission) => if (true /*config.retransmission // [!]*/)
+// config.maxPlayers => 2 /*config.maxPlayers // [!]*/
+
 // --------------------------------------------------------------------------
 // A high level driver for the GBA Wireless Adapter.
 // --------------------------------------------------------------------------
@@ -1204,7 +1209,7 @@ class LinkWireless {
 
     setDataFromOutgoingMessages();
     if (sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true))
-      clearInflightMessagesIfNeeded();
+      ;  // clearInflightMessagesIfNeeded(); // [!]
   }
 
   LINK_WIRELESS_TIMER_ISR void setDataFromOutgoingMessages() {  // (irq only)
@@ -1349,22 +1354,25 @@ class LinkWireless {
     return packer.asInt;
   }
 
-  LINK_WIRELESS_TIMER_ISR void clearInflightMessagesIfNeeded() {  // (irq only)
-    if (config.retransmission)
-      return;
+  // [!]
+  // LINK_WIRELESS_TIMER_ISR void clearInflightMessagesIfNeeded() {  // (irq
+  // only)
+  //   if (true /*config.retransmission // [!]*/)
+  //     return;
 
-    while (!sessionState.outgoingMessages.isEmpty()) {
-      u32 packetId = sessionState.outgoingMessages.peek().packetId;
-      if (packetId == NO_ID_ASSIGNED_YET)
-        break;
+  //   while (!sessionState.outgoingMessages.isEmpty()) {
+  //     u32 packetId = sessionState.outgoingMessages.peek().packetId;
+  //     if (packetId == NO_ID_ASSIGNED_YET)
+  //       break;
 
-      auto message = sessionState.outgoingMessages.pop();
-      if (linkRawWireless.getState() == State::SERVING && message.playerId > 0)
-        sessionState.forwardedCount--;
-    }
+  //     auto message = sessionState.outgoingMessages.pop();
+  //     if (linkRawWireless.getState() == State::SERVING && message.playerId >
+  //     0)
+  //       sessionState.forwardedCount--;
+  //   }
 
-    sessionState.inflightCount = 0;
-  }
+  //   sessionState.inflightCount = 0;
+  // }
 
   // [!]
   LINK_WIRELESS_SERIAL_ISR("addIncomingMessagesFromData")
@@ -1400,7 +1408,7 @@ class LinkWireless {
 
       // if retransmission is enabled, we update the confirmations based on the
       // ACKs found in the header
-      if (config.retransmission) {
+      if (true /*config.retransmission // [!]*/) {
         if (isServer) {
           sessionState.lastACKFromClients[i] = header.ack1;
         } else {
@@ -1479,7 +1487,7 @@ class LinkWireless {
     }
 
     // remove confirmed messages based on the updated ACKs
-    if (config.retransmission) {
+    if (true /*config.retransmission // [!]*/) {
       if (isServer)
         removeConfirmedMessagesFromClients();
       else
@@ -1522,7 +1530,7 @@ class LinkWireless {
       sessionState.didReceiveFirstPacketFromServer = true;
     } else {
       // if retransmission is enabled, the packet ID needs to be expected
-      if (config.retransmission) {
+      if (true /*config.retransmission // [!]*/) {
         u32 expectedPacketId =
             playerId > 0
                 ? (sessionState.lastPacketIdFromClients[playerId] + 1) %
@@ -1552,23 +1560,23 @@ class LinkWireless {
     sessionState.newIncomingMessages.push(message);
 
     // forward to other clients if needed
-    if (playerId > 0 && config.forwarding &&
-        linkRawWireless.sessionState.playerCount > 2)
-      forwardMessage(message);
+    // if (playerId > 0 && config.forwarding &&
+    //     linkRawWireless.sessionState.playerCount > 2)
+    //   forwardMessage(message);
   }
 
   // [!]
-  LINK_WIRELESS_SERIAL_ISR("forwardMessage")
-  void forwardMessage(Message& message) {  // (irq only)
-    Message forwardedMessage;
-    forwardedMessage.data = message.data;
-    forwardedMessage.playerId = message.playerId;
-    if (!sessionState.outgoingMessages.isFull()) {
-      sessionState.outgoingMessages.push(forwardedMessage);
-      sessionState.forwardedCount++;
-    } else
-      sessionState.outgoingMessages.overflow = true;
-  }
+  // LINK_WIRELESS_SERIAL_ISR("forwardMessage")
+  // void forwardMessage(Message& message) {  // (irq only)
+  //   Message forwardedMessage;
+  //   forwardedMessage.data = message.data;
+  //   forwardedMessage.playerId = message.playerId;
+  //   if (!sessionState.outgoingMessages.isFull()) {
+  //     sessionState.outgoingMessages.push(forwardedMessage);
+  //     sessionState.forwardedCount++;
+  //   } else
+  //     sessionState.outgoingMessages.overflow = true;
+  // }
 
   // [!]
   LINK_WIRELESS_SERIAL_ISR("removeConfirmedMessagesFromServer")
