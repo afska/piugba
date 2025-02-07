@@ -103,6 +103,8 @@ class LinkRawWireless {
 #else
   static constexpr int CMD_TIMEOUT = 15;
 #endif
+  static constexpr int MAX_TRANSFER_BYTES_SERVER = 87;
+  static constexpr int MAX_TRANSFER_BYTES_CLIENT = 16;
   static constexpr int LOGIN_STEPS = 9;
   static constexpr int COMMAND_HEADER_VALUE = 0x9966;
   static constexpr int RESPONSE_ACK = 0x80;
@@ -122,7 +124,7 @@ class LinkRawWireless {
   static constexpr int COMMAND_BROADCAST_READ_POLL = 0x1D;
   static constexpr int COMMAND_BROADCAST_READ_END = 0x1E;
   static constexpr int COMMAND_CONNECT = 0x1F;
-  static constexpr int COMMAND_IS_FINISHED_CONNECT = 0x20;
+  static constexpr int COMMAND_IS_CONNECTION_COMPLETE = 0x20;
   static constexpr int COMMAND_FINISH_CONNECTION = 0x21;
   static constexpr int COMMAND_SEND_DATA = 0x24;
   static constexpr int COMMAND_SEND_DATA_AND_WAIT = 0x25;
@@ -672,7 +674,7 @@ class LinkRawWireless {
    * @param response A structure that will be filled with the response data.
    */
   bool keepConnecting(ConnectionStatus& response) {
-    auto result = sendCommand(COMMAND_IS_FINISHED_CONNECT);
+    auto result = sendCommand(COMMAND_IS_CONNECTION_COMPLETE);
     if (!result.success || result.dataSize == 0) {
       if (result.dataSize == 0)
         _LRWLOG_("! empty response");
@@ -865,11 +867,16 @@ class LinkRawWireless {
     for (u32 i = 1; i < result.dataSize; i++)
       response.data[i - 1] = result.data[i];
     u32 header = result.data[0];
-    response.sentBytes[0] = header & 0b1111111;
-    response.sentBytes[1] = (header >> 8) & 0b11111;
-    response.sentBytes[2] = (header >> 13) & 0b11111;
-    response.sentBytes[3] = (header >> 18) & 0b11111;
-    response.sentBytes[4] = (header >> 23) & 0b11111;
+    response.sentBytes[0] =
+        Link::_min(header & 0b1111111, MAX_TRANSFER_BYTES_SERVER);
+    response.sentBytes[1] =
+        Link::_min((header >> 8) & 0b11111, MAX_TRANSFER_BYTES_CLIENT);
+    response.sentBytes[2] =
+        Link::_min((header >> 13) & 0b11111, MAX_TRANSFER_BYTES_CLIENT);
+    response.sentBytes[3] =
+        Link::_min((header >> 18) & 0b11111, MAX_TRANSFER_BYTES_CLIENT);
+    response.sentBytes[4] =
+        Link::_min((header >> 23) & 0b11111, MAX_TRANSFER_BYTES_CLIENT);
 
     return true;
   }
@@ -1176,10 +1183,8 @@ class LinkRawWireless {
         if (!acknowledge())
           return -4;
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
         Link::_REG_IME = 1;
-#endif
 #endif
 
         sendAsyncCommand(newData, _clockInversionSupport);
@@ -1665,11 +1670,9 @@ class LinkRawWireless {
   }
 
   void transferAsync(u32 data, bool fromIRQ) {
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
     if (fromIRQ)
       Link::_REG_IME = 0;
-#endif
 #endif
 
     linkSPI.transfer(data, []() { return false; }, true, true);
