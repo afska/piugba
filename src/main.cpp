@@ -46,6 +46,12 @@ LinkUniversal* linkUniversal =
 Syncer* syncer = new Syncer();
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 
+LINK_CODE_IWRAM void ISR_vblank() {
+  player_onVBlank();
+  if (linkUniversal->isActive())
+    LINK_UNIVERSAL_ISR_VBLANK();
+}
+
 int main() {
   linkUniversal->deactivate();
   RUMBLE_init();
@@ -62,7 +68,6 @@ int main() {
   player_forever(
       []() {
         // (onUpdate)
-        LINK_UNIVERSAL_ISR_VBLANK();
         PS2_ISR_VBLANK();
 
         syncer->update();
@@ -144,19 +149,15 @@ void setUpInterrupts() {
   interrupt_init();
 
   // VBlank
-  interrupt_set_handler(INTR_VBLANK, player_onVBlank);
-  interrupt_enable(INTR_VBLANK);
+  interrupt_add(INTR_VBLANK, ISR_vblank);
 
   // LinkUniversal
-  interrupt_set_handler(INTR_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
-  interrupt_enable(INTR_SERIAL);
-  interrupt_set_handler(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
-  interrupt_enable(INTR_TIMER3);
+  interrupt_add(INTR_SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
+  interrupt_add(INTR_TIMER3, LINK_UNIVERSAL_ISR_TIMER);
 
   // A+B+START+SELECT
   REG_KEYCNT = 0b1100000000001111;
-  interrupt_set_handler(INTR_KEYPAD, ISR_reset);
-  interrupt_enable(INTR_KEYPAD);
+  interrupt_add(INTR_KEYPAD, ISR_reset);
 }
 
 inline void startRandomSeed() {

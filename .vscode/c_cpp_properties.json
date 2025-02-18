@@ -5,6 +5,7 @@
       "includePath": [
         "${workspaceFolder}/src/**",
         "${workspaceFolder}/libs/libgba-sprite-engine/include/**",
+        "${workspaceFolder}/libs/libugba/include/**",
         "${workspaceFolder}\\..\\..\\tools\\devkitPro\\devkitARM\\arm-none-eabi\\include\\**",
         "${workspaceFolder}\\..\\..\\tools\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\9.1.0\\include\\**",
         "${workspaceFolder}\\..\\..\\tools\\devkitPro\\libtonc\\include\\**",

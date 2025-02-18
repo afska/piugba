@@ -166,7 +166,7 @@ class LinkUniversal {
   /**
    * @brief Returns whether the library is active or not.
    */
-  [[nodiscard]] bool isActive() { return isEnabled; }
+  [[nodiscard]] LINK_INLINE /* [!] */ bool isActive() { return isEnabled; }
 
   /**
    * @brief Activates the library.
@@ -196,14 +196,9 @@ class LinkUniversal {
 
   /**
    * @brief Returns `true` if there are at least 2 connected players.
+   * \warning Stays frozen between `sync()` calls.
    */
   [[nodiscard]] bool isConnected() { return state == State::CONNECTED; }
-
-  // [!]
-  [[nodiscard]] bool isConnectedAny() {
-    return mode == Mode::LINK_CABLE ? linkCable.isConnected()
-                                    : linkWireless.isConnected();
-  }
 
   /**
    * @brief Returns the number of connected players (`1~5`).
@@ -455,17 +450,26 @@ class LinkUniversal {
   [[nodiscard]] Protocol getProtocol() { return this->config.protocol; }
 
   /**
+   * @brief Sets the active `protocol`.
+   * @param protocol One of the enum values from `LinkUniversal::Protocol`.
+   */
+  void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
+
+  /**
+   * @brief Returns `true` if there are at least 2 connected players.
+   * \warning Can change between `sync()` calls.
+   */
+  [[nodiscard]] bool isConnectedNow() {
+    return mode == Mode::LINK_CABLE ? linkCable.isConnected()
+                                    : linkWireless.isConnected();
+  }
+
+  /**
    * @brief Returns the wireless state (same as `LinkWireless::getState()`).
    */
   [[nodiscard]] LinkWireless::State getWirelessState() {
     return linkWireless.getState();
   }
-
-  /**
-   * @brief Sets the active `protocol`.
-   * @param protocol One of the enum values from `LinkUniversal::Protocol`.
-   */
-  void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
 
   /**
    * @brief Returns the internal `LinkCable` instance (for advanced usage).
@@ -771,14 +775,14 @@ class LinkUniversal {
 
 extern LinkUniversal* linkUniversal;
 
-/**
- * @brief VBLANK interrupt handler.
- */
-inline void LINK_UNIVERSAL_ISR_VBLANK() {
-  linkUniversal->_onVBlank();
-}
-
 // [!]
+// /**
+//  * @brief VBLANK interrupt handler.
+//  */
+// inline void LINK_UNIVERSAL_ISR_VBLANK() {
+//   linkUniversal->_onVBlank();
+// }
+
 // /**
 //  * @brief SERIAL interrupt handler.
 //  */
@@ -794,6 +798,7 @@ inline void LINK_UNIVERSAL_ISR_VBLANK() {
 // }
 
 // [!]
+void LINK_UNIVERSAL_ISR_VBLANK();
 void LINK_UNIVERSAL_ISR_SERIAL();
 void LINK_UNIVERSAL_ISR_TIMER();
 

@@ -347,14 +347,12 @@ class LinkCable {
       _state.msgFlags[i] = false;
     }
 
-    // [!]
-    // if (didTimeout()) {
-    //   reset();
-    //   return;
-    // }
+    if (didTimeout()) {
+      reset();
+      return;
+    }
 
-    // [!]
-    // copyState();
+    copyState();
   }
 
   /**
@@ -417,12 +415,6 @@ class LinkCable {
   void _onTimer() {
     if (!isEnabled)
       return;
-
-    // [!]
-    if (didTimeout()) {
-      reset();
-      return;
-    }
 
     if (LinkRawCable::isMasterNode() && LinkRawCable::allReady() &&
         !LinkRawCable::isSending())
