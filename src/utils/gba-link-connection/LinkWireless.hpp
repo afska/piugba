@@ -8,7 +8,7 @@
 // [!]
 // Patches:
 // isEnabled = true; =>
-//   isEnabled = true; wasActivated = true; // [!]
+//   isEnabled = true; wasActivated = true; // [!] wasActivated = true; // [!]
 // if (turnOff) =>
 //   if (turnOff && wasActivated) // [!]
 // volatile bool isEnabled = false; =>
@@ -28,9 +28,9 @@
 // transferHeader.ack4 = =>
 //   // transferHeader.ack4 = // [!]
 // // get msg player ID based on player bitmap =>
-//   /* disable manually */
+//   /* [!] disable manually */
 // sentBytes[2] = Link::_min((receiveDataHeader >> 13) & 0b11111 =>
-//   /* disable manually */
+//   /* [!] disable manually */
 
 // --------------------------------------------------------------------------
 // A high level driver for the GBA Wireless Adapter.
@@ -128,9 +128,9 @@
  * @brief Put Interrupt Service Routines (ISR) in IWRAM (uncomment to enable).
  * This can significantly improve performance due to its faster access, but it's
  * disabled by default to conserve IWRAM space, which is limited.
- * \warning If you enable this, make sure that `LinkWireless.cpp` gets compiled!
- * For example, in a Makefile-based project, verify that the file is in your
- * `SRCDIRS` list.
+ * \warning If you enable this, make sure that `lib/iwram_code/LinkWireless.cpp`
+ * gets compiled! For example, in a Makefile-based project, verify that the
+ * directory is in your `SRCDIRS` list.
  */
 // #define LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #endif
@@ -303,7 +303,7 @@ class LinkWireless {
                         u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID) {
     config.forwarding = forwarding;
     config.retransmission = retransmission;
-    config.maxPlayers = maxPlayers;
+    2 /*config.maxPlayers // [!]*/ = maxPlayers;
     config.timeout = timeout;
     config.interval = interval;
     config.sendTimerId = sendTimerId;
@@ -647,8 +647,8 @@ class LinkWireless {
   }
 
   /**
-   * @brief Returns if a `send(...)` call would fail due to the queue being
-   * full.
+   * @brief Returns whether a `send(...)` call would fail due to the queue being
+   * full or not.
    */
   bool canSend() { return !sessionState.newOutgoingMessages.isFull(); }
 
@@ -833,8 +833,8 @@ class LinkWireless {
    * @brief Returns the last ACK received from player ID 1.
    * \warning This is internal API!
    */
-  [[nodiscard]] u32 _lastACKFromClient1() {
-    return sessionState.lastACKFromClients[1];
+  [[nodiscard]] u32 _lastAckFromClient1() {
+    return sessionState.lastAckFromClients[1];
   }
 
   /**
@@ -849,8 +849,8 @@ class LinkWireless {
    * @brief Returns the last ACK received from the server.
    * \warning This is internal API!
    */
-  [[nodiscard]] u32 _lastACKFromServer() {
-    return sessionState.lastACKFromServer;
+  [[nodiscard]] u32 _lastAckFromServer() {
+    return sessionState.lastAckFromServer;
   }
 
   /**
@@ -1014,9 +1014,9 @@ class LinkWireless {
     u32 forwardedCount = 0;
     u32 lastPacketId = 0;
     u32 lastPacketIdFromServer = 0;
-    u32 lastACKFromServer = 0;
+    u32 lastAckFromServer = 0;
     u32 lastPacketIdFromClients[LINK_WIRELESS_MAX_PLAYERS];
-    u32 lastACKFromClients[LINK_WIRELESS_MAX_PLAYERS];
+    u32 lastAckFromClients[LINK_WIRELESS_MAX_PLAYERS];
     int lastHeartbeatFromClients[LINK_WIRELESS_MAX_PLAYERS];
     int localHeartbeat = -1;
     volatile bool isResetTimeoutPending = false;
@@ -1254,7 +1254,8 @@ class LinkWireless {
     copyOutgoingState();
 
     setDataFromOutgoingMessages();
-    sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true);  // [!]
+    if (sendCommandAsync(LinkRawWireless::COMMAND_SEND_DATA, true))
+      ;  // [!]
   }
 
   LINK_WIRELESS_TIMER_ISR void setDataFromOutgoingMessages() {  // (irq only)
@@ -1398,23 +1399,22 @@ class LinkWireless {
     return packer.asInt;
   }
 
-  // void clearInflightMessagesIfNeeded() {  // (irq only)
-  //   if (true /*config.retransmission // [!]*/)
-  //     return;
+  void clearInflightMessagesIfNeeded() {  // (irq only)
+    if (true /*config.retransmission // [!]*/)
+      return;
 
-  //   while (!sessionState.outgoingMessages.isEmpty()) {
-  //     u32 packetId = sessionState.outgoingMessages.peek().packetId;
-  //     if (packetId == NO_ID_ASSIGNED_YET)
-  //       break;
+    while (!sessionState.outgoingMessages.isEmpty()) {
+      u32 packetId = sessionState.outgoingMessages.peek().packetId;
+      if (packetId == NO_ID_ASSIGNED_YET)
+        break;
 
-  //     auto message = sessionState.outgoingMessages.pop();
-  //     if (linkRawWireless.getState() == State::SERVING && message.playerId >
-  //     0)
-  //       sessionState.forwardedCount--;
-  //   }
+      auto message = sessionState.outgoingMessages.pop();
+      if (linkRawWireless.getState() == State::SERVING && message.playerId > 0)
+        sessionState.forwardedCount--;
+    }
 
-  //   sessionState.inflightCount = 0;
-  // }
+    sessionState.inflightCount = 0;
+  }
 
   LINK_WIRELESS_SERIAL_ISR void addIncomingMessagesFromData(
       const CommandResult* result) {  // (irq only)
@@ -1425,7 +1425,8 @@ class LinkWireless {
                               LinkRawWireless::MAX_TRANSFER_BYTES_SERVER);
     sentBytes[1] = Link::_min((receiveDataHeader >> 8) & 0b11111,
                               LinkRawWireless::MAX_TRANSFER_BYTES_CLIENT);
-    // sentBytes[2] = Link::_min((receiveDataHeader >> 13) & 0b11111, // [!]
+    // [!]
+    // sentBytes[2] = Link::_min((receiveDataHeader >> 13) & 0b11111,
     //                           LinkRawWireless::MAX_TRANSFER_BYTES_CLIENT);
     // sentBytes[3] = Link::_min((receiveDataHeader >> 18) & 0b11111,
     //                           LinkRawWireless::MAX_TRANSFER_BYTES_CLIENT);
@@ -1456,10 +1457,10 @@ class LinkWireless {
       // ACKs found in the header
       if (true /*config.retransmission // [!]*/) {
         if (isServer) {
-          sessionState.lastACKFromClients[i] = header.ack1;
+          sessionState.lastAckFromClients[i] = header.ack1;
         } else {
           u32 currentPlayerId = linkRawWireless.sessionState.currentPlayerId;
-          sessionState.lastACKFromServer = currentPlayerId == 1   ? header.ack1
+          sessionState.lastAckFromServer = currentPlayerId == 1   ? header.ack1
                                            : currentPlayerId == 2 ? header.ack2
                                            : currentPlayerId == 3 ? header.ack3
                                                                   : header.ack4;
@@ -1563,7 +1564,8 @@ class LinkWireless {
 
         // get msg player ID based on player bitmap
         u32 msgPlayerId = playerId;
-        // if (playerBitMapCount >= 0) { // [!]
+        // [!]
+        // if (playerBitMapCount >= 0) {
         //   msgPlayerId = (playerBitMap >> PLAYER_ID_BITS * playerBitMapCount)
         //   &
         //                 PLAYER_ID_MASK;
@@ -1611,27 +1613,27 @@ class LinkWireless {
         message.packetId = packetId;
         sessionState.newIncomingMessages.push(message);
 
-        // // forward to other clients if needed
-        // if (playerId > 0 && config.forwarding &&
-        //     linkRawWireless.sessionState.playerCount > 2)
-        //   ;  // [!]
+        // forward to other clients if needed
+        if (playerId > 0 && config.forwarding &&
+            linkRawWireless.sessionState.playerCount > 2)
+          ;  // [!]
       })
 
-  // LINK_WIRELESS_SERIAL_ISR void forwardMessage(
-  //     Message& message) {  // (irq only)
-  //   Message forwardedMessage;
-  //   forwardedMessage.data = message.data;
-  //   forwardedMessage.playerId = message.playerId;
-  //   if (!sessionState.outgoingMessages.isFull()) {
-  //     sessionState.outgoingMessages.push(forwardedMessage);
-  //     sessionState.forwardedCount++;
-  //   } else
-  //     sessionState.outgoingMessages.overflow = true;
-  // }
+  LINK_WIRELESS_SERIAL_ISR void forwardMessage(
+      Message& message) {  // (irq only)
+    Message forwardedMessage;
+    forwardedMessage.data = message.data;
+    forwardedMessage.playerId = message.playerId;
+    if (!sessionState.outgoingMessages.isFull()) {
+      sessionState.outgoingMessages.push(forwardedMessage);
+      sessionState.forwardedCount++;
+    } else
+      sessionState.outgoingMessages.overflow = true;
+  }
 
   LINK_WIRELESS_SERIAL_ISR void
   removeConfirmedMessagesFromServer() {  // (irq only)
-    removeConfirmedMessages(sessionState.lastACKFromServer,
+    removeConfirmedMessages(sessionState.lastAckFromServer,
                             MAX_PACKET_IDS_CLIENT, MAX_INFLIGHT_PACKETS_CLIENT);
   }
 
@@ -1639,7 +1641,7 @@ class LinkWireless {
   removeConfirmedMessagesFromClients() {  // (irq only)
     u32 ringMinAck = 0xFFFFFFFF;
     for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
-      u32 ack = sessionState.lastACKFromClients[i];
+      u32 ack = sessionState.lastAckFromClients[i];
 
       // ignore clients that didn't confirm anything yet
       if (ack == NO_ACK_RECEIVED_YET)
@@ -1820,14 +1822,14 @@ class LinkWireless {
     sessionState.forwardedCount = 0;
     sessionState.lastPacketId = 0;
     sessionState.lastPacketIdFromServer = 0;
-    sessionState.lastACKFromServer = 0;
+    sessionState.lastAckFromServer = 0;
     sessionState.localHeartbeat = -1;
     sessionState.isResetTimeoutPending = false;
     for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++) {
       sessionState.msgTimeouts[i] = 0;
       sessionState.msgFlags[i] = false;
       sessionState.lastPacketIdFromClients[i] = 0;
-      sessionState.lastACKFromClients[i] = NO_ACK_RECEIVED_YET;
+      sessionState.lastAckFromClients[i] = NO_ACK_RECEIVED_YET;
       sessionState.lastHeartbeatFromClients[i] = -1;
     }
     nextAsyncCommandDataSize = 0;
@@ -1937,5 +1939,22 @@ inline void LINK_WIRELESS_ISR_SERIAL() {
 inline void LINK_WIRELESS_ISR_TIMER() {
   linkWireless->_onTimer();
 }
+
+/**
+ * NOTES:
+ * When using `LINK_WIRELESS_ENABLE_NESTED_IRQ`:
+ *   - Any user ISR can interrupt the library ISRs.
+ *     * The SERIAL ISR only enables nested interrupts after completing the
+ *       acknowledge with the Wireless Adapter.
+ *   - SERIAL ISR can interrupt TIMER ISR.
+ *     -> This doesn't cause data races since TIMER ISR only works when
+ *        there is no active async task.
+ *     -> When TIMER ISR starts an async task (`transferAsync(...)`),
+ *        nested interrupts are disabled (`REG_IME = 0`) and SERIAL cannot
+ *        interrupt anymore.
+ *   - TIMER interrupts are skipped if SERIAL ISR is running.
+ *   - VBLANK interrupts are postponed if SERIAL or TIMER ISRs are running.
+ *   - Nobody can interrupt VBLANK ISR.
+ */
 
 #endif  // LINK_WIRELESS_H

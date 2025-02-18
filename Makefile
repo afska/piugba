@@ -158,6 +158,7 @@ SRCDIRS		:= src \
 						 src/scenes/ui \
 						 src/utils \
 						 src/utils/gba-link-connection \
+						 src/utils/gba-link-connection/iwram_code \
 						 src/utils/gbfs \
 						 src/utils/flashcartio \
 						 src/utils/flashcartio/everdrivegbax5 \

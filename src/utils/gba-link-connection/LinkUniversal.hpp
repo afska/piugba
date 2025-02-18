@@ -319,6 +319,9 @@ class LinkUniversal {
    */
   template <typename F>
   bool waitFor(u8 playerId, F cancel) {
+    if (!isEnabled)
+      return false;
+
     sync();
 
     u8 timerId = mode == Mode::LINK_CABLE ? linkCable.config.sendTimerId
@@ -361,8 +364,8 @@ class LinkUniversal {
   }
 
   /**
-   * @brief Returns if a `send(...)` call would fail due to the queue being
-   * full.
+   * @brief Returns whether a `send(...)` call would fail due to the queue being
+   * full or not.
    */
   bool canSend() {
     return mode == Mode::LINK_CABLE ? linkCable.canSend()
@@ -376,7 +379,8 @@ class LinkUniversal {
    * returned.
    */
   bool send(u16 data) {
-    if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA)
+    if (!isEnabled || data == LINK_CABLE_DISCONNECTED ||
+        data == LINK_CABLE_NO_DATA)
       return false;
 
     return mode == Mode::LINK_CABLE ? linkCable.send(data)
@@ -490,6 +494,9 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onVBlank() {
+    if (!isEnabled)
+      return;
+
     if (mode == Mode::LINK_CABLE)
       linkCable._onVBlank();
     else
@@ -501,6 +508,9 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onSerial() {
+    if (!isEnabled)
+      return;
+
     if (mode == Mode::LINK_CABLE)
       linkCable._onSerial();
     else
@@ -512,6 +522,9 @@ class LinkUniversal {
    * \warning This is internal API!
    */
   void _onTimer() {
+    if (!isEnabled)
+      return;
+
     if (mode == Mode::LINK_CABLE)
       linkCable._onTimer();
     else
@@ -765,6 +778,7 @@ inline void LINK_UNIVERSAL_ISR_VBLANK() {
   linkUniversal->_onVBlank();
 }
 
+// [!]
 // /**
 //  * @brief SERIAL interrupt handler.
 //  */

@@ -101,16 +101,16 @@ class LinkRawCable {
   /**
    * @brief Activates the library in a specific `baudRate`.
    * @param baudRate One of the enum values from `LinkRawCable::BaudRate`.
-   * Defaults to `LinkRawCable::BaudRate::BAUD_RATE_1` (38400 bps).
+   * Defaults to `LinkRawCable::BaudRate::BAUD_RATE_3` (115200 bps).
    */
-  void activate(BaudRate baudRate = BaudRate::BAUD_RATE_1) {
+  void activate(BaudRate baudRate = BaudRate::BAUD_RATE_3) {
     LINK_READ_TAG(LINK_RAW_CABLE_VERSION);
 
     this->baudRate = baudRate;
     this->asyncState = AsyncState::IDLE;
     this->asyncData = EMPTY_RESPONSE;
 
-    setMultiPlayMode();
+    setMultiPlayMode(baudRate);
     isEnabled = true;
   }
 
@@ -146,7 +146,7 @@ class LinkRawCable {
    */
   template <typename F>
   Response transfer(u16 data, F cancel, bool _async = false) {
-    if (asyncState != AsyncState::IDLE)
+    if (!isEnabled || asyncState != AsyncState::IDLE)
       return EMPTY_RESPONSE;
 
     setData(data);
@@ -239,6 +239,22 @@ class LinkRawCable {
   // -------------
   // Low-level API
   // -------------
+  static void setMultiPlayMode(BaudRate baudRate) {
+    Link::_REG_RCNT = Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_HIGH);
+    Link::_REG_SIOCNT = 1 << BIT_MULTIPLAYER;
+    Link::_REG_SIOCNT |= (int)baudRate;
+    Link::_REG_SIOMLT_SEND = 0;
+  }
+  static void setGeneralPurposeMode() {
+    Link::_REG_SIOMLT_SEND = 0;
+
+    // [!]
+    // Link::_REG_RCNT = (Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_LOW)) |
+    //                   (1 << BIT_GENERAL_PURPOSE_HIGH);
+
+    Link::_REG_RCNT = (1 << 15) | 0b100110000;
+    Link::_REG_SIOCNT = 0;
+  }
   static void setData(u16 data) { Link::_REG_SIOMLT_SEND = data; }
   [[nodiscard]] static Response getData() {
     Response response = EMPTY_RESPONSE;
@@ -251,14 +267,14 @@ class LinkRawCable {
 
     return response;
   }
-  [[nodiscard]] static bool isMasterNode() { return !isBitHigh(BIT_SLAVE); }
-  [[nodiscard]] static bool allReady() { return isBitHigh(BIT_READY); }
-  [[nodiscard]] static bool hasError() { return isBitHigh(BIT_ERROR); }
-  [[nodiscard]] static bool isSending() { return isBitHigh(BIT_START); }
   static void startTransfer() { setBitHigh(BIT_START); }
   static void stopTransfer() { setBitLow(BIT_START); }
   static void setInterruptsOn() { setBitHigh(BIT_IRQ); }
   static void setInterruptsOff() { setBitLow(BIT_IRQ); }
+  [[nodiscard]] static bool isMasterNode() { return !isBitHigh(BIT_SLAVE); }
+  [[nodiscard]] static bool allReady() { return isBitHigh(BIT_READY); }
+  [[nodiscard]] static bool hasError() { return isBitHigh(BIT_ERROR); }
+  [[nodiscard]] static bool isSending() { return isBitHigh(BIT_START); }
   // -------------
 
  private:
@@ -266,24 +282,6 @@ class LinkRawCable {
   volatile AsyncState asyncState = AsyncState::IDLE;
   Response asyncData = EMPTY_RESPONSE;
   volatile bool isEnabled = false;
-
-  void setMultiPlayMode() {
-    Link::_REG_RCNT = Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_HIGH);
-    Link::_REG_SIOCNT = 1 << BIT_MULTIPLAYER;
-    Link::_REG_SIOCNT |= (int)baudRate;
-    Link::_REG_SIOMLT_SEND = 0;
-  }
-
-  void setGeneralPurposeMode() {
-    // [!]
-    // Link::_REG_SIOMLT_SEND = 0;
-    // Link::_REG_RCNT = (Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_LOW)) |
-    //                   (1 << BIT_GENERAL_PURPOSE_HIGH);
-
-    // [!]
-    Link::_REG_RCNT = (1 << 15) | 0b100110000;
-    Link::_REG_SIOCNT = 0;
-  }
 
   static bool isBitHigh(u8 bit) { return (Link::_REG_SIOCNT >> bit) & 1; }
   static void setBitHigh(u8 bit) { Link::_REG_SIOCNT |= 1 << bit; }
