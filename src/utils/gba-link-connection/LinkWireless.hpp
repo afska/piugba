@@ -15,6 +15,8 @@
 //   volatile bool isEnabled = false; volatile bool wasActivated = false; // [!]
 // if (config.retransmission) =>
 //   if (true /*config.retransmission // [!]*/)
+// config.maxPlayers = maxPlayers; =>
+//   config.maxPlayers = 2;  // [!]
 // config.maxPlayers =>
 //   2 /*config.maxPlayers // [!]*/
 // clearInflightMessagesIfNeeded(); =>
@@ -303,7 +305,7 @@ class LinkWireless {
                         u8 sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID) {
     config.forwarding = forwarding;
     config.retransmission = retransmission;
-    2 /*config.maxPlayers // [!]*/ = maxPlayers;
+    config.maxPlayers = 2;  // [!]
     config.timeout = timeout;
     config.interval = interval;
     config.sendTimerId = sendTimerId;
