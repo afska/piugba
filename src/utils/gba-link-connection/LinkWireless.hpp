@@ -29,6 +29,8 @@
 //   // transferHeader.ack3 = // [!]
 // transferHeader.ack4 = =>
 //   // transferHeader.ack4 = // [!]
+// void clearInflightMessagesIfNeeded() { =>
+//   /* [!] disable manually */
 // // get msg player ID based on player bitmap =>
 //   /* [!] disable manually */
 // sentBytes[2] = Link::_min((receiveDataHeader >> 13) & 0b11111 =>
@@ -1409,22 +1411,23 @@ class LinkWireless {
     return packer.asInt;
   }
 
-  void clearInflightMessagesIfNeeded() {  // (irq only)
-    if (true /*config.retransmission // [!]*/)
-      return;
+  // void clearInflightMessagesIfNeeded() {  // (irq only)
+  //   if (true /*config.retransmission // [!]*/)
+  //     return;
 
-    while (!sessionState.outgoingMessages.isEmpty()) {
-      u32 packetId = sessionState.outgoingMessages.peek().packetId;
-      if (packetId == NO_ID_ASSIGNED_YET)
-        break;
+  //   while (!sessionState.outgoingMessages.isEmpty()) {
+  //     u32 packetId = sessionState.outgoingMessages.peek().packetId;
+  //     if (packetId == NO_ID_ASSIGNED_YET)
+  //       break;
 
-      auto message = sessionState.outgoingMessages.pop();
-      if (linkRawWireless.getState() == State::SERVING && message.playerId > 0)
-        sessionState.forwardedCount--;
-    }
+  //     auto message = sessionState.outgoingMessages.pop();
+  //     if (linkRawWireless.getState() == State::SERVING && message.playerId >
+  //     0)
+  //       sessionState.forwardedCount--;
+  //   }
 
-    sessionState.inflightCount = 0;
-  }
+  //   sessionState.inflightCount = 0;
+  // }
 
   LINK_WIRELESS_SERIAL_ISR void addIncomingMessagesFromData(
       const CommandResult* result) {  // (irq only)
