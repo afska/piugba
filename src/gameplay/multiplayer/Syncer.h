@@ -15,7 +15,10 @@
 #define SYNC_TIMEOUT 50
 
 // Max frames without a serial IRQ
-#define SYNC_IRQ_TIMEOUT 8
+#define SYNC_CABLE_TIMEOUT 8
+
+// Max frames without a wireless packet
+#define SYNC_WIRELESS_TIMEOUT 16
 
 // Number of timer ticks (61.04μs) between messages (75 = 4.578ms)
 #define SYNC_SEND_INTERVAL 75

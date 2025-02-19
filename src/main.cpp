@@ -33,14 +33,14 @@ LinkUniversal* linkUniversal =
                       "piuGBA",
                       (LinkUniversal::CableOptions){
                           .baudRate = LinkCable::BaudRate::BAUD_RATE_1,
-                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .timeout = SYNC_CABLE_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID},
                       (LinkUniversal::WirelessOptions){
                           .forwarding = true,
                           .retransmission = true,
                           .maxPlayers = 2,
-                          .timeout = SYNC_IRQ_TIMEOUT,
+                          .timeout = SYNC_WIRELESS_TIMEOUT,
                           .interval = SYNC_SEND_INTERVAL,
                           .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID});
 Syncer* syncer = new Syncer();
