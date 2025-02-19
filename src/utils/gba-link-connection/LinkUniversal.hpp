@@ -175,6 +175,7 @@ class LinkUniversal {
     LINK_READ_TAG(LINK_UNIVERSAL_VERSION);
 
     reset();
+    waitCount = INIT_WAIT_FRAMES;
     isEnabled = true;
   }
 
