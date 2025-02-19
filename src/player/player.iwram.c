@@ -273,6 +273,7 @@ INLINE void load_file(const char* name, bool forceGSM) {
     strcpy(fileName, name);
     strcat(fileName, ".aud.bin");
 
+    stop();
     bool success = audio_store_load(fileName);
     if (success) {
       is_pcm = true;
