@@ -53,6 +53,13 @@ LINK_CODE_IWRAM void ISR_vblank() {
 }
 
 int main() {
+  // FLASH -> EWRAM
+  bool flashSuccess = false;
+  if (flash_init(FlashSize::FLASH_SIZE_AUTO) == 0)
+    flashSuccess = flash_read(0, (u8*)SRAM, sizeof(SaveFile)) == 0;
+  else
+    *SRAM = {};
+
   linkUniversal->deactivate();
   RUMBLE_init();
 
@@ -64,7 +71,11 @@ int main() {
   SEQUENCE_initialize(engine, fs);
   startRandomSeed();
 
-  engine->setScene(SEQUENCE_getInitialScene());
+  engine->setScene(flashSuccess ? SEQUENCE_getInitialScene()
+                                : SEQUENCE_halt("Save file test failed :(\r\n"
+                                                "Please set your emulator\r\n"
+                                                "or flashcart to FLASH 512\r\n"
+                                                "and restart the game."));
   player_forever(
       []() {
         // (onUpdate)
@@ -128,12 +139,37 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
-  if (syncer->$isPlayingSong || syncer->$resetFlag) {
+  bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+
+  if (syncer->$isPlayingSong || (syncer->$resetFlag && isPlaying)) {
     syncer->$resetFlag = true;
     return;
   }
   if (syncer->isOnline())
     return;
+
+  if (isPlaying) {
+    syncer->$resetFlag = true;
+    return;
+  }
+
+  if (!flashcartio_is_reading) {
+    // EWRAM -> FLASH
+    REG_IME = 0;
+    REG_RCNT |= 1 << 15;  // (disable link cable)
+    player_stop();
+    SCENE_init();
+    BACKGROUND_enable(true, false, false, false);
+    TextStream::instance().clear();
+    TextStream::instance().setFontColor(0x7FFF);
+    TextStream::instance().setText("Writing FLASH...", 0, -3);
+    int success = flash_write(0, (u8*)SRAM, sizeof(SaveFile)) == 0;
+    for (u32 i = 3; i > 0; i--) {
+      TextStream::instance().setText(
+          success ? "Progress saved!" : "Saving failed!", 0, -3);
+      SCENE_wait(228 * 60);
+    }
+  }
 
   SCENE_softReset();
 }

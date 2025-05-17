@@ -5,6 +5,7 @@
 
 #include "../libs/interrupt.h"
 #include "DanceGradeScene.h"
+#include "DeathMixScene.h"
 #include "SelectionScene.h"
 #include "StageBreakScene.h"
 #include "TalkScene.h"
@@ -208,6 +209,12 @@ void SongScene::tick(u16 keys) {
     processMultiplayerUpdates();  // (*)
     if (!syncer->isPlaying() || engine->isTransitioning())
       return;  // (*) = (onAbort, onStagePass, onStageBreak)
+  }
+
+  if (syncer->$resetFlag) {
+    syncer->$resetFlag = false;
+    onAbort();
+    return;
   }
 
   bool isNewBeat = chartReaders[localPlayerId]->update((int)songMsecs);  // (*)
@@ -884,8 +891,16 @@ void SongScene::onStagePass() {
 
 void SongScene::onAbort() {
   unload();
-  engine->transitionIntoScene(new SelectionScene(engine, fs),
-                              new PixelTransitionEffect());
+
+  if (deathMix != NULL)
+    engine->transitionIntoScene(
+        new DeathMixScene(
+            engine, fs,
+            GameState.isShuffleMode ? MixMode::SHUFFLE : MixMode::DEATH),
+        new PixelTransitionEffect());
+  else
+    engine->transitionIntoScene(new SelectionScene(engine, fs),
+                                new PixelTransitionEffect());
 }
 
 void SongScene::breakStage() {
