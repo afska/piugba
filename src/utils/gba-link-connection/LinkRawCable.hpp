@@ -252,7 +252,7 @@ class LinkRawCable {
     // Link::_REG_RCNT = (Link::_REG_RCNT & ~(1 << BIT_GENERAL_PURPOSE_LOW)) |
     //                   (1 << BIT_GENERAL_PURPOSE_HIGH);
 
-    Link::_REG_RCNT = (1 << 15) | 0b100110000;
+    Link::_REG_RCNT = (1 << 15) | 0b110110000;
     Link::_REG_SIOCNT = 0;
   }
   static void setData(u16 data) { Link::_REG_SIOMLT_SEND = data; }
