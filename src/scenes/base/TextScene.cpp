@@ -5,6 +5,7 @@
 #include "assets.h"
 #include "data/content/_compiled_sprites/palette_controls.h"
 #include "gameplay/debug/DebugTools.h"
+#include "gameplay/save/SaveFile.h"
 #include "utils/SceneUtils.h"
 #include "utils/StringUtils.h"
 
@@ -33,6 +34,8 @@ std::vector<Sprite*> TextScene::sprites() {
 }
 
 void TextScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   SCENE_init();
   TextStream::instance().setMosaic(true);
 

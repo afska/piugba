@@ -104,6 +104,8 @@ std::vector<Sprite*> StartScene::sprites() {
 }
 
 void StartScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   SAVEFILE_write8(SRAM->state.isPlaying, false);
   SCENE_init();
 

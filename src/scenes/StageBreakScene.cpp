@@ -61,6 +61,8 @@ std::vector<Sprite*> StageBreakScene::sprites() {
 }
 
 void StageBreakScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   if (isMultiplayer())
     syncer->clearTimeout();
 
