@@ -87,6 +87,8 @@ std::vector<Sprite*> DanceGradeScene::sprites() {
 }
 
 void DanceGradeScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   if (isMultiplayer())
     syncer->clearTimeout();
 

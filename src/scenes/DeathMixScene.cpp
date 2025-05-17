@@ -57,6 +57,8 @@ std::vector<Sprite*> DeathMixScene::sprites() {
 }
 
 void DeathMixScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   SAVEFILE_write8(SRAM->state.isPlaying, false);
   TalkScene::load();
 

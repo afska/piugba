@@ -132,6 +132,8 @@ std::vector<Sprite*> SongScene::sprites() {
 }
 
 void SongScene::load() {
+  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
+
   setUpGameConfig();
 
   if (isMultiplayer()) {
