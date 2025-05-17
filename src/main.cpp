@@ -16,6 +16,10 @@ extern "C" {
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 
+LINK_VERSION_TAG SUPERCARD_SD_HINT =
+    "This is a patch for the SuperCard SD flash cart. This flashcart requires "
+    "using 4,2 ROM waitstates to work.";
+
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
@@ -56,7 +60,9 @@ int main() {
   linkUniversal->deactivate();
   RUMBLE_init();
 
-  REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  LINK_READ_TAG(SUPERCARD_SD_HINT);
+  // REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  REG_WAITCNT = 0x4303;  // (4,2 waitstates, prefetch ON)
 
   validateBuild();
   setUpInterrupts();
