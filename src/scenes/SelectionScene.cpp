@@ -104,8 +104,6 @@ std::vector<Sprite*> SelectionScene::sprites() {
 }
 
 void SelectionScene::load() {
-  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
-
   if (ENV_ARCADE && IS_STORY(SAVEFILE_getGameMode()))
     BSOD("*Error* (Check your save file)       There's no campaign mode!");
   if (isBonusMode() && SAVEFILE_bonusCount(fs) == 0)
