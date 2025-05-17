@@ -142,6 +142,7 @@ Scene* SEQUENCE_deactivateEWRAMOverclock() {
 }
 
 Scene* SEQUENCE_halt(std::string error) {
+  SAVEFILE_write8(SRAM->state.isPlaying, false);
   auto scene = new TalkScene(_engine, _fs, error, [](u16 keys) {});
   scene->withButton = false;
   return scene;
