@@ -164,6 +164,7 @@ SRCDIRS		:= src \
 						 src/utils/flashcartio/everdrivegbax5 \
 						 src/utils/flashcartio/ezflashomega \
 						 src/utils/flashcartio/fatfs \
+						 src/utils/libsavgba \
 						 src/utils/pool \
 						 libs
 DATADIRS	:=
