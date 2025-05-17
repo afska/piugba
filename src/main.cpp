@@ -53,10 +53,15 @@ LINK_CODE_IWRAM void ISR_vblank() {
 }
 
 int main() {
+  // SRAM -> EWRAM
+  for (u32 i = 0; i < sizeof(SaveFile); i++)
+    ((u8*)SRAM)[i] = ((vu8*)MEM_SRAM)[i];
+
   linkUniversal->deactivate();
   RUMBLE_init();
 
-  REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  // REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  REG_WAITCNT = 0x4307;  // (3,2 waitstates, prefetch ON)
 
   validateBuild();
   setUpInterrupts();
@@ -128,12 +133,38 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
-  if (syncer->$isPlayingSong || syncer->$resetFlag) {
+  bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
+
+  if (syncer->$isPlayingSong || (syncer->$resetFlag && isPlaying)) {
     syncer->$resetFlag = true;
     return;
   }
   if (syncer->isOnline())
     return;
+
+  if (isPlaying) {
+    syncer->$resetFlag = true;
+    return;
+  }
+
+  if (!flashcartio_is_reading) {
+    // EWRAM -> SRAM
+    REG_IME = 0;
+    REG_RCNT |= 1 << 15;  // (disable link cable)
+    player_stop();
+    SCENE_init();
+    BACKGROUND_enable(true, false, false, false);
+    TextStream::instance().clear();
+    TextStream::instance().setFontColor(0x7FFF);
+    TextStream::instance().setText("Writing SRAM...", 0, -3);
+    for (u32 i = 0; i < sizeof(SaveFile); i++)
+      ((vu8*)MEM_SRAM)[i] = ((u8*)SRAM)[i];
+    for (u32 i = 10; i > 0; i--) {
+      TextStream::instance().setText("Saving (" + std::to_string(i) + ")...", 0,
+                                     -3);
+      SCENE_wait(228 * 60);
+    }
+  }
 
   SCENE_softReset();
 }
