@@ -40,8 +40,6 @@ std::vector<Sprite*> StatsScene::sprites() {
 }
 
 void StatsScene::load() {
-  flash_write(0, (u8*)SRAM, sizeof(SaveFile));
-
   SCENE_init();
 
   setUpSpritesPalette();
