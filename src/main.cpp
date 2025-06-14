@@ -62,7 +62,7 @@ int main() {
   RUMBLE_init();
 
   LINK_READ_TAG(EVERDRIVE_HINT);
-  REG_WAITCNT = 0x4317;  // (3,1 waitstates, prefetch ON)
+  REG_WAITCNT = 0x431b;  // (2,1 waitstates, prefetch ON)
 
   validateBuild();
   setUpInterrupts();
