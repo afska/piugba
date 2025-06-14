@@ -86,10 +86,9 @@
 inline __attribute__((always_inline)) void dmaCopy(const void* source,
                                                    void* dest,
                                                    u32 size) {
-#ifdef FLASHCARTIO_USE_DMA1
+#if FLASHCARTIO_USE_DMA1 != 0
   DMA_Copy(1, source, dest, DMA32 | size >> 2);
-#endif
-#ifndef FLASHCARTIO_USE_DMA1
+#else
   DMA_Copy(3, source, dest, DMA32 | size >> 2);
 #endif
 }
