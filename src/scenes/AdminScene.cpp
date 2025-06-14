@@ -120,6 +120,7 @@ void AdminScene::printOptions() {
   }
 
   SCENE_write(TITLE, 1);
+  SCENE_write("[ED: PS2/HQMODE]", 2);
 
   u8 navigationStyle = SAVEFILE_read8(SRAM->adminSettings.navigationStyle);
   u8 rumble = SAVEFILE_read8(SRAM->adminSettings.rumble);
@@ -148,16 +149,14 @@ void AdminScene::printOptions() {
                                : "OFF",
               8);
   printOption(OPTION_HQ_MODE, "HQ (audio / video)",
-              ps2Input > 0 ? "---"
-                           : (hqMode == 3   ? "VIDEO"
-                              : hqMode == 4 ? "AUDIO"
-                              : hqMode > 0  ? "ALL"
-                                            : "OFF"),
+              hqMode == 3   ? "VIDEO"
+              : hqMode == 4 ? "AUDIO"
+              : hqMode > 0  ? "ALL"
+                            : "OFF",
               9);
   printOption(OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
               ewramOverclock == 1 ? "ON" : "OFF", 10);
-  printOption(OPTION_PS2_INPUT, "PS/2 input",
-              hqMode > 0 ? "---" : (ps2Input > 0 ? "ON" : "OFF"), 11);
+  printOption(OPTION_PS2_INPUT, "PS/2 input", ps2Input > 0 ? "ON" : "OFF", 11);
 
   printOption(OPTION_RUMBLE_OPTS, "[RUMBLE OPTIONS]", "", 13);
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 14);
@@ -335,10 +334,6 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_HQ_MODE: {
-      u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
-      if (ps2Input > 0)
-        return true;
-
       u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
       u8 updatedHQMode = change(hqMode, 5, direction);
       bool wasOn = hqMode > 1;
@@ -376,10 +371,6 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       }
     }
     case OPTION_PS2_INPUT: {
-      u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
-      if (hqMode > 0)
-        return true;
-
       u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
       u8 newValue = change(value, 2, direction);
       SAVEFILE_write8(SRAM->adminSettings.ps2Input, newValue);

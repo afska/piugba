@@ -133,6 +133,27 @@ CODE_IWRAM bool VideoStore::preRead() {
   return success;
 }
 
+// C equivalent of memcpy32
+typedef struct __BLOCK {
+  u32 data[8];
+} ___BLOCK;
+
+CODE_IWRAM void memcpy32(void* dst, const void* src, uint wdcount) {
+  u32 blkN = wdcount / 8, wdN = wdcount & 7;
+  u32 *dstw = (u32*)dst, *srcw = (u32*)src;
+  if (blkN) {
+    // 8-word copies
+    ___BLOCK *dst2 = (___BLOCK*)dst, *src2 = (___BLOCK*)src;
+    while (blkN--)
+      *dst2++ = *src2++;
+    dstw = (u32*)dst2;
+    srcw = (u32*)src2;
+  }
+  // Residual words
+  while (wdN--)
+    *dstw++ = *srcw++;
+}
+
 CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
   u32 readFromMemory = 0;
 
@@ -142,7 +163,13 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
 
     if (availableMemory > 0) {
       u32 readableBytes = min(availableMemory, pendingBytes);
-      dma3_cpy(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes);
+
+      // ---
+      memcpy32(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes >> 2);
+      // ---
+      // dma3_cpy(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes);
+      // ---
+
       memoryCursor += readableBytes;
       readFromMemory += readableBytes;
       sectors -= readableBytes / VIDEO_SECTOR;

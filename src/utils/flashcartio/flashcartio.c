@@ -24,10 +24,10 @@ ActivationResult flashcartio_activate(void) {
   }
 
   // EZ Flash Omega
-  if (_EZFO_startUp()) {
-    active_flashcart = EZ_FLASH_OMEGA;
-    return FLASHCART_ACTIVATED;
-  }
+  // if (_EZFO_startUp()) {
+  //   active_flashcart = EZ_FLASH_OMEGA;
+  //   return FLASHCART_ACTIVATED;
+  // }
 
   return NO_FLASHCART_FOUND;
 }

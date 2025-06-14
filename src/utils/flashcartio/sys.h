@@ -8,6 +8,9 @@
 #define BI_SAV_FLA64 64
 #define BI_SAV_FLA128 80
 
+// Disable DMA (slower)
+#define FLASHCARTIO_DISABLE_DMA 1
+
 // Use DMA1 instead of DMA3
 #define FLASHCARTIO_USE_DMA1 1
 
@@ -86,10 +89,16 @@
 inline __attribute__((always_inline)) void dmaCopy(const void* source,
                                                    void* dest,
                                                    u32 size) {
+#if FLASHCARTIO_DISABLE_DMA != 0
+  for (u32 i = 0; i < size / 4; i++) {
+    ((u32*)dest)[i] = ((u32*)source)[i];
+  }
+#else
 #if FLASHCARTIO_USE_DMA1 != 0
   DMA_Copy(1, source, dest, DMA32 | size >> 2);
 #else
   DMA_Copy(3, source, dest, DMA32 | size >> 2);
+#endif
 #endif
 }
 

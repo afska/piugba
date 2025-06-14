@@ -138,19 +138,25 @@ void bi_sd_read_crc_ram(void* dst) {
 }
 
 u8 bi_sd_dma_to_rom(void* dst, int slen) {
-  u16 buff[256];
-
   while (slen) {
     if (bi_sd_wait_f0() != 0)
       return 1;
 
     bi_reg_wr(REG_CFG, cart_cfg | CFG_AUTO_WE);
+#if FLASHCARTIO_DISABLE_DMA != 0
+    vu16 buff[256];
+    for (u32 i = 0; i < 256; i++)
+      buff[i] = ((vu16*)dst)[i];
+    (void)buff;
+#else
+    u16 buff[256];
     DMA_SRC = (u32)dst;
     DMA_DST = (u32)buff;
     DMA_LEN = 256;
     DMA_CTR = 0x8000;
     while ((DMA_CTR & 0x8000) != 0)
       ;
+#endif
     bi_reg_wr(REG_CFG, cart_cfg);
 
     slen--;
@@ -171,6 +177,12 @@ bi_sd_dma_rd(void* dst, int slen) {
     if (bi_sd_wait_f0() != 0)
       return 1;
 
+#if FLASHCARTIO_DISABLE_DMA != 0
+    u16* dest = (u16*)dst;
+    volatile u16* source = (volatile u16*)(REG_BASE + REG_SD_DAT * 2);
+    for (u32 i = 0; i < 256; i++)
+      dest[i] = *source;
+#else
     DMA_SRC = (u32)(REG_BASE + REG_SD_DAT * 2);
     DMA_DST = (u32)dst;
     DMA_LEN = 256;
@@ -178,6 +190,7 @@ bi_sd_dma_rd(void* dst, int slen) {
 
     while ((DMA_CTR & 0x8000) != 0)
       ;
+#endif
 
     slen--;
     dst += 512;

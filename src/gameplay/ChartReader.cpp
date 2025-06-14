@@ -47,7 +47,7 @@ ChartReader::ChartReader(Chart* chart,
   syncInitialScrollSpeed(multiplier);
 };
 
-CODE_PLACEMENT bool ChartReader::update(int songMsecs) {
+bool ChartReader::update(int songMsecs) {
   int rhythmMsecs = songMsecs - rateAudioLag + customOffset - lastBpmChange;
   msecs =
       songMsecs - rateAudioLag + customOffset - (int)stoppedMs + (int)warpedMs;
