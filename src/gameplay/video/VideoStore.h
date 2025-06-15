@@ -1,6 +1,9 @@
 #ifndef VIDEO_STORE_H
 #define VIDEO_STORE_H
 
+extern "C" void _memcpy32(void* dst, const void* src, unsigned int wdcount)
+    __attribute__((section(".iwram"), target("arm"), noinline));
+
 #include <libgba-sprite-engine/gba/tonc_core.h>
 
 #include <string>

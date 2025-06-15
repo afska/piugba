@@ -21,7 +21,8 @@ LINK_VERSION_TAG EVERDRIVE_HINT =
     "input and HQ mode at the same time thanks to its faster microSD reading "
     "speed. DMA is replaced by a regular copy to allow serial interrupt "
     "handlers to be triggered on time. For extra speed, ROM waitstates are "
-    "changed to 2,1.";
+    "changed to 2,1. "
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
