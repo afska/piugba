@@ -83,7 +83,7 @@ class SelectionScene : public Scene {
   u32 blendCount = 0;
 
   inline void playNow(const char* name) {
-    player_play(name, isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
+    player_play(name, isMultiplayer() || !CAN_USE_HQ_AUDIO_DURING_MENUS);
     syncer->pendingAudio = "";
     syncer->pendingSeek = 0;
   }

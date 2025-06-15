@@ -97,7 +97,7 @@ int main() {
 
         if (syncer->pendingAudio != "") {
           player_play(syncer->pendingAudio.c_str(),
-                      isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA);
+                      isMultiplayer() || !CAN_USE_HQ_AUDIO_DURING_MENUS);
           syncer->pendingAudio = "";
         }
 

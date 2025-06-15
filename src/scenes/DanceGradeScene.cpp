@@ -340,7 +340,7 @@ void DanceGradeScene::updateStats() {
 
 void DanceGradeScene::playSound() {
   auto gradeType = isVs() ? miniGrades[0].get()->getType() : grade->getType();
-  auto forceGSM = isMultiplayer() || active_flashcart == EZ_FLASH_OMEGA;
+  auto forceGSM = isMultiplayer() || !CAN_USE_HQ_AUDIO_DURING_MENUS;
 
   switch (gradeType) {
     case GradeType::S: {

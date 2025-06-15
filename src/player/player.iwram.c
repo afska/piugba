@@ -306,7 +306,7 @@ CODE_ROM void player_unload() {
 }
 
 CODE_ROM bool player_playSfx(const char* name) {
-  load_file(name, active_flashcart == EZ_FLASH_OMEGA);
+  load_file(name, !CAN_USE_HQ_AUDIO_DURING_MENUS);
   return is_pcm;
 }
 
