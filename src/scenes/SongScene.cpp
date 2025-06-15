@@ -711,7 +711,7 @@ void SongScene::drawVideo() {
 }
 
 void SongScene::throwVideoError() {
-  SCENE_softReset();
+  forceSoftReset();
 }
 
 void SongScene::processKeys(u16 keys) {
