@@ -16,6 +16,10 @@ extern "C" {
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 
+LINK_VERSION_TAG FLASHCART_HINT =
+    "This is a patch for flash carts that support the 2,1 ROM waitstates. Only "
+    "use it if you are sure your hardware supports it.";
+
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
@@ -56,6 +60,7 @@ int main() {
   linkUniversal->deactivate();
   RUMBLE_init();
 
+  LINK_READ_TAG(FLASHCART_HINT);
   REG_WAITCNT = 0x431b;  // (2,1 waitstates, prefetch ON)
 
   validateBuild();
