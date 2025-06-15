@@ -11,9 +11,8 @@ typedef enum {
   FLASHCART_ACTIVATION_FAILED
 } ActivationResult;  // [!]
 
-#define CAN_USE_BG_VIDEO_WITH_GSM (active_flashcart != EZ_FLASH_OMEGA)  // [!]
-#define CAN_USE_HQ_AUDIO_DURING_MENUS \
-  (active_flashcart != EZ_FLASH_OMEGA)  // [!]
+#define CAN_USE_BG_VIDEO_WITH_GSM (false)     // [!]
+#define CAN_USE_HQ_AUDIO_DURING_MENUS (true)  // [!]
 
 extern ActiveFlashcart active_flashcart;
 extern volatile bool flashcartio_is_reading;
