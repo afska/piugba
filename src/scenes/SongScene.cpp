@@ -397,8 +397,7 @@ initialized:
     player_play(song->audioPath.c_str(), true);
   } else {
     bool isPCM = player_play(song->audioPath.c_str(), false);
-    if (!isPCM && usesVideo &&
-        active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+    if (!isPCM && usesVideo && active_flashcart == EZ_FLASH_OMEGA) {
       unload();
       engine->transitionIntoScene(SEQUENCE_halt(HQ_AUDIO_REQUIRED),
                                   new PixelTransitionEffect());
@@ -645,7 +644,7 @@ void SongScene::prepareVideo() {
   if (!usesVideo)
     return;
 
-  if (shouldForceGSM() && active_flashcart == ActiveFlashcart::EZ_FLASH_OMEGA) {
+  if (shouldForceGSM() && active_flashcart == EZ_FLASH_OMEGA) {
     usesVideo = false;
     return;
   }
