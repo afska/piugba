@@ -287,17 +287,17 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       switch (submenu) {
         case SUBMENU_SURE_OFFSETS: {
           SAVEFILE_resetOffsets();
-          SCENE_softReset();
+          ISR_reset();
           return true;
         }
         case SUBMENU_SURE_ARCADE: {
           SAVEFILE_resetArcade();
-          SCENE_softReset();
+          ISR_reset();
           return true;
         }
         case SUBMENU_SURE_ALL: {
           SAVEFILE_reset();
-          SCENE_softReset();
+          ISR_reset();
           return true;
         }
       }

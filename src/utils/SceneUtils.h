@@ -13,6 +13,8 @@
 #include "utils/IOPort.h"
 #include "utils/Rumble.h"
 
+#include "main.h"
+
 extern "C" {
 #include "player/player.h"
 #include "utils/flashcartio/flashcartio.h"
@@ -115,7 +117,7 @@ inline void SCENE_softReset() {
 
   if (flashcartio_is_reading) {
     flashcartio_needs_reset = true;
-    flashcartio_reset_callback = []() { SCENE_softReset(); };
+    flashcartio_reset_callback = []() { ISR_reset(); };
     return;
   }
 

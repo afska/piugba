@@ -1,3 +1,5 @@
+#include "main.h"
+
 #include <libgba-sprite-engine/gba_engine.h>
 #include <tonc.h>
 
@@ -95,7 +97,7 @@ int main() {
         // (onRender)
         ps2Keyboard->update();
         if (ps2Keyboard->keys.softReset)
-          SCENE_softReset();
+          ISR_reset();
 
         EFFECT_render();
         engine->render();
@@ -125,7 +127,7 @@ int main() {
 #endif
         }
       },
-      []() { SCENE_softReset(); });
+      []() { forceSoftReset(); });
 
   LOGSTR(SAVEFILE_TYPE_HINT, 0);
 
@@ -147,6 +149,10 @@ CODE_EWRAM void ISR_reset() {
     return;
   }
 
+  forceSoftReset();
+}
+
+void forceSoftReset() {
   if (!flashcartio_is_reading) {
     // EWRAM -> SRAM
     REG_IME = 0;
