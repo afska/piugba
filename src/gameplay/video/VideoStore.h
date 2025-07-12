@@ -5,7 +5,8 @@
 
 #include <string>
 
-#define VIDEOS_FOLDER_NAME "/piuGBA_videos/"
+#define VIDEOS_FOLDER_NAME_ABS "/piuGBA_videos/"
+#define VIDEOS_FOLDER_NAME_REL "piuGBA_videos/"
 #define VIDEO_SIZE_PALETTE 512
 #define VIDEO_SIZE_MAP 2048
 #define VIDEO_SIZE_TILES 38912
@@ -36,6 +37,10 @@ class VideoStore {
   bool seek(u32 msecs);
   bool preRead();
   bool endRead(u8* buffer, u32 sectors);
+  bool preReadSD();
+  bool endReadSD(u8* buffer, u32 sectors);
+  bool preReadEmulatorFs();
+  bool endReadEmulatorFs(u8* buffer, u32 sectors);
 
  private:
   State state = OFF;
