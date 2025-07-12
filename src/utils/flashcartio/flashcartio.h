@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "fatfs/ff.h"
 
+#define MAX_PATH_LENGTH 64  // [!]
+
 typedef enum {
   NO_FLASHCART,
   EVERDRIVE_GBA_X5,
@@ -17,7 +19,6 @@ typedef enum {
   FLASHCART_ACTIVATION_FAILED
 } ActivationResult;  // [!]
 
-#define MAX_PATH_LENGTH 64                                              // [!]
 #define CAN_USE_BG_VIDEO_WITH_GSM (active_flashcart != EZ_FLASH_OMEGA)  // [!]
 #define CAN_USE_HQ_AUDIO_DURING_MENUS \
   (active_flashcart != EZ_FLASH_OMEGA)  // [!]
