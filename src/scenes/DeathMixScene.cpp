@@ -63,8 +63,9 @@ void DeathMixScene::load() {
   setUpSpritesPalette();
 
   pixelBlink = std::unique_ptr<PixelBlink>{new PixelBlink(PIXEL_BLINK_LEVEL)};
-  multiplier = std::unique_ptr<Multiplier>{new Multiplier(
-      MULTIPLIER_X, MULTIPLIER_Y, SAVEFILE_read8(SRAM->mods.multiplier))};
+  multiplier = std::unique_ptr<Multiplier>{
+      new Multiplier(MULTIPLIER_X - (mixMode == MixMode::SHUFFLE), MULTIPLIER_Y,
+                     SAVEFILE_read8(SRAM->mods.multiplier))};
   if (mixMode == MixMode::DEATH) {
     difficulty =
         std::unique_ptr<Difficulty>{new Difficulty(DIFFICULTY_X, DIFFICULTY_Y)};
