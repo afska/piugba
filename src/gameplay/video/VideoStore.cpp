@@ -23,6 +23,7 @@ const u32 FRACUMUL_MS_TO_FRAME_AT_30FPS = 128849018;  // (*30/1000)
 
 DATA_EWRAM static FATFS fatfs;
 DATA_EWRAM static FIL file;
+DATA_EWRAM static char currentVideoPath[MAX_PATH_LENGTH];
 
 HQModeOpts getMode() {
   return static_cast<HQModeOpts>(SAVEFILE_read8(SRAM->adminSettings.hqMode));
@@ -53,9 +54,11 @@ VideoStore::State VideoStore::activate() {
                          : NO_SUPPORTED_FLASHCART));
   }
 
-  if (f_mount(&fatfs, "", 1) > 0) {
-    disable();
-    return setState(MOUNT_ERROR);
+  if (!isEmulatorFsEnabled()) {
+    if (f_mount(&fatfs, "", 1) > 0) {
+      disable();
+      return setState(MOUNT_ERROR);
+    }
   }
 
   SAVEFILE_write8(SRAM->adminSettings.hqMode, previousMode > HQModeOpts::dACTIVE
@@ -77,21 +80,39 @@ VideoStore::LoadResult VideoStore::load(std::string videoPath,
   if (memory == NULL)
     return LoadResult::NO_FILE;
 
-  auto result =
-      f_open(&file, (VIDEOS_FOLDER_NAME + videoPath).c_str(), FA_READ);
-  if (result > 0)
-    return result == FR_NO_FILE || result == FR_NO_PATH ? LoadResult::NO_FILE
-                                                        : LoadResult::ERROR;
+  auto max = sizeof(currentVideoPath) - 1;
+  auto fullVideoPath = (isEmulatorFsEnabled() ? VIDEOS_FOLDER_NAME_REL
+                                              : VIDEOS_FOLDER_NAME_ABS) +
+                       videoPath;
+  auto len = fullVideoPath.size() < max ? fullVideoPath.size() : max;
+  for (u32 i = 0; i < len; i++)
+    currentVideoPath[i] = fullVideoPath[i];
+  currentVideoPath[len] = '\0';
+
+  if (isEmulatorFsEnabled()) {
+    unsigned char test[2];
+    if (readFile(currentVideoPath, 0, 1, test) == -1)
+      return LoadResult::NO_FILE;
+
+    file.sect = 0;
+  } else {
+    auto result = f_open(&file, fullVideoPath.c_str(), FA_READ);
+    if (result > 0)
+      return result == FR_NO_FILE || result == FR_NO_PATH ? LoadResult::NO_FILE
+                                                          : LoadResult::ERROR;
+  }
 
   isPlaying = true;
   frame = 0;
   this->videoOffset = videoOffset;
 
-  file.cltbl = (DWORD*)memory;
-  file.cltbl[0] = CLMT_ENTRIES;
-  if (f_lseek(&file, CREATE_LINKMAP) > 0) {
-    unload();
-    return LoadResult::ERROR;
+  if (!isEmulatorFsEnabled()) {
+    file.cltbl = (DWORD*)memory;
+    file.cltbl[0] = CLMT_ENTRIES;
+    if (f_lseek(&file, CREATE_LINKMAP) > 0) {
+      unload();
+      return LoadResult::ERROR;
+    }
   }
 
   if (!seek(0))
@@ -104,7 +125,9 @@ void VideoStore::unload() {
   if (!isPlaying)
     return;
 
-  f_close(&file);
+  if (!isEmulatorFsEnabled())
+    f_close(&file);
+
   isPlaying = false;
 }
 
@@ -116,15 +139,33 @@ bool VideoStore::seek(u32 msecs) {
   cursor = frame > 0 ? frame * VIDEO_SIZE_FRAME / VIDEO_SECTOR : 0;
   memoryCursor = 0;
 
-  if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
-    unload();
-    return false;
+  if (isEmulatorFsEnabled()) {
+    file.sect = cursor * VIDEO_SECTOR;
+  } else {
+    if (f_lseek(&file, cursor * VIDEO_SECTOR) > 0) {
+      unload();
+      return false;
+    }
   }
 
   return true;
 }
 
-CODE_IWRAM bool VideoStore::preRead() {
+bool VideoStore::preRead() {
+  if (isEmulatorFsEnabled())
+    return preReadEmulatorFs();
+  else
+    return preReadSD();
+}
+
+bool VideoStore::endRead(u8* buffer, u32 sectors) {
+  if (isEmulatorFsEnabled())
+    return endReadEmulatorFs(buffer, sectors);
+  else
+    return endReadSD(buffer, sectors);
+}
+
+CODE_IWRAM bool VideoStore::preReadSD() {
   u32 readBytes;
   bool success =
       f_read(&file, memory + SIZE_CLMT, SIZE_HALF_FRAME, &readBytes) == 0;
@@ -133,7 +174,7 @@ CODE_IWRAM bool VideoStore::preRead() {
   return success;
 }
 
-CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
+CODE_IWRAM bool VideoStore::endReadSD(u8* buffer, u32 sectors) {
   u32 readFromMemory = 0;
 
   while (sectors > 0) {
@@ -156,6 +197,48 @@ CODE_IWRAM bool VideoStore::endRead(u8* buffer, u32 sectors) {
       u32 readBytes;
       if (f_read(&file, buffer + readFromMemory, pendingBytes, &readBytes) > 0)
         return false;
+      cursor += sectors;
+      sectors = 0;
+    }
+  }
+
+  return true;
+}
+
+bool VideoStore::preReadEmulatorFs() {
+  int readBytes = readFile(currentVideoPath, file.sect, SIZE_HALF_FRAME,
+                           (u8*)(memory + SIZE_CLMT));
+  bool success = readBytes > -1;
+  if (!success)
+    return false;
+
+  file.sect += readBytes;
+  cursor += SIZE_HALF_FRAME / VIDEO_SECTOR;
+  memoryCursor = 0;
+  return true;
+}
+
+bool VideoStore::endReadEmulatorFs(u8* buffer, u32 sectors) {
+  u32 readFromMemory = 0;
+
+  while (sectors > 0) {
+    u32 availableMemory = SIZE_HALF_FRAME - memoryCursor;
+    u32 pendingBytes = sectors * VIDEO_SECTOR;
+
+    if (availableMemory > 0) {
+      u32 readableBytes = min(availableMemory, pendingBytes);
+      dma3_cpy(buffer, memory + SIZE_CLMT + memoryCursor, readableBytes);
+      memoryCursor += readableBytes;
+      readFromMemory += readableBytes;
+      sectors -= readableBytes / VIDEO_SECTOR;
+    } else {
+      int readBytes = readFile(currentVideoPath, file.sect, pendingBytes,
+                               (u8*)(buffer + readFromMemory));
+      bool success = readBytes > -1;
+      if (!success)
+        return false;
+
+      file.sect += readBytes;
       cursor += sectors;
       sectors = 0;
     }
