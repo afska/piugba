@@ -29,6 +29,12 @@ ActivationResult flashcartio_activate(void) {
     return FLASHCART_ACTIVATED;
   }
 
+  // Emulator FS // [!]
+  if (enableFs()) {
+    active_flashcart = EMULATOR;
+    return FLASHCART_ACTIVATED;
+  }
+
   return NO_FLASHCART_FOUND;
 }
 
