@@ -269,7 +269,7 @@ INLINE void load_file(const char* name, bool forceGSM) {
 
   if (PlaybackState.fatfs != NULL && !PlaybackState.isPCMDisabled &&
       !forceGSM) {
-    char fileName[64];
+    char fileName[MAX_PATH_LENGTH];
     strcpy(fileName, name);
     strcat(fileName, ".aud.bin");
 
@@ -282,7 +282,7 @@ INLINE void load_file(const char* name, bool forceGSM) {
     }
   }
 
-  char fileName[64];
+  char fileName[MAX_PATH_LENGTH];
   strcpy(fileName, name);
   strcat(fileName, ".gsm");
   is_pcm = false;

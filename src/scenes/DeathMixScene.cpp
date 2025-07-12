@@ -94,7 +94,7 @@ void DeathMixScene::load() {
   } else {
     backButton->get()->moveTo(BACK_X + NUMERIC_BUTTON_OFFSET_X,
                               BACK_Y + NUMERIC_BUTTON_OFFSET_Y);
-    nextButton->get()->moveTo(NEXT_X - NUMERIC_BUTTON_OFFSET_X,
+    nextButton->get()->moveTo(NEXT_X - NUMERIC_BUTTON_OFFSET_X - 3,
                               NEXT_Y + NUMERIC_BUTTON_OFFSET_Y);
 
     // (force single mode)
@@ -212,6 +212,10 @@ bool DeathMixScene::onDifficultyLevelChange(ArrowSelector* button,
       return true;
 
     SAVEFILE_write8(SRAM->memory.difficultyLevel, newValue);
+    auto songIndex = SAVEFILE_getLibrarySize() - 1;
+    SAVEFILE_write8(SRAM->memory.pageIndex, Div(songIndex, PAGE_SIZE));
+    SAVEFILE_write8(SRAM->memory.songIndex, DivMod(songIndex, PAGE_SIZE));
+
     difficulty->setValue(newValue);
     loadProgress();
     pixelBlink->blink();
