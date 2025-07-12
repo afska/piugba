@@ -94,7 +94,7 @@ void DeathMixScene::load() {
   } else {
     backButton->get()->moveTo(BACK_X + NUMERIC_BUTTON_OFFSET_X,
                               BACK_Y + NUMERIC_BUTTON_OFFSET_Y);
-    nextButton->get()->moveTo(NEXT_X - NUMERIC_BUTTON_OFFSET_X,
+    nextButton->get()->moveTo(NEXT_X - NUMERIC_BUTTON_OFFSET_X - 3,
                               NEXT_Y + NUMERIC_BUTTON_OFFSET_Y);
 
     // (force single mode)
