@@ -11,12 +11,15 @@
 DATA_EWRAM static unsigned int clmt[CLMT_ENTRIES];
 DATA_EWRAM static FIL file;
 DATA_EWRAM static bool hasLoaded = false;
+DATA_EWRAM static char currentAudioPath[MAX_PATH_LENGTH];
 
 void unload() {
   if (!hasLoaded)
     return;
 
-  f_close(&file);
+  if (!isEmulatorFsEnabled())
+    f_close(&file);
+
   hasLoaded = false;
 }
 
@@ -25,21 +28,34 @@ bool audio_store_load(char* audioPath) {
     return false;
 
   unload();
-  char fileName[64];
-  strcpy(fileName, AUDIOS_FOLDER_NAME);
+  char fileName[MAX_PATH_LENGTH];
+  strcpy(fileName, isEmulatorFsEnabled() ? AUDIOS_FOLDER_NAME_REL
+                                         : AUDIOS_FOLDER_NAME_ABS);
   strcat(fileName, audioPath);
 
-  FRESULT result = f_open(&file, fileName, FA_READ);
-  if (result > 0)
-    return false;
+  for (unsigned i = 0; i < MAX_PATH_LENGTH; i++)
+    currentAudioPath[i] = fileName[i];
 
-  hasLoaded = true;
+  if (isEmulatorFsEnabled()) {
+    unsigned char test[2];
+    if (readFile(fileName, 0, 1, test) == -1)
+      return false;
 
-  file.cltbl = (DWORD*)clmt;
-  file.cltbl[0] = CLMT_ENTRIES;
-  if (f_lseek(&file, CREATE_LINKMAP) > 0) {
-    unload();
-    return false;
+    hasLoaded = true;
+    file.sect = 0;
+  } else {
+    FRESULT result = f_open(&file, fileName, FA_READ);
+    if (result > 0)
+      return false;
+
+    hasLoaded = true;
+
+    file.cltbl = (DWORD*)clmt;
+    file.cltbl[0] = CLMT_ENTRIES;
+    if (f_lseek(&file, CREATE_LINKMAP) > 0) {
+      unload();
+      return false;
+    }
   }
 
   return true;
@@ -50,16 +66,40 @@ bool audio_store_read(void* buffer, int size) {
     return false;
 
   unsigned int readBytes;
-  return f_read(&file, buffer, size, &readBytes) == 0;
+  if (isEmulatorFsEnabled()) {
+    int count = readFile(currentAudioPath, file.sect, size, buffer);
+    bool success = count > -1;
+    if (success) {
+      file.sect += count;
+      readBytes = count;
+    } else
+      readBytes = 0;
+    return success;
+  } else {
+    return f_read(&file, buffer, size, &readBytes) == 0;
+  }
 }
 
 bool audio_store_seek(unsigned int offset) {
   if (!hasLoaded)
     return false;
 
-  return f_lseek(&file, offset) == 0;
+  if (isEmulatorFsEnabled()) {
+    file.sect = offset;
+    return true;
+  } else {
+    return f_lseek(&file, offset) == 0;
+  }
 }
 
 unsigned int audio_store_len() {
-  return hasLoaded ? f_size(&file) : 0;
+  if (!hasLoaded)
+    return 0;
+
+  if (isEmulatorFsEnabled()) {
+    int size = getFileSize(currentAudioPath);
+    return size > -1 ? size : 0;
+  } else {
+    return f_size(&file);
+  }
 }

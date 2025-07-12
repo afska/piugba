@@ -4,7 +4,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define AUDIOS_FOLDER_NAME "/piuGBA_audios/"
+#define AUDIOS_FOLDER_NAME_ABS "/piuGBA_audios/"
+#define AUDIOS_FOLDER_NAME_REL "piuGBA_audios/"
 
 bool audio_store_load(char* audioPath);
 bool audio_store_read(void* buffer, int size);
