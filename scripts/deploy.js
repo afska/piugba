@@ -121,6 +121,15 @@ if (!SEARCH) {
         `⌚  BUILDING IPS PATCH: VARIANT=${variant}, ENV=production, PATCH=${patch}`
       );
 
+      // pad `patchedFile` if it's too small
+      const cleanPath = $path.join(CONTENT_DIR, cleanFile);
+      const patchedPath = $path.join(CONTENT_DIR, patchedFile);
+      const cleanSize = fs.statSync(cleanPath).size;
+      const patchedSize = fs.statSync(patchedPath).size;
+      const minSize = cleanSize + 1024;
+      if (patchedSize < minSize)
+        fs.appendFileSync(patchedPath, Buffer.alloc(minSize - patchedSize));
+
       run(
         `flips --create --ips ${cleanFile} ${patchedFile} ${patch}.${variant}.prod.ips`,
         {
