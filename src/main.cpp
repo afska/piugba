@@ -16,14 +16,6 @@ extern "C" {
 
 #define CODE_EWRAM __attribute__((section(".ewram")))
 
-LINK_VERSION_TAG EVERDRIVE_HINT =
-    "This is a patch for the EverDrive flash cart. This flashcart can run PS/2 "
-    "input and HQ mode at the same time thanks to its faster microSD reading "
-    "speed. DMA is replaced by a regular copy to allow serial interrupt "
-    "handlers to be triggered on time. For extra speed, ROM waitstates are "
-    "changed to 2,1. "
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-
 // Emulators and flashcarts use this string to autodetect the save type
 const char* SAVEFILE_TYPE_HINT = "SRAM_Vnnn\0\0";
 
@@ -64,7 +56,6 @@ int main() {
   linkUniversal->deactivate();
   RUMBLE_init();
 
-  LINK_READ_TAG(EVERDRIVE_HINT);
   REG_WAITCNT = 0x431b;  // (2,1 waitstates, prefetch ON)
 
   validateBuild();
