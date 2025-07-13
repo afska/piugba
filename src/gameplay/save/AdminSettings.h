@@ -17,6 +17,7 @@ enum SRAMBlinkOpts : u8 {
 };
 enum NavigationStyleOpts : u8 { PIU, GBA };
 enum HQModeOpts : u8 { dOFF, dACTIVATING, dACTIVE, dVIDEO_ONLY, dAUDIO_ONLY };
+enum ExternalInputOpts : u8 { eOFF, ePS2, eEMU };
 
 #define RUMBLE_PREROLL(OPTS) (((OPTS) >> 4) & 0b1111)
 #define RUMBLE_IDLE(OPTS) (((OPTS) >> 0) & 0b1111)
@@ -32,7 +33,7 @@ typedef struct __attribute__((__packed__)) {
   bool offsetEditingEnabled;
   HQModeOpts hqMode;
   bool ewramOverclock;
-  bool ps2Input;
+  u8 externalInput;
   u8 rumbleFrames;
   u8 rumbleOpts;
 } AdminSettings;

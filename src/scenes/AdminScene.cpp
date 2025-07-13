@@ -8,7 +8,7 @@
 #include "scenes/StartScene.h"
 #include "utils/SceneUtils.h"
 
-#define TITLE "ADMIN MENU (v1.11.4)"
+#define TITLE "ADMIN MENU (v1.11.5)"
 #define SUBMENU_RUMBLE 0
 #define SUBMENU_OFFSETS 1
 #define SUBMENU_RESET 2
@@ -27,7 +27,7 @@
 #define OPTION_SRAM_BLINK 3
 #define OPTION_HQ_MODE 4
 #define OPTION_EWRAM_OVERCLOCK 5
-#define OPTION_PS2_INPUT 6
+#define OPTION_EXT_INPUT 6
 #define OPTION_RUMBLE_OPTS 7
 #define OPTION_CUSTOM_OFFSETS 8
 #define OPTION_RESET_SAVE_FILE 9
@@ -127,7 +127,7 @@ void AdminScene::printOptions() {
   u8 sramBlink = SAVEFILE_read8(SRAM->adminSettings.sramBlink);
   u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
   u8 ewramOverclock = SAVEFILE_read8(SRAM->adminSettings.ewramOverclock);
-  u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  u8 externalInput = SAVEFILE_read8(SRAM->adminSettings.externalInput);
 
   printOption(OPTION_NAVIGATION_STYLE, "Navigation style",
               navigationStyle != 1 ? "PIU" : "GBA", 4);
@@ -148,16 +148,19 @@ void AdminScene::printOptions() {
                                : "OFF",
               8);
   printOption(OPTION_HQ_MODE, "HQ (audio / video)",
-              ps2Input > 0 ? "---"
-                           : (hqMode == 3   ? "VIDEO"
-                              : hqMode == 4 ? "AUDIO"
-                              : hqMode > 0  ? "ALL"
-                                            : "OFF"),
+              externalInput == 1 ? "---"
+                                 : (hqMode == 3   ? "VIDEO"
+                                    : hqMode == 4 ? "AUDIO"
+                                    : hqMode > 0  ? "ALL"
+                                                  : "OFF"),
               9);
   printOption(OPTION_EWRAM_OVERCLOCK, "EWRAM overclock",
               ewramOverclock == 1 ? "ON" : "OFF", 10);
-  printOption(OPTION_PS2_INPUT, "PS/2 input",
-              hqMode > 0 ? "---" : (ps2Input > 0 ? "ON" : "OFF"), 11);
+  printOption(OPTION_EXT_INPUT, "External input",
+              externalInput == 1   ? "PS/2"
+              : externalInput == 2 ? "EMU"
+                                   : "OFF",
+              11);
 
   printOption(OPTION_RUMBLE_OPTS, "[RUMBLE OPTIONS]", "", 13);
   printOption(OPTION_CUSTOM_OFFSETS, "[CUSTOM OFFSETS]", "", 14);
@@ -335,8 +338,8 @@ bool AdminScene::selectOption(u32 selected, int direction) {
       return true;
     }
     case OPTION_HQ_MODE: {
-      u8 ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
-      if (ps2Input > 0)
+      u8 externalInput = SAVEFILE_read8(SRAM->adminSettings.externalInput);
+      if (externalInput == 1)
         return true;
 
       u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
@@ -375,16 +378,19 @@ bool AdminScene::selectOption(u32 selected, int direction) {
         return false;
       }
     }
-    case OPTION_PS2_INPUT: {
+    case OPTION_EXT_INPUT: {
+      u8 value = SAVEFILE_read8(SRAM->adminSettings.externalInput);
       u8 hqMode = SAVEFILE_read8(SRAM->adminSettings.hqMode);
-      if (hqMode > 0)
-        return true;
+      u8 newValue = change(value, 3, direction);
+      if (hqMode > 0 && newValue == 1) {
+        if (direction < 0)
+          newValue--;
+        else
+          newValue++;
+      }
+      SAVEFILE_write8(SRAM->adminSettings.externalInput, newValue);
 
-      u8 value = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
-      u8 newValue = change(value, 2, direction);
-      SAVEFILE_write8(SRAM->adminSettings.ps2Input, newValue);
-
-      if (newValue)
+      if (newValue == 1)
         ps2Keyboard->activate();
       else
         ps2Keyboard->deactivate();
