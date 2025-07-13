@@ -76,7 +76,7 @@ class SongScene : public Scene {
   std::unique_ptr<InputHandler> rateUpPs2Input;
   std::unique_ptr<DeathMix> deathMix;
   bool $isMultiplayer, $isDouble, $isVs, $isSinglePlayerDouble,
-      $isVsDifferentLevels, $ps2Input, usesVideo;
+      $isVsDifferentLevels, $ps2Input, $emuInput, usesVideo;
   u32 platformCount, playerCount, localBaseIndex, remoteBaseIndex,
       localPlayerId, rumbleTotalFrames, rumblePreRollFrames,
       rumbleIdleCyclePeriod;
@@ -104,7 +104,10 @@ class SongScene : public Scene {
     $isVs = isVs();
     $isSinglePlayerDouble = isSinglePlayerDouble();
     $isVsDifferentLevels = remoteChart->level != chart->level;
-    $ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+    auto externalInput = static_cast<ExternalInputOpts>(
+        SAVEFILE_read8(SRAM->adminSettings.externalInput));
+    $ps2Input = externalInput == ExternalInputOpts::ePS2;
+    $emuInput = externalInput == ExternalInputOpts::eEMU;
 
     usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;

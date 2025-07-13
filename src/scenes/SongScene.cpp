@@ -714,6 +714,20 @@ void SongScene::throwVideoError() {
 }
 
 void SongScene::processKeys(u16 keys) {
+  if ($isSinglePlayerDouble && $emuInput) {
+    arrowHolders[localBaseIndex + 0]->setIsPressed(keys & KEY_DOWN);
+    arrowHolders[localBaseIndex + 1]->setIsPressed(keys & KEY_UP);
+    arrowHolders[localBaseIndex + 2]->setIsPressed(keys & KEY_RIGHT);
+    arrowHolders[localBaseIndex + 3]->setIsPressed(keys & KEY_START);
+    arrowHolders[localBaseIndex + 4]->setIsPressed(keys & KEY_SELECT);
+    arrowHolders[localBaseIndex + 5]->setIsPressed(keys & KEY_LEFT);
+    arrowHolders[localBaseIndex + 6]->setIsPressed(keys & KEY_L);
+    arrowHolders[localBaseIndex + 7]->setIsPressed(keys & KEY_B);
+    arrowHolders[localBaseIndex + 8]->setIsPressed(keys & KEY_R);
+    arrowHolders[localBaseIndex + 9]->setIsPressed(keys & KEY_A);
+    return;
+  }
+
   u32 downLeftKeys = (keys & KEY_DOWN) | (keys & KEY_LEFT);
   u32 upLeftKeys = (keys & KEY_L) | (keys & KEY_UP);
   u32 centerKeys = (keys & KEY_B) | (keys & KEY_RIGHT);
