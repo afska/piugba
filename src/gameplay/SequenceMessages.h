@@ -86,6 +86,12 @@
   "- P1: Use ZQSEC\r\n"        \
   "- P2: Use Numpad 17593"
 
+#define DOUBLE_EMU_INPUT_HINT \
+  "EMU input is enabled!\r\n" \
+  "- Set up an emulator\r\n"  \
+  "- P1: Use ZQSEC\r\n"       \
+  "- P2: Use Numpad 17593"
+
 #define WIN                      \
   "  *YOU'VE WON THE GAME*\r\n"  \
   "\r\n"                         \
