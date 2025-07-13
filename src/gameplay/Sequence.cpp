@@ -49,7 +49,9 @@ Scene* SEQUENCE_getInitialScene() {
   if (ewramOverclock)
     SCENE_overclockEWRAM();
 
-  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  bool ps2Input = static_cast<ExternalInputOpts>(
+                      SAVEFILE_read8(SRAM->adminSettings.externalInput)) ==
+                  ExternalInputOpts::ePS2;
   if (ps2Input)
     ps2Keyboard->activate();
 
@@ -320,10 +322,26 @@ void SEQUENCE_goToMessageOrSong(Song* song, Chart* chart, Chart* remoteChart) {
     return;
   }
 
-  bool ps2Input = SAVEFILE_read8(SRAM->adminSettings.ps2Input);
+  auto externalInput = static_cast<ExternalInputOpts>(
+      SAVEFILE_read8(SRAM->adminSettings.externalInput));
+
+  bool ps2Input = externalInput == ExternalInputOpts::ePS2;
   if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() && ps2Input) {
     goTo(new TalkScene(
         _engine, _fs, DOUBLE_PS2_INPUT_HINT,
+        [song, chart](u16 keys) {
+          bool isPressed = KEY_CONFIRM(keys);
+          if (isPressed)
+            goTo(new SongScene(_engine, _fs, song, chart));
+        },
+        true));
+    return;
+  }
+
+  bool emuInput = externalInput == ExternalInputOpts::eEMU;
+  if (gameMode == GameMode::ARCADE && isSinglePlayerDouble() && emuInput) {
+    goTo(new TalkScene(
+        _engine, _fs, DOUBLE_EMU_INPUT_HINT,
         [song, chart](u16 keys) {
           bool isPressed = KEY_CONFIRM(keys);
           if (isPressed)
