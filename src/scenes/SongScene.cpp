@@ -1432,6 +1432,7 @@ void SongScene::unload() {
   player_stop();
   RUMBLE_stop();
   videoStore->unload();
+  syncer->$isSinglePlayerDoubleEmuInput = false;
 
   if ($isMultiplayer)
     syncer->resetSongState();
