@@ -108,6 +108,7 @@ class SongScene : public Scene {
         SAVEFILE_read8(SRAM->adminSettings.externalInput));
     $ps2Input = externalInput == ExternalInputOpts::ePS2;
     $emuInput = externalInput == ExternalInputOpts::eEMU;
+    syncer->$isSinglePlayerDoubleEmuInput = $isSinglePlayerDouble && $emuInput;
 
     usesVideo = videoStore->isActive();
     platformCount = isMultiplayer() || isSinglePlayerDouble() ? 2 : 1;
