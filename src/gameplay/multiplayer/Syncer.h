@@ -59,11 +59,15 @@ inline bool isDouble() {
 
 class Syncer {
  public:
+  // Shared state
   u8 $libraryType = 0;
   u8 $completedSongs = 0;
   int $remoteNumericLevelIndex = -1;
   int $remoteNumericLevel = -1;
   int $remoteLastNumericLevel = 0;
+  bool $isSinglePlayerDoubleEmuInput = false;
+
+  // Multiplayer state
   bool $isPlayingSong = false;
   bool $hasStartedAudio = false;
   bool $resetFlag = false;
