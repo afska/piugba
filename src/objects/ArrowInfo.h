@@ -12,7 +12,7 @@
 #define ARROWS_GAME_TOTAL (isDouble() ? 10 : 5)
 
 const u32 ARROWS_TOTAL = 5;
-const int ARROW_OFFSCREEN_LIMIT = -13;
+const int ARROW_OFFSCREEN_LIMIT = 160;  // GBA_SCREEN_HEIGHT
 const u32 ARROW_TILEMAP_LOADING_ID = 1000;
 const u32 ARROW_LAYER_FRONT = 0;
 const u32 ARROW_LAYER_MIDDLE = 1;
@@ -23,8 +23,8 @@ const u32 ARROW_MAX_MULTIPLIER = 6;
 const u32 ARROW_SIZE = 16;
 const u32 ARROW_HALF_SIZE = 8;
 const u32 ARROW_QUARTER_SIZE = 4;
-const u32 ARROW_MARGIN = ARROW_SIZE + 2;
-const u32 ARROW_INITIAL_Y = GBA_SCREEN_HEIGHT;
+const u32 ARROW_MARGIN = ARROW_SIZE;
+const u32 ARROW_INITIAL_Y = -16;
 const u32 ARROW_CORNER_MARGIN_X_OFFSET = 4;
 
 inline u32 ARROW_CORNER_MARGIN_X(u8 playerId) {
@@ -32,11 +32,11 @@ inline u32 ARROW_CORNER_MARGIN_X(u8 playerId) {
 }
 
 inline u32 ARROW_FINAL_Y() {
-  return GameState.positionY + 15;
+  return 134;  // GBA_SCREEN_HEIGHT - 26
 }
 
 inline u32 ARROW_DISTANCE() {
-  return ARROW_INITIAL_Y - ARROW_FINAL_Y();
+  return ARROW_FINAL_Y() - ARROW_INITIAL_Y;
 }
 
 enum ArrowType { UNIQUE, HOLD_HEAD, HOLD_FILL, HOLD_TAIL, HOLD_FAKE_HEAD };

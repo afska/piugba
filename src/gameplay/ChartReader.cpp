@@ -82,7 +82,7 @@ CODE_PLACEMENT int ChartReader::getYFor(Arrow* arrow) {
   int y;
   switch (arrow->type) {
     case ArrowType::HOLD_HEAD: {
-      y = getFillTopY(holdArrow) - HOLD_getFirstFillOffset(arrow->direction);
+      y = getFillTopY(holdArrow) + HOLD_getFirstFillOffset(arrow->direction);
       break;
     }
     case ArrowType::HOLD_FILL: {
@@ -93,30 +93,30 @@ CODE_PLACEMENT int ChartReader::getYFor(Arrow* arrow) {
                         holdArrow->fillOffsetBottom;
 
       if (isOut)
-        return -ARROW_SIZE;
+        return 200;
 
       if (isLast) {
         arrow->get()->setPriority(ARROW_LAYER_FRONT);
-        y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) - ARROW_SIZE;
+        y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) + ARROW_SIZE;
       } else {
         arrow->get()->setPriority(isFirst ? ARROW_LAYER_MIDDLE
                                           : ARROW_LAYER_FRONT);
-        y = getFillTopY(holdArrow) + holdArrow->currentFillOffset;
+        y = getFillTopY(holdArrow) - holdArrow->currentFillOffset;
       }
       arrow->setIsLastFill(isLast);
       holdArrow->currentFillOffset += ARROW_SIZE;
       break;
     }
     case ArrowType::HOLD_TAIL: {
-      y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) -
-          HOLD_getLastFillOffset(arrow->direction) - ARROW_SIZE;
+      y = getFillBottomY(holdArrow, getFillTopY(holdArrow)) +
+          HOLD_getLastFillOffset(arrow->direction) + ARROW_SIZE;
       break;
     }
     default:
       y = getYFor(arrow->timestamp);
   };
 
-  return min(y, ARROW_INITIAL_Y);
+  return max(y, ARROW_INITIAL_Y);
 }
 
 CODE_PLACEMENT int ChartReader::getYFor(int timestamp) {
@@ -125,7 +125,7 @@ CODE_PLACEMENT int ChartReader::getYFor(int timestamp) {
   int now = hasStopped ? stopStart : msecs;
   int timeLeft = timestamp - now;
 
-  return min(ARROW_FINAL_Y() + MATH_div(timeLeft * ARROW_DISTANCE(), arrowTime),
+  return max(ARROW_FINAL_Y() - MATH_div(timeLeft * ARROW_DISTANCE(), arrowTime),
              ARROW_INITIAL_Y);
 }
 
@@ -358,21 +358,21 @@ CODE_PLACEMENT void ChartReader::orchestrateHoldArrows() {
     if (hasStarted && judge->isPressed(direction, playerId))
       holdArrow->updateLastPress(topY);
     int screenTopY =
-        topY <= holdArrow->lastPressTopY
-            ? HOLD_FILL_FINAL_Y() -
-                  min(holdArrow->lastPressTopY - topY, HOLD_FILL_FINAL_Y())
-            : 0;
+        topY >= holdArrow->lastPressTopY
+            ? HOLD_FILL_FINAL_Y() +
+                  min(topY - holdArrow->lastPressTopY, (int)(160 - HOLD_FILL_FINAL_Y()))
+            : 160;
     int bottomY = holdArrow->hasEndTime() ? getFillBottomY(holdArrow, topY)
-                                          : ARROW_INITIAL_Y;
+                                          : 160;
 
-    if (bottomY < ARROW_OFFSCREEN_LIMIT) {
+    if (bottomY > ARROW_OFFSCREEN_LIMIT) {
       holdArrows->discard(holdArrow->id);
       return;
     }
 
     holdArrow->fillOffsetSkip =
-        max(screenTopY - topY, topY > 0 ? 0 : screenTopY);
-    holdArrow->fillOffsetBottom = bottomY - topY;
+        max(topY - screenTopY, topY < 160 ? 0 : topY - screenTopY);
+    holdArrow->fillOffsetBottom = topY - bottomY;
     holdArrow->currentFillOffset = holdArrow->fillOffsetSkip;
     u32 fillSectionLength = holdArrow->getFillSectionLength(topY, bottomY);
     u32 targetFills = MATH_divCeil(fillSectionLength, ARROW_SIZE);
@@ -456,14 +456,14 @@ CODE_PLACEMENT int ChartReader::getFillTopY(HoldArrow* holdArrow) {
 
   int y = holdArrow->getHeadY(
       [holdArrow, this]() { return getYFor(holdArrow->startTime); });
-  return y + firstFillOffset;
+  return y - firstFillOffset;
 }
 
 CODE_PLACEMENT int ChartReader::getFillBottomY(HoldArrow* holdArrow, int topY) {
   int lastFillOffset = HOLD_getLastFillOffset(holdArrow->direction);
 
   return holdArrow->getTailY([holdArrow, &topY, &lastFillOffset, this]() {
-    return max(getYFor(holdArrow->endTime) + lastFillOffset, topY) + ARROW_SIZE;
+    return min(getYFor(holdArrow->endTime) - lastFillOffset, topY) - ARROW_SIZE;
   });
 }
 

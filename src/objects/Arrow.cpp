@@ -56,7 +56,7 @@ FeedbackType Arrow::getResult(FeedbackType partialResult,
 }
 
 void Arrow::press() {
-  if (sprite->getY() <= (int)ARROW_FINAL_Y())
+  if (sprite->getY() >= (int)ARROW_FINAL_Y())
     animatePress();
   else {
     markAsPressed();
@@ -93,13 +93,13 @@ CODE_IWRAM bool Arrow::tick(int newY, bool isPressing, int offsetX) {
     }
   } else if ($isNearEndOrClose && needsAnimation) {
     animatePress();
+  } else if (newY >= 160) {  // GBA_SCREEN_HEIGHT
+    return end();
   } else if (isHoldArrow && (!isHoldFill || isLastFill) && isNearEnd(newY) &&
              isPressing) {
     if (!isHoldFill)
       markAsPressed();
 
-    return end();
-  } else if (sprite->getY() < ARROW_OFFSCREEN_LIMIT) {
     return end();
   } else
     sprite->moveTo(newX, newY);
@@ -123,14 +123,14 @@ void Arrow::animatePress() {
   hasEnded = true;
   endAnimationFrame = 0;
   sprite->moveTo(ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
-                 ARROW_FINAL_Y());
+                 134);  // ARROW_FINAL_Y()
   SPRITE_goToFrame(sprite.get(), endAnimationStartFrame);
 }
 
 bool Arrow::isNearEndOrClose(int newY) {
-  return newY <= (int)ARROW_FINAL_Y() + (int)ARROW_QUARTER_SIZE;
+  return newY >= (int)ARROW_FINAL_Y() - (int)ARROW_QUARTER_SIZE;
 }
 
 bool Arrow::isNearEnd(int newY) {
-  return newY <= (int)ARROW_FINAL_Y();
+  return newY >= (int)ARROW_FINAL_Y();
 }

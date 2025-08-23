@@ -7,7 +7,7 @@
 #include "utils/SpriteUtils.h"
 
 const u32 DIGITS_POSITION_X = 7;
-const u32 DIGITS_POSITION_Y = 91;
+const u32 DIGITS_POSITION_Y = 91-50;
 const u32 NUMBER_WIDTH_3_DIGITS = 26;
 const u32 NUMBER_WIDTH_4_DIGITS = 22;
 const int OFFSET_3_DIGITS = -NUMBER_WIDTH_3_DIGITS;

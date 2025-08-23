@@ -12,7 +12,7 @@ const int HOLD_ARROW_LAST_FILL_OFFSETS[] = {7, 8, 8, 8, 7, 7, 8, 8, 8, 7};
 const int HOLD_NULL = -999999999;
 
 inline int HOLD_FILL_FINAL_Y() {
-  return ARROW_FINAL_Y() + ARROW_HALF_SIZE;
+  return 134 - ARROW_HALF_SIZE;  // ARROW_FINAL_Y() - ARROW_HALF_SIZE
 }
 
 inline int HOLD_getFirstFillOffset(ArrowDirection direction) {
@@ -59,7 +59,7 @@ class HoldArrow : public IPoolable {
   inline void updateLastPress(int topY) { lastPressTopY = topY; }
 
   inline u32 getFillSectionLength(int topY, int bottomY) {
-    return max(bottomY - (topY + fillOffsetSkip), 0);
+    return max((topY - fillOffsetSkip) - bottomY, 0);
   }
 
   inline void resetState() {

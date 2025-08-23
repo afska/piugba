@@ -27,7 +27,7 @@ ArrowHolder::ArrowHolder(ArrowDirection direction,
           .withSize(SIZE_16_16)
           .withLocation(
               ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction,
-              ARROW_FINAL_Y())
+              134)
           .buildPtr();
 
   if (reuseTiles)
@@ -48,7 +48,7 @@ void ArrowHolder::tick(int offsetX) {
 
   sprite->moveTo(
       ARROW_CORNER_MARGIN_X(playerId) + ARROW_MARGIN * direction + offsetX,
-      ARROW_FINAL_Y());
+      134);
 
   if ((isPressed || isBlinking) && currentFrame < pressedFrame) {
     SPRITE_goToFrame(sprite.get(), currentFrame + 1);

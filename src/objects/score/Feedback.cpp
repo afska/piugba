@@ -10,7 +10,7 @@
 #include "utils/SpriteUtils.h"
 
 const u32 POSITION_X = 16;
-const u32 POSITION_Y = 60;
+const u32 POSITION_Y = 60-50;
 
 Feedback::Feedback(u8 playerId) {
   this->playerId = playerId;
