@@ -129,7 +129,7 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
-  if (syncer->$isSinglePlayerDoubleEmuInput)
+  if (syncer->$preventSoftReset)
     return;
   if (syncer->$isPlayingSong || syncer->$resetFlag) {
     syncer->$resetFlag = true;
