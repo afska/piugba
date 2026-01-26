@@ -61,7 +61,9 @@ Scene* SEQUENCE_getInitialScene() {
   }
 
   if (videoStore->isEnabled()) {
+    syncer->$preventSoftReset = true;
     auto nextScene = SEQUENCE_activateVideo(false);
+    syncer->$preventSoftReset = false;
     if (nextScene != NULL)
       return nextScene;
   }

@@ -135,7 +135,7 @@ int main() {
 }
 
 CODE_EWRAM void ISR_reset() {
-  if (syncer->$isSinglePlayerDoubleEmuInput)
+  if (syncer->$preventSoftReset)
     return;
 
   bool isPlaying = SAVEFILE_read8(SRAM->state.isPlaying);
