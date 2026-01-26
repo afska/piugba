@@ -65,7 +65,7 @@ class Syncer {
   int $remoteNumericLevelIndex = -1;
   int $remoteNumericLevel = -1;
   int $remoteLastNumericLevel = 0;
-  bool $isSinglePlayerDoubleEmuInput = false;
+  bool $preventSoftReset = false;
 
   // Multiplayer state
   bool $isPlayingSong = false;
