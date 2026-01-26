@@ -1,6 +1,6 @@
 #include "State.h"
 
-#include "Savefile.h"
+#include "SaveFile.h"
 #include "gameplay/multiplayer/Syncer.h"
 
 DATA_EWRAM RAMState GameState;
